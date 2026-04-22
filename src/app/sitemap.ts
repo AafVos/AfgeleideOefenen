@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lerendifferentieren.nl'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleidenoefenen.nl'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()

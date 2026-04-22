@@ -1,5 +1,5 @@
 -- =====================================================================
--- lerendifferentiëren.nl — seed data
+-- afgeleidenoefenen.nl — seed data
 --   Section 4:  topics, topic_clusters, root_causes
 --   Section 13: first questions (Machtsregel) + example step plan
 -- =====================================================================

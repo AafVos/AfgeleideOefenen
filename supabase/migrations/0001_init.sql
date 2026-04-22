@@ -1,5 +1,5 @@
 -- =====================================================================
--- lerendifferentiëren.nl — initial schema (section 3 of the spec)
+-- afgeleidenoefenen.nl — initial schema (section 3 of the spec)
 -- =====================================================================
 -- Run this in Supabase SQL editor, or via `supabase db push` if you are
 -- using the Supabase CLI.

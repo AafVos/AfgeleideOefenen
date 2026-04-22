@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
-  title: 'Admin · lerendifferentiëren.nl',
+  title: 'Admin · afgeleidenoefenen.nl',
 }
 
 const NAV = [
