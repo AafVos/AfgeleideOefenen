@@ -1,65 +1,79 @@
-import Image from "next/image";
+import Link from 'next/link'
 
-export default function Home() {
+import { createClient } from '@/lib/supabase/server'
+
+export default async function HomePage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="mx-auto max-w-3xl px-4 py-16">
+      <section className="text-center">
+        <p className="mb-3 text-sm font-medium uppercase tracking-wider text-accent">
+          VWO wiskunde · Differentiëren
+        </p>
+        <h1 className="font-serif text-4xl leading-tight text-text sm:text-5xl">
+          Leer differentiëren door het gewoon te{' '}
+          <span className="text-accent">doen</span>.
+        </h1>
+        <p className="mx-auto mt-6 max-w-xl text-lg text-text-muted">
+          Geen lange uitleg vooraf. Je begint meteen met oefenen, krijgt direct
+          feedback en als je iets fout doet legt de site precies uit waar het
+          misging — en geeft je een passende volgvraag.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          {user ? (
+            <Link
+              href="/oefenen"
+              className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
+            >
+              Ga verder oefenen
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/registreren"
+                className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
+              >
+                Maak een account
+              </Link>
+              <Link
+                href="/inloggen"
+                className="rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+              >
+                Inloggen
+              </Link>
+            </>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-20 grid gap-6 sm:grid-cols-3">
+        <Feature
+          title="Practice-first"
+          body="Je bent geen student die een boek leest. Je bent iemand die oefent en leert van de uitleg bij elke fout."
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <Feature
+          title="Adaptief"
+          body="De site volgt jouw tempo en je fouten. Je krijgt meer van wat je moeilijk vindt, minder van wat je al kent."
+        />
+        <Feature
+          title="Getal & Ruimte"
+          body="Notatie en leerlijn volgen je methode op school. Van machtsregel tot kettingregel."
+        />
+      </section>
     </div>
-  );
+  )
+}
+
+function Feature({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-5">
+      <h3 className="font-serif text-xl text-text">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-text-muted">{body}</p>
+    </div>
+  )
 }
