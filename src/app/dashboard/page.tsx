@@ -6,7 +6,7 @@ import { loadLearningPath } from '@/lib/practice/engine'
 import { Badge, Card } from '@/components/ui'
 
 export const metadata = {
-  title: 'Dashboard · afgeleidenoefenen.nl',
+  title: 'Dashboard · afgeleideoefenen.nl',
 }
 
 export default async function DashboardPage() {

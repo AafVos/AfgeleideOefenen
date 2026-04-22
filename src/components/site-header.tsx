@@ -27,7 +27,7 @@ export async function SiteHeader() {
           href="/"
           className="font-serif text-lg font-medium tracking-tight text-text"
         >
-          afgeleidenoefenen
+          afgeleideoefenen
           <span className="text-accent">.nl</span>
         </Link>
 
