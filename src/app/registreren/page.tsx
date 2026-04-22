@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SignupForm } from './signup-form'
 
 export const metadata = {
-  title: 'Registreren · afgeleidenoefenen.nl',
+  title: 'Registreren · afgeleideoefenen.nl',
 }
 
 export default async function SignupPage() {

@@ -13,7 +13,7 @@ import { PracticeCard } from './practice-card'
 import { PracticeSidebar } from './sidebar'
 
 export const metadata = {
-  title: 'Oefenen · afgeleidenoefenen.nl',
+  title: 'Oefenen · afgeleideoefenen.nl',
 }
 
 export default async function OefenenPage() {

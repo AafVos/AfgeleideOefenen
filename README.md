@@ -1,4 +1,4 @@
-# afgeleidenoefenen.nl
+# afgeleideoefenen.nl
 
 Nederlandse wiskundewebsite voor VWO-studenten om differentiëren te leren.
 Gebouwd met **Next.js (App Router) + Supabase + Gemini**. Zie
@@ -125,10 +125,10 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
    **Next.js** als framework (wordt automatisch gedetecteerd).
 3. Vul onder **Environment Variables** alle keys uit `.env.local.example` in
    voor zowel Production als Preview (behalve `NEXT_PUBLIC_SITE_URL`, die zet
-   je op je productie-domein, bv. `https://afgeleidenoefenen.nl`).
+   je op je productie-domein, bv. `https://afgeleideoefenen.nl`).
 4. Deploy → je krijgt een `*.vercel.app`-URL.
 5. **Eigen domein koppelen**: in het Vercel-project → **Settings → Domains**
-   voeg je `afgeleidenoefenen.nl` toe. Vercel geeft één A-record en één
+   voeg je `afgeleideoefenen.nl` toe. Vercel geeft één A-record en één
    CNAME — vul die in bij je domeinregistrar.
 6. **Supabase Auth redirect URLs** updaten: Supabase dashboard →
    **Authentication → URL Configuration** → zet `Site URL` op je productie-URL
@@ -136,7 +136,7 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
 7. **Migraties draaien**: in de Supabase SQL Editor beide files draaien:
    `0001_init.sql`, `0002_question_flags.sql` en daarna `seed.sql`.
 8. **Gemini API-key** onder Google AI Studio: zet een HTTP-referrer
-   restriction op `https://afgeleidenoefenen.nl/*` zodat hij niet misbruikt
+   restriction op `https://afgeleideoefenen.nl/*` zodat hij niet misbruikt
    wordt als hij lekt.
 
 ### SEO & vindbaarheid
