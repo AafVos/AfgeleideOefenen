@@ -19,43 +19,44 @@ const dmSerif = DM_Serif_Display({
 })
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lerendifferentieren.nl'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleidenoefenen.nl'
 
 const SITE_DESCRIPTION =
-  'Oefen differentiëren voor VWO wiskunde. Adaptieve vragen, directe uitleg bij fouten en stap-voor-stap feedback. Gratis en in het Nederlands.'
+  'Oefen afgeleiden en differentiëren voor VWO wiskunde. Adaptieve vragen, directe uitleg bij fouten en stap-voor-stap feedback. Gratis en in het Nederlands.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'lerendifferentiëren.nl — oefen differentiëren voor VWO',
-    template: '%s · lerendifferentiëren.nl',
+    default: 'afgeleidenoefenen.nl — oefen afgeleiden en differentiëren voor VWO',
+    template: '%s · afgeleidenoefenen.nl',
   },
   description: SITE_DESCRIPTION,
   keywords: [
+    'afgeleiden oefenen',
+    'afgeleide',
     'differentiëren',
     'wiskunde',
     'VWO',
     'oefenen',
-    'afgeleide',
     'machtsregel',
     'Getal en Ruimte',
     'wiskunde leren',
     'differentieren oefenen',
   ],
-  applicationName: 'lerendifferentiëren.nl',
-  authors: [{ name: 'lerendifferentiëren.nl' }],
+  applicationName: 'afgeleidenoefenen.nl',
+  authors: [{ name: 'afgeleidenoefenen.nl' }],
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'nl_NL',
     url: SITE_URL,
-    siteName: 'lerendifferentiëren.nl',
-    title: 'Oefen differentiëren voor VWO — gratis en adaptief',
+    siteName: 'afgeleidenoefenen.nl',
+    title: 'Oefen afgeleiden voor VWO — gratis en adaptief',
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'lerendifferentiëren.nl',
+    title: 'afgeleidenoefenen.nl',
     description: SITE_DESCRIPTION,
   },
   robots: {
