@@ -22,27 +22,29 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleideoefenen.nl'
 
 const SITE_DESCRIPTION =
-  'Oefen afgeleiden en differentiëren voor VWO wiskunde. Adaptieve vragen, directe uitleg bij fouten en stap-voor-stap feedback. Gratis en in het Nederlands.'
+  'Afgeleide oefenen voor wiskunde B op het VWO. Gratis adaptieve oefeningen met directe uitleg bij elke fout: machtsregel, productregel, quotiëntregel en kettingregel. Volgens Getal & Ruimte.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'afgeleideoefenen.nl — oefen afgeleiden en differentiëren voor VWO',
+    default: 'Afgeleide oefenen — wiskunde B VWO | afgeleideoefenen.nl',
     template: '%s · afgeleideoefenen.nl',
   },
   description: SITE_DESCRIPTION,
   keywords: [
     'afgeleide oefenen',
+    'afgeleide oefenen wiskunde B',
+    'afgeleide oefenen VWO',
     'afgeleiden oefenen',
-    'afgeleide',
-    'differentiëren',
-    'wiskunde',
-    'VWO',
-    'oefenen',
-    'machtsregel',
-    'Getal en Ruimte',
-    'wiskunde leren',
-    'differentieren oefenen',
+    'differentiëren oefenen',
+    'differentiëren VWO',
+    'wiskunde B VWO',
+    'machtsregel oefenen',
+    'productregel oefenen',
+    'quotiëntregel oefenen',
+    'kettingregel oefenen',
+    'Getal en Ruimte differentiëren',
+    'wiskunde oefenen VWO',
   ],
   applicationName: 'afgeleideoefenen.nl',
   authors: [{ name: 'afgeleideoefenen.nl' }],
@@ -52,12 +54,12 @@ export const metadata: Metadata = {
     locale: 'nl_NL',
     url: SITE_URL,
     siteName: 'afgeleideoefenen.nl',
-    title: 'Oefen afgeleiden voor VWO — gratis en adaptief',
+    title: 'Afgeleide oefenen — wiskunde B VWO',
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'afgeleideoefenen.nl',
+    title: 'Afgeleide oefenen — wiskunde B VWO',
     description: SITE_DESCRIPTION,
   },
   robots: {
