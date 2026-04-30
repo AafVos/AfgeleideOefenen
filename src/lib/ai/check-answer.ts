@@ -62,7 +62,7 @@ export async function checkWrongAnswer(
     .maybeSingle()
 
   if (question0) {
-    const alts: string[] = (question0 as unknown as { answer_alternatives?: string[] }).answer_alternatives ?? []
+    const alts: string[] = question0.answer_alternatives ?? []
     if (alts.some((alt) => normalizeAnswer(alt) === normalized)) {
       return {
         errorExplanation: 'Goed gedaan! Jouw antwoord is wiskundig correct.',
@@ -162,11 +162,11 @@ export async function checkWrongAnswer(
       .eq('id', questionId)
       .maybeSingle()
 
-    const current: string[] = (qRow as unknown as { answer_alternatives?: string[] } | null)?.answer_alternatives ?? []
+    const current: string[] = qRow?.answer_alternatives ?? []
     if (!current.some((a) => normalizeAnswer(a) === normalized)) {
       await db
         .from('questions')
-        .update({ answer_alternatives: [...current, studentAnswer] } as unknown as Parameters<ReturnType<DB['from']>['update']>[0])
+        .update({ answer_alternatives: [...current, studentAnswer] })
         .eq('id', questionId)
     }
 

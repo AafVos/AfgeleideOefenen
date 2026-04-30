@@ -52,7 +52,7 @@ export async function submitAnswerAction(
     .maybeSingle()
   if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
 
-  const alts: string[] = (question as unknown as { answer_alternatives?: string[] }).answer_alternatives ?? []
+  const alts: string[] = question.answer_alternatives ?? []
   const isCorrect = answersMatch(userAnswerRaw, question.answer, alts)
 
   const sessionId = await getOrCreateSession(
