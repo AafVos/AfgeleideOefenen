@@ -78,6 +78,7 @@ export type Database = {
           latex_body: string | null
           answer: string
           latex_answer: string | null
+          answer_alternatives: string[]
           difficulty: Difficulty
           root_cause_tags: string[]
           is_ai_generated: boolean
@@ -92,6 +93,7 @@ export type Database = {
           latex_body?: string | null
           answer: string
           latex_answer?: string | null
+          answer_alternatives?: string[]
           difficulty: Difficulty
           root_cause_tags?: string[]
           is_ai_generated?: boolean
