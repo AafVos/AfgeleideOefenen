@@ -77,6 +77,13 @@ export function PracticeCard({
     })
   }
 
+  function retry() {
+    setAnswer('')
+    setState({ phase: 'input', error: null })
+    startedAtRef.current = Date.now()
+    requestAnimationFrame(() => inputRef.current?.focus())
+  }
+
   function handleKey(text: string) {
     const el = inputRef.current
     const start = el?.selectionStart ?? answer.length
@@ -268,6 +275,7 @@ export function PracticeCard({
           streak={state.streak}
           mastered={state.mastered}
           onNext={next}
+          onRetry={retry}
           pending={pending}
         />
       )}
@@ -282,6 +290,7 @@ export function PracticeCard({
           resolved={state.resolved}
           onResolved={() => setState({ ...state, resolved: true })}
           onNext={next}
+          onRetry={retry}
           pending={pending}
         />
       )}
@@ -296,27 +305,39 @@ function CorrectFeedback({
   streak,
   mastered,
   onNext,
+  onRetry,
   pending,
 }: {
   streak: number
   mastered: boolean
   onNext: () => void
+  onRetry: () => void
   pending: boolean
 }) {
   return (
     <div className="rounded-xl border border-accent/30 bg-accent-light p-4">
       <p className="font-serif text-xl text-accent">
-        {mastered ? 'Geweldig — cluster afgerond 🎉' : 'Goed!'}
+        {mastered ? 'Geweldig — cluster afgerond!' : 'Goed!'}
       </p>
       <p className="mt-1 text-sm text-accent">
         {mastered
           ? 'Je hebt 3 keer correct op rij. Het volgende cluster wordt nu ontgrendeld.'
           : `Streak: ${streak}/3. Nog ${3 - streak} goed op rij.`}
       </p>
-      <div className="mt-4">
+      <div className="mt-4 flex items-center gap-2">
         <Button onClick={onNext} disabled={pending}>
-          {mastered ? 'Door naar volgend cluster' : 'Volgende vraag'}
+          {mastered ? 'Volgend cluster' : 'Volgende +'}
         </Button>
+        {!mastered && (
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={pending}
+            className="rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
+          >
+            Opnieuw
+          </button>
+        )}
       </div>
     </div>
   )
@@ -334,6 +355,7 @@ function WrongFeedback({
   resolved,
   onResolved,
   onNext,
+  onRetry,
   pending,
 }: {
   answerId: string
@@ -344,6 +366,7 @@ function WrongFeedback({
   resolved: boolean
   onResolved: () => void
   onNext: () => void
+  onRetry: () => void
   pending: boolean
 }) {
   const [wrongSteps, setWrongSteps] = useState<Set<string>>(new Set())
@@ -450,20 +473,33 @@ function WrongFeedback({
 
       {!resolved && (
         <>
-          <button
-            type="button"
-            onClick={doCareless}
-            disabled={pending}
-            className={cn(
-              'mt-4 block w-full rounded-md border border-accent-2/40 bg-white/70 px-3 py-2 text-left text-sm font-medium text-accent-2 transition hover:bg-white',
-              pending && 'opacity-60',
-            )}
-          >
-            Slordigheidsfoutje — ik wist het wel
-            <span className="ml-1 text-xs font-normal text-text-muted">
-              (telt niet tegen je streak)
-            </span>
-          </button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onRetry}
+              disabled={pending}
+              className={cn(
+                'rounded-md border border-accent-2/40 bg-white/70 px-3 py-2 text-sm font-medium text-accent-2 transition hover:bg-white',
+                pending && 'opacity-60',
+              )}
+            >
+              Opnieuw proberen
+            </button>
+            <button
+              type="button"
+              onClick={doCareless}
+              disabled={pending}
+              className={cn(
+                'rounded-md border border-accent-2/40 bg-white/70 px-3 py-2 text-left text-sm font-medium text-accent-2 transition hover:bg-white',
+                pending && 'opacity-60',
+              )}
+            >
+              Slordigheidsfoutje — ik wist het wel
+              <span className="ml-1 text-xs font-normal text-text-muted">
+                (telt niet tegen je streak)
+              </span>
+            </button>
+          </div>
 
           {steps.length > 0 && (
             <div className="mt-4">
@@ -510,10 +546,18 @@ function WrongFeedback({
       )}
 
       {resolved && (
-        <div className="mt-4">
+        <div className="mt-4 flex items-center gap-2">
           <Button onClick={onNext} disabled={pending}>
-            Volgende vraag
+            Volgende +
           </Button>
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={pending}
+            className="rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white disabled:opacity-60"
+          >
+            Opnieuw proberen
+          </button>
         </div>
       )}
     </div>
