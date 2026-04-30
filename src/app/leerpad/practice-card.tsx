@@ -353,6 +353,7 @@ function WrongFeedback({
   correctAnswer,
   latexCorrectAnswer,
   errorExplanation,
+  studentAnswer,
   steps,
   resolved,
   onResolved,
