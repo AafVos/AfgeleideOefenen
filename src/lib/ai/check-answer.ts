@@ -17,11 +17,18 @@ export type CheckAnswerResult = {
   fromCache: boolean
   /** Aantal nieuwe vragen dat Gemini heeft toegevoegd */
   newQuestions: number
+  /**
+   * True als AI bepaalt dat het antwoord wiskundig correct is maar in een
+   * andere notatie dan opgeslagen. De caller moet het antwoord dan als goed
+   * rekenen en de alternatieve notatie opslaan.
+   */
+  isMathematicallyCorrect: boolean
 }
 
 export type CheckAnswerError = { error: string }
 
 type AiAnswerJson = {
+  is_mathematically_correct?: boolean
   root_cause?: string
   error_explanation?: string
   needs_new_questions?: boolean
@@ -47,7 +54,27 @@ export async function checkWrongAnswer(
 ): Promise<CheckAnswerResult | CheckAnswerError> {
   const normalized = normalizeAnswer(studentAnswer)
 
-  // 1. Cache check
+  // 1. Cache check — first check known correct alternatives
+  const { data: question0 } = await db
+    .from('questions')
+    .select('answer_alternatives')
+    .eq('id', questionId)
+    .maybeSingle()
+
+  if (question0) {
+    const alts: string[] = (question0 as unknown as { answer_alternatives?: string[] }).answer_alternatives ?? []
+    if (alts.some((alt) => normalizeAnswer(alt) === normalized)) {
+      return {
+        errorExplanation: 'Goed gedaan! Jouw antwoord is wiskundig correct.',
+        rootCauseSlug: null,
+        fromCache: true,
+        newQuestions: 0,
+        isMathematicallyCorrect: true,
+      }
+    }
+  }
+
+  // 2. Cache check — known wrong answers
   const { data: cached } = await db
     .from('known_wrong_answers')
     .select('id, wrong_answer, error_explanation, root_cause_slug, seen_count')
@@ -64,11 +91,12 @@ export async function checkWrongAnswer(
         rootCauseSlug: row.root_cause_slug,
         fromCache: true,
         newQuestions: 0,
+        isMathematicallyCorrect: false,
       }
     }
   }
 
-  // 2. Context ophalen voor de prompt
+  // 3. Context ophalen voor de prompt
   const { data: question } = await db
     .from('questions')
     .select('id, body, answer, topic_id, cluster_id, difficulty')
@@ -91,13 +119,13 @@ export async function checkWrongAnswer(
         .eq('topic_id', question.topic_id),
     ])
 
-  // Aantal beschikbare vragen in dit cluster per moeilijkheid.
+  // 4. Aantal beschikbare vragen in dit cluster per moeilijkheid.
   const availabilityPerDifficulty = await countAvailablePerDifficulty(
     db,
     question.cluster_id,
   )
 
-  // 3. Prompt → Gemini
+  // 5. Prompt → Gemini
   const prompt = buildCheckAnswerPrompt({
     questionBody: question.body,
     correctAnswer: question.answer,
@@ -118,14 +146,43 @@ export async function checkWrongAnswer(
     }
   }
 
+  const isMathematicallyCorrect = ai.data.is_mathematically_correct === true
+
   const explanation =
     (ai.data.error_explanation ?? '').toString().trim() ||
-    'Je antwoord is niet correct. Kijk je tussenstappen eens goed na.'
+    (isMathematicallyCorrect
+      ? 'Goed gedaan! Jouw antwoord is wiskundig correct, maar schrijf het in de vereenvoudigde vorm.'
+      : 'Je antwoord is niet correct. Kijk je tussenstappen eens goed na.')
+
+  // 6. Als wiskundig correct: sla de alternatieve notatie op in questions.answer_alternatives
+  if (isMathematicallyCorrect) {
+    const { data: qRow } = await db
+      .from('questions')
+      .select('answer_alternatives')
+      .eq('id', questionId)
+      .maybeSingle()
+
+    const current: string[] = (qRow as unknown as { answer_alternatives?: string[] } | null)?.answer_alternatives ?? []
+    if (!current.some((a) => normalizeAnswer(a) === normalized)) {
+      await db
+        .from('questions')
+        .update({ answer_alternatives: [...current, studentAnswer] } as unknown as Parameters<ReturnType<DB['from']>['update']>[0])
+        .eq('id', questionId)
+    }
+
+    return {
+      errorExplanation: explanation,
+      rootCauseSlug: null,
+      fromCache: false,
+      newQuestions: 0,
+      isMathematicallyCorrect: true,
+    }
+  }
 
   const rootCauseSlug =
     (ai.data.root_cause ?? '').toString().trim() || null
 
-  // 4. Opslaan in known_wrong_answers (idempotent via UNIQUE)
+  // 7. Opslaan in known_wrong_answers (idempotent via UNIQUE)
   await db.from('known_wrong_answers').upsert(
     {
       question_id: questionId,
@@ -136,7 +193,7 @@ export async function checkWrongAnswer(
     { onConflict: 'question_id,wrong_answer' },
   )
 
-  // 5. Nieuwe vragen opslaan indien Gemini ze genereert
+  // 8. Nieuwe vragen opslaan indien Gemini ze genereert
   let newQuestions = 0
   if (
     ai.data.needs_new_questions &&
@@ -174,6 +231,7 @@ export async function checkWrongAnswer(
     rootCauseSlug,
     fromCache: false,
     newQuestions,
+    isMathematicallyCorrect: false,
   }
 }
 
