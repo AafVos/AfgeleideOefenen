@@ -37,6 +37,7 @@ type State =
       correctAnswer: string
       latexCorrectAnswer: string | null
       errorExplanation: string | null
+      studentAnswer: string
       resolved: boolean
     }
 
@@ -148,6 +149,7 @@ export function PracticeCard({
         correctAnswer: result.correctAnswer,
         latexCorrectAnswer: result.latexCorrectAnswer,
         errorExplanation: result.errorExplanation,
+        studentAnswer: answer,
         resolved: false,
       })
     })
@@ -285,6 +287,7 @@ export function PracticeCard({
           correctAnswer={state.correctAnswer}
           latexCorrectAnswer={state.latexCorrectAnswer}
           errorExplanation={state.errorExplanation}
+          studentAnswer={state.studentAnswer}
           steps={steps}
           resolved={state.resolved}
           onResolved={() => setState({ ...state, resolved: true })}
@@ -361,6 +364,7 @@ function WrongFeedback({
   correctAnswer: string
   latexCorrectAnswer: string | null
   errorExplanation: string | null
+  studentAnswer: string
   steps: Step[]
   resolved: boolean
   onResolved: () => void
@@ -396,28 +400,35 @@ function WrongFeedback({
   return (
     <div className="rounded-xl border border-accent-2/40 bg-accent-2-light p-4">
       <p className="font-serif text-xl text-accent-2">Niet helemaal goed</p>
-      <div className="mt-2 text-sm text-accent-2">
-        Het juiste antwoord was{' '}
-        {latexCorrectAnswer ? (
-          latexCorrectAnswer.includes('$') ? (
+      <div className="mt-2 flex flex-col gap-1 text-sm text-accent-2">
+        <span>
+          Jouw antwoord:{' '}
+          <code className="rounded bg-white/60 px-1.5 py-0.5 font-mono">
+            {studentAnswer}
+          </code>
+        </span>
+        <span>
+          Juiste antwoord:{' '}
+          {latexCorrectAnswer ? (
+            latexCorrectAnswer.includes('$') ? (
+              <span className="font-serif">
+                <RichMath source={latexCorrectAnswer} />
+              </span>
+            ) : (
+              <span className="font-serif">
+                <TeX tex={latexCorrectAnswer} />
+              </span>
+            )
+          ) : correctAnswer.includes('$') ? (
             <span className="font-serif">
-              <RichMath source={latexCorrectAnswer} />
+              <RichMath source={correctAnswer} />
             </span>
           ) : (
-            <span className="font-serif">
-              <TeX tex={latexCorrectAnswer} />
-            </span>
-          )
-        ) : correctAnswer.includes('$') ? (
-          <span className="font-serif">
-            <RichMath source={correctAnswer} />
-          </span>
-        ) : (
-          <code className="rounded bg-white/60 px-1.5 py-0.5 font-mono">
-            {correctAnswer}
-          </code>
-        )}
-        .
+            <code className="rounded bg-white/60 px-1.5 py-0.5 font-mono">
+              {correctAnswer}
+            </code>
+          )}
+        </span>
       </div>
 
       {errorExplanation && (
