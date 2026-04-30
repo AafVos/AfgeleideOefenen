@@ -6,7 +6,6 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Badge, Button, cn, ErrorBanner } from '@/components/ui'
 import {
-  markCarelessAction,
   resolveWithStepsAction,
   submitAnswerAction,
   type SubmitResult,
@@ -382,18 +381,6 @@ function WrongFeedback({
     setWrongSteps(next)
   }
 
-  function doCareless() {
-    setError(null)
-    startTransition(async () => {
-      try {
-        await markCarelessAction(answerId)
-        onResolved()
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Er ging iets mis.')
-      }
-    })
-  }
-
   function doResolveWithSteps() {
     setError(null)
     startTransition(async () => {
@@ -484,20 +471,6 @@ function WrongFeedback({
               )}
             >
               Opnieuw proberen
-            </button>
-            <button
-              type="button"
-              onClick={doCareless}
-              disabled={pending}
-              className={cn(
-                'rounded-md border border-accent-2/40 bg-white/70 px-3 py-2 text-left text-sm font-medium text-accent-2 transition hover:bg-white',
-                pending && 'opacity-60',
-              )}
-            >
-              Slordigheidsfoutje — ik wist het wel
-              <span className="ml-1 text-xs font-normal text-text-muted">
-                (telt niet tegen je streak)
-              </span>
             </button>
           </div>
 
