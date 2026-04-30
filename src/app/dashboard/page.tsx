@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { createClient } from '@/lib/supabase/server'
-import { loadLearningPath } from '@/lib/practice/engine'
 import { Badge, Card } from '@/components/ui'
+import { loadLearningPath } from '@/lib/practice/engine'
+import { createClient } from '@/lib/supabase/server'
+import type { LearningMode } from '@/lib/supabase/types'
 
 export const metadata = {
   title: 'Dashboard · afgeleideoefenen.nl',
@@ -16,7 +17,17 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/inloggen')
 
-  const path = await loadLearningPath(supabase, user.id)
+  const [{ data: profile }, path] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('display_name, learning_mode')
+      .eq('id', user.id)
+      .maybeSingle(),
+    loadLearningPath(supabase, user.id),
+  ])
+
+  const firstName =
+    profile?.display_name?.trim().split(/\s+/)[0]?.trim() || null
 
   // Verzamel overall stats via session_answers + user_progress.
   const [{ data: progressRows }, { data: answerAgg }] = await Promise.all([
@@ -80,15 +91,57 @@ export default async function DashboardPage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
+  const modeHintMode =
+    profile?.learning_mode && profile.learning_mode !== 'topic_select'
+      ? profile.learning_mode
+      : null
+  const modeCard = modeHintMode ? learningModeCardCopy(modeHintMode) : null
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="font-serif text-3xl text-text">Jouw voortgang</h1>
-      <p className="mt-1 text-sm text-text-muted">
-        Een overzicht van hoe ver je bent in de leerlijn.
-      </p>
+      {firstName ? (
+        <>
+          <p className="font-serif text-2xl text-text">Hoi {firstName}</p>
+          <h1 className="mt-1 font-serif text-xl text-text-muted">
+            Jouw voortgang
+          </h1>
+          <p className="mt-2 text-sm text-text-muted">
+            Hier zie je hoe ver je bent op het leerpad.
+          </p>
+        </>
+      ) : (
+        <>
+          <h1 className="font-serif text-3xl text-text">Jouw voortgang</h1>
+          <p className="mt-1 text-sm text-text-muted">
+            Een overzicht van hoe ver je bent op het leerpad.
+          </p>
+        </>
+      )}
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <Link
+          href="/leerpad"
+          className="inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-lg bg-accent px-6 py-3 text-center text-base font-semibold text-white shadow-sm hover:bg-accent/90 sm:flex-none sm:px-8"
+        >
+          Ga verder op het leerpad →
+        </Link>
+        <Link
+          href="/oefenen"
+          className="inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border border-border bg-surface px-6 py-3 text-center text-base font-medium text-text hover:bg-surface-2 sm:flex-none sm:px-8"
+        >
+          Vrij oefenen
+        </Link>
+      </div>
+
+      {modeCard ? (
+        <Card className="mt-5 border-accent/20 bg-accent/5">
+          <p className="text-sm font-medium text-text">{modeCard.title}</p>
+          <p className="mt-1 text-sm text-text-muted">{modeCard.body}</p>
+        </Card>
+      ) : null}
 
       {/* --- Top stats --- */}
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Stat
           label="Gemasterde clusters"
           value={`${masteredClusters} / ${totalClusters}`}
@@ -218,16 +271,47 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-10 flex flex-col gap-3 border-t border-border pt-10 sm:flex-row sm:flex-wrap sm:items-center">
+        <Link
+          href="/leerpad"
+          className="inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-lg bg-accent px-6 py-3 text-center text-base font-semibold text-white shadow-sm hover:bg-accent/90 sm:flex-none sm:px-8"
+        >
+          Ga verder op het leerpad →
+        </Link>
         <Link
           href="/oefenen"
-          className="inline-flex items-center rounded-md bg-accent px-4 py-2 text-white hover:bg-accent/90"
+          className="inline-flex min-h-[3rem] flex-1 items-center justify-center rounded-lg border border-border bg-surface px-6 py-3 text-center text-base font-medium text-text hover:bg-surface-2 sm:flex-none sm:px-8"
         >
-          Verder oefenen →
+          Vrij oefenen
         </Link>
       </div>
     </div>
   )
+}
+
+function learningModeCardCopy(
+  mode: Exclude<LearningMode, 'topic_select'>,
+): {
+  title: string
+  body: string
+} {
+  switch (mode) {
+    case 'guided':
+      return {
+        title: 'Je volgt het leerpad vanaf de basis.',
+        body: 'Alle onderwerpen in volgorde. Je kunt altijd nog los onderwerpen oefenen via Vrij oefenen.',
+      }
+    case 'diagnostic':
+      return {
+        title: 'Je startniveau is bepaald met de korte toets.',
+        body: 'Daarna werk je het leerpad zoals gekozen uit. Bekijk hieronder waar je staat.',
+      }
+    case 'free':
+      return {
+        title: 'Je oefent vooral op eigen gekozen onderwerpen.',
+        body: 'Het volledige leerpad staat nog steeds in het menu voor een vaste route.',
+      }
+  }
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {

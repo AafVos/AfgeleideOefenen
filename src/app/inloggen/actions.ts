@@ -26,7 +26,7 @@ export async function loginAction(
   }
 
   revalidatePath('/', 'layout')
-  redirect('/oefenen')
+  redirect('/dashboard')
 }
 
 function translateAuthError(msg: string): string {
