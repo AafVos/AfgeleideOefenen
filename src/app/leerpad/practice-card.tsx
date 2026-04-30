@@ -398,6 +398,20 @@ function WrongFeedback({
     })
   }
 
+  function handleNext() {
+    setError(null)
+    startTransition(async () => {
+      try {
+        if (!resolved) {
+          await resolveWithStepsAction(answerId, [...wrongSteps])
+        }
+        onNext()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Er ging iets mis.')
+      }
+    })
+  }
+
   return (
     <div className="rounded-xl border border-accent-2/40 bg-accent-2-light p-4">
       <p className="font-serif text-xl text-accent-2">Niet helemaal goed</p>
@@ -470,81 +484,61 @@ function WrongFeedback({
         </p>
       )}
 
-      {!resolved && (
-        <>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={onRetry}
-              disabled={pending}
-              className={cn(
-                'rounded-md border border-accent-2/40 bg-white/70 px-3 py-2 text-sm font-medium text-accent-2 transition hover:bg-white',
-                pending && 'opacity-60',
-              )}
-            >
-              Opnieuw proberen
-            </button>
-          </div>
-
-          {steps.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-text">
-                Waar zat jouw fout — welke stap(pen)?
-              </p>
-              <ul className="mt-2 space-y-1">
-                {orderedSteps.map((s) => (
-                  <li key={s.id}>
-                    <label className="flex cursor-pointer items-start gap-2 rounded-md border border-transparent bg-white/60 px-3 py-2 text-sm text-text hover:border-accent-2/40">
-                      <input
-                        type="checkbox"
-                        checked={wrongSteps.has(s.id)}
-                        onChange={() => toggleStep(s.id)}
-                        className="mt-0.5 size-4 rounded border-border"
-                      />
-                      <span>
-                        <span className="font-medium text-text">
-                          Stap {s.step_order}:
-                        </span>{' '}
-                        <span className="text-text-muted">
-                          {s.step_description}
-                        </span>
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={doResolveWithSteps}
-                variant="secondary"
-                disabled={pending}
-                className="mt-3"
-              >
-                {wrongSteps.size
-                  ? `Bevestig ${wrongSteps.size} fout${wrongSteps.size > 1 ? 'e' : 'e'} stap${wrongSteps.size > 1 ? 'pen' : ''}`
-                  : 'Geen van bovenstaande — ga door'}
-              </Button>
-            </div>
-          )}
-
-          <ErrorBanner>{error}</ErrorBanner>
-        </>
-      )}
-
-      {resolved && (
-        <div className="mt-4 flex items-center gap-2">
-          <Button onClick={onNext} disabled={pending}>
-            Volgende +
-          </Button>
-          <button
-            type="button"
-            onClick={onRetry}
+      {!resolved && steps.length > 0 && (
+        <div className="mt-4">
+          <p className="text-sm font-medium text-text">
+            Waar zat jouw fout — welke stap(pen)?
+          </p>
+          <ul className="mt-2 space-y-1">
+            {orderedSteps.map((s) => (
+              <li key={s.id}>
+                <label className="flex cursor-pointer items-start gap-2 rounded-md border border-transparent bg-white/60 px-3 py-2 text-sm text-text hover:border-accent-2/40">
+                  <input
+                    type="checkbox"
+                    checked={wrongSteps.has(s.id)}
+                    onChange={() => toggleStep(s.id)}
+                    className="mt-0.5 size-4 rounded border-border"
+                  />
+                  <span>
+                    <span className="font-medium text-text">
+                      Stap {s.step_order}:
+                    </span>{' '}
+                    <span className="text-text-muted">
+                      {s.step_description}
+                    </span>
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <Button
+            onClick={doResolveWithSteps}
+            variant="secondary"
             disabled={pending}
-            className="rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white disabled:opacity-60"
+            className="mt-3"
           >
-            Opnieuw proberen
-          </button>
+            {wrongSteps.size
+              ? `Bevestig ${wrongSteps.size} fout${wrongSteps.size > 1 ? 'e' : 'e'} stap${wrongSteps.size > 1 ? 'pen' : ''}`
+              : 'Geen van bovenstaande — ga door'}
+          </Button>
         </div>
       )}
+
+      <ErrorBanner>{error}</ErrorBanner>
+
+      <div className="mt-4 flex items-center gap-2">
+        <Button onClick={handleNext} disabled={pending}>
+          Volgende +
+        </Button>
+        <button
+          type="button"
+          onClick={onRetry}
+          disabled={pending}
+          className="rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white disabled:opacity-60"
+        >
+          Opnieuw proberen
+        </button>
+      </div>
     </div>
   )
 }
