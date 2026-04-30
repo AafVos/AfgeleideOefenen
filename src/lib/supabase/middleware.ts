@@ -53,11 +53,42 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const protectedPaths = ['/oefenen', '/dashboard']
+  const protectedPaths = ['/leerpad', '/oefenen', '/dashboard', '/onboarding']
   if (!user && protectedPaths.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone()
     url.pathname = '/inloggen'
     return NextResponse.redirect(url)
+  }
+
+  // Voor ingelogde users die hun onboarding nog niet hebben afgerond:
+  // forceer naar /onboarding voor ze ergens anders heen kunnen.
+  if (user) {
+    const onboardingExempt = [
+      '/onboarding',
+      '/uitloggen',
+      '/inloggen',
+      '/registreren',
+      '/auth',
+      '/api',
+      '/admin', // admins hoeven geen onboarding
+    ]
+    const needsCheck =
+      protectedPaths.some((p) => path.startsWith(p)) &&
+      !onboardingExempt.some((p) => path.startsWith(p))
+
+    if (needsCheck) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarded_at, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (profile?.role !== 'admin' && !profile?.onboarded_at) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/onboarding'
+        return NextResponse.redirect(url)
+      }
+    }
   }
 
   return supabaseResponse

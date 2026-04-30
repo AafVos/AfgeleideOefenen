@@ -22,29 +22,50 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleideoefenen.nl'
 
 const SITE_DESCRIPTION =
-  'Afgeleide oefenen voor wiskunde B op het VWO. Gratis adaptieve oefeningen met directe uitleg bij elke fout: machtsregel, productregel, quotiëntregel en kettingregel. Volgens Getal & Ruimte.'
+  'Differentiëren oefenen voor wiskunde B VWO — gratis en adaptief. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen. Aanpak volgens Getal & Ruimte.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Afgeleide oefenen — wiskunde B VWO | afgeleideoefenen.nl',
+    default: 'Differentiëren oefenen — afgeleide wiskunde B VWO | afgeleideoefenen.nl',
     template: '%s · afgeleideoefenen.nl',
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    'afgeleide oefenen',
-    'afgeleide oefenen wiskunde B',
-    'afgeleide oefenen VWO',
-    'afgeleiden oefenen',
+    // Kernzoektermen
     'differentiëren oefenen',
-    'differentiëren VWO',
-    'wiskunde B VWO',
+    'differentiëren',
+    'afgeleide oefenen',
+    'afgeleide berekenen',
+    'afgeleiden oefenen',
+    'afgeleide wiskunde',
+    // Examen
+    'wiskunde B eindexamen',
+    'eindexamen wiskunde B oefenen',
+    'examen wiskunde B VWO',
+    'VWO wiskunde B examen',
+    'wiskunde examen oefenen',
+    // Methode
+    'Getal en Ruimte',
+    'Getal & Ruimte differentiëren',
+    'Getal en Ruimte wiskunde B',
+    'Moderne Wiskunde differentiëren',
+    // Onderwerpen
     'machtsregel oefenen',
     'productregel oefenen',
     'quotiëntregel oefenen',
     'kettingregel oefenen',
-    'Getal en Ruimte differentiëren',
-    'wiskunde oefenen VWO',
+    'kettingregel uitleg',
+    'afgeleide sinus cosinus',
+    'afgeleide e macht',
+    'afgeleide ln',
+    'goniometrie differentiëren',
+    // Platform
+    'afgeleide oefenen VWO',
+    'differentiëren VWO',
+    'wiskunde B VWO oefenen',
+    'wiskunde oefenen gratis',
+    'adaptief oefenen wiskunde',
   ],
   applicationName: 'afgeleideoefenen.nl',
   authors: [{ name: 'afgeleideoefenen.nl' }],

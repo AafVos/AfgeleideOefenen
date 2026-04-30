@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -22,6 +23,11 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
       'Alle differentieerregels uit de VWO-bovenbouw: machtsregel, somregel, verschilregel, constante-factor-regel, productregel, quotiëntregel en kettingregel. Plus standaardafgeleiden van sinus, cosinus, exponentiële en logaritmische functies.',
   },
   {
+    question: 'Wat is het verschil tussen het leerpad en vrij oefenen?',
+    answer:
+      'Het leerpad stuurt je adaptief: op basis van je antwoorden krijg je meer van wat je moeilijk vindt en minder van wat je al beheerst. Bij de start kun je aangeven welke onderwerpen je al kent, een korte diagnostische toets doen of meteen beginnen. Vrij oefenen is los kiezen: zelf onderwerpen aanklikken en oefenen zonder die leerpadvolgorde. Meer uitleg staat op de pagina Hoe het werkt.',
+  },
+  {
     question: 'Hoe werkt de adaptieve aanpak?',
     answer:
       'De site volgt per onderwerp hoe goed je het beheerst. Opgaven die je moeilijk vindt krijg je vaker; onderwerpen die je al kunt krijg je minder vaak. Bij elke fout legt de site precies uit waar het misging en geeft je direct een passende vervolgvraag om het te herstellen.',
@@ -43,6 +49,10 @@ export default async function HomePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  if (user) {
+    redirect('/dashboard')
+  }
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -93,38 +103,42 @@ export default async function HomePage() {
           </p>
           <h1 className="font-serif text-4xl leading-tight text-text sm:text-5xl">
             Afgeleide oefenen voor{' '}
-            <span className="text-accent">wiskunde B</span>
+            <span className="whitespace-nowrap text-accent">wiskunde B</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-text-muted">
             Adaptieve oefeningen voor differentiëren op het VWO. Je begint
             meteen, krijgt directe feedback en bij elke fout legt de site
             precies uit waar het misging — met een passende volgvraag.
           </p>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
+            Er zijn twee manieren om te oefenen: een{' '}
+            <span className="text-text">leerpad</span> dat zich aanpast aan
+            hoe je de vragen doet, en{' '}
+            <span className="text-text">vrij oefenen</span> waarbij je zelf
+            onderwerpen kiest. Bij de eerste keer kun je aangeven wat je al
+            kent of een korte diagnostische toets doen.{' '}
+            <Link
+              href="/hoe-het-werkt"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Zo werkt het
+            </Link>
+            .
+          </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            {user ? (
-              <Link
-                href="/oefenen"
-                className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
-              >
-                Ga verder oefenen
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/registreren"
-                  className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
-                >
-                  Gratis account aanmaken
-                </Link>
-                <Link
-                  href="/inloggen"
-                  className="rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
-                >
-                  Inloggen
-                </Link>
-              </>
-            )}
+            <Link
+              href="/registreren"
+              className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
+            >
+              Gratis account aanmaken
+            </Link>
+            <Link
+              href="/inloggen"
+              className="rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+            >
+              Inloggen
+            </Link>
           </div>
           <p className="mt-3 text-sm text-text-muted">
             Volledig gratis · Geen reclame · Volgt Getal &amp; Ruimte
@@ -248,21 +262,12 @@ export default async function HomePage() {
             afgeleiden. Geen creditcard. Geen limiet.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            {user ? (
-              <Link
-                href="/oefenen"
-                className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
-              >
-                Ga verder oefenen
-              </Link>
-            ) : (
-              <Link
-                href="/registreren"
-                className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
-              >
-                Gratis account aanmaken
-              </Link>
-            )}
+            <Link
+              href="/registreren"
+              className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
+            >
+              Gratis account aanmaken
+            </Link>
           </div>
         </section>
       </div>

@@ -22,23 +22,28 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 h-14 border-b border-border bg-surface/85 backdrop-blur">
-      <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4">
         <Link
           href="/"
-          className="font-serif text-lg font-medium tracking-tight text-text"
+          className="min-w-0 shrink font-serif text-lg font-medium tracking-tight text-text"
         >
-          afgeleideoefenen
-          <span className="text-accent">.nl</span>
+          AfgeleideOefenen<span className="text-accent">.nl</span>
         </Link>
 
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>
               <Link
+                href="/leerpad"
+                className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+              >
+                Leerpad
+              </Link>
+              <Link
                 href="/oefenen"
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Oefenen
+                Vrij oefenen
               </Link>
               <Link
                 href="/dashboard"

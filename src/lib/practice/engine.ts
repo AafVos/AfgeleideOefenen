@@ -181,6 +181,38 @@ export async function pickNextQuestion(
   return fullQuestion ?? null
 }
 
+/** Vrij oefenen: altijd een vraag uit het cluster als die er zijn — geen bovengrens op eerder goed tellen. */
+export async function pickFreePracticeQuestion(
+  db: DB,
+  clusterId: string,
+): Promise<Question | null> {
+  const { data: cluster_questions } = await db
+    .from('questions')
+    .select('id, difficulty')
+    .eq('cluster_id', clusterId)
+
+  if (!cluster_questions?.length) return null
+
+  const byDifficulty = new Map<number, typeof cluster_questions>()
+  for (const q of cluster_questions) {
+    const list = byDifficulty.get(q.difficulty) ?? []
+    list.push(q)
+    byDifficulty.set(q.difficulty, list)
+  }
+
+  const lowestDifficulty = [...byDifficulty.keys()].sort((a, b) => a - b)[0]
+  const pool = byDifficulty.get(lowestDifficulty)!
+  const chosen = pool[Math.floor(Math.random() * pool.length)]
+
+  const { data: fullQuestion } = await db
+    .from('questions')
+    .select('*')
+    .eq('id', chosen.id)
+    .maybeSingle()
+
+  return fullQuestion ?? null
+}
+
 // =====================================================================
 // Sessie ophalen of aanmaken (per cluster, open sessie van <24u)
 // =====================================================================

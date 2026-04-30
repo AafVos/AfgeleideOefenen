@@ -64,7 +64,7 @@ export async function signupAction(
   }
 
   revalidatePath('/', 'layout')
-  redirect('/oefenen')
+  redirect('/onboarding')
 }
 
 function translateAuthError(msg: string): string {

@@ -87,6 +87,7 @@ export async function submitAnswerAction(
       question.topic_id,
       question.cluster_id,
     )
+    revalidatePath('/leerpad')
     revalidatePath('/oefenen')
     revalidatePath('/dashboard')
     return {
@@ -146,6 +147,7 @@ export async function markCarelessAction(answerId: string): Promise<void> {
     .eq('id', answerId)
   if (error) throw new Error(error.message)
 
+  revalidatePath('/leerpad')
   revalidatePath('/oefenen')
 }
 
@@ -187,6 +189,7 @@ export async function resolveWithStepsAction(
   }
 
   await resetStreak(supabase, user.id, question.cluster_id)
+  revalidatePath('/leerpad')
   revalidatePath('/oefenen')
 }
 

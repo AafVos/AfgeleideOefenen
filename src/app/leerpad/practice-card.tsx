@@ -45,10 +45,13 @@ export function PracticeCard({
   question,
   steps,
   streakAtStart,
+  nextHref,
 }: {
   question: Question
   steps: Step[]
   streakAtStart: number
+  /** Als gezet: na „Volgende vraag” hierheen navigeren i.p.v. router.refresh(). */
+  nextHref?: string | undefined
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -65,7 +68,13 @@ export function PracticeCard({
     setAnswer('')
     setState({ phase: 'input', error: null })
     startedAtRef.current = Date.now()
-    startTransition(() => router.refresh())
+    startTransition(() => {
+      if (nextHref != null && nextHref.length > 0) {
+        router.push(nextHref)
+        return
+      }
+      router.refresh()
+    })
   }
 
   function handleKey(text: string) {
@@ -170,57 +179,88 @@ export function PracticeCard({
       </div>
 
       {state.phase === 'input' && (
-        <form onSubmit={submit} className="space-y-3">
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-text">
-              Jouw antwoord
-            </span>
-            <input
-              ref={inputRef}
-              autoFocus
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder="Bijv. 12x^2"
-              className="w-full rounded-lg border border-border bg-surface px-4 py-3 font-mono text-lg text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
-              disabled={pending}
-              inputMode="text"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-            />
-            <MathKeyboard
-              onInsert={handleKey}
-              onBackspace={handleBackspace}
-              onClear={handleClear}
-              disabled={pending}
-            />
-            <div className="mt-2 flex min-h-6 items-center gap-2 text-sm">
-              <span className="text-xs uppercase tracking-wide text-text-muted">
-                Preview
-              </span>
-              {answer.trim() ? (
-                <span className="font-serif text-lg text-text">
-                  <TeX tex={toLatexPreview(answer)} />
+        <div className="space-y-3">
+          {pending ? (
+            <div
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+              className="rounded-xl border border-border bg-surface-2 px-5 py-8 text-center"
+            >
+              <p className="text-sm font-medium text-text">
+                Jouw antwoord wordt nagekeken met AI
+                <span
+                  className="practice-check-dots ml-1 inline-flex items-end gap-0.5 pb-0.5 align-middle"
+                  aria-hidden
+                >
+                  <span className="inline-block h-1 w-1 rounded-full bg-text-muted" />
+                  <span className="inline-block h-1 w-1 rounded-full bg-text-muted" />
+                  <span className="inline-block h-1 w-1 rounded-full bg-text-muted" />
                 </span>
-              ) : (
-                <span className="text-text-muted">—</span>
-              )}
+              </p>
+              {answer.trim() ? (
+                <div className="mt-4 rounded-lg border border-border/60 bg-surface/90 px-3 py-2">
+                  <p className="text-xs uppercase tracking-wide text-text-muted">
+                    Jouw antwoord
+                  </p>
+                  <p className="mt-1 font-mono text-base text-text">{answer}</p>
+                </div>
+              ) : null}
             </div>
-          </label>
+          ) : (
+            <form onSubmit={submit} className="space-y-3">
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-text">
+                  Jouw antwoord
+                </span>
+                <input
+                  ref={inputRef}
+                  autoFocus
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Bijv. 12x^2"
+                  className="w-full rounded-lg border border-border bg-surface px-4 py-3 font-mono text-lg text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  disabled={pending}
+                  inputMode="text"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+                <MathKeyboard
+                  onInsert={handleKey}
+                  onBackspace={handleBackspace}
+                  onClear={handleClear}
+                  disabled={pending}
+                />
+                <div className="mt-2 flex min-h-6 items-center gap-2 text-sm">
+                  <span className="text-xs uppercase tracking-wide text-text-muted">
+                    Preview
+                  </span>
+                  {answer.trim() ? (
+                    <span className="font-serif text-lg text-text">
+                      <TeX tex={toLatexPreview(answer)} />
+                    </span>
+                  ) : (
+                    <span className="text-text-muted">—</span>
+                  )}
+                </div>
+              </label>
 
-          <ErrorBanner>{state.error}</ErrorBanner>
+              <ErrorBanner>{state.error}</ErrorBanner>
 
-          <div className="flex items-center gap-3">
-            <Button type="submit" disabled={pending || !answer.trim()}>
-              {pending ? 'Nakijken…' : 'Nakijken'}
-            </Button>
-            {streakAtStart > 0 && (
-              <span className="text-xs text-text-muted">
-                Huidige streak: {streakAtStart}
-              </span>
-            )}
-          </div>
-        </form>
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={pending || !answer.trim()}>
+                  Nakijken
+                </Button>
+                {streakAtStart > 0 && (
+                  <span className="text-xs text-text-muted">
+                    Huidige streak: {streakAtStart}
+                  </span>
+                )}
+              </div>
+            </form>
+          )}
+        </div>
       )}
 
       {state.phase === 'correct' && (
@@ -310,6 +350,8 @@ function WrongFeedback({
   const [, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
+  const orderedSteps = [...steps].sort((a, b) => a.step_order - b.step_order)
+
   function toggleStep(id: string) {
     const next = new Set(wrongSteps)
     if (next.has(id)) next.delete(id)
@@ -377,6 +419,35 @@ function WrongFeedback({
         </div>
       )}
 
+      {steps.length > 0 ? (
+        <details
+          open
+          className="mt-4 rounded-lg border border-border bg-white/90 shadow-sm [&_summary::-webkit-details-marker]:hidden"
+        >
+          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-text">
+            Stappenplan — zo hoort het stap voor stap
+            <span className="mt-0.5 block text-xs font-normal text-text-muted">
+              Lees eerst dit overzicht; daaronder kun je aanvinken wat bij jou
+              misging.
+            </span>
+          </summary>
+          <ol className="list-none space-y-3 border-t border-border px-4 py-3 text-sm text-text">
+            {orderedSteps.map((s) => (
+              <li key={s.id} className="flex gap-3 leading-relaxed">
+                <span className="min-w-[1.75rem] shrink-0 font-semibold tabular-nums text-accent">
+                  {s.step_order}.
+                </span>
+                <span>{s.step_description}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      ) : (
+        <p className="mt-3 text-xs text-text-muted">
+          Voor deze opgave staat nog geen stappenplan klaar in de databank.
+        </p>
+      )}
+
       {!resolved && (
         <>
           <button
@@ -397,10 +468,10 @@ function WrongFeedback({
           {steps.length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-medium text-text">
-                Of: welke stap(pen) gingen fout?
+                Waar zat jouw fout — welke stap(pen)?
               </p>
               <ul className="mt-2 space-y-1">
-                {steps.map((s) => (
+                {orderedSteps.map((s) => (
                   <li key={s.id}>
                     <label className="flex cursor-pointer items-start gap-2 rounded-md border border-transparent bg-white/60 px-3 py-2 text-sm text-text hover:border-accent-2/40">
                       <input
