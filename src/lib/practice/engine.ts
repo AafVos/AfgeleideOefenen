@@ -38,8 +38,14 @@ export function normalizeAnswer(raw: string): string {
     .replace(/\u2212/g, '-')
 }
 
-export function answersMatch(student: string, correct: string): boolean {
-  return normalizeAnswer(student) === normalizeAnswer(correct)
+export function answersMatch(
+  student: string,
+  correct: string,
+  alternatives: string[] = [],
+): boolean {
+  const norm = normalizeAnswer(student)
+  if (norm === normalizeAnswer(correct)) return true
+  return alternatives.some((alt) => norm === normalizeAnswer(alt))
 }
 
 // =====================================================================

@@ -46,13 +46,14 @@ export async function submitAnswerAction(
   const { data: question } = await supabase
     .from('questions')
     .select(
-      'id, topic_id, cluster_id, answer, latex_answer',
+      'id, topic_id, cluster_id, answer, latex_answer, answer_alternatives',
     )
     .eq('id', questionId)
     .maybeSingle()
   if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
 
-  const isCorrect = answersMatch(userAnswerRaw, question.answer)
+  const alts: string[] = (question as unknown as { answer_alternatives?: string[] }).answer_alternatives ?? []
+  const isCorrect = answersMatch(userAnswerRaw, question.answer, alts)
 
   const sessionId = await getOrCreateSession(
     supabase,
@@ -108,6 +109,7 @@ export async function submitAnswerAction(
   // we de service role client.
   let errorExplanation: string | null = null
   let rootCauseSlug: string | null = null
+  let aiSaysCorrect = false
   try {
     const service = createServiceRoleClient()
     const aiResult = await checkWrongAnswer(service, question.id, userAnswerRaw)
@@ -116,9 +118,35 @@ export async function submitAnswerAction(
     } else {
       errorExplanation = aiResult.errorExplanation
       rootCauseSlug = aiResult.rootCauseSlug
+      aiSaysCorrect = aiResult.isMathematicallyCorrect
     }
   } catch (e) {
     console.error('[check-answer] unexpected', e)
+  }
+
+  // Als AI zegt dat het wiskundig correct is (andere notatie): markeer als goed
+  if (aiSaysCorrect) {
+    // Corrigeer de al-opgeslagen session_answer naar correct
+    await supabase
+      .from('session_answers')
+      .update({ is_correct: true })
+      .eq('id', answerRow.id)
+
+    const progress = await bumpProgressOnCorrect(
+      supabase,
+      user.id,
+      question.topic_id,
+      question.cluster_id,
+    )
+    revalidatePath('/leerpad')
+    revalidatePath('/oefenen')
+    revalidatePath('/dashboard')
+    return {
+      kind: 'correct',
+      answerId: answerRow.id,
+      streak: progress.correct_streak,
+      mastered: progress.status === 'mastered',
+    }
   }
 
   return {
