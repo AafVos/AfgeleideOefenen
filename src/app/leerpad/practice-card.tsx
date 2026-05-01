@@ -38,6 +38,7 @@ type State =
       latexCorrectAnswer: string | null
       errorExplanation: string | null
       studentAnswer: string
+      extraSteps: Array<{ id: string; step_order: number; step_description: string }>
       resolved: boolean
     }
 
@@ -150,6 +151,10 @@ export function PracticeCard({
         latexCorrectAnswer: result.latexCorrectAnswer,
         errorExplanation: result.errorExplanation,
         studentAnswer: answer,
+        extraSteps: result.generatedSteps.map((s, i) => ({
+          id: `generated-${i}`,
+          ...s,
+        })),
         resolved: false,
       })
     })
@@ -288,7 +293,7 @@ export function PracticeCard({
           latexCorrectAnswer={state.latexCorrectAnswer}
           errorExplanation={state.errorExplanation}
           studentAnswer={state.studentAnswer}
-          steps={steps}
+          steps={steps.length > 0 ? steps : state.extraSteps}
           resolved={state.resolved}
           onResolved={() => setState({ ...state, resolved: true })}
           onNext={next}
