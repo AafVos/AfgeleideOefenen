@@ -120,11 +120,12 @@ export async function checkWrongAnswer(
         .eq('topic_id', question.topic_id),
     ])
 
-  // 4. Aantal beschikbare vragen in dit cluster per moeilijkheid.
-  const availabilityPerDifficulty = await countAvailablePerDifficulty(
-    db,
-    question.cluster_id,
-  )
+  // 4. Aantal beschikbare vragen én check of stappenplan al bestaat
+  const [availabilityPerDifficulty, stepsCheck] = await Promise.all([
+    countAvailablePerDifficulty(db, question.cluster_id),
+    db.from('question_steps').select('id').eq('question_id', question.id).limit(1),
+  ])
+  const stepsAlreadyExist = (stepsCheck.data?.length ?? 0) > 0
 
   // 5. Prompt → Gemini
   const prompt = buildCheckAnswerPrompt({
@@ -138,6 +139,7 @@ export async function checkWrongAnswer(
       description: r.description,
     })),
     availability: availabilityPerDifficulty,
+    stepsAlreadyExist,
   })
 
   const ai = await generateJson<AiAnswerJson>(prompt)
@@ -195,18 +197,12 @@ export async function checkWrongAnswer(
     { onConflict: 'question_id,wrong_answer' },
   )
 
-  // 8. Stappenplan opslaan als er nog geen stappen zijn voor deze vraag
-  const steps = (ai.data.solution_steps ?? []).filter(
-    (s): s is string => typeof s === 'string' && s.trim().length > 0,
-  )
-  if (steps.length > 0) {
-    const { data: existing } = await db
-      .from('question_steps')
-      .select('id')
-      .eq('question_id', questionId)
-      .limit(1)
-
-    if (!existing || existing.length === 0) {
+  // 8. Stappenplan opslaan (alleen als er nog geen stappen zijn — al gecheckt vóór de prompt)
+  if (!stepsAlreadyExist) {
+    const steps = (ai.data.solution_steps ?? []).filter(
+      (s): s is string => typeof s === 'string' && s.trim().length > 0,
+    )
+    if (steps.length > 0) {
       await db.from('question_steps').insert(
         steps.map((step, i) => ({
           question_id: questionId,
