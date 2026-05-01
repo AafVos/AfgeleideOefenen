@@ -23,6 +23,8 @@ export type CheckAnswerResult = {
    * rekenen en de alternatieve notatie opslaan.
    */
   isMathematicallyCorrect: boolean
+  /** Nieuw gegenereerde stappen (leeg als al bestonden of niet gegenereerd) */
+  generatedSteps: Array<{ step_order: number; step_description: string }>
 }
 
 export type CheckAnswerError = { error: string }
@@ -71,6 +73,7 @@ export async function checkWrongAnswer(
         fromCache: true,
         newQuestions: 0,
         isMathematicallyCorrect: true,
+        generatedSteps: [],
       }
     }
   }
@@ -93,6 +96,7 @@ export async function checkWrongAnswer(
         fromCache: true,
         newQuestions: 0,
         isMathematicallyCorrect: false,
+        generatedSteps: [],
       }
     }
   }
@@ -180,6 +184,7 @@ export async function checkWrongAnswer(
       fromCache: false,
       newQuestions: 0,
       isMathematicallyCorrect: true,
+      generatedSteps: [],
     }
   }
 
@@ -198,17 +203,18 @@ export async function checkWrongAnswer(
   )
 
   // 8. Stappenplan opslaan (alleen als er nog geen stappen zijn — al gecheckt vóór de prompt)
+  let generatedSteps: Array<{ step_order: number; step_description: string }> = []
   if (!stepsAlreadyExist) {
-    const steps = (ai.data.solution_steps ?? []).filter(
+    const rawSteps = (ai.data.solution_steps ?? []).filter(
       (s): s is string => typeof s === 'string' && s.trim().length > 0,
     )
-    if (steps.length > 0) {
+    if (rawSteps.length > 0) {
+      generatedSteps = rawSteps.map((step, i) => ({
+        step_order: i + 1,
+        step_description: step.trim(),
+      }))
       await db.from('question_steps').insert(
-        steps.map((step, i) => ({
-          question_id: questionId,
-          step_order: i + 1,
-          step_description: step.trim(),
-        })),
+        generatedSteps.map((s) => ({ question_id: questionId, ...s })),
       )
     }
   }
@@ -252,6 +258,7 @@ export async function checkWrongAnswer(
     fromCache: false,
     newQuestions,
     isMathematicallyCorrect: false,
+    generatedSteps,
   }
 }
 

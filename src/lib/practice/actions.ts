@@ -25,6 +25,7 @@ export type SubmitResult =
       latexCorrectAnswer: string | null
       errorExplanation: string | null
       rootCauseSlug: string | null
+      generatedSteps: Array<{ step_order: number; step_description: string }>
     }
   | { kind: 'error'; message: string }
 
@@ -110,6 +111,7 @@ export async function submitAnswerAction(
   let errorExplanation: string | null = null
   let rootCauseSlug: string | null = null
   let aiSaysCorrect = false
+  let generatedSteps: Array<{ step_order: number; step_description: string }> = []
   try {
     const service = createServiceRoleClient()
     const aiResult = await checkWrongAnswer(service, question.id, userAnswerRaw)
@@ -119,6 +121,7 @@ export async function submitAnswerAction(
       errorExplanation = aiResult.errorExplanation
       rootCauseSlug = aiResult.rootCauseSlug
       aiSaysCorrect = aiResult.isMathematicallyCorrect
+      generatedSteps = aiResult.generatedSteps
     }
   } catch (e) {
     console.error('[check-answer] unexpected', e)
@@ -156,6 +159,7 @@ export async function submitAnswerAction(
     latexCorrectAnswer: question.latex_answer,
     errorExplanation,
     rootCauseSlug,
+    generatedSteps,
   }
 }
 
