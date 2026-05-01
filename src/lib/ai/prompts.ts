@@ -59,7 +59,12 @@ Als is_mathematically_correct = true: stel alleen is_mathematically_correct=true
    Gebruik gewone tekst-notatie (x^2, *, ·) — GEEN LaTeX ($...$). Vriendelijk, geen aanhef.
 ${input.stepsAlreadyExist
   ? '3. Er is al een stappenplan voor deze vraag — laat solution_steps LEEG ([]).'
-  : '3. Schrijf een STAPPENPLAN voor deze specifieke vraag: een geordende lijst van 3-6 stappen die stap voor stap uitleggen hoe je het juiste antwoord bereikt. Elke stap is 1 korte zin in het Nederlands, concreet met de getallen en termen van DEZE vraag.'}
+  : `3. Schrijf een STAPPENPLAN voor deze specifieke vraag: 3 à 4 stappen in compacte wiskundige notatie. Gebruik dit exacte formaat:
+   - Stap 1: benoem de deelfuncties, bijv. "f(x) = g(x) + h(x) met g(x) = x^4 en h(x) = -5x"
+   - Stap 2: leid elke deelfunctie apart af, bijv. "g'(x) = 4x^3 en h'(x) = -5"
+   - Stap 3: pas de bijbehorende regel toe en combineer, bijv. "Somregel: f'(x) = g'(x) + h'(x) = 4x^3 + (-5) = 4x^3 - 5"
+   - (optioneel stap 4 als vereenvoudigen nodig is)
+   Gebruik wiskundige tekst-notatie (x^2, f'(x), g(x)) — GEEN LaTeX-dollartekens. Elke stap is 1 compacte zin.`}
 4. Beoordeel of extra oefenvragen nodig zijn (needs_new_questions=true alleen als minder dan 2 vragen per difficulty).
 5. Stel max 3 nieuwe vragen voor over de missende difficulties.
 
