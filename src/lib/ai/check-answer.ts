@@ -148,11 +148,12 @@ export async function checkWrongAnswer(
 
   const isMathematicallyCorrect = ai.data.is_mathematically_correct === true
 
-  const explanation =
-    (ai.data.error_explanation ?? '').toString().trim() ||
-    (isMathematicallyCorrect
-      ? 'Goed gedaan! Jouw antwoord is wiskundig correct, maar schrijf het in de vereenvoudigde vorm.'
-      : 'Je antwoord is niet correct. Kijk je tussenstappen eens goed na.')
+  // Als wiskundig correct: lege uitleg (geen "wat ging er mis" tonen)
+  // Als echt fout: gebruik AI-uitleg of fallback
+  const explanation = isMathematicallyCorrect
+    ? ''
+    : (ai.data.error_explanation ?? '').toString().trim() ||
+      'Je antwoord is niet correct. Kijk je tussenstappen eens goed na.'
 
   // 6. Als wiskundig correct: sla de alternatieve notatie op in questions.answer_alternatives
   if (isMathematicallyCorrect) {
