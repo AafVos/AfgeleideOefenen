@@ -56,14 +56,20 @@ Als is_mathematically_correct = true: stel alleen is_mathematically_correct=true
    b. Laat de foute berekening zien met de getallen van deze vraag.
    c. Laat de juiste berekening zien.
    Gebruik gewone tekst-notatie (x^2, *, ·) — GEEN LaTeX ($...$). Vriendelijk, geen aanhef.
-3. Beoordeel of extra oefenvragen nodig zijn (needs_new_questions=true alleen als minder dan 2 vragen per difficulty).
-4. Stel max 3 nieuwe vragen voor over de missende difficulties.
+3. Schrijf een STAPPENPLAN voor deze specifieke vraag: een geordende lijst van 3-6 stappen die stap voor stap uitleggen hoe je het juiste antwoord bereikt. Elke stap is 1 korte zin in het Nederlands, concreet met de getallen en termen van DEZE vraag. Het stappenplan geldt voor de vraag zelf, niet alleen voor de fout van de leerling. Sla dit altijd op, ook als de leerling bijna goed zat.
+4. Beoordeel of extra oefenvragen nodig zijn (needs_new_questions=true alleen als minder dan 2 vragen per difficulty).
+5. Stel max 3 nieuwe vragen voor over de missende difficulties.
 
 Antwoord UITSLUITEND met dit JSON-schema:
 {
   "is_mathematically_correct": boolean,
   "root_cause": "string (snake_case slug, leeg als is_mathematically_correct=true)",
   "error_explanation": "string (leeg als is_mathematically_correct=true, anders max 3 zinnen NL)",
+  "solution_steps": [
+    "string (stap 1, concreet met getallen van DEZE vraag)",
+    "string (stap 2)",
+    "..."
+  ],
   "needs_new_questions": boolean,
   "generated_questions": [
     {
