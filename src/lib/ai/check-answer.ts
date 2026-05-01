@@ -31,6 +31,7 @@ type AiAnswerJson = {
   is_mathematically_correct?: boolean
   root_cause?: string
   error_explanation?: string
+  solution_steps?: string[]
   needs_new_questions?: boolean
   generated_questions?: Array<{
     body?: string
@@ -194,7 +195,29 @@ export async function checkWrongAnswer(
     { onConflict: 'question_id,wrong_answer' },
   )
 
-  // 8. Nieuwe vragen opslaan indien Gemini ze genereert
+  // 8. Stappenplan opslaan als er nog geen stappen zijn voor deze vraag
+  const steps = (ai.data.solution_steps ?? []).filter(
+    (s): s is string => typeof s === 'string' && s.trim().length > 0,
+  )
+  if (steps.length > 0) {
+    const { data: existing } = await db
+      .from('question_steps')
+      .select('id')
+      .eq('question_id', questionId)
+      .limit(1)
+
+    if (!existing || existing.length === 0) {
+      await db.from('question_steps').insert(
+        steps.map((step, i) => ({
+          question_id: questionId,
+          step_order: i + 1,
+          step_description: step.trim(),
+        })),
+      )
+    }
+  }
+
+  // 9. Nieuwe vragen opslaan indien Gemini ze genereert
   let newQuestions = 0
   if (
     ai.data.needs_new_questions &&
