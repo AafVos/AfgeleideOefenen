@@ -18,6 +18,7 @@ const TOPIC_ORDER = [
 export type DiagnosticQuestion =
   Database['public']['Tables']['questions']['Row'] & {
     topic_slug: string
+    topic_title: string
   }
 
 /** Eén representatieve vraag per topic — laagste cluster, eerst difficulty 2. */
@@ -29,7 +30,7 @@ export async function loadDiagnosticQuestions(
   for (const slug of TOPIC_ORDER) {
     const { data: topic } = await db
       .from('topics')
-      .select('id')
+      .select('id, title')
       .eq('slug', slug)
       .maybeSingle()
     if (!topic) continue
@@ -66,7 +67,7 @@ export async function loadDiagnosticQuestions(
     }
 
     if (q) {
-      out.push({ ...q, topic_slug: slug })
+      out.push({ ...q, topic_slug: slug, topic_title: topic.title })
     }
   }
 

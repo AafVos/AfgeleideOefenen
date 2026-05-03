@@ -1,15 +1,23 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner, cn } from '@/components/ui'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import type { DiagnosticQuestion } from '@/lib/practice/diagnostic'
 
 import { MathKeyboard } from '@/app/leerpad/math-keyboard'
 
-import { submitDiagnosticAction } from './actions'
+import {
+  checkDiagnosticAction,
+  saveDiagnosticPadAction,
+  type DiagnosticCheckResponse,
+  type DiagnosticCheckResult,
+  type TopicRow,
+} from './actions'
+
+// ── helpers ──────────────────────────────────────────────────────────────────
 
 function renderBody(q: DiagnosticQuestion) {
   const src = q.latex_body ?? q.body
@@ -17,7 +25,60 @@ function renderBody(q: DiagnosticQuestion) {
   return <TeX tex={src} />
 }
 
-export function DiagnosticRunner({ questions }: { questions: DiagnosticQuestion[] }) {
+// ── main component ───────────────────────────────────────────────────────────
+
+type Phase = 'quiz' | 'results' | 'pad'
+
+export function DiagnosticRunner({
+  questions,
+}: {
+  questions: DiagnosticQuestion[]
+}) {
+  const [phase, setPhase] = useState<Phase>('quiz')
+  const [checkData, setCheckData] = useState<DiagnosticCheckResponse | null>(null)
+
+  if (phase === 'quiz') {
+    return (
+      <QuizPhase
+        questions={questions}
+        onDone={(data) => {
+          setCheckData(data)
+          setPhase('results')
+        }}
+      />
+    )
+  }
+
+  if (phase === 'results' && checkData) {
+    return (
+      <ResultsPhase
+        results={checkData.results}
+        onContinue={() => setPhase('pad')}
+      />
+    )
+  }
+
+  if (phase === 'pad' && checkData) {
+    return (
+      <PadPhase
+        results={checkData.results}
+        allTopics={checkData.allTopics}
+      />
+    )
+  }
+
+  return null
+}
+
+// ── Fase 1: Quiz ─────────────────────────────────────────────────────────────
+
+function QuizPhase({
+  questions,
+  onDone,
+}: {
+  questions: DiagnosticQuestion[]
+  onDone: (data: DiagnosticCheckResponse) => void
+}) {
   const [index, setIndex] = useState(0)
   const [values, setValues] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
@@ -29,9 +90,7 @@ export function DiagnosticRunner({ questions }: { questions: DiagnosticQuestion[
 
   useEffect(() => {
     if (q?.id && inputRef.current) {
-      requestAnimationFrame(() => {
-        inputRef.current?.focus()
-      })
+      requestAnimationFrame(() => inputRef.current?.focus())
     }
   }, [q?.id])
 
@@ -73,14 +132,6 @@ export function DiagnosticRunner({ questions }: { questions: DiagnosticQuestion[
     requestAnimationFrame(() => inputRef.current?.focus())
   }
 
-  function next() {
-    if (index < questions.length - 1) setIndex((i) => i + 1)
-  }
-
-  function prev() {
-    if (index > 0) setIndex((i) => i - 1)
-  }
-
   function finish() {
     setError(null)
     const payload = questions.map((qq) => ({
@@ -95,8 +146,12 @@ export function DiagnosticRunner({ questions }: { questions: DiagnosticQuestion[
       return
     }
     start(async () => {
-      const res = await submitDiagnosticAction(payload)
-      if (res?.error) setError(res.error)
+      const res = await checkDiagnosticAction(payload)
+      if ('error' in res) {
+        setError(res.error)
+      } else {
+        onDone(res)
+      }
     })
   }
 
@@ -162,7 +217,7 @@ export function DiagnosticRunner({ questions }: { questions: DiagnosticQuestion[
           variant="ghost"
           type="button"
           disabled={index === 0 || pending}
-          onClick={prev}
+          onClick={() => setIndex((i) => i - 1)}
         >
           ← Vorige
         </Button>
@@ -170,17 +225,270 @@ export function DiagnosticRunner({ questions }: { questions: DiagnosticQuestion[
           {index < questions.length - 1 ? (
             <Button
               type="button"
-              onClick={next}
+              onClick={() => setIndex((i) => i + 1)}
               disabled={pending}
             >
               Volgende →
             </Button>
           ) : (
             <Button type="button" onClick={finish} disabled={pending}>
-              {pending ? 'Bezig…' : 'Toets afsluiten'}
+              {pending ? 'Nakijken…' : 'Toets afsluiten'}
             </Button>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Fase 2: Resultaten ───────────────────────────────────────────────────────
+
+function ResultsPhase({
+  results,
+  onContinue,
+}: {
+  results: DiagnosticCheckResult[]
+  onContinue: () => void
+}) {
+  const score = results.filter((r) => r.correct).length
+  const total = results.length
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-sm font-medium uppercase tracking-wider text-accent">
+          Toets afgerond
+        </p>
+        <h2 className="mt-1 font-serif text-3xl text-text">
+          {score} van {total} opgaven goed
+        </h2>
+        <p className="mt-2 text-text-muted">
+          Hieronder zie je per onderwerp hoe het ging. Daarna stel je je
+          leerpad in op basis van dit resultaat — je mag alles nog aanpassen.
+        </p>
+      </div>
+
+      <div className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+        {results.map((r) => (
+          <div
+            key={r.questionId}
+            className={cn(
+              'flex gap-4 px-5 py-4',
+              r.correct ? 'bg-surface' : 'bg-accent-2-light',
+            )}
+          >
+            <span
+              className={cn(
+                'mt-0.5 shrink-0 text-lg font-bold',
+                r.correct ? 'text-accent' : 'text-accent-2',
+              )}
+              aria-label={r.correct ? 'Goed' : 'Fout'}
+            >
+              {r.correct ? '✓' : '✗'}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-text">{r.topicTitle}</p>
+              {!r.correct && (
+                <div className="mt-2 space-y-1 text-sm">
+                  <p className="text-text-muted">
+                    Jouw antwoord:{' '}
+                    <span className="font-mono text-accent-2">
+                      <TeX tex={r.userAnswer || '—'} />
+                    </span>
+                  </p>
+                  <p className="text-text-muted">
+                    Juist antwoord:{' '}
+                    <span className="font-mono text-accent">
+                      {r.latexAnswer ? (
+                        <TeX tex={r.latexAnswer} />
+                      ) : (
+                        <span className="font-mono">{r.correctAnswer}</span>
+                      )}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-end">
+        <Button type="button" onClick={onContinue}>
+          Stel mijn leerpad in →
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ── Fase 3: Padkeuze ─────────────────────────────────────────────────────────
+
+function PadPhase({
+  results,
+  allTopics,
+}: {
+  results: DiagnosticCheckResult[]
+  allTopics: TopicRow[]
+}) {
+  const correctTopicIds = useMemo(
+    () => new Set(results.filter((r) => r.correct).map((r) => r.topicId)),
+    [results],
+  )
+  const diagnosticTopicIds = useMemo(
+    () => new Set(results.map((r) => r.topicId)),
+    [results],
+  )
+
+  const sorted = useMemo(
+    () => [...allTopics].sort((a, b) => a.order_index - b.order_index),
+    [allTopics],
+  )
+
+  const initialSel = useMemo(() => {
+    const m = new Map<string, { ken: boolean; wil: boolean }>()
+    for (const t of sorted) {
+      if (diagnosticTopicIds.has(t.id)) {
+        const correct = correctTopicIds.has(t.id)
+        m.set(t.id, { ken: correct, wil: !correct })
+      } else {
+        m.set(t.id, { ken: false, wil: true })
+      }
+    }
+    return m
+  }, [sorted, correctTopicIds, diagnosticTopicIds])
+
+  const [sel, setSel] = useState(initialSel)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, start] = useTransition()
+
+  function setCell(topicId: string, key: 'ken' | 'wil', value: boolean) {
+    setSel((prev) => {
+      const next = new Map(prev)
+      const cur = next.get(topicId) ?? { ken: false, wil: false }
+      if (key === 'ken') {
+        next.set(topicId, { ken: value, wil: value ? false : cur.wil })
+      } else {
+        next.set(topicId, { ken: value ? false : cur.ken, wil: value })
+      }
+      return next
+    })
+  }
+
+  const canSubmit = useMemo(
+    () =>
+      sorted.some((t) => {
+        const c = sel.get(t.id)
+        return c?.wil && !c?.ken
+      }),
+    [sorted, sel],
+  )
+
+  function submit() {
+    if (!canSubmit) {
+      setError('Kies minimaal één onderwerp om aan te werken.')
+      return
+    }
+    setError(null)
+    const topicIds = sorted.map((t) => t.id)
+    const payload = topicIds.map((id) => {
+      const c = sel.get(id) ?? { ken: false, wil: false }
+      return { topicId: id, kenIk: c.ken, wilOefenen: c.wil }
+    })
+    start(async () => {
+      const res = await saveDiagnosticPadAction(topicIds, payload)
+      if (res?.error) setError(res.error)
+    })
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-sm font-medium uppercase tracking-wider text-accent">
+          Aanbevolen leerpad
+        </p>
+        <h2 className="mt-1 font-serif text-3xl text-text">
+          Dit raden we je aan
+        </h2>
+        <p className="mt-2 text-text-muted">
+          Op basis van de toets hebben we alvast ingevuld wat je al beheerst en
+          wat je nog kunt oefenen. Je kunt alles hieronder nog aanpassen voordat
+          je start.
+        </p>
+      </div>
+
+      {error && <ErrorBanner>{error}</ErrorBanner>}
+
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full min-w-[28rem] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-border bg-surface-2 text-left">
+              <th className="px-4 py-3 font-medium text-text">Onderwerp</th>
+              <th className="px-4 py-3 font-medium text-text">Ken ik al</th>
+              <th className="px-4 py-3 font-medium text-text">Wil ik oefenen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((t, i) => {
+              const c = sel.get(t.id) ?? { ken: false, wil: false }
+              const inDiagnostic = diagnosticTopicIds.has(t.id)
+              return (
+                <tr
+                  key={t.id}
+                  className={cn(
+                    'border-b border-border last:border-0',
+                    i % 2 === 0 ? 'bg-surface' : 'bg-bg',
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <span className="font-medium text-text">{t.title}</span>
+                    {inDiagnostic && (
+                      <span
+                        className={cn(
+                          'ml-2 text-xs',
+                          correctTopicIds.has(t.id)
+                            ? 'text-accent'
+                            : 'text-accent-2',
+                        )}
+                      >
+                        {correctTopicIds.has(t.id) ? '✓ goed' : '✗ fout'}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-accent"
+                      checked={c.ken}
+                      onChange={(e) => setCell(t.id, 'ken', e.target.checked)}
+                      aria-label={`${t.title}: ken ik al`}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-accent"
+                      checked={c.wil}
+                      disabled={c.ken}
+                      onChange={(e) => setCell(t.id, 'wil', e.target.checked)}
+                      aria-label={`${t.title}: wil ik oefenen`}
+                    />
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button
+          type="button"
+          onClick={submit}
+          disabled={pending || !canSubmit}
+        >
+          {pending ? 'Opslaan…' : 'Start met dit leerpad'}
+        </Button>
       </div>
     </div>
   )
