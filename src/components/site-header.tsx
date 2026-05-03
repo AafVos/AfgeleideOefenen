@@ -46,6 +46,12 @@ export async function SiteHeader() {
                 Vrij oefenen
               </Link>
               <Link
+                href="/theorie"
+                className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+              >
+                Theorie
+              </Link>
+              <Link
                 href="/dashboard"
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
@@ -73,6 +79,12 @@ export async function SiteHeader() {
             </>
           ) : (
             <>
+              <Link
+                href="/theorie"
+                className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+              >
+                Theorie
+              </Link>
               <Link
                 href="/inloggen"
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
