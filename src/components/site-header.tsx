@@ -1,8 +1,10 @@
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
+import { LanguageSwitcher } from './language-switcher'
 
-export async function SiteHeader() {
+export async function SiteHeader({ locale }: { locale: string }) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -20,49 +22,51 @@ export async function SiteHeader() {
     role = data?.role ?? null
   }
 
+  const t = await getTranslations({ locale, namespace: 'Header' })
+
   return (
     <header className="sticky top-0 z-30 h-14 border-b border-border bg-surface/85 backdrop-blur">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4">
         <Link
-          href="/"
+          href={`/${locale}`}
           className="min-w-0 shrink font-serif text-lg font-medium tracking-tight text-text"
         >
-          AfgeleideOefenen<span className="text-accent">.nl</span>
+          {t('brand')}<span className="text-accent">{t('brandSuffix')}</span>
         </Link>
 
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>
               <Link
-                href="/leerpad"
+                href={`/${locale}/leerpad`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Leerpad
+                {t('leerpad')}
               </Link>
               <Link
-                href="/oefenen"
+                href={`/${locale}/oefenen`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Vrij oefenen
+                {t('freeExercise')}
               </Link>
               <Link
-                href="/theorie"
+                href={`/${locale}/theorie`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Theorie
+                {t('theory')}
               </Link>
               <Link
-                href="/dashboard"
+                href={`/${locale}/dashboard`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Dashboard
+                {t('dashboard')}
               </Link>
               {role === 'admin' && (
                 <Link
                   href="/admin"
                   className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
                 >
-                  Admin
+                  {t('admin')}
                 </Link>
               )}
               <span className="mx-2 hidden text-text-muted sm:inline">
@@ -73,32 +77,33 @@ export async function SiteHeader() {
                   type="submit"
                   className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
                 >
-                  Uitloggen
+                  {t('logout')}
                 </button>
               </form>
             </>
           ) : (
             <>
               <Link
-                href="/theorie"
+                href={`/${locale}/theorie`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Theorie
+                {t('theory')}
               </Link>
               <Link
-                href="/inloggen"
+                href={`/${locale}/inloggen`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
-                Inloggen
+                {t('login')}
               </Link>
               <Link
-                href="/registreren"
+                href={`/${locale}/registreren`}
                 className="ml-1 rounded-md bg-accent px-3 py-1.5 text-white hover:bg-accent/90"
               >
-                Registreren
+                {t('register')}
               </Link>
             </>
           )}
+          <LanguageSwitcher currentLocale={locale} />
         </nav>
       </div>
     </header>
