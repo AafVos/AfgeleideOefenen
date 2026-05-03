@@ -1,7 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-
 import { checkWrongAnswer } from '@/lib/ai/check-answer'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -89,9 +87,6 @@ export async function submitAnswerAction(
       question.topic_id,
       question.cluster_id,
     )
-    revalidatePath('/leerpad')
-    revalidatePath('/oefenen')
-    revalidatePath('/dashboard')
     return {
       kind: 'correct',
       answerId: answerRow.id,
@@ -141,9 +136,6 @@ export async function submitAnswerAction(
       question.topic_id,
       question.cluster_id,
     )
-    revalidatePath('/leerpad')
-    revalidatePath('/oefenen')
-    revalidatePath('/dashboard')
     return {
       kind: 'correct',
       answerId: answerRow.id,
@@ -178,9 +170,6 @@ export async function markCarelessAction(answerId: string): Promise<void> {
     .update({ is_careless: true })
     .eq('id', answerId)
   if (error) throw new Error(error.message)
-
-  revalidatePath('/leerpad')
-  revalidatePath('/oefenen')
 }
 
 // =====================================================================
@@ -221,8 +210,6 @@ export async function resolveWithStepsAction(
   }
 
   await resetStreak(supabase, user.id, question.cluster_id)
-  revalidatePath('/leerpad')
-  revalidatePath('/oefenen')
 }
 
 // =====================================================================

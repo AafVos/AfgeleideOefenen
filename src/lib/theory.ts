@@ -418,6 +418,276 @@ export const TOPIC_FORMULA: Record<string, string> = {
 }
 
 /**
+ * English cluster theory — same structure as CLUSTER_THEORY.
+ * Mathematical steps remain in LaTeX (universal), only prose text is translated.
+ */
+export const CLUSTER_THEORY_EN: Record<string, ClusterTheory> = {
+  'basis/standaard': {
+    rule: "f(x) = ax^n \\implies f'(x) = n \\cdot ax^{n-1}",
+    intro: 'The power rule is the foundation of differentiation: move the exponent to the front and decrease the exponent by 1.',
+    example: {
+      problem: 'f(x) = 3x^4',
+      answer: "f'(x) = 12x^3",
+      steps: ['$n = 4$, $a = 3$', "$f'(x) = 4 \\cdot 3 \\cdot x^{4-1} = 12x^3$"],
+    },
+  },
+  'basis/herschrijven': {
+    rule: "\\sqrt{x} = x^{1/2} \\quad \\dfrac{1}{x^n} = x^{-n} \\implies f'(x) = n \\cdot ax^{n-1}",
+    intro: 'Rewrite roots and fractions as powers first, then apply the power rule as normal.',
+    example: {
+      problem: 'f(x) = \\sqrt{x} = x^{1/2}',
+      answer: "f'(x) = \\dfrac{1}{2}x^{-1/2} = \\dfrac{1}{2\\sqrt{x}}",
+      steps: [
+        'Rewrite: $f(x) = x^{1/2}$',
+        "$n = \\tfrac{1}{2}$: $f'(x) = \\tfrac{1}{2} x^{-1/2} = \\dfrac{1}{2\\sqrt{x}}$",
+      ],
+    },
+  },
+  'basis/machten_combineren': {
+    rule: "x^a \\cdot x^b = x^{a+b} \\qquad \\dfrac{x^a}{x^b} = x^{a-b} \\qquad (x^a)^b = x^{ab}",
+    intro: 'Combine powers first, then differentiate — often much faster than applying the product or quotient rule.',
+    example: {
+      problem: 'f(x) = x^4 / x = x^3',
+      answer: "f'(x) = 3x^2",
+      steps: ['Simplify: $x^4/x = x^{4-1} = x^3$', "$f'(x) = 3x^2$"],
+    },
+  },
+  'somregel/optelling': {
+    rule: "f(x) = g(x)+h(x) \\implies f'(x) = g'(x)+h'(x)",
+    intro: 'For a sum, differentiate each term separately and add the derivatives together.',
+    example: {
+      problem: 'f(x) = 2x^3 + 3x^2',
+      answer: "f'(x) = 6x^2 + 6x",
+      steps: ['Differentiate each term separately', "$2x^3 \\to 6x^2$ and $3x^2 \\to 6x$"],
+    },
+  },
+  'somregel/haakjes_uitwerken': {
+    rule: '\\text{Expand brackets first, then apply the sum rule}',
+    intro: 'Products of polynomials can be expanded — then it is just a sum of terms.',
+    example: {
+      problem: 'f(x) = (x+1)(x+2)',
+      answer: "f'(x) = 2x+3",
+      steps: ['Expand: $f(x) = x^2 + 3x + 2$', "$f'(x) = 2x + 3$"],
+    },
+  },
+  'productregel/twee_veeltermen': {
+    rule: "f(x) = g(x) \\cdot h(x) \\implies f'(x) = g'h + gh'",
+    intro: 'The product rule: derivative of the first times the second, plus the first times the derivative of the second.',
+    example: {
+      problem: 'f(x) = x^2 \\cdot (x+3)',
+      answer: "f'(x) = 2x(x+3) + x^2 = 3x^2 + 6x",
+      steps: ['$g = x^2,\\ h = x+3$', "$g' = 2x,\\ h' = 1$", "$f'(x) = 2x(x+3) + x^2 \\cdot 1 = 3x^2+6x$"],
+    },
+  },
+  'productregel/veelterm_macht': {
+    rule: "f(x) = g(x) \\cdot h(x) \\implies f'(x) = g'h + gh'",
+    example: {
+      problem: 'f(x) = x^3 \\cdot (2x+1)',
+      answer: "f'(x) = 3x^2(2x+1) + 2x^3 = 8x^3 + 3x^2",
+    },
+  },
+  'productregel/veelterm_wortel': {
+    rule: "f(x) = g(x) \\cdot h(x) \\implies f'(x) = g'h + gh'",
+    intro: 'Write the root as a power first; then it is a straightforward product rule.',
+    example: {
+      problem: 'f(x) = x \\cdot \\sqrt{x}',
+      answer: "f'(x) = \\sqrt{x} + \\dfrac{x}{2\\sqrt{x}} = \\dfrac{3}{2}\\sqrt{x}",
+      steps: ["$g = x,\\ h = \\sqrt{x} = x^{1/2}$", "$g' = 1,\\ h' = \\tfrac{1}{2}x^{-1/2}$", "$f'(x) = \\sqrt{x} + x \\cdot \\tfrac{1}{2\\sqrt{x}} = \\tfrac{3}{2}\\sqrt{x}$"],
+    },
+  },
+  'productregel/drie_factoren': {
+    rule: "f(x) = g \\cdot h \\cdot k \\implies f'(x) = g'hk + gh'k + ghk'",
+    intro: 'With three factors, differentiate one factor at a time and keep the other two — three terms in total.',
+    example: {
+      problem: 'f(x) = x \\cdot x^2 \\cdot x^3',
+      answer: "f'(x) = 6x^5",
+      steps: ["Or more simply: $f(x) = x^6$, so $f'(x) = 6x^5$"],
+    },
+  },
+  'quotientregel/makkelijk': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n - tn'}{n^2}",
+    intro: 'Differentiate numerator and denominator separately, cross-multiply with minus, and divide by the denominator squared. Pay attention to the order.',
+    example: {
+      problem: 'f(x) = \\dfrac{x^2}{x+1}',
+      answer: "f'(x) = \\dfrac{2x(x+1)-x^2}{(x+1)^2} = \\dfrac{x^2+2x}{(x+1)^2}",
+      steps: ['$t = x^2,\\ n = x+1$', "$t' = 2x,\\ n' = 1$", "$f'(x) = \\dfrac{2x(x+1) - x^2 \\cdot 1}{(x+1)^2} = \\dfrac{x^2+2x}{(x+1)^2}$"],
+    },
+  },
+  'quotientregel/polynoom': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n - tn'}{n^2}",
+    example: {
+      problem: 'f(x) = \\dfrac{x^3}{x^2+1}',
+      answer: "f'(x) = \\dfrac{3x^2(x^2+1)-2x^4}{(x^2+1)^2} = \\dfrac{x^4+3x^2}{(x^2+1)^2}",
+    },
+  },
+  'quotientregel/combi_somregel': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n - tn'}{n^2}",
+    intro: 'Apply the quotient rule to the fraction first, then add the derivative of the remaining terms using the sum rule.',
+    example: {
+      problem: 'f(x) = \\dfrac{x^2+1}{x} + 3x',
+      answer: "f'(x) = \\dfrac{x^2-1}{x^2} + 3",
+      steps: ['Differentiate $\\dfrac{x^2+1}{x}$ using the quotient rule', 'Add the derivative of $3x$'],
+    },
+  },
+  'kettingregel/macht_lineair': {
+    rule: "f(x) = (ax+b)^n \\implies f'(x) = n \\cdot a \\cdot (ax+b)^{n-1}",
+    intro: 'Outer times derivative of inner. For a linear inner function, the derivative is simply the coefficient.',
+    example: {
+      problem: 'f(x) = (2x+3)^4',
+      answer: "f'(x) = 8(2x+3)^3",
+      steps: ['$n = 4$, inner derivative $= 2$', "$f'(x) = 4 \\cdot 2 \\cdot (2x+3)^3 = 8(2x+3)^3$"],
+    },
+  },
+  'kettingregel/macht_veelterm': {
+    rule: "f(x) = [g(x)]^n \\implies f'(x) = n \\cdot g'(x) \\cdot [g(x)]^{n-1}",
+    example: {
+      problem: 'f(x) = (x^2+1)^3',
+      answer: "f'(x) = 6x(x^2+1)^2",
+      steps: ["$g(x) = x^2+1,\\ g'(x) = 2x$", "$f'(x) = 3 \\cdot 2x \\cdot (x^2+1)^2 = 6x(x^2+1)^2$"],
+    },
+  },
+  'kettingregel/wortel': {
+    rule: "f(x) = \\sqrt{g(x)} \\implies f'(x) = \\dfrac{g'(x)}{2\\sqrt{g(x)}}",
+    intro: 'For a square root: derivative of what is under the root, divided by twice the original root.',
+    example: {
+      problem: 'f(x) = \\sqrt{x^2+4}',
+      answer: "f'(x) = \\dfrac{x}{\\sqrt{x^2+4}}",
+      steps: ["$g(x) = x^2+4,\\ g'(x) = 2x$", "$f'(x) = \\dfrac{2x}{2\\sqrt{x^2+4}} = \\dfrac{x}{\\sqrt{x^2+4}}$"],
+    },
+  },
+  'kettingregel/negatieve_macht': {
+    rule: "f(x) = [g(x)]^{-n} \\implies f'(x) = -n \\cdot g'(x) \\cdot [g(x)]^{-n-1}",
+    example: {
+      problem: 'f(x) = \\dfrac{1}{(x+1)^2} = (x+1)^{-2}',
+      answer: "f'(x) = \\dfrac{-2}{(x+1)^3}",
+      steps: ["$g(x) = x+1,\\ g'(x) = 1$", "$f'(x) = -2 \\cdot 1 \\cdot (x+1)^{-3} = \\dfrac{-2}{(x+1)^3}$"],
+    },
+  },
+  'kettingregel/combi_somregel': {
+    rule: "f(x) = g(x)+h(x) \\implies f'(x) = g'(x)+h'(x) \\quad\\text{(chain rule in each term)}",
+    example: {
+      problem: 'f(x) = (x+1)^2 + (2x-1)^3',
+      answer: "f'(x) = 2(x+1) + 6(2x-1)^2",
+    },
+  },
+  'kettingregel/plus_productregel': {
+    rule: "f(x) = g(x) \\cdot h(x) \\implies f'(x) = g'h+gh' \\quad\\text{(chain rule in } g \\text{ or } h\\text{)}",
+    intro: 'Product rule as the main structure, and apply the chain rule within $g$ or $h$.',
+    example: {
+      problem: 'f(x) = x \\cdot (x^2+1)^3',
+      answer: "f'(x) = (x^2+1)^3 + 6x^2(x^2+1)^2",
+      steps: ["$g = x,\\ h = (x^2+1)^3$", "$g' = 1,\\ h' = 6x(x^2+1)^2$", "$f'(x) = (x^2+1)^3 + x \\cdot 6x(x^2+1)^2$"],
+    },
+  },
+  'kettingregel/plus_quotientregel': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n-tn'}{n^2} \\quad\\text{(chain rule in } t \\text{ or } n\\text{)}",
+    intro: 'Quotient rule as the main structure, and apply the chain rule within the numerator or denominator.',
+    example: {
+      problem: 'f(x) = \\dfrac{x+1}{\\sqrt{2x+1}}',
+      answer: "f'(x) = \\dfrac{\\sqrt{2x+1} - \\frac{x+1}{\\sqrt{2x+1}}}{2x+1}",
+      steps: ["$t = x+1,\\ t' = 1$", "$n = \\sqrt{2x+1},\\ n' = \\dfrac{1}{\\sqrt{2x+1}}$"],
+    },
+  },
+  'emacht/standaard': {
+    rule: "f(x) = e^x \\implies f'(x) = e^x",
+    intro: 'The exponential function is its own derivative — unique in mathematics.',
+    example: { problem: 'f(x) = 3e^x', answer: "f'(x) = 3e^x" },
+  },
+  'emacht/combi_somregel': {
+    rule: "f(x) = e^x \\implies f'(x) = e^x \\quad\\text{(combine with sum rule)}",
+    example: { problem: 'f(x) = x^2 + e^x', answer: "f'(x) = 2x + e^x" },
+  },
+  'emacht/combi_productregel': {
+    rule: "f(x) = g(x) \\cdot e^x \\implies f'(x) = g'(x)e^x + g(x)e^x",
+    example: {
+      problem: 'f(x) = x \\cdot e^x',
+      answer: "f'(x) = (x+1)e^x",
+      steps: ["$g = x,\\ g' = 1$", "$f'(x) = 1 \\cdot e^x + x \\cdot e^x = (1+x)e^x$"],
+    },
+  },
+  'emacht/combi_kettingregel': {
+    rule: "f(x) = e^{g(x)} \\implies f'(x) = g'(x) \\cdot e^{g(x)}",
+    intro: 'For $e^{g(x)}$: the exponential stays, multiplied by the derivative of the exponent.',
+    example: {
+      problem: 'f(x) = e^{3x+1}',
+      answer: "f'(x) = 3e^{3x+1}",
+      steps: ["$g(x) = 3x+1,\\ g'(x) = 3$", "$f'(x) = 3 \\cdot e^{3x+1}$"],
+    },
+  },
+  'emacht/combi_quotientregel': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n - tn'}{n^2} \\quad\\text{(with } e^x\\text{)}",
+    example: {
+      problem: 'f(x) = \\dfrac{e^x}{x}',
+      answer: "f'(x) = \\dfrac{e^x(x-1)}{x^2}",
+      steps: ["$t = e^x,\\ t' = e^x;\\ n = x,\\ n' = 1$", "$f'(x) = \\dfrac{e^x \\cdot x - e^x}{x^2} = \\dfrac{e^x(x-1)}{x^2}$"],
+    },
+  },
+  'goniometrie/standaard': {
+    rule: "f(x)=\\sin x \\Rightarrow f'(x)=\\cos x \\qquad f(x)=\\cos x \\Rightarrow f'(x)=-\\sin x \\qquad f(x)=\\tan x \\Rightarrow f'(x)=1+\\tan^2 x",
+    intro: 'The three standard derivatives: $\\sin \\to \\cos$, $\\cos \\to -\\sin$ (note the minus sign!), $\\tan \\to 1+\\tan^2$.',
+    example: { problem: 'f(x) = 3\\sin(x) - 2\\cos(x)', answer: "f'(x) = 3\\cos(x) + 2\\sin(x)" },
+  },
+  'goniometrie/combi_kettingregel': {
+    rule: "f(x) = \\sin(g(x)) \\implies f'(x) = g'(x)\\cos(g(x))",
+    example: {
+      problem: 'f(x) = \\sin(3x+1)',
+      answer: "f'(x) = 3\\cos(3x+1)",
+      steps: ["$g(x) = 3x+1,\\ g'(x) = 3$", "$f'(x) = 3 \\cdot \\cos(3x+1)$"],
+    },
+  },
+  'goniometrie/combi_productregel': {
+    rule: "f(x) = g(x) \\cdot h(x) \\implies f'(x) = g'h + gh' \\quad\\text{(with trig)}",
+    example: {
+      problem: 'f(x) = x \\cdot \\sin(x)',
+      answer: "f'(x) = \\sin(x) + x\\cos(x)",
+      steps: ["$g = x,\\ g' = 1;\\ h = \\sin x,\\ h' = \\cos x$", "$f'(x) = \\sin(x) + x\\cos(x)$"],
+    },
+  },
+  'goniometrie/combi_quotientregel': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n - tn'}{n^2} \\quad\\text{(with trig)}",
+    example: {
+      problem: 'f(x) = \\dfrac{\\sin(x)}{x}',
+      answer: "f'(x) = \\dfrac{x\\cos(x) - \\sin(x)}{x^2}",
+      steps: ["$t = \\sin x,\\ t' = \\cos x;\\ n = x,\\ n' = 1$", "$f'(x) = \\dfrac{x\\cos x - \\sin x}{x^2}$"],
+    },
+  },
+  'lnlog/standaard': {
+    rule: "f(x) = \\ln x \\Rightarrow f'(x) = \\dfrac{1}{x} \\qquad f(x) = \\log_g x \\Rightarrow f'(x) = \\dfrac{1}{x \\ln g}",
+    intro: 'The derivative of $\\ln x$ is $1/x$. For other bases, multiply by $1/\\ln g$.',
+    example: { problem: 'f(x) = 2\\ln(x)', answer: "f'(x) = \\dfrac{2}{x}" },
+  },
+  'lnlog/combi_somregel': {
+    rule: "f(x) = \\ln x \\Rightarrow f'(x) = \\dfrac{1}{x} \\quad\\text{(combine with sum rule)}",
+    example: { problem: 'f(x) = x^2 + \\ln(x)', answer: "f'(x) = 2x + \\dfrac{1}{x}" },
+  },
+  'lnlog/combi_productregel': {
+    rule: "f(x) = g(x) \\cdot \\ln x \\implies f'(x) = g'(x)\\ln x + \\dfrac{g(x)}{x}",
+    example: {
+      problem: 'f(x) = x^2 \\cdot \\ln(x)',
+      answer: "f'(x) = 2x\\ln(x) + x",
+      steps: ["$g = x^2,\\ g' = 2x;\\ h = \\ln x,\\ h' = \\tfrac{1}{x}$", "$f'(x) = 2x\\ln x + x^2 \\cdot \\tfrac{1}{x} = 2x\\ln x + x$"],
+    },
+  },
+  'lnlog/combi_kettingregel': {
+    rule: "f(x) = \\ln(g(x)) \\implies f'(x) = \\dfrac{g'(x)}{g(x)}",
+    intro: 'For $\\ln$ of a composite: the derivative of what is inside, divided by what is inside.',
+    example: {
+      problem: 'f(x) = \\ln(x^2+1)',
+      answer: "f'(x) = \\dfrac{2x}{x^2+1}",
+      steps: ["$g(x) = x^2+1,\\ g'(x) = 2x$", "$f'(x) = \\dfrac{2x}{x^2+1}$"],
+    },
+  },
+  'lnlog/combi_quotientregel': {
+    rule: "f(x) = \\dfrac{t(x)}{n(x)} \\implies f'(x) = \\dfrac{t'n - tn'}{n^2} \\quad\\text{(with ln)}",
+    example: {
+      problem: 'f(x) = \\dfrac{\\ln(x)}{x}',
+      answer: "f'(x) = \\dfrac{1 - \\ln(x)}{x^2}",
+      steps: ["$t = \\ln x,\\ t' = \\tfrac{1}{x};\\ n = x,\\ n' = 1$", "$f'(x) = \\dfrac{\\frac{x}{x} - \\ln x}{x^2} = \\dfrac{1-\\ln x}{x^2}$"],
+    },
+  },
+}
+
+/**
  * Korte introtekst per topic, voor de overzichtspagina.
  * Sleutel = topic-slug zoals in `topics.slug`.
  */
@@ -438,4 +708,26 @@ export const TOPIC_INTROS: Record<string, string> = {
     'Sinus en cosinus wisselen elkaar af bij differentiëren. Bij combinaties met andere regels blijven de standaardafgeleides je vertrekpunt.',
   lnlog:
     'De afgeleide van $\\ln x$ is $1/x$. In samengestelde uitdrukkingen pas je de kettingregel toe en kom je vaak op $g\'/g$ uit.',
+}
+
+/**
+ * English topic intros for the theory overview page.
+ */
+export const TOPIC_INTROS_EN: Record<string, string> = {
+  basis:
+    'The foundation: the power rule and how to rewrite roots and fractions as powers so you can apply the power rule as usual.',
+  somregel:
+    'Differentiate a function that is a sum of terms, term by term. Sometimes you need to expand brackets first to get a clean sum.',
+  productregel:
+    'For a product of two (or more) factors, use $f\' = g\'h + gh\'$. Identify $g$ and $h$ first, differentiate them separately, and substitute.',
+  quotientregel:
+    'For a fraction, $f\' = \\dfrac{t\'n - tn\'}{n^2}$. Pay attention to the order of terms in the numerator and the square of the denominator.',
+  kettingregel:
+    'For a composition (function inside a function), differentiate the outer function and multiply by the derivative of the inner function.',
+  emacht:
+    'The exponential function is its own derivative. Combinations with the sum, product, chain, or quotient rule are common.',
+  goniometrie:
+    'Sine and cosine alternate when differentiating. For combinations with other rules, the standard derivatives are your starting point.',
+  lnlog:
+    'The derivative of $\\ln x$ is $1/x$. In composite expressions, apply the chain rule and you often end up with $g\'/g$.',
 }
