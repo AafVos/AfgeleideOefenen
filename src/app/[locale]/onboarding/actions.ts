@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Grade, LearningMode } from '@/lib/supabase/types'
@@ -43,7 +44,8 @@ export async function completeOnboardingAction(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  const locale = await getLocale()
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const { error } = await supabase
     .from('profiles')
@@ -61,12 +63,12 @@ export async function completeOnboardingAction(
 
   switch (mode as LearningMode) {
     case 'guided':
-      redirect('/leerpad')
+      redirect(`/${locale}/leerpad`)
     case 'topic_select':
-      redirect('/onboarding/pad')
+      redirect(`/${locale}/onboarding/pad`)
     case 'diagnostic':
-      redirect('/onboarding/toets')
+      redirect(`/${locale}/onboarding/toets`)
     case 'free':
-      redirect('/oefenen')
+      redirect(`/${locale}/oefenen`)
   }
 }

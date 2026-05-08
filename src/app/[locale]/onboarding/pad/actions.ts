@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 
 import { applyPadSelections } from '@/lib/practice/bulk-progress'
 import { createClient } from '@/lib/supabase/server'
@@ -16,7 +17,8 @@ export async function savePadSelectionsAction(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  const locale = await getLocale()
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const map = new Map(
     payload.map((p) => [
@@ -31,8 +33,9 @@ export async function savePadSelectionsAction(
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
 
-  revalidatePath('/leerpad')
-  revalidatePath('/dashboard')
-  revalidatePath('/oefenen')
-  redirect('/leerpad')
+  revalidatePath(`/nl/leerpad`)
+  revalidatePath(`/en/leerpad`)
+  revalidatePath(`/nl/dashboard`)
+  revalidatePath(`/en/dashboard`)
+  redirect(`/${locale}/leerpad`)
 }

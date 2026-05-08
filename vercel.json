@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/(dashboard|leerpad|oefenen|theorie|onboarding|inloggen|registreren|wachtwoord-vergeten|wachtwoord-opnieuw)/(.*)",
+      "destination": "/nl/$1/$2",
+      "permanent": false
+    },
+    {
+      "source": "/(dashboard|leerpad|oefenen|theorie|onboarding|inloggen|registreren|wachtwoord-vergeten|wachtwoord-opnieuw)",
+      "destination": "/nl/$1",
+      "permanent": false
+    }
+  ]
+}

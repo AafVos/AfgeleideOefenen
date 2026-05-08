@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 
 import { applyDiagnosticResults } from '@/lib/practice/bulk-progress'
 import { answersMatch } from '@/lib/practice/engine'
@@ -46,7 +47,8 @@ export async function checkDiagnosticAction(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  const locale = await getLocale()
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const canonical = await loadDiagnosticQuestions(supabase)
   if (!canonical.length) {
@@ -112,7 +114,8 @@ export async function saveDiagnosticPadAction(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  const locale = await getLocale()
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const { applyPadSelections } = await import('@/lib/practice/bulk-progress')
 
@@ -126,10 +129,11 @@ export async function saveDiagnosticPadAction(
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
 
-  revalidatePath('/leerpad')
-  revalidatePath('/dashboard')
-  revalidatePath('/oefenen')
-  redirect('/leerpad')
+  revalidatePath(`/nl/leerpad`)
+  revalidatePath(`/en/leerpad`)
+  revalidatePath(`/nl/dashboard`)
+  revalidatePath(`/en/dashboard`)
+  redirect(`/${locale}/leerpad`)
 }
 
 // ── Oude directe action (behoud voor backward compat) ────────────────────────
@@ -141,7 +145,8 @@ export async function submitDiagnosticAction(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  const locale = await getLocale()
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const canonical = await loadDiagnosticQuestions(supabase)
   if (canonical.length === 0) {
@@ -184,8 +189,9 @@ export async function submitDiagnosticAction(
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
 
-  revalidatePath('/leerpad')
-  revalidatePath('/dashboard')
-  revalidatePath('/oefenen')
-  redirect('/leerpad')
+  revalidatePath(`/nl/leerpad`)
+  revalidatePath(`/en/leerpad`)
+  revalidatePath(`/nl/dashboard`)
+  revalidatePath(`/en/dashboard`)
+  redirect(`/${locale}/leerpad`)
 }

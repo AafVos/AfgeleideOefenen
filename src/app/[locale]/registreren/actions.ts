@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -63,8 +64,9 @@ export async function signupAction(
     await supabase.from('profiles').update({ username }).eq('id', data.user.id)
   }
 
+  const locale = await getLocale()
   revalidatePath('/', 'layout')
-  redirect('/onboarding')
+  redirect(`/${locale}/onboarding`)
 }
 
 function translateAuthError(msg: string): string {
