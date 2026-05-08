@@ -6,13 +6,15 @@ import { useEffect } from 'react'
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+    // Only initialize once, and only on the client
+    if (key && typeof window !== 'undefined' && !posthog.__loaded) {
+      posthog.init(key, {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com',
         person_profiles: 'identified_only',
-        capture_pageview: false, // We capture manually for better SPA support
+        capture_pageview: false,
         capture_pageleave: true,
-        autocapture: true, // Captures clicks, form submissions, etc.
+        autocapture: true,
         session_recording: {
           maskAllInputs: false,
           maskInputOptions: {
@@ -23,9 +25,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-    return <>{children}</>
-  }
-
+  // Always wrap in provider; PostHog hooks handle uninitialized state gracefully
   return <PHProvider client={posthog}>{children}</PHProvider>
 }
