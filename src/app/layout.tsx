@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 
+import { PostHogProvider } from '@/components/posthog-provider'
+import { PostHogPageView } from '@/components/posthog-pageview'
+
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -35,7 +38,10 @@ export default function RootLayout({
       className={`${dmSans.variable} ${dmSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-text">
-        {children}
+        <PostHogProvider>
+          <PostHogPageView />
+          {children}
+        </PostHogProvider>
       </body>
     </html>
   )
