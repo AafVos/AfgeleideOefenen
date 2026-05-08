@@ -5,7 +5,11 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  // Respect an explicit `next` param if it's already locale-prefixed;
+  // otherwise default to the Dutch dashboard.
+  const nextParam = searchParams.get('next')
+  const next =
+    nextParam && /^\/(nl|en)\//.test(nextParam) ? nextParam : '/nl/dashboard'
 
   if (code) {
     const supabase = await createClient()
@@ -15,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const url = new URL('/inloggen', origin)
+  const url = new URL('/nl/inloggen', origin)
   url.searchParams.set('error', 'auth_callback_failed')
   return NextResponse.redirect(url)
 }

@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
@@ -20,10 +20,11 @@ export async function generateMetadata({
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
+  const locale = await getLocale()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -31,7 +32,7 @@ export default async function OnboardingPage() {
     .eq('id', user.id)
     .maybeSingle()
 
-  if (profile?.onboarded_at) redirect('/leerpad')
+  if (profile?.onboarded_at) redirect(`/${locale}/leerpad`)
 
   const defaultName = profile?.display_name?.trim() ?? ''
 

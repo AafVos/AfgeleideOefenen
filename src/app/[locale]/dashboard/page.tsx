@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
@@ -19,10 +19,11 @@ export async function generateMetadata({
 
 export default async function DashboardPage() {
   const supabase = await createClient()
+  const locale = await getLocale()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const t = await getTranslations('Dashboard')
 

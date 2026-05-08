@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 
 import { createClient } from '@/lib/supabase/server'
 
@@ -25,8 +26,9 @@ export async function loginAction(
     return { error: translateAuthError(error.message) }
   }
 
+  const locale = await getLocale()
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(`/${locale}/dashboard`)
 }
 
 function translateAuthError(msg: string): string {

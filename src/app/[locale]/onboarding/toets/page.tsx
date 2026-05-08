@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
@@ -22,10 +22,11 @@ export async function generateMetadata({
 
 export default async function ToetsPage() {
   const supabase = await createClient()
+  const locale = await getLocale()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/inloggen')
+  if (!user) redirect(`/${locale}/inloggen`)
 
   const t = await getTranslations('OnboardingToets')
 
@@ -35,8 +36,8 @@ export default async function ToetsPage() {
     .eq('id', user.id)
     .maybeSingle()
 
-  if (!profile?.onboarded_at) redirect('/onboarding')
-  if (profile.learning_mode !== 'diagnostic') redirect('/leerpad')
+  if (!profile?.onboarded_at) redirect(`/${locale}/onboarding`)
+  if (profile.learning_mode !== 'diagnostic') redirect(`/${locale}/leerpad`)
 
   const questions = await loadDiagnosticQuestions(supabase)
 
