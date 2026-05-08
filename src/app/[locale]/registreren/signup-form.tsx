@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -11,18 +11,21 @@ const initialState: SignupState = { error: null, notice: null }
 export function SignupForm() {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <form action={formAction} className="space-y-4">
       <Field label={t('usernameLabel')} name="username" type="text" autoComplete="username" />
       <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
-      <Field
+      <PasswordField
         label={t('passwordLabel')}
         name="password"
-        type="password"
         autoComplete="new-password"
         required
         hint={t('passwordHint')}
+        showPassword={showPassword}
+        onToggle={() => setShowPassword((prev) => !prev)}
+        toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
       />
 
       {state.error && (
@@ -74,6 +77,50 @@ function Field({
         minLength={type === 'password' ? 8 : undefined}
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
+      {hint && <span className="mt-1 block text-xs text-text-muted">{hint}</span>}
+    </label>
+  )
+}
+
+function PasswordField({
+  label,
+  name,
+  autoComplete,
+  required,
+  hint,
+  showPassword,
+  onToggle,
+  toggleLabel,
+}: {
+  label: string
+  name: string
+  autoComplete?: string
+  required?: boolean
+  hint?: string
+  showPassword: boolean
+  onToggle: () => void
+  toggleLabel: string
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-text">{label}</span>
+      <div className="flex items-center gap-2">
+        <input
+          name={name}
+          type={showPassword ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          required={required}
+          minLength={8}
+          className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          className="shrink-0 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-muted hover:bg-surface-2 hover:text-text"
+        >
+          {toggleLabel}
+        </button>
+      </div>
       {hint && <span className="mt-1 block text-xs text-text-muted">{hint}</span>}
     </label>
   )

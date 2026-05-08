@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -11,11 +11,20 @@ const initialState: LoginState = { error: null }
 export function LoginForm() {
   const [state, formAction] = useActionState(loginAction, initialState)
   const t = useTranslations('Login')
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <form action={formAction} className="space-y-4">
       <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
-      <Field label={t('passwordLabel')} name="password" type="password" autoComplete="current-password" required />
+      <PasswordField
+        label={t('passwordLabel')}
+        name="password"
+        autoComplete="current-password"
+        required
+        showPassword={showPassword}
+        onToggle={() => setShowPassword((prev) => !prev)}
+        toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
+      />
 
       {state.error && (
         <p
@@ -54,6 +63,46 @@ function Field({
         required={required}
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
+    </label>
+  )
+}
+
+function PasswordField({
+  label,
+  name,
+  autoComplete,
+  required,
+  showPassword,
+  onToggle,
+  toggleLabel,
+}: {
+  label: string
+  name: string
+  autoComplete?: string
+  required?: boolean
+  showPassword: boolean
+  onToggle: () => void
+  toggleLabel: string
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-text">{label}</span>
+      <div className="flex items-center gap-2">
+        <input
+          name={name}
+          type={showPassword ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          required={required}
+          className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          className="shrink-0 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-muted hover:bg-surface-2 hover:text-text"
+        >
+          {toggleLabel}
+        </button>
+      </div>
     </label>
   )
 }
