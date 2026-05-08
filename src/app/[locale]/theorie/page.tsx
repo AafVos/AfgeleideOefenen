@@ -69,9 +69,9 @@ export default async function TheoriePage() {
       </h1>
       <p className="mt-6 max-w-3xl text-lg text-text-muted">
         {t.rich('intro', {
-          practiceLink: () => (
+          practiceLink: (chunks) => (
             <Link href="/oefenen" className="text-accent hover:underline">
-              {t('introLink')}
+              {chunks}
             </Link>
           ),
         })}
