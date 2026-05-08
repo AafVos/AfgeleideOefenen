@@ -43,6 +43,11 @@ export default async function SignupPage() {
           {t('loginLink')}
         </Link>
       </p>
+      <p className="mt-2 text-center text-sm text-text-muted">
+        <Link href="/wachtwoord-vergeten" className="text-accent hover:underline">
+          {t('forgotPassword')}
+        </Link>
+      </p>
     </div>
   )
 }

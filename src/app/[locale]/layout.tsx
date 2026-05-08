@@ -50,7 +50,14 @@ export async function generateMetadata({
       index: true,
       follow: true,
     },
-    icons: { icon: '/favicon.ico' },
+    icons: {
+      icon: [
+        { url: '/favicon.png', type: 'image/png' },
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico' },
+      ],
+      shortcut: ['/favicon.ico'],
+    },
   }
 }
 

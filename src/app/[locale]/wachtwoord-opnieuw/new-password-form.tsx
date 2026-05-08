@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -11,6 +11,7 @@ const initial: NewPasswordState = { error: null }
 export function NewPasswordForm() {
   const t = useTranslations('NewPassword')
   const [state, action] = useActionState(newPasswordAction, initial)
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <form action={action} className="space-y-5">
@@ -21,14 +22,23 @@ export function NewPasswordForm() {
       )}
       <label className="block">
         <span className="mb-1 block text-sm font-medium text-text">{t('passwordLabel')}</span>
-        <input
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={8}
-          required
-          className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            minLength={8}
+            required
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="shrink-0 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-muted hover:bg-surface-2 hover:text-text"
+          >
+            {showPassword ? t('hidePassword') : t('showPassword')}
+          </button>
+        </div>
         <p className="mt-1 text-xs text-text-muted">{t('passwordHint')}</p>
       </label>
       <SubmitBtn />
