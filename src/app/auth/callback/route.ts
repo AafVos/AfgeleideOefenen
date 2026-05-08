@@ -8,8 +8,11 @@ export async function GET(request: NextRequest) {
   // Respect an explicit `next` param if it's already locale-prefixed;
   // otherwise default to the Dutch dashboard.
   const nextParam = searchParams.get('next')
-  const next =
-    nextParam && /^\/(nl|en)\//.test(nextParam) ? nextParam : '/nl/dashboard'
+  const next = nextParam
+    ? /^\/(nl|en)(\/|$)/.test(nextParam)
+      ? nextParam          // already has locale prefix → use as-is
+      : `/nl${nextParam}`  // no locale prefix → prepend default locale
+    : '/nl/dashboard'      // no next param → default
 
   if (code) {
     const supabase = await createClient()
