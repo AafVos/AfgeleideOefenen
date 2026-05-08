@@ -1,7 +1,5 @@
 'use server'
 
-import { getLocale } from 'next-intl/server'
-
 import { createClient } from '@/lib/supabase/server'
 
 export type ForgotState = { sent: boolean; error: string | null }
@@ -13,10 +11,11 @@ export async function forgotPasswordAction(
   const email = (formData.get('email') ?? '').toString().trim()
   if (!email) return { sent: false, error: 'Vul je e-mailadres in.' }
 
-  const locale = await getLocale()
   const supabase = await createClient()
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/${locale}/wachtwoord-opnieuw`,
+    // The auth callback prepends /nl/ to paths without a locale prefix,
+    // so /wachtwoord-opnieuw becomes /nl/wachtwoord-opnieuw after exchange.
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/wachtwoord-opnieuw`,
   })
 
   return { sent: true, error: null }
