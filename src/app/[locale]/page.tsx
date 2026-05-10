@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 
+import { HomeDemo } from './home-demo'
+
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleideoefenen.nl'
 
@@ -105,6 +107,8 @@ export default async function HomePage() {
           </div>
           <p className="mt-3 text-sm text-text-muted">{t('tagline')}</p>
         </section>
+
+        <HomeDemo />
 
         <section className="mt-20 grid gap-6 sm:grid-cols-3">
           <Feature title={t('feature1Title')} body={t('feature1Body')} />

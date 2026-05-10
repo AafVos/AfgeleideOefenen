@@ -135,7 +135,7 @@ function PathRow({
   onLoadStart: () => void
   tint: string
 }) {
-  const offsetPx = Math.sin(index * 0.55) * 60
+  const offsetPx = Math.round(Math.sin(index * 0.55) * 60)
   const isMastered = node.cluster.status === 'mastered'
   const isLocked = node.topic.isLocked || node.cluster.status === 'locked'
 
@@ -163,7 +163,7 @@ function PathRow({
       <div className="relative flex min-h-[3.25rem] items-center justify-center">
         {prev && !node.isFirstInTopic && (
           <Connector
-            prevOffset={Math.sin((index - 1) * 0.55) * 60}
+            prevOffset={Math.round(Math.sin((index - 1) * 0.55) * 60)}
             currOffset={offsetPx}
             mastered={isMastered && prev.cluster.status === 'mastered'}
             tint={tint}
