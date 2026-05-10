@@ -8,7 +8,7 @@ import { loginAction, type LoginState } from './actions'
 
 const initialState: LoginState = { error: null }
 
-export function LoginForm() {
+export function LoginForm({ callbackError }: { callbackError?: string | null }) {
   const [state, formAction] = useActionState(loginAction, initialState)
   const t = useTranslations('Login')
   const [showPassword, setShowPassword] = useState(false)
@@ -26,12 +26,12 @@ export function LoginForm() {
         toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
       />
 
-      {state.error && (
+      {(callbackError || state.error) && (
         <p
           role="alert"
           className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
         >
-          {state.error}
+          {callbackError ?? state.error}
         </p>
       )}
 
