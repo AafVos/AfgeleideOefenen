@@ -156,6 +156,7 @@ export type Database = {
           total_answered: number
           total_correct: number
           mastered_at: string | null
+          is_skipped: boolean
         }
         Insert: {
           id?: string
@@ -167,6 +168,7 @@ export type Database = {
           total_answered?: number
           total_correct?: number
           mastered_at?: string | null
+          is_skipped?: boolean
         }
         Update: Partial<Database['public']['Tables']['user_progress']['Insert']>
         Relationships: []

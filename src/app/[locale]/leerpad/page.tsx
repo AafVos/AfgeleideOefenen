@@ -12,7 +12,7 @@ import { Card } from '@/components/ui'
 
 import { ClusterRuleHint } from './cluster-rule'
 import { PracticeCard } from './practice-card'
-import { PracticeSidebar } from './sidebar'
+import { QuestPath } from './quest-path'
 
 export async function generateMetadata({
   params,
@@ -110,7 +110,7 @@ export default async function LeerpadPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex">
-      <PracticeSidebar path={path} activeClusterId={active.cluster.id} />
+      <QuestPath path={path} activeClusterId={active.cluster.id} />
 
       <div className="flex-1">
         <div className="mx-auto max-w-2xl px-4 py-10">
