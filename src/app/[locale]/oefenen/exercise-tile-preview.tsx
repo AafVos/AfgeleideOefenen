@@ -23,7 +23,7 @@ export function ExerciseTileMathPreview({
             <TeX tex={latex_body} displayMode={false} className="inline-block align-middle" />
           )
         ) : (
-          <RichMath source={body} blockDisplay={false} />
+          <TeX tex={body} displayMode={false} className="inline-block align-middle" />
         )}
       </div>
     </div>

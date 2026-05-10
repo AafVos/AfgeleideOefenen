@@ -329,7 +329,7 @@
     "masteredBody": "You answered correctly 3 times in a row. The next section is now unlocked.",
     "streakBody": "Streak: {streak}/3. {remaining} more correct in a row.",
     "nextCluster": "Next section",
-    "nextQuestion": "Next +",
+    "nextQuestion": "Next",
     "retry": "Try again",
     "wrongTitle": "Not quite right",
     "studentAnswer": "Your answer",
@@ -342,7 +342,7 @@
     "step": "Step {n}:",
     "confirmSteps": "Confirm {n} wrong step{plural}",
     "confirmNone": "None of the above — continue",
-    "nextPlus": "Next +",
+    "nextPlus": "Next",
     "retryButton": "Try again",
     "genericError": "Something went wrong."
   },

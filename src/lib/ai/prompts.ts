@@ -56,15 +56,16 @@ Als is_mathematically_correct = true: stel alleen is_mathematically_correct=true
    a. Benoem de specifieke stap die fout ging.
    b. Laat de foute berekening zien met de getallen van deze vraag.
    c. Laat de juiste berekening zien.
-   Gebruik gewone tekst-notatie (x^2, *, ·) — GEEN LaTeX ($...$). Vriendelijk, geen aanhef.
+   Gebruik Nederlandse tekst met wiskundige uitdrukkingen tussen $...$ (inline LaTeX). Vriendelijk, geen aanhef.
+   Voorbeeld: "Je hebt $f'(x) = 2x$ berekend, maar de kettingregel vereist $f'(x) = 2(3x+2)^1 \cdot 3$."
 ${input.stepsAlreadyExist
   ? '3. Er is al een stappenplan voor deze vraag — laat solution_steps LEEG ([]).'
-  : `3. Schrijf een STAPPENPLAN voor deze specifieke vraag: 3 à 4 stappen in compacte wiskundige notatie. Gebruik dit exacte formaat:
-   - Stap 1: benoem de deelfuncties, bijv. "f(x) = g(x) + h(x) met g(x) = x^4 en h(x) = -5x"
-   - Stap 2: leid elke deelfunctie apart af, bijv. "g'(x) = 4x^3 en h'(x) = -5"
-   - Stap 3: pas de bijbehorende regel toe en combineer, bijv. "Somregel: f'(x) = g'(x) + h'(x) = 4x^3 + (-5) = 4x^3 - 5"
-   - (optioneel stap 4 als vereenvoudigen nodig is)
-   Gebruik wiskundige tekst-notatie (x^2, f'(x), g(x)) — GEEN LaTeX-dollartekens. Elke stap is 1 compacte zin.`}
+  : `3. Schrijf een STAPPENPLAN voor deze specifieke vraag: 3 à 4 stappen. Gebruik dit exacte formaat:
+   - Elke stap is 1 zin: Nederlandse instructie gevolgd door de wiskunde tussen $...$ (inline LaTeX).
+   - Voorbeeld stap: "Identificeer de buitenste functie $g(u) = u^{1/2}$ en binnenste $u(x) = 2x+1$."
+   - Voorbeeld stap: "Differentieer: $g'(u) = \\frac{1}{2}u^{-1/2}$ en $u'(x) = 2$."
+   - Voorbeeld stap: "Pas de kettingregel toe: $f'(x) = g'(u(x)) \\cdot u'(x) = \\frac{1}{\\sqrt{2x+1}}$."
+   Gebruik ALTIJD $...$ rond wiskunde, nooit kale tekst-notatie zoals x^2 of f'(x) buiten dollartekens.`}
 4. Beoordeel of extra oefenvragen nodig zijn (needs_new_questions=true alleen als minder dan 2 vragen per difficulty).
 5. Stel max 3 nieuwe vragen voor over de missende difficulties.
 

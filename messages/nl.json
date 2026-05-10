@@ -329,7 +329,7 @@
     "masteredBody": "Je hebt 3 keer correct op rij. Het volgende onderdeel wordt nu ontgrendeld.",
     "streakBody": "Streak: {streak}/3. Nog {remaining} goed op rij.",
     "nextCluster": "Volgend onderdeel",
-    "nextQuestion": "Volgende +",
+    "nextQuestion": "Volgende",
     "retry": "Opnieuw",
     "wrongTitle": "Niet helemaal goed",
     "studentAnswer": "Jouw antwoord",
@@ -342,7 +342,7 @@
     "step": "Stap {n}:",
     "confirmSteps": "Bevestig {n} foute stap{plural}",
     "confirmNone": "Geen van bovenstaande — ga door",
-    "nextPlus": "Volgende +",
+    "nextPlus": "Volgende",
     "retryButton": "Opnieuw proberen",
     "genericError": "Er ging iets mis."
   },

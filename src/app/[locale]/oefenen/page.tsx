@@ -22,7 +22,7 @@ export async function generateMetadata({
 }
 
 type PageProps = {
-  searchParams?: Promise<{ topic?: string; q?: string }>
+  searchParams?: Promise<{ topic?: string; q?: string; cluster?: string }>
 }
 
 export default async function OefenenPage({ searchParams }: PageProps) {
@@ -38,6 +38,7 @@ export default async function OefenenPage({ searchParams }: PageProps) {
   const params = (await searchParams) ?? {}
   const slugParam = params.topic?.trim()
   const qParam = params.q?.trim() ?? null
+  const clusterParam = params.cluster?.trim() ?? null
 
   const { data: topics } = await supabase
     .from('topics')
@@ -52,10 +53,25 @@ export default async function OefenenPage({ searchParams }: PageProps) {
 
   const activeTopic = resolved ? list.find((tp) => tp.slug === resolved) : undefined
 
+  const { data: clusters } = activeTopic
+    ? await supabase
+        .from('topic_clusters')
+        .select('id, title, slug')
+        .eq('topic_id', activeTopic.id)
+        .order('order_index')
+    : { data: [] }
+
+  const clusterList = clusters ?? []
+  const activeCluster = clusterParam
+    ? clusterList.find((c) => c.slug === clusterParam) ?? null
+    : null
+
   let tiles: ExerciseTile[] = []
   if (activeTopic) {
     const row = await loadExerciseTilesForTopic(supabase, activeTopic.id)
-    tiles = row.tiles
+    tiles = activeCluster
+      ? row.tiles.filter((t) => t.clusterId === activeCluster.id)
+      : row.tiles
   }
 
   let pack: Awaited<ReturnType<typeof loadFreePracticePackForQuestion>> = null
@@ -75,8 +91,15 @@ export default async function OefenenPage({ searchParams }: PageProps) {
   }
 
   const topicBase = resolved
-    ? `/oefenen?topic=${encodeURIComponent(resolved)}`
+    ? `/oefenen?topic=${encodeURIComponent(resolved)}${activeCluster ? `&cluster=${encodeURIComponent(activeCluster.slug)}` : ''}`
     : '/oefenen'
+
+  // Auto-advance: find the next tile after the current question
+  const currentTileIndex = pack ? tiles.findIndex((t) => t.questionId === pack.question.id) : -1
+  const nextTile = tiles[(currentTileIndex + 1) % tiles.length] ?? tiles[0]
+  const nextQuestionHref = nextTile
+    ? `${topicBase}&q=${encodeURIComponent(nextTile.questionId)}#oefenen-practice`
+    : topicBase
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
@@ -93,12 +116,42 @@ export default async function OefenenPage({ searchParams }: PageProps) {
                   href={`/oefenen?topic=${encodeURIComponent(tp.slug)}`}
                   className={
                     on
-                      ? 'block rounded-md bg-accent px-3 py-2 text-sm font-medium text-white lg:mx-0'
-                      : 'block rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
+                      ? 'flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white lg:mx-0'
+                      : 'flex items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
                   }
                 >
+                  <svg
+                    className={`hidden size-3 shrink-0 transition-transform lg:block ${on ? 'rotate-90' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden
+                  >
+                    <path d="M8 5l8 7-8 7V5z" />
+                  </svg>
                   {tp.title}
                 </Link>
+                {on && clusterList.length > 0 && (
+                  <ul className="mb-1 hidden lg:block">
+                    {clusterList.map((c) => {
+                      const clOn = activeCluster?.id === c.id
+                      return (
+                        <li key={c.id}>
+                          <Link
+                            href={`/oefenen?topic=${encodeURIComponent(tp.slug)}&cluster=${encodeURIComponent(c.slug)}`}
+                            className={
+                              clOn
+                                ? 'flex items-center gap-2 rounded-md py-1 pl-6 pr-3 text-xs font-medium text-accent'
+                                : 'flex items-center gap-2 rounded-md py-1 pl-6 pr-3 text-xs text-text-muted hover:text-text'
+                            }
+                          >
+                            <span className={`size-1.5 shrink-0 rounded-full ${clOn ? 'bg-accent' : 'bg-border'}`} />
+                            {c.title}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
               </li>
             )
           })}
@@ -161,7 +214,8 @@ export default async function OefenenPage({ searchParams }: PageProps) {
                 }}
                 steps={pack.steps}
                 streakAtStart={streakAtStart}
-                nextHref={topicBase}
+                nextHref={nextQuestionHref}
+                questionNumber={currentTileIndex >= 0 ? tiles[currentTileIndex].ordinal : undefined}
               />
             </section>
           ) : activeTopic && qParam && !pack?.question ? (
