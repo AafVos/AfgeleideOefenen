@@ -28,7 +28,12 @@ export function TopicBlock({ topic }: { topic: TopicData }) {
 
   const mastered = topic.clusters.filter((c) => c.isKnown).length
   const total = topic.clusters.length
-  const pct = total > 0 ? Math.round((mastered / total) * 100) : 0
+  const weightedProgress = topic.clusters.reduce((sum, c) => {
+    if (c.isKnown) return sum + 1
+    if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
+    return sum
+  }, 0)
+  const pct = total > 0 ? Math.round((weightedProgress / total) * 100) : 0
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-surface">

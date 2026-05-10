@@ -44,15 +44,18 @@ export function PracticeCard({
   steps,
   streakAtStart,
   nextHref,
+  questionNumber,
 }: {
   question: Question
   steps: Step[]
   streakAtStart: number
   nextHref?: string | undefined
+  questionNumber?: number
 }) {
   const router = useRouter()
   const t = useTranslations('PracticeCard')
   const [pending, startTransition] = useTransition()
+  const [submitting, setSubmitting] = useState(false)
   const [answer, setAnswer] = useState('')
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const startedAtRef = useRef<number>(0)
@@ -63,6 +66,7 @@ export function PracticeCard({
   }, [question.id])
 
   function next() {
+    setSubmitting(false)
     setAnswer('')
     setState({ phase: 'input', error: null })
     startedAtRef.current = Date.now()
@@ -123,6 +127,7 @@ export function PracticeCard({
     const startedAt = startedAtRef.current || Date.now()
     const timeSpent = Math.max(1, Math.round((Date.now() - startedAt) / 1000))
 
+    setSubmitting(true)
     startTransition(async () => {
       const result: SubmitResult = await submitAnswerAction(question.id, answer, timeSpent)
       if (result.kind === 'error') {
@@ -149,13 +154,18 @@ export function PracticeCard({
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-2">
-        <Badge
-          tone={
-            question.difficulty === 1 ? 'accent' : question.difficulty === 2 ? 'warn' : 'danger'
-          }
-        >
-          {t('difficulty', { n: question.difficulty })}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {questionNumber != null && (
+            <span className="text-xs font-medium text-text-muted">#{questionNumber}</span>
+          )}
+          <Badge
+            tone={
+              question.difficulty === 1 ? 'accent' : question.difficulty === 2 ? 'warn' : 'danger'
+            }
+          >
+            {t('difficulty', { n: question.difficulty })}
+          </Badge>
+        </div>
         <FlagQuestionButton questionId={question.id} />
       </div>
 
@@ -175,7 +185,7 @@ export function PracticeCard({
 
       {state.phase === 'input' && (
         <div className="space-y-3">
-          {pending ? (
+          {pending && submitting ? (
             <div
               role="status"
               aria-live="polite"
@@ -193,14 +203,25 @@ export function PracticeCard({
               {answer.trim() ? (
                 <div className="mt-4 rounded-lg border border-border/60 bg-surface/90 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-text-muted">{t('yourAnswer')}</p>
-                  <p className="mt-1 font-mono text-base text-text">{answer}</p>
+                  <div className="mt-1 font-serif text-lg text-text">
+                    <TeX tex={toLatexPreview(answer)} />
+                  </div>
                 </div>
               ) : null}
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-3">
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-text">{t('yourAnswer')}</span>
+                <div className="mb-2 flex min-h-8 items-center gap-2">
+                  <span className="text-xs uppercase tracking-wide text-text-muted">{t('preview')}</span>
+                  {answer.trim() ? (
+                    <span className="font-serif text-lg text-text">
+                      <TeX tex={toLatexPreview(answer)} />
+                    </span>
+                  ) : (
+                    <span className="text-text-muted">—</span>
+                  )}
+                </div>
                 <input
                   ref={inputRef}
                   autoFocus
@@ -208,7 +229,7 @@ export function PracticeCard({
                   onChange={(e) => setAnswer(e.target.value)}
                   placeholder={t('placeholder')}
                   className="w-full rounded-lg border border-border bg-surface px-4 py-3 font-mono text-lg text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
-                  disabled={pending}
+                  disabled={pending && submitting}
                   inputMode="text"
                   autoCapitalize="off"
                   autoCorrect="off"
@@ -220,22 +241,12 @@ export function PracticeCard({
                   onClear={handleClear}
                   disabled={pending}
                 />
-                <div className="mt-2 flex min-h-6 items-center gap-2 text-sm">
-                  <span className="text-xs uppercase tracking-wide text-text-muted">{t('preview')}</span>
-                  {answer.trim() ? (
-                    <span className="font-serif text-lg text-text">
-                      <TeX tex={toLatexPreview(answer)} />
-                    </span>
-                  ) : (
-                    <span className="text-text-muted">—</span>
-                  )}
-                </div>
               </label>
 
               <ErrorBanner>{state.error}</ErrorBanner>
 
               <div className="flex items-center gap-3">
-                <Button type="submit" disabled={pending || !answer.trim()}>
+                <Button type="submit" disabled={(pending && submitting) || !answer.trim()}>
                   {t('submit')}
                 </Button>
                 {streakAtStart > 0 && (
@@ -306,16 +317,6 @@ function CorrectFeedback({
         <Button onClick={onNext} disabled={pending}>
           {mastered ? t('nextCluster') : t('nextQuestion')}
         </Button>
-        {!mastered && (
-          <button
-            type="button"
-            onClick={onRetry}
-            disabled={pending}
-            className="rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
-          >
-            {t('retry')}
-          </button>
-        )}
       </div>
     </div>
   )
@@ -390,7 +391,7 @@ function WrongFeedback({
       <div className="mt-2 flex flex-col gap-1 text-sm text-accent-2">
         <span>
           {t('studentAnswer')}:{' '}
-          <code className="rounded bg-white/60 px-1.5 py-0.5 font-mono">{studentAnswer}</code>
+          <span className="font-serif"><TeX tex={toLatexPreview(studentAnswer)} /></span>
         </span>
         <span>
           {t('correctAnswer')}:{' '}
@@ -408,73 +409,46 @@ function WrongFeedback({
         </span>
       </div>
 
-      {errorExplanation && (
-        <div className="mt-3 rounded-md border border-accent-2/30 bg-white/70 p-3 text-sm text-text">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-accent-2">
-            {t('whatWentWrong')}
-          </p>
-          <p className="leading-relaxed">{errorExplanation}</p>
-        </div>
-      )}
 
       {steps.length > 0 ? (
-        <details
-          open
-          className="mt-4 rounded-lg border border-border bg-white/90 shadow-sm [&_summary::-webkit-details-marker]:hidden"
-        >
-          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-text">
-            {t('stepsTitle')}
-            <span className="mt-0.5 block text-xs font-normal text-text-muted">
-              {t('stepsHint')}
-            </span>
-          </summary>
-          <ol className="list-none space-y-3 border-t border-border px-4 py-3 text-sm text-text">
-            {orderedSteps.map((s) => (
-              <li key={s.id} className="flex gap-3 leading-relaxed">
-                <span className="min-w-[1.75rem] shrink-0 font-semibold tabular-nums text-accent">
-                  {s.step_order}.
-                </span>
-                <span>{s.step_description}</span>
-              </li>
-            ))}
-          </ol>
-        </details>
-      ) : (
-        <p className="mt-3 text-xs text-text-muted">{t('noSteps')}</p>
-      )}
-
-      {!resolved && steps.length > 0 && (
-        <div className="mt-4">
-          <p className="text-sm font-medium text-text">{t('whereWasYourMistake')}</p>
-          <ul className="mt-2 space-y-1">
+        <div className="mt-4 rounded-lg border border-border bg-white/90 shadow-sm">
+          <div className="px-4 py-3">
+            <p className="text-sm font-semibold text-text">{t('stepsTitle')}</p>
+            <p className="mt-0.5 text-xs text-text-muted">{t('stepsHint')}</p>
+          </div>
+          <ol className="list-none space-y-1 border-t border-border px-3 py-3 text-sm text-text">
             {orderedSteps.map((s) => (
               <li key={s.id}>
-                <label className="flex cursor-pointer items-start gap-2 rounded-md border border-transparent bg-white/60 px-3 py-2 text-sm text-text hover:border-accent-2/40">
+                <label className={`flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 leading-relaxed transition ${resolved ? 'cursor-default' : 'hover:border-accent-2/40'} ${wrongSteps.has(s.id) ? 'border-accent-2/40 bg-accent-2-light/60' : 'border-transparent bg-white/40'}`}>
                   <input
                     type="checkbox"
                     checked={wrongSteps.has(s.id)}
-                    onChange={() => toggleStep(s.id)}
-                    className="mt-0.5 size-4 rounded border-border"
+                    onChange={() => !resolved && toggleStep(s.id)}
+                    disabled={resolved}
+                    className="mt-0.5 size-4 shrink-0 rounded border-border accent-[var(--color-accent-2)]"
                   />
+                  <span className="min-w-[1.25rem] shrink-0 font-semibold tabular-nums text-accent">
+                    {s.step_order}.
+                  </span>
                   <span>
-                    <span className="font-medium text-text">{t('step', { n: s.step_order })}</span>{' '}
-                    <span className="text-text-muted">{s.step_description}</span>
+                    <RichMath source={s.step_description} />
                   </span>
                 </label>
               </li>
             ))}
-          </ul>
-          <Button
-            onClick={doResolveWithSteps}
-            variant="secondary"
-            disabled={pending}
-            className="mt-3"
-          >
-            {wrongSteps.size
-              ? t('confirmSteps', { n: wrongSteps.size, plural: wrongSteps.size > 1 ? 's' : '' })
-              : t('confirmNone')}
-          </Button>
+          </ol>
+          {!resolved && (
+            <div className="border-t border-border px-4 py-3">
+              <Button onClick={doResolveWithSteps} variant="secondary" disabled={pending}>
+                {wrongSteps.size
+                  ? t('confirmSteps', { n: wrongSteps.size, plural: wrongSteps.size > 1 ? 's' : '' })
+                  : t('confirmNone')}
+              </Button>
+            </div>
+          )}
         </div>
+      ) : (
+        <p className="mt-3 text-xs text-text-muted">{t('noSteps')}</p>
       )}
 
       <ErrorBanner>{error}</ErrorBanner>

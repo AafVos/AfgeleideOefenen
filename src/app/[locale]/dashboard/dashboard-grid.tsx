@@ -27,7 +27,12 @@ export function DashboardGrid({
   const allClusters = useMemo(() => topicData.flatMap((t) => t.clusters), [topicData])
   const mastered = allClusters.filter((c) => c.isKnown).length
   const total = allClusters.length
-  const pctOverall = total > 0 ? Math.round((mastered / total) * 100) : 0
+  const weightedProgress = allClusters.reduce((sum, c) => {
+    if (c.isKnown) return sum + 1
+    if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
+    return sum
+  }, 0)
+  const pctOverall = total > 0 ? Math.round((weightedProgress / total) * 100) : 0
   const pctAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
 
   return (
@@ -36,7 +41,7 @@ export function DashboardGrid({
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <KpiHero pct={pctOverall} mastered={mastered} total={total} />
         <KpiCard label="Streak" value={String(streakDays)} sub="dagen op rij" tone="warn" />
-        <KpiCard label="Accuracy" value={`${pctAccuracy}%`} sub={`${totalCorrect} van ${totalAnswered}`} tone="accent" />
+        <KpiCard label="Accuracy" value={`${pctAccuracy}%`} tone="accent" />
         <KpiCard label="Vragen" value={String(totalAnswered)} sub="totaal beantwoord" tone="neutral" />
       </div>
 
@@ -91,7 +96,7 @@ function KpiCard({
 }: {
   label: string
   value: string
-  sub: string
+  sub?: string
   tone: 'accent' | 'warn' | 'neutral'
 }) {
   const valueColor =
@@ -100,7 +105,7 @@ function KpiCard({
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">{label}</div>
       <div className={cn('font-serif text-2xl', valueColor)}>{value}</div>
-      <div className="text-xs text-text-muted">{sub}</div>
+      {sub && <div className="text-xs text-text-muted">{sub}</div>}
     </div>
   )
 }

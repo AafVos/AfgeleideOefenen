@@ -75,11 +75,15 @@ export function ExerciseTileGrid({
                     title={DIFF_LABEL[tile.difficulty]}
                     className={cn(
                       'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
-                      tile.difficulty === 1 &&
+                      tile.lastCorrect === true &&
+                        'bg-emerald-100 text-emerald-700',
+                      tile.lastCorrect === false &&
+                        'bg-rose-100 text-rose-700',
+                      tile.lastCorrect == null && tile.difficulty === 1 &&
                         'bg-accent-light text-accent',
-                      tile.difficulty === 2 &&
+                      tile.lastCorrect == null && tile.difficulty === 2 &&
                         'bg-surface-2 text-text-muted',
-                      tile.difficulty === 3 &&
+                      tile.lastCorrect == null && tile.difficulty === 3 &&
                         'border border-accent-2/30 bg-accent-2-light text-accent-2',
                     )}
                   >

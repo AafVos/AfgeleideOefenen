@@ -6,6 +6,7 @@ type DB = SupabaseClient<Database>
 
 export type ExerciseTile = {
   questionId: string
+  clusterId: string
   ordinal: number
   difficulty: 1 | 2 | 3
   body: string
@@ -102,6 +103,7 @@ export async function loadExerciseTilesForTopic(
 
   const tiles: ExerciseTile[] = enriched.map(({ q }, i) => ({
     questionId: q.id,
+    clusterId: q.cluster_id,
     ordinal: i + 1,
     difficulty: clampDifficulty(q.difficulty),
     body: q.body,
