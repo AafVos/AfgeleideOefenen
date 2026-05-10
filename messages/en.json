@@ -137,7 +137,8 @@
     "forgotPassword": "Forgot your password?",
     "showPassword": "Show",
     "hidePassword": "Hide",
-    "resetLink": "Reset your password"
+    "resetLink": "Reset your password",
+    "callbackError": "Login failed. Please try again or use a different login method."
   },
   "Register": {
     "title": "Sign up · derivativepractice.nl",

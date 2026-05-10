@@ -137,7 +137,8 @@
     "forgotPassword": "Wachtwoord vergeten?",
     "showPassword": "Toon",
     "hidePassword": "Verberg",
-    "resetLink": "Herstel je wachtwoord"
+    "resetLink": "Herstel je wachtwoord",
+    "callbackError": "Inloggen mislukt. Probeer het opnieuw of gebruik een andere inlogmethode."
   },
   "Register": {
     "title": "Registreren · afgeleideoefenen.nl",

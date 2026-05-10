@@ -16,7 +16,11 @@ export async function generateMetadata({
   return { title: t('title') }
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   const supabase = await createClient()
   const locale = await getLocale()
   const {
@@ -28,6 +32,8 @@ export default async function LoginPage() {
   }
 
   const t = await getTranslations('Login')
+  const { error } = await searchParams
+  const callbackError = error === 'auth_callback_failed' ? t('callbackError') : null
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
@@ -35,7 +41,7 @@ export default async function LoginPage() {
       <p className="mt-2 text-sm text-text-muted">{t('subtitle')}</p>
 
       <div className="mt-8 rounded-xl border border-border bg-surface p-6">
-        <LoginForm />
+        <LoginForm callbackError={callbackError} />
       </div>
 
       <p className="mt-6 text-center text-sm text-text-muted">
