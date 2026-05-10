@@ -331,6 +331,7 @@
     "streakBody": "Streak: {streak}/3. {remaining} more correct in a row.",
     "nextCluster": "Next section",
     "nextQuestion": "Next",
+    "navigating": "Loading…",
     "retry": "Try again",
     "wrongTitle": "Not quite right",
     "studentAnswer": "Your answer",

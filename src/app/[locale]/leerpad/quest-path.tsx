@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
 
 import { Link } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
@@ -35,6 +36,12 @@ export function QuestPath({
 }) {
   const params = useSearchParams()
   const topicParam = params.get('topic')
+  const clusterParam = params.get('cluster')
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLoadingId(null)
+  }, [clusterParam])
 
   const nodes = useMemo(() => {
     const out: Array<{
@@ -91,6 +98,8 @@ export function QuestPath({
               index={i}
               prev={nodes[i - 1] ?? null}
               isActive={node.cluster.id === computedActiveId}
+              isLoading={loadingId === node.cluster.id}
+              onLoadStart={() => setLoadingId(node.cluster.id)}
               tint={TOPIC_TINTS[node.topicIdx % TOPIC_TINTS.length]}
             />
           ))}
@@ -105,6 +114,8 @@ function PathRow({
   index,
   prev,
   isActive,
+  isLoading,
+  onLoadStart,
   tint,
 }: {
   node: {
@@ -120,6 +131,8 @@ function PathRow({
     topic: TopicWithClusters
   } | null
   isActive: boolean
+  isLoading: boolean
+  onLoadStart: () => void
   tint: string
 }) {
   const offsetPx = Math.sin(index * 0.55) * 60
@@ -164,6 +177,8 @@ function PathRow({
             isMastered={isMastered}
             isLocked={isLocked}
             isActive={isActive}
+            isLoading={isLoading}
+            onLoadStart={onLoadStart}
           />
         </div>
       </div>
@@ -208,6 +223,8 @@ function NodePill({
   isMastered,
   isLocked,
   isActive,
+  isLoading,
+  onLoadStart,
 }: {
   cluster: TopicWithClusters['clusters'][number]
   topicSlug: string
@@ -215,6 +232,8 @@ function NodePill({
   isMastered: boolean
   isLocked: boolean
   isActive: boolean
+  isLoading: boolean
+  onLoadStart: () => void
 }) {
   // Locked
   if (isLocked) {
@@ -233,14 +252,15 @@ function NodePill({
     return (
       <Link
         href={href}
+        onClick={onLoadStart}
         className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-white transition-transform hover:-translate-y-0.5"
-        style={{ backgroundColor: tint, boxShadow: `0 3px 0 ${shade(tint, -22)}` }}
+        style={{ backgroundColor: tint, boxShadow: `0 3px 0 ${shade(tint, -22)}`, opacity: isLoading ? 0.7 : 1 }}
       >
         <span
           className="flex size-6 items-center justify-center rounded-full bg-white"
           style={{ color: tint }}
         >
-          <CheckIcon />
+          {isLoading ? <SpinnerIcon /> : <CheckIcon />}
         </span>
         {cluster.title}
       </Link>
@@ -251,26 +271,30 @@ function NodePill({
   if (isActive) {
     return (
       <div className="relative">
-        <span
-          className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-text px-2.5 py-0.5 text-[11px] font-medium text-white"
-          aria-hidden
-        >
-          ▼ start hier
-        </span>
+        {!isLoading && (
+          <span
+            className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-text px-2.5 py-0.5 text-[11px] font-medium text-white"
+            aria-hidden
+          >
+            ▼ start hier
+          </span>
+        )}
         <Link
           href={href}
+          onClick={onLoadStart}
           className="inline-flex items-center gap-2 rounded-full border-2 bg-surface px-4 py-2 text-sm font-medium animate-[questPulse_1.6s_ease-in-out_infinite]"
           style={{
             borderColor: tint,
             color: tint,
             boxShadow: `0 3px 0 ${tint}, 0 0 0 5px ${tint}22`,
+            opacity: isLoading ? 0.7 : 1,
           }}
         >
           <span
             className="flex size-7 items-center justify-center rounded-full text-white"
             style={{ backgroundColor: tint }}
           >
-            ▶
+            {isLoading ? <SpinnerIcon /> : '▶'}
           </span>
           {cluster.title}
         </Link>
@@ -283,12 +307,34 @@ function NodePill({
   return (
     <Link
       href={href}
+      onClick={onLoadStart}
       className="inline-flex items-center gap-2 rounded-full border-2 border-dashed bg-surface px-4 py-1.5 text-sm transition hover:bg-surface-2"
-      style={{ borderColor: tint, color: tint }}
+      style={{ borderColor: tint, color: tint, opacity: isLoading ? 0.7 : 1 }}
     >
-      <span className="size-2 rounded-full" style={{ backgroundColor: tint }} />
+      {isLoading ? (
+        <SpinnerIcon style={{ color: tint }} />
+      ) : (
+        <span className="size-2 rounded-full" style={{ backgroundColor: tint }} />
+      )}
       {cluster.title}
     </Link>
+  )
+}
+
+function SpinnerIcon({ style }: { style?: CSSProperties }) {
+  return (
+    <svg
+      className="size-3.5 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      aria-hidden
+      style={style}
+    >
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+    </svg>
   )
 }
 

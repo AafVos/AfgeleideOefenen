@@ -315,7 +315,7 @@ function CorrectFeedback({
       </p>
       <div className="mt-4 flex items-center gap-2">
         <Button onClick={onNext} disabled={pending}>
-          {mastered ? t('nextCluster') : t('nextQuestion')}
+          {pending ? t('navigating') : mastered ? t('nextCluster') : t('nextQuestion')}
         </Button>
       </div>
     </div>
@@ -455,7 +455,7 @@ function WrongFeedback({
 
       <div className="mt-4 flex items-center gap-2">
         <Button onClick={handleNext} disabled={pending}>
-          {t('nextPlus')}
+          {pending ? t('navigating') : t('nextPlus')}
         </Button>
         <button
           type="button"
