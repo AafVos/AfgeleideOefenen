@@ -92,7 +92,6 @@ export function ExerciseTileGrid({
                 </div>
                 <ExerciseTileMathPreview
                   latex_body={tile.latex_body}
-                  body={tile.body}
                 />
               </Link>
             </li>

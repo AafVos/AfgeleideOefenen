@@ -9,7 +9,6 @@ export type ExerciseTile = {
   clusterId: string
   ordinal: number
   difficulty: 1 | 2 | 3
-  body: string
   latex_body: string | null
   /** Platte tekst voor aria / screenreader */
   preview: string
@@ -29,11 +28,9 @@ function stripForPreview(raw: string, maxLen: number): string {
 
 /** Platte tekst voor aria / screenreader (KaTeX op de tegel zelf). */
 export function previewFromQuestion(opts: {
-  body: string
   latex_body: string | null
 }): string {
-  const base = opts.latex_body?.trim().length ? opts.latex_body : opts.body
-  return stripForPreview(base, 56)
+  return stripForPreview(opts.latex_body ?? '', 56)
 }
 
 /**
@@ -53,7 +50,7 @@ export async function loadExerciseTilesForTopic(
         .order('order_index'),
       db
         .from('questions')
-        .select('id, cluster_id, difficulty, order_index, body, latex_body')
+        .select('id, cluster_id, difficulty, order_index, latex_body')
         .eq('topic_id', topicId),
     ])
 
