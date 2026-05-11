@@ -138,7 +138,10 @@
     "showPassword": "Show",
     "hidePassword": "Hide",
     "resetLink": "Reset your password",
-    "callbackError": "Login failed. Please try again or use a different login method."
+    "callbackError": "Login failed. Please try again or use a different login method.",
+    "resendButton": "Resend confirmation email",
+    "resendPending": "Sending…",
+    "resendSuccess": "Email sent — check your inbox (and spam folder)."
   },
   "Register": {
     "title": "Sign up · derivativepractice.nl",

@@ -138,7 +138,10 @@
     "showPassword": "Toon",
     "hidePassword": "Verberg",
     "resetLink": "Herstel je wachtwoord",
-    "callbackError": "Inloggen mislukt. Probeer het opnieuw of gebruik een andere inlogmethode."
+    "callbackError": "Inloggen mislukt. Probeer het opnieuw of gebruik een andere inlogmethode.",
+    "resendButton": "Stuur bevestigingsmail opnieuw",
+    "resendPending": "Bezig met versturen…",
+    "resendSuccess": "Mail verstuurd — check je inbox (en je spammap)."
   },
   "Register": {
     "title": "Registreren · afgeleideoefenen.nl",
