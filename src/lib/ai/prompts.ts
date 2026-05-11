@@ -23,7 +23,7 @@ Antwoord ALTIJD in het Nederlands en ALLEEN met geldige JSON (geen Markdown, gee
 Context:
 - Topic: ${input.topicTitle}
 - Cluster: ${input.clusterTitle}
-- Vraag: ${input.questionBody}
+- Vraag: Bepaal de afgeleide van ${input.questionBody}
 - Correct antwoord: ${input.correctAnswer}
 - Antwoord van de leerling: ${input.studentAnswer}
 
