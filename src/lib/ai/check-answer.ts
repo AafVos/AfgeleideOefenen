@@ -15,8 +15,6 @@ export type CheckAnswerResult = {
   rootCauseSlug: string | null
   /** Kwam het antwoord uit onze cache? */
   fromCache: boolean
-  /** Aantal nieuwe vragen dat Gemini heeft toegevoegd */
-  newQuestions: number
   /**
    * True als AI bepaalt dat het antwoord wiskundig correct is maar in een
    * andere notatie dan opgeslagen. De caller moet het antwoord dan als goed
@@ -34,14 +32,6 @@ type AiAnswerJson = {
   root_cause?: string
   error_explanation?: string
   solution_steps?: string[]
-  needs_new_questions?: boolean
-  generated_questions?: Array<{
-    body?: string
-    latex_body?: string
-    answer?: string
-    latex_answer?: string
-    difficulty?: number
-  }>
 }
 
 /**
@@ -71,7 +61,6 @@ export async function checkWrongAnswer(
         errorExplanation: 'Goed gedaan! Jouw antwoord is wiskundig correct.',
         rootCauseSlug: null,
         fromCache: true,
-        newQuestions: 0,
         isMathematicallyCorrect: true,
         generatedSteps: [],
       }
@@ -94,7 +83,6 @@ export async function checkWrongAnswer(
         errorExplanation: row.error_explanation,
         rootCauseSlug: row.root_cause_slug,
         fromCache: true,
-        newQuestions: 0,
         isMathematicallyCorrect: false,
         generatedSteps: [],
       }
@@ -124,11 +112,8 @@ export async function checkWrongAnswer(
         .eq('topic_id', question.topic_id),
     ])
 
-  // 4. Aantal beschikbare vragen én check of stappenplan al bestaat
-  const [availabilityPerDifficulty, stepsCheck] = await Promise.all([
-    countAvailablePerDifficulty(db, question.cluster_id),
-    db.from('question_steps').select('id').eq('question_id', question.id).limit(1),
-  ])
+  // 4. Check of stappenplan al bestaat
+  const stepsCheck = await db.from('question_steps').select('id').eq('question_id', question.id).limit(1)
   const stepsAlreadyExist = (stepsCheck.data?.length ?? 0) > 0
 
   // 5. Prompt → Gemini
@@ -142,7 +127,6 @@ export async function checkWrongAnswer(
       slug: r.slug,
       description: r.description,
     })),
-    availability: availabilityPerDifficulty,
     stepsAlreadyExist,
   })
 
@@ -182,7 +166,6 @@ export async function checkWrongAnswer(
       errorExplanation: explanation,
       rootCauseSlug: null,
       fromCache: false,
-      newQuestions: 0,
       isMathematicallyCorrect: true,
       generatedSteps: [],
     }
@@ -219,80 +202,12 @@ export async function checkWrongAnswer(
     }
   }
 
-  // 9. Nieuwe vragen opslaan indien Gemini ze genereert
-  let newQuestions = 0
-  if (
-    ai.data.needs_new_questions &&
-    Array.isArray(ai.data.generated_questions) &&
-    ai.data.generated_questions.length > 0
-  ) {
-    const toInsert = ai.data.generated_questions
-      .filter(
-        (q): q is Required<Pick<NonNullable<typeof q>, 'body' | 'answer' | 'difficulty'>> & typeof q =>
-          Boolean(q.body && q.answer && (q.difficulty === 1 || q.difficulty === 2 || q.difficulty === 3)),
-      )
-      .map((q) => ({
-        topic_id: question.topic_id,
-        cluster_id: question.cluster_id,
-        body: q.body!,
-        latex_body: stripMathDelimiters(q.latex_body),
-        answer: q.answer!,
-        latex_answer: stripMathDelimiters(q.latex_answer),
-        difficulty: q.difficulty as 1 | 2 | 3,
-        root_cause_tags: rootCauseSlug ? [rootCauseSlug] : [],
-        is_ai_generated: true,
-      }))
-
-    if (toInsert.length) {
-      const { error, data } = await db
-        .from('questions')
-        .insert(toInsert)
-        .select('id')
-      if (!error) newQuestions = data?.length ?? 0
-    }
-  }
-
   return {
     errorExplanation: explanation,
     rootCauseSlug,
     fromCache: false,
-    newQuestions,
     isMathematicallyCorrect: false,
     generatedSteps,
   }
 }
 
-/**
- * Gemini plakt soms `$...$` of `$$...$$` om zijn LaTeX-output, terwijl onze
- * `latex_body` / `latex_answer` kolommen schone LaTeX verwachten. Strip die
- * omliggende delimiters zodat KaTeX de string direct kan renderen.
- */
-function stripMathDelimiters(raw: string | null | undefined): string | null {
-  if (!raw) return null
-  let s = raw.trim()
-  if (!s) return null
-  if (s.startsWith('$$') && s.endsWith('$$') && s.length >= 4) {
-    s = s.slice(2, -2).trim()
-  } else if (s.startsWith('$') && s.endsWith('$') && s.length >= 2) {
-    s = s.slice(1, -1).trim()
-  }
-  return s || null
-}
-
-async function countAvailablePerDifficulty(
-  db: DB,
-  clusterId: string,
-): Promise<Record<1 | 2 | 3, number>> {
-  const { data } = await db
-    .from('questions')
-    .select('difficulty')
-    .eq('cluster_id', clusterId)
-
-  const counts: Record<1 | 2 | 3, number> = { 1: 0, 2: 0, 3: 0 }
-  for (const q of data ?? []) {
-    if (q.difficulty === 1 || q.difficulty === 2 || q.difficulty === 3) {
-      counts[q.difficulty] += 1
-    }
-  }
-  return counts
-}
