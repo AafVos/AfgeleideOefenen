@@ -171,10 +171,10 @@ export function PracticeCard({
 
       <div className="mb-6">
         <div className="font-serif text-2xl leading-snug text-text">
-          {question.latex_body.includes('$') ? (
+          {question.latex_body?.includes('$') ? (
             <RichMath source={question.latex_body} />
           ) : (
-            <TeX tex={question.latex_body} displayMode />
+            <TeX tex={question.latex_body ?? ''} displayMode />
           )}
         </div>
       </div>
