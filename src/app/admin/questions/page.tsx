@@ -33,7 +33,7 @@ export default async function QuestionsPage({
   let query = supabase
     .from('questions')
     .select(
-      'id, body, answer, difficulty, is_ai_generated, topic_id, cluster_id, created_at',
+      'id, answer, difficulty, is_ai_generated, topic_id, cluster_id, created_at',
     )
     .order('created_at', { ascending: false })
     .limit(200)
@@ -157,9 +157,6 @@ export default async function QuestionsPage({
               const cluster = clusterById.get(q.cluster_id)
               return (
                 <tr key={q.id} className="align-top">
-                  <td className="px-4 py-2 max-w-[32ch]">
-                    <p className="line-clamp-2">{q.body}</p>
-                  </td>
                   <td className="px-4 py-2 font-mono text-xs text-text-muted">
                     {q.answer}
                   </td>

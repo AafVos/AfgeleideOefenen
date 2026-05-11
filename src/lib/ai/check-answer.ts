@@ -104,7 +104,7 @@ export async function checkWrongAnswer(
   // 3. Context ophalen voor de prompt
   const { data: question } = await db
     .from('questions')
-    .select('id, body, answer, topic_id, cluster_id, difficulty')
+    .select('id, latex_body, answer, topic_id, cluster_id, difficulty')
     .eq('id', questionId)
     .maybeSingle()
 
@@ -133,7 +133,7 @@ export async function checkWrongAnswer(
 
   // 5. Prompt → Gemini
   const prompt = buildCheckAnswerPrompt({
-    questionBody: question.body,
+    questionBody: question.latex_body ?? '',
     correctAnswer: question.answer,
     studentAnswer,
     topicTitle: topic?.title ?? '',

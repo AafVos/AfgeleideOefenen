@@ -106,7 +106,7 @@ export async function loadExerciseTilesForTopic(
     clusterId: q.cluster_id,
     ordinal: i + 1,
     difficulty: clampDifficulty(q.difficulty),
-    body: q.body,
+
     latex_body: q.latex_body,
     preview: previewFromQuestion(q),
     lastCorrect: lastCorrectByQuestionId.has(q.id)
