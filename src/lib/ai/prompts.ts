@@ -9,7 +9,6 @@ export function buildCheckAnswerPrompt(input: {
   topicTitle: string
   clusterTitle: string
   rootCauses: Array<{ slug: string; description: string }>
-  availability: Record<1 | 2 | 3, number>
   stepsAlreadyExist: boolean
 }): string {
   const rootCauseLines = input.rootCauses
@@ -29,11 +28,6 @@ Context:
 
 Bekende root causes voor dit topic (kies bij voorkeur een van deze slugs):
 ${rootCauseLines || '- (geen opgegeven)'}
-
-Hoeveelheid al bestaande vragen in dit cluster per moeilijkheid:
-- difficulty 1 (basis): ${input.availability[1]}
-- difficulty 2 (standaard): ${input.availability[2]}
-- difficulty 3 (uitdaging): ${input.availability[3]}
 
 === STAP 1: IS HET WISKUNDIG EQUIVALENT? ===
 Bereken of het antwoord van de leerling wiskundig EXACT hetzelfde resultaat geeft als het correcte antwoord.
@@ -66,8 +60,6 @@ ${input.stepsAlreadyExist
    - Voorbeeld stap: "Differentieer: $g'(u) = \\frac{1}{2}u^{-1/2}$ en $u'(x) = 2$."
    - Voorbeeld stap: "Pas de kettingregel toe: $f'(x) = g'(u(x)) \\cdot u'(x) = \\frac{1}{\\sqrt{2x+1}}$."
    Gebruik ALTIJD $...$ rond wiskunde, nooit kale tekst-notatie zoals x^2 of f'(x) buiten dollartekens.`}
-4. Beoordeel of extra oefenvragen nodig zijn (needs_new_questions=true alleen als minder dan 2 vragen per difficulty).
-5. Stel max 3 nieuwe vragen voor over de missende difficulties.
 
 Antwoord UITSLUITEND met dit JSON-schema:
 {
@@ -78,16 +70,6 @@ Antwoord UITSLUITEND met dit JSON-schema:
     "string (stap 1, concreet met getallen van DEZE vraag)",
     "string (stap 2)",
     "..."
-  ],
-  "needs_new_questions": boolean,
-  "generated_questions": [
-    {
-      "body": "string",
-      "latex_body": "string of null",
-      "answer": "string",
-      "latex_answer": "string of null",
-      "difficulty": 1 | 2 | 3
-    }
   ]
 }`
 }
