@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
+import { Link } from '@/i18n/navigation'
 import { signupAction, type SignupState } from './actions'
 
 const initialState: SignupState = { error: null, notice: null }
@@ -47,6 +48,15 @@ export function SignupForm() {
       )}
 
       <SubmitButton />
+
+      {!state.notice && (
+        <p className="pt-1 text-center text-sm text-text-muted">
+          {t('hasAccount')}{' '}
+          <Link href="/inloggen" className="font-medium text-accent hover:underline">
+            {t('loginLink')}
+          </Link>
+        </p>
+      )}
     </form>
   )
 }

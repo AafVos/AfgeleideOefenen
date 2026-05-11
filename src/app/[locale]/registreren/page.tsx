@@ -38,12 +38,6 @@ export default async function SignupPage() {
         <SignupForm />
       </div>
 
-      <p className="mt-6 text-center text-sm text-text-muted">
-        {t('hasAccount')}{' '}
-        <Link href="/inloggen" className="font-medium text-accent hover:underline">
-          {t('loginLink')}
-        </Link>
-      </p>
       <p className="mt-2 text-center text-sm text-text-muted">
         <Link href="/wachtwoord-vergeten" className="text-accent hover:underline">
           {t('forgotPassword')}

@@ -1,10 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
-import { loginAction, type LoginState } from './actions'
+import { loginAction, resendConfirmationAction, type LoginState } from './actions'
 
 const initialState: LoginState = { error: null }
 
@@ -12,6 +12,16 @@ export function LoginForm({ callbackError }: { callbackError?: string | null }) 
   const [state, formAction] = useActionState(loginAction, initialState)
   const t = useTranslations('Login')
   const [showPassword, setShowPassword] = useState(false)
+  const [resendPending, startResend] = useTransition()
+  const [resendDone, setResendDone] = useState(false)
+
+  function handleResend() {
+    if (!state.unconfirmedEmail) return
+    startResend(async () => {
+      await resendConfirmationAction(state.unconfirmedEmail!)
+      setResendDone(true)
+    })
+  }
 
   return (
     <form action={formAction} className="space-y-4">
@@ -33,6 +43,23 @@ export function LoginForm({ callbackError }: { callbackError?: string | null }) 
         >
           {callbackError ?? state.error}
         </p>
+      )}
+
+      {state.unconfirmedEmail && (
+        <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-muted">
+          {resendDone ? (
+            <p role="status">{t('resendSuccess')}</p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendPending}
+              className="font-medium text-accent hover:underline disabled:opacity-60"
+            >
+              {resendPending ? t('resendPending') : t('resendButton')}
+            </button>
+          )}
+        </div>
       )}
 
       <SubmitButton />
