@@ -425,20 +425,40 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          topic_id: string
-          cluster_id: string
+          topic_id: string | null
+          cluster_id: string | null
+          kind: 'practice' | 'custom_test'
+          name: string | null
+          show_answers: 'immediate' | 'end'
           started_at: string
           ended_at: string | null
         }
         Insert: {
           id?: string
           user_id: string
-          topic_id: string
-          cluster_id: string
+          topic_id?: string | null
+          cluster_id?: string | null
+          kind?: 'practice' | 'custom_test'
+          name?: string | null
+          show_answers?: 'immediate' | 'end'
           started_at?: string
           ended_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['user_sessions_new']['Insert']>
+        Relationships: []
+      }
+      custom_test_questions: {
+        Row: {
+          session_id: string
+          question_id: string
+          order_index: number
+        }
+        Insert: {
+          session_id: string
+          question_id: string
+          order_index: number
+        }
+        Update: Partial<Database['public']['Tables']['custom_test_questions']['Insert']>
         Relationships: []
       }
       session_answers_new: {
