@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { MathKeyboard } from '@/app/[locale]/leerpad/math-keyboard'
+import { MathKeyboard } from '@/components/math-keyboard'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Badge, Button } from '@/components/ui'
 import { Link } from '@/i18n/navigation'

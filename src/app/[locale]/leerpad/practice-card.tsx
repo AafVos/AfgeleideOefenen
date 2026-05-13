@@ -15,7 +15,7 @@ import {
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
 import { FlagQuestionButton } from './flag-question'
-import { MathKeyboard } from './math-keyboard'
+import { MathKeyboard } from '@/components/math-keyboard'
 
 type Step = { id: string; step_order: number; step_description: string }
 
