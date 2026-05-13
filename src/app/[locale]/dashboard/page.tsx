@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 import { DashboardGrid } from './dashboard-grid'
-import type { TopicData } from './topic-block'
+import type { ChapterData, TopicData } from './topic-block'
 
 export async function generateMetadata({
   params,
@@ -110,11 +110,21 @@ export default async function DashboardPage() {
     else break
   }
 
-  // Build chapter → slug map
-  const chapterById = new Map((chapters ?? []).map((c) => [c.id, c.slug]))
+  // Build chapter → meta map
+  const chapterById = new Map((chapters ?? []).map((c) => [c.id, c]))
 
-  // Build TopicData
-  const topicData: TopicData[] = (topics ?? []).map((topic) => {
+  // Sort topics by chapter order then topic order
+  const sortedTopics = [...(topics ?? [])].sort((a, b) => {
+    const ca = chapterById.get(a.chapter_id)?.order_index ?? 999
+    const cb = chapterById.get(b.chapter_id)?.order_index ?? 999
+    if (ca !== cb) return ca - cb
+    return a.order_index - b.order_index
+  })
+
+  // Build TopicData per topic
+  const topicDataById = new Map<string, TopicData>()
+  for (const topic of sortedTopics) {
+    const chapterSlug = chapterById.get(topic.chapter_id)?.slug ?? ''
     const topicClusters = (clusters ?? [])
       .filter((c) => c.topic_id === topic.id)
       .sort((a, b) => a.order_index - b.order_index)
@@ -132,15 +142,28 @@ export default async function DashboardPage() {
           isSkipped,
         }
       })
-
-    return {
+    topicDataById.set(topic.id, {
       id: topic.id,
       slug: topic.slug,
       title: topic.title,
-      chapterSlug: chapterById.get(topic.chapter_id) ?? '',
+      chapterSlug,
       clusters: topicClusters,
-    }
-  })
+    })
+  }
+
+  // Group topics by chapter
+  const chapterData: ChapterData[] = (chapters ?? [])
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((chapter) => ({
+      id: chapter.id,
+      slug: chapter.slug,
+      title: chapter.title,
+      topics: sortedTopics
+        .filter((t) => t.chapter_id === chapter.id)
+        .map((t) => topicDataById.get(t.id)!)
+        .filter(Boolean),
+    }))
+    .filter((ch) => ch.topics.length > 0)
 
   return (
     <div className="mx-auto max-w-[1400px] px-3 py-6">
@@ -167,7 +190,7 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardGrid
-        topicData={topicData}
+        chapterData={chapterData}
         streakDays={streakDays}
         activity={activity}
         totalAnswered={totalAnswered}
