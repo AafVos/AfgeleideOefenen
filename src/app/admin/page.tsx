@@ -7,23 +7,20 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient()
   const admin = createServiceRoleClient()
 
-  const [topics, clusters, questions, rootCauses, aiQuestions] =
-    await Promise.all([
-      supabase.from('topics').select('*', { count: 'exact', head: true }),
-      supabase.from('topic_clusters').select('*', { count: 'exact', head: true }),
-      supabase.from('questions').select('*', { count: 'exact', head: true }),
-      supabase.from('root_causes').select('*', { count: 'exact', head: true }),
-      supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_ai_generated', true),
-    ])
+  const [topics, clusters, questions, aiQuestions] = await Promise.all([
+    supabase.from('topics_new').select('*', { count: 'exact', head: true }),
+    supabase.from('topic_clusters_new').select('*', { count: 'exact', head: true }),
+    supabase.from('questions_new').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('questions_new')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_ai_generated', true),
+  ])
 
-  // Service role bypasses RLS so we can count *all* profiles / sessions for stats.
   const [profileCount, sessionCount, answerCount] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
-    admin.from('user_sessions').select('*', { count: 'exact', head: true }),
-    admin.from('session_answers').select('*', { count: 'exact', head: true }),
+    admin.from('user_sessions_new').select('*', { count: 'exact', head: true }),
+    admin.from('session_answers_new').select('*', { count: 'exact', head: true }),
   ])
 
   const stats: Array<{ label: string; value: number | null; href?: string }> = [
@@ -31,7 +28,6 @@ export default async function AdminDashboardPage() {
     { label: 'Clusters', value: clusters.count, href: '/admin/topics' },
     { label: 'Vragen totaal', value: questions.count, href: '/admin/questions' },
     { label: 'AI-gegenereerde vragen', value: aiQuestions.count },
-    { label: 'Root causes', value: rootCauses.count, href: '/admin/root-causes' },
     { label: 'Gebruikers', value: profileCount.count, href: '/admin/users' },
     { label: 'Oefensessies', value: sessionCount.count },
     { label: 'Antwoorden totaal', value: answerCount.count },

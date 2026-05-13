@@ -18,19 +18,19 @@ export default async function UsersPage() {
       .select('id, username, role, created_at')
       .order('created_at', { ascending: false }),
     admin
-      .from('user_progress')
+      .from('user_progress_new')
       .select('user_id, status'),
     admin
-      .from('session_answers')
+      .from('session_answers_new')
       .select(
-        'is_correct, answered_at, session_id, user_sessions!inner(user_id)',
+        'is_correct, answered_at, session_id, user_sessions_new!inner(user_id)',
       )
       .returns<
         Array<{
           is_correct: boolean | null
           answered_at: string
           session_id: string
-          user_sessions: { user_id: string } | { user_id: string }[]
+          user_sessions_new: { user_id: string } | { user_id: string }[]
         }>
       >(),
   ])
@@ -39,7 +39,6 @@ export default async function UsersPage() {
     authUsersRes.data.users.map((u) => [u.id, u.email ?? '—']),
   )
 
-  // Aggregate stats per user.
   const masteredByUser = new Map<string, number>()
   for (const row of progressRows ?? []) {
     if (row.status === 'mastered') {
@@ -52,11 +51,10 @@ export default async function UsersPage() {
     { total: number; correct: number; lastAnsweredAt: string | null }
   >()
   for (const row of answerRows ?? []) {
-    // Supabase typings see this as an array when using the !inner hint.
     const userId = (
-      Array.isArray(row.user_sessions)
-        ? row.user_sessions[0]
-        : (row.user_sessions as unknown as { user_id: string })
+      Array.isArray(row.user_sessions_new)
+        ? row.user_sessions_new[0]
+        : (row.user_sessions_new as unknown as { user_id: string })
     )?.user_id
     if (!userId) continue
     const agg = answersByUser.get(userId) ?? {

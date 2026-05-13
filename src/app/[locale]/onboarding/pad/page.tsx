@@ -39,7 +39,7 @@ export default async function PadPage() {
   if (profile.learning_mode !== 'topic_select') redirect(`/${locale}/leerpad`)
 
   const { data: topics } = await supabase
-    .from('topics')
+    .from('topics_new')
     .select('id, title, slug, order_index')
     .order('order_index')
 

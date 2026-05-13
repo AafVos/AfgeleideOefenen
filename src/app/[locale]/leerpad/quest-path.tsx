@@ -6,7 +6,7 @@ import type { CSSProperties } from 'react'
 import { Link } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 
-import type { TopicWithClusters } from '@/lib/practice/engine'
+import type { TopicWithClustersNew } from '@/lib/practice/engine'
 
 // Duolingo-style quest path — drop-in replacement for PracticeSidebar.
 // Same props (path, activeClusterId). Renders a vertical, alternating path of
@@ -31,7 +31,7 @@ export function QuestPath({
   path,
   activeClusterId,
 }: {
-  path: TopicWithClusters[]
+  path: TopicWithClustersNew[]
   activeClusterId: string | null
 }) {
   const params = useSearchParams()
@@ -45,20 +45,25 @@ export function QuestPath({
 
   const nodes = useMemo(() => {
     const out: Array<{
-      cluster: TopicWithClusters['clusters'][number]
-      topic: TopicWithClusters
+      cluster: TopicWithClustersNew['clusters'][number]
+      topic: TopicWithClustersNew
       topicIdx: number
       clusterIdx: number
       isFirstInTopic: boolean
+      isFirstInChapter: boolean
     }> = []
+    let prevChapterSlug: string | null = null
     path.forEach((topic, topicIdx) => {
       topic.clusters.forEach((cluster, clusterIdx) => {
+        const isFirstInChapter = clusterIdx === 0 && topic.chapter_slug !== prevChapterSlug
+        if (clusterIdx === 0) prevChapterSlug = topic.chapter_slug
         out.push({
           cluster,
           topic,
           topicIdx,
           clusterIdx,
           isFirstInTopic: clusterIdx === 0,
+          isFirstInChapter,
         })
       })
     })
@@ -119,16 +124,17 @@ function PathRow({
   tint,
 }: {
   node: {
-    cluster: TopicWithClusters['clusters'][number]
-    topic: TopicWithClusters
+    cluster: TopicWithClustersNew['clusters'][number]
+    topic: TopicWithClustersNew
     topicIdx: number
     clusterIdx: number
     isFirstInTopic: boolean
+    isFirstInChapter: boolean
   }
   index: number
   prev: {
-    cluster: TopicWithClusters['clusters'][number]
-    topic: TopicWithClusters
+    cluster: TopicWithClustersNew['clusters'][number]
+    topic: TopicWithClustersNew
   } | null
   isActive: boolean
   isLoading: boolean
@@ -141,8 +147,20 @@ function PathRow({
 
   return (
     <div>
+      {/* Chapter header — shown when the chapter changes */}
+      {node.isFirstInChapter && (
+        <div className="mt-8 mb-1 flex justify-center first:mt-0">
+          <div className="rounded-full border border-border bg-surface-2 px-3 py-0.5">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-text-muted">
+              {node.topic.chapter_slug.toUpperCase()}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Topic header — shown at the start of each topic */}
       {node.isFirstInTopic && (
-        <div className="mt-6 mb-3 flex justify-center first:mt-0">
+        <div className="mt-4 mb-3 flex justify-center first:mt-0">
           <div
             className="flex items-center gap-2 rounded-full border bg-surface px-4 py-1.5"
             style={{
@@ -150,9 +168,6 @@ function PathRow({
               color: node.topic.isLocked ? 'var(--color-text-muted)' : tint,
             }}
           >
-            <span className="font-serif text-xs opacity-70">
-              {romanize(node.topicIdx + 1)}
-            </span>
             <span className="font-serif text-base">{node.topic.title}</span>
             {node.topic.isLocked && <span className="text-[10px]">🔒</span>}
             {node.topic.isMastered && <span className="text-[11px]">✓</span>}
@@ -226,7 +241,7 @@ function NodePill({
   isLoading,
   onLoadStart,
 }: {
-  cluster: TopicWithClusters['clusters'][number]
+  cluster: TopicWithClustersNew['clusters'][number]
   topicSlug: string
   tint: string
   isMastered: boolean

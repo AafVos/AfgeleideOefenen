@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
-import { applyPadSelections } from '@/lib/practice/bulk-progress'
+import { applyPadSelectionsNew } from '@/lib/practice/bulk-progress-new'
 import { createClient } from '@/lib/supabase/server'
 
 export async function savePadSelectionsAction(
@@ -28,7 +28,7 @@ export async function savePadSelectionsAction(
   )
 
   try {
-    await applyPadSelections(supabase, user.id, topicIds, map)
+    await applyPadSelectionsNew(supabase, user.id, topicIds, map)
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }

@@ -18,18 +18,9 @@ export async function generateMetadata({
   return { title: t('title'), description: t('description') }
 }
 
-type ClusterRow = {
-  id: string
-  slug: string
-  title: string
-  order_index: number
-}
-
-type TopicRow = {
-  id: string
-  slug: string
-  title: string
-  order_index: number
+/** Strip chapter prefix (h2_, h3_, …) to get the theory content map key. */
+function theoryTopicSlug(newSlug: string): string {
+  return newSlug.replace(/^h\d+_/, '')
 }
 
 export default async function TheoriePage() {
@@ -37,25 +28,31 @@ export default async function TheoriePage() {
   const locale = await getLocale()
   const t = await getTranslations('Theorie')
 
-  const { data: topics } = await supabase
-    .from('topics')
-    .select('id, slug, title, order_index')
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('id, slug, order_index')
     .order('order_index')
 
-  const topicList: TopicRow[] = topics ?? []
+  const { data: topics } = await supabase
+    .from('topics_new')
+    .select('id, slug, title, chapter_id, order_index')
+    .order('order_index')
 
   const { data: clustersRaw } = await supabase
-    .from('topic_clusters')
+    .from('topic_clusters_new')
     .select('id, slug, title, order_index, topic_id')
     .order('order_index')
 
-  const clustersByTopic = new Map<string, ClusterRow[]>()
+  const chapterById = new Map((chapters ?? []).map((c) => [c.id, c.slug]))
+
+  const clustersByTopic = new Map<string, typeof clustersRaw>()
   for (const c of clustersRaw ?? []) {
     const arr = clustersByTopic.get(c.topic_id) ?? []
-    arr.push({ id: c.id, slug: c.slug, title: c.title, order_index: c.order_index })
+    arr.push(c)
     clustersByTopic.set(c.topic_id, arr)
   }
 
+  const topicList = topics ?? []
   const theoryMap = locale === 'en' ? CLUSTER_THEORY_EN : CLUSTER_THEORY
   const introsMap = locale === 'en' ? TOPIC_INTROS_EN : TOPIC_INTROS
 
@@ -87,7 +84,7 @@ export default async function TheoriePage() {
           </p>
           <ol className="grid items-stretch gap-3 sm:grid-cols-2">
             {topicList.map((tp, i) => {
-              const formula = TOPIC_FORMULA[tp.slug]
+              const formula = TOPIC_FORMULA[theoryTopicSlug(tp.slug)]
               return (
                 <li key={tp.id} className="flex">
                   <a
@@ -118,7 +115,9 @@ export default async function TheoriePage() {
           const clusters = (clustersByTopic.get(topic.id) ?? [])
             .slice()
             .sort((a, b) => a.order_index - b.order_index)
-          const intro = introsMap[topic.slug]
+          const oldSlug = theoryTopicSlug(topic.slug)
+          const intro = introsMap[oldSlug]
+          const chapterSlug = chapterById.get(topic.chapter_id) ?? ''
 
           return (
             <section
@@ -153,7 +152,7 @@ export default async function TheoriePage() {
               ) : (
                 <div className="mt-6 space-y-3">
                   {clusters.map((cluster, ci) => {
-                    const key = `${topic.slug}/${cluster.slug}`
+                    const key = `${oldSlug}/${cluster.slug}`
                     const theory = theoryMap[key]
                     return (
                       <ClusterBlock
@@ -172,7 +171,7 @@ export default async function TheoriePage() {
 
               <div className="mt-6">
                 <Link
-                  href={`/oefenen?topic=${encodeURIComponent(topic.slug)}`}
+                  href={`/oefenen?chapter=${encodeURIComponent(chapterSlug)}&topic=${encodeURIComponent(topic.slug)}`}
                   className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline"
                 >
                   {t('practiceLink', { topic: topic.title.toLowerCase() })}

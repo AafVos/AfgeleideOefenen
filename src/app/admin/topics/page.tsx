@@ -9,21 +9,30 @@ type TopicRow = {
   id: string
   slug: string
   title: string
+  chapter_id: string
   order_index: number
   is_unlocked_by_default: boolean
-  topic_clusters: Array<{ count: number }>
-  questions: Array<{ count: number }>
+  topic_clusters_new: Array<{ count: number }>
 }
 
 export default async function TopicsPage() {
   const supabase = await createClient()
-  const { data: topics } = await supabase
-    .from('topics')
-    .select(
-      'id, slug, title, order_index, is_unlocked_by_default, topic_clusters(count), questions(count)',
-    )
-    .order('order_index', { ascending: true })
-    .returns<TopicRow[]>()
+
+  const [{ data: topics }, { data: chapters }] = await Promise.all([
+    supabase
+      .from('topics_new')
+      .select(
+        'id, slug, title, chapter_id, order_index, is_unlocked_by_default, topic_clusters_new(count)',
+      )
+      .order('order_index', { ascending: true })
+      .returns<TopicRow[]>(),
+    supabase
+      .from('chapters')
+      .select('id, slug, title, order_index')
+      .order('order_index'),
+  ])
+
+  const chapterById = new Map((chapters ?? []).map((c) => [c.id, c]))
 
   return (
     <div className="space-y-6">
@@ -41,9 +50,9 @@ export default async function TopicsPage() {
             <tr>
               <th className="px-4 py-2 font-medium">#</th>
               <th className="px-4 py-2 font-medium">Titel</th>
+              <th className="px-4 py-2 font-medium">Hoofdstuk</th>
               <th className="px-4 py-2 font-medium">Slug</th>
               <th className="px-4 py-2 font-medium">Clusters</th>
-              <th className="px-4 py-2 font-medium">Vragen</th>
               <th className="px-4 py-2 font-medium">Toegang</th>
               <th className="px-4 py-2" />
             </tr>
@@ -53,13 +62,15 @@ export default async function TopicsPage() {
               <tr key={t.id}>
                 <td className="px-4 py-2 text-text-muted">{t.order_index}</td>
                 <td className="px-4 py-2 font-medium">{t.title}</td>
+                <td className="px-4 py-2 text-text-muted">
+                  {chapterById.get(t.chapter_id)?.slug ?? '—'}
+                </td>
                 <td className="px-4 py-2 font-mono text-xs text-text-muted">
                   {t.slug}
                 </td>
                 <td className="px-4 py-2">
-                  {t.topic_clusters?.[0]?.count ?? 0}
+                  {t.topic_clusters_new?.[0]?.count ?? 0}
                 </td>
-                <td className="px-4 py-2">{t.questions?.[0]?.count ?? 0}</td>
                 <td className="px-4 py-2">
                   {t.is_unlocked_by_default ? (
                     <Badge tone="accent">Open</Badge>
@@ -100,9 +111,26 @@ export default async function TopicsPage() {
             label="Slug"
             required
             pattern="[a-z0-9_-]+"
-            placeholder="integraalregel"
+            placeholder="h3_integraalregel"
             hint="Kleine letters, cijfers, - of _"
           />
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-text">
+              Hoofdstuk
+            </label>
+            <select
+              name="chapter_id"
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+            >
+              <option value="">Kies hoofdstuk…</option>
+              {chapters?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.slug} — {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
           <Input
             name="order_index"
             label="Volgorde"

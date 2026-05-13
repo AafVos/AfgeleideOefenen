@@ -20,16 +20,22 @@ export default async function TopicEditPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: topic } = await supabase
-    .from('topics')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle()
+  const [{ data: topic }, { data: chapters }] = await Promise.all([
+    supabase
+      .from('topics_new')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle(),
+    supabase
+      .from('chapters')
+      .select('id, slug, title, order_index')
+      .order('order_index'),
+  ])
 
   if (!topic) notFound()
 
   const { data: clusters } = await supabase
-    .from('topic_clusters')
+    .from('topic_clusters_new')
     .select('id, slug, title, order_index')
     .eq('topic_id', id)
     .order('order_index', { ascending: true })
@@ -67,6 +73,24 @@ export default async function TopicEditPage({
             required
             pattern="[a-z0-9_-]+"
           />
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-text">
+              Hoofdstuk
+            </label>
+            <select
+              name="chapter_id"
+              defaultValue={topic.chapter_id}
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+            >
+              <option value="">Kies hoofdstuk…</option>
+              {chapters?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.slug} — {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
           <Input
             name="order_index"
             label="Volgorde"

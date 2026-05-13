@@ -7,10 +7,11 @@ import { useTranslations } from 'next-intl'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Badge, Button, cn, ErrorBanner } from '@/components/ui'
 import {
-  resolveWithStepsAction,
-  submitAnswerAction,
-  type SubmitResult,
-} from '@/lib/practice/actions'
+  flagQuestionNewAction,
+  resolveWithStepsNewAction,
+  submitStudyAnswerAction,
+  type StudyResult,
+} from '@/lib/practice/chapter-actions'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
 import { FlagQuestionButton } from './flag-question'
@@ -20,7 +21,6 @@ type Step = { id: string; step_order: number; step_description: string }
 
 type Question = {
   id: string
-  body: string
   latex_body: string | null
   difficulty: number
 }
@@ -129,7 +129,7 @@ export function PracticeCard({
 
     setSubmitting(true)
     startTransition(async () => {
-      const result: SubmitResult = await submitAnswerAction(question.id, answer, timeSpent)
+      const result: StudyResult = await submitStudyAnswerAction(question.id, answer, timeSpent)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })
         return
@@ -145,7 +145,7 @@ export function PracticeCard({
         latexCorrectAnswer: result.latexCorrectAnswer,
         errorExplanation: result.errorExplanation,
         studentAnswer: answer,
-        extraSteps: result.generatedSteps.map((s, i) => ({ id: `generated-${i}`, ...s })),
+        extraSteps: [],
         resolved: false,
       })
     })
@@ -361,7 +361,7 @@ function WrongFeedback({
     setError(null)
     startTransition(async () => {
       try {
-        await resolveWithStepsAction(answerId, [...wrongSteps])
+        await resolveWithStepsNewAction(answerId, [...wrongSteps])
         onResolved()
       } catch (e) {
         setError(e instanceof Error ? e.message : t('genericError'))
@@ -373,7 +373,7 @@ function WrongFeedback({
     setError(null)
     startTransition(async () => {
       try {
-        if (!resolved) await resolveWithStepsAction(answerId, [...wrongSteps])
+        if (!resolved) await resolveWithStepsNewAction(answerId, [...wrongSteps])
         onNext()
       } catch (e) {
         setError(e instanceof Error ? e.message : t('genericError'))

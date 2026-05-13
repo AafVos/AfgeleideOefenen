@@ -108,7 +108,13 @@ export async function loadLearningPath(
 // =====================================================================
 export function findActiveCluster(
   path: TopicWithClusters[],
-): { topic: TopicWithClusters; cluster: ClusterWithStatus } | null {
+): { topic: TopicWithClusters; cluster: ClusterWithStatus } | null
+export function findActiveCluster(
+  path: TopicWithClustersNew[],
+): { topic: TopicWithClustersNew; cluster: ClusterWithStatusNew } | null
+export function findActiveCluster(
+  path: Array<{ isLocked: boolean; clusters: Array<{ status: string }> }>,
+): { topic: unknown; cluster: unknown } | null {
   for (const topic of path) {
     if (topic.isLocked) return null
     for (const cluster of topic.clusters) {
@@ -213,6 +219,162 @@ export async function pickFreePracticeQuestion(
   const { data: fullQuestion } = await db
     .from('questions')
     .select('*')
+    .eq('id', chosen.id)
+    .maybeSingle()
+
+  return fullQuestion ?? null
+}
+
+// =====================================================================
+// New (_new table) types and functions
+// =====================================================================
+
+export type ClusterWithStatusNew = {
+  id: string
+  slug: string
+  title: string
+  topic_id: string
+  order_index: number
+  status: ProgressStatus
+  correct_streak: number
+}
+
+export type TopicWithClustersNew = {
+  id: string
+  slug: string
+  title: string
+  chapter_id: string
+  chapter_slug: string
+  chapter_title: string
+  order_index: number
+  clusters: ClusterWithStatusNew[]
+  isLocked: boolean
+  isMastered: boolean
+}
+
+export async function loadLearningPathNew(
+  db: DB,
+  userId: string | null,
+): Promise<TopicWithClustersNew[]> {
+  const [
+    { data: chapters },
+    { data: topics },
+    { data: clusters },
+    { data: progress },
+  ] = await Promise.all([
+    db.from('chapters').select('id, slug, title, order_index').order('order_index'),
+    db.from('topics_new').select('id, slug, title, chapter_id, order_index, is_unlocked_by_default').order('order_index'),
+    db.from('topic_clusters_new').select('id, slug, title, topic_id, order_index').order('order_index'),
+    userId
+      ? db.from('user_progress_new').select('cluster_id, status, correct_streak').eq('user_id', userId)
+      : Promise.resolve({ data: [] as Array<{ cluster_id: string; status: ProgressStatus; correct_streak: number }> }),
+  ])
+
+  const chapterById = new Map((chapters ?? []).map((c) => [c.id, c]))
+
+  const progressByCluster = new Map<string, { status: ProgressStatus; correct_streak: number }>()
+  for (const p of progress ?? []) {
+    progressByCluster.set(p.cluster_id, { status: p.status as ProgressStatus, correct_streak: p.correct_streak })
+  }
+
+  const clustersByTopic = new Map<string, typeof clusters>()
+  for (const c of clusters ?? []) {
+    const list = clustersByTopic.get(c.topic_id) ?? []
+    list.push(c)
+    clustersByTopic.set(c.topic_id, list)
+  }
+
+  const result: TopicWithClustersNew[] = []
+  let previousTopicMastered = true
+
+  for (const t of topics ?? []) {
+    const chapter = chapterById.get(t.chapter_id)
+    const topicClusters = clustersByTopic.get(t.id) ?? []
+
+    const isLocked = (t.is_unlocked_by_default as boolean) ? false : !previousTopicMastered
+
+    const withStatus: ClusterWithStatusNew[] = topicClusters.map((c) => {
+      const p = progressByCluster.get(c.id)
+      return {
+        ...c,
+        status: (p?.status ?? 'locked') as ProgressStatus,
+        correct_streak: p?.correct_streak ?? 0,
+      }
+    })
+
+    const isMastered =
+      withStatus.length > 0 && withStatus.every((c) => c.status === 'mastered')
+
+    result.push({
+      ...t,
+      chapter_id: t.chapter_id,
+      chapter_slug: chapter?.slug ?? '',
+      chapter_title: chapter?.title ?? '',
+      clusters: withStatus,
+      isLocked,
+      isMastered,
+    })
+
+    previousTopicMastered = isMastered
+  }
+
+  return result
+}
+
+export async function pickNextQuestionNew(
+  db: DB,
+  userId: string,
+  clusterId: string,
+): Promise<{
+  id: string
+  latex_body: string | null
+  answer: string
+  difficulty: number
+  topic_id: string
+  cluster_id: string
+} | null> {
+  const { data: clusterQuestions } = await db
+    .from('questions_new')
+    .select('id, difficulty')
+    .eq('cluster_id', clusterId)
+
+  if (!clusterQuestions?.length) return null
+
+  const questionIds = clusterQuestions.map((q) => q.id)
+
+  // Count correct answers per question for this user via user_sessions_new join
+  const { data: correctRows } = await db
+    .from('session_answers_new')
+    .select('question_id, user_sessions_new!inner(user_id)')
+    .eq('is_correct', true)
+    .eq('user_sessions_new.user_id', userId)
+    .in('question_id', questionIds)
+    .returns<Array<{ question_id: string; user_sessions_new: { user_id: string } | { user_id: string }[] }>>()
+
+  const correctCount = new Map<string, number>()
+  for (const row of correctRows ?? []) {
+    correctCount.set(row.question_id, (correctCount.get(row.question_id) ?? 0) + 1)
+  }
+
+  const available = clusterQuestions.filter(
+    (q) => (correctCount.get(q.id) ?? 0) < MAX_CORRECT_PER_QUESTION,
+  )
+  if (!available.length) return null
+
+  const byDifficulty = new Map<number, typeof available>()
+  for (const q of available) {
+    const list = byDifficulty.get(q.difficulty) ?? []
+    list.push(q)
+    byDifficulty.set(q.difficulty, list)
+  }
+
+  const lowestDifficulty = [...byDifficulty.keys()].sort((a, b) => a - b)[0]
+  const pool = byDifficulty.get(lowestDifficulty)!
+  const chosen = pool[Math.floor(Math.random() * pool.length)]
+
+  const { data: fullQuestion } = await db
+    .from('questions_new')
+    .select('id, latex_body, answer, difficulty, topic_id, cluster_id')
     .eq('id', chosen.id)
     .maybeSingle()
 

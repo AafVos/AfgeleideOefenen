@@ -26,7 +26,7 @@ export async function resolveFlagAction(
 ) {
   const { supabase, userId } = await assertAdmin()
   const { error } = await supabase
-    .from('question_flags')
+    .from('question_flags_new')
     .update({
       status: newStatus,
       resolved_at: new Date().toISOString(),

@@ -1,18 +1,111 @@
 import { Link } from '@/i18n/navigation'
 
 import { cn } from '@/components/ui'
-import type { ExerciseTile } from '@/lib/practice/free-topic-overview'
+import type { NewExerciseTile } from '@/lib/practice/chapter-overview'
 
 import { ExerciseTileMathPreview } from './exercise-tile-preview'
 
-export function ExerciseTileGrid({
-  topicSlug,
+export type TileSubSection = {
+  label: string              // cluster name — empty string = no heading
+  tiles: NewExerciseTile[]
+}
+
+export type TileSection = {
+  label?: string             // topic name — undefined = no heading
+  subSections: TileSubSection[]
+}
+
+function TileGrid({
+  baseHref,
   tiles,
   activeQuestionId,
   labels,
 }: {
-  topicSlug: string
-  tiles: ExerciseTile[]
+  baseHref: string
+  tiles: NewExerciseTile[]
+  activeQuestionId: string | null
+  labels: {
+    easy: string
+    medium: string
+    hard: string
+    lastCorrect: string
+    lastWrong: string
+    notTried: string
+    exercise: string
+    level: string
+  }
+}) {
+  const DIFF_LABEL: Record<1 | 2 | 3, string> = {
+    1: labels.easy,
+    2: labels.medium,
+    3: labels.hard,
+  }
+
+  return (
+    <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {tiles.map((tile) => {
+        const tileHref = `${baseHref}&q=${encodeURIComponent(tile.questionId)}`
+        const active = activeQuestionId === tile.questionId
+        return (
+          <li key={tile.questionId}>
+            <Link
+              href={`${tileHref}#oefenen-practice`}
+              scroll
+              prefetch={false}
+              className={cn(
+                'block min-h-[6.75rem] rounded-xl border px-3 py-3 transition',
+                active &&
+                  'ring-2 ring-accent ring-offset-2 ring-offset-[var(--color-bg)]',
+                tile.lastCorrect === true &&
+                  'border-emerald-300/70 bg-emerald-50 hover:border-emerald-400',
+                tile.lastCorrect === false &&
+                  'border-rose-300/70 bg-rose-50/90 hover:border-rose-400',
+                tile.lastCorrect == null &&
+                  'border-border bg-surface hover:bg-surface-2',
+              )}
+              aria-current={active ? 'page' : undefined}
+              aria-label={`${labels.exercise} ${tile.ordinal}, ${labels.level} ${tile.difficulty}, ${DIFF_LABEL[tile.difficulty]}.${tile.preview ? ` ${tile.preview}` : ''}${tile.lastCorrect === true ? ` ${labels.lastCorrect}` : ''}${tile.lastCorrect === false ? ` ${labels.lastWrong}` : ''}${tile.lastCorrect == null ? ` ${labels.notTried}` : ''}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-xs font-medium text-text-muted">
+                  #{tile.ordinal}
+                </span>
+                <span
+                  title={DIFF_LABEL[tile.difficulty]}
+                  className={cn(
+                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
+                    tile.lastCorrect === true &&
+                      'bg-emerald-100 text-emerald-700',
+                    tile.lastCorrect === false &&
+                      'bg-rose-100 text-rose-700',
+                    tile.lastCorrect == null && tile.difficulty === 1 &&
+                      'bg-accent-light text-accent',
+                    tile.lastCorrect == null && tile.difficulty === 2 &&
+                      'bg-surface-2 text-text-muted',
+                    tile.lastCorrect == null && tile.difficulty === 3 &&
+                      'border border-accent-2/30 bg-accent-2-light text-accent-2',
+                  )}
+                >
+                  {DIFF_LABEL[tile.difficulty]}
+                </span>
+              </div>
+              <ExerciseTileMathPreview latex_body={tile.latex_body} />
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+export function ExerciseTileGrid({
+  baseHref,
+  sections,
+  activeQuestionId,
+  labels,
+}: {
+  baseHref: string
+  sections: TileSection[]
   activeQuestionId: string | null
   labels: {
     heading: string
@@ -27,12 +120,18 @@ export function ExerciseTileGrid({
     level: string
   }
 }) {
-  if (!tiles.length) return null
+  const totalTiles = sections.flatMap((s) => s.subSections.flatMap((ss) => ss.tiles)).length
+  if (!totalTiles) return null
 
-  const DIFF_LABEL: Record<1 | 2 | 3, string> = {
-    1: labels.easy,
-    2: labels.medium,
-    3: labels.hard,
+  const tileLabels = {
+    easy: labels.easy,
+    medium: labels.medium,
+    hard: labels.hard,
+    lastCorrect: labels.lastCorrect,
+    lastWrong: labels.lastWrong,
+    notTried: labels.notTried,
+    exercise: labels.exercise,
+    level: labels.level,
   }
 
   return (
@@ -43,61 +142,31 @@ export function ExerciseTileGrid({
         </h2>
         <p className="text-xs text-text-muted">{labels.sortedBy}</p>
       </div>
-      <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {tiles.map((tile) => {
-          const topicQ = `/oefenen?topic=${encodeURIComponent(topicSlug)}&q=${encodeURIComponent(tile.questionId)}`
-          const active = activeQuestionId === tile.questionId
-          return (
-            <li key={tile.questionId}>
-              <Link
-                href={`${topicQ}#oefenen-practice`}
-                scroll
-                prefetch={false}
-                className={cn(
-                  'block min-h-[6.75rem] rounded-xl border px-3 py-3 transition',
-                  active &&
-                    'ring-2 ring-accent ring-offset-2 ring-offset-[var(--color-bg)]',
-                  tile.lastCorrect === true &&
-                    'border-emerald-300/70 bg-emerald-50 hover:border-emerald-400',
-                  tile.lastCorrect === false &&
-                    'border-rose-300/70 bg-rose-50/90 hover:border-rose-400',
-                  tile.lastCorrect == null &&
-                    'border-border bg-surface hover:bg-surface-2',
-                )}
-                aria-current={active ? 'page' : undefined}
-                aria-label={`${labels.exercise} ${tile.ordinal}, ${labels.level} ${tile.difficulty}, ${DIFF_LABEL[tile.difficulty]}.${tile.preview ? ` ${tile.preview}` : ''}${tile.lastCorrect === true ? ` ${labels.lastCorrect}` : ''}${tile.lastCorrect === false ? ` ${labels.lastWrong}` : ''}${tile.lastCorrect == null ? ` ${labels.notTried}` : ''}`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-xs font-medium text-text-muted">
-                    #{tile.ordinal}
-                  </span>
-                  <span
-                    title={DIFF_LABEL[tile.difficulty]}
-                    className={cn(
-                      'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
-                      tile.lastCorrect === true &&
-                        'bg-emerald-100 text-emerald-700',
-                      tile.lastCorrect === false &&
-                        'bg-rose-100 text-rose-700',
-                      tile.lastCorrect == null && tile.difficulty === 1 &&
-                        'bg-accent-light text-accent',
-                      tile.lastCorrect == null && tile.difficulty === 2 &&
-                        'bg-surface-2 text-text-muted',
-                      tile.lastCorrect == null && tile.difficulty === 3 &&
-                        'border border-accent-2/30 bg-accent-2-light text-accent-2',
-                    )}
-                  >
-                    {DIFF_LABEL[tile.difficulty]}
-                  </span>
-                </div>
-                <ExerciseTileMathPreview
-                  latex_body={tile.latex_body}
-                />
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
+
+      {sections.map((section, si) => (
+        <div key={si} className={si > 0 ? 'mt-10' : ''}>
+          {section.label && (
+            <h3 className="mt-6 font-serif text-lg text-text">
+              {section.label}
+            </h3>
+          )}
+          {section.subSections.map((sub, ci) => (
+            <div key={ci} className={ci > 0 || section.label ? 'mt-5' : ''}>
+              {sub.label && (
+                <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+                  {sub.label}
+                </p>
+              )}
+              <TileGrid
+                baseHref={baseHref}
+                tiles={sub.tiles}
+                activeQuestionId={activeQuestionId}
+                labels={tileLabels}
+              />
+            </div>
+          ))}
+        </div>
+      ))}
     </section>
   )
 }

@@ -283,6 +283,254 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['question_flags']['Insert']>
         Relationships: []
       }
+      // ── New shadow tables (migrations 0013 / 0014) ──────────────────
+      chapters: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          book_part: number
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          book_part: number
+          order_index: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['chapters']['Insert']>
+        Relationships: []
+      }
+      topics_new: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          chapter_id: string
+          order_index: number
+          is_unlocked_by_default: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          chapter_id: string
+          order_index: number
+          is_unlocked_by_default?: boolean
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['topics_new']['Insert']>
+        Relationships: []
+      }
+      topic_clusters_new: {
+        Row: {
+          id: string
+          topic_id: string
+          slug: string
+          title: string
+          order_index: number
+          source_cluster_id: string | null
+        }
+        Insert: {
+          id?: string
+          topic_id: string
+          slug: string
+          title: string
+          order_index: number
+          source_cluster_id?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['topic_clusters_new']['Insert']>
+        Relationships: []
+      }
+      questions_new: {
+        Row: {
+          id: string
+          topic_id: string
+          cluster_id: string
+          latex_body: string | null
+          answer: string
+          latex_answer: string | null
+          answer_alternatives: string[]
+          difficulty: Difficulty
+          is_ai_generated: boolean
+          order_index: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          topic_id: string
+          cluster_id: string
+          latex_body?: string | null
+          answer: string
+          latex_answer?: string | null
+          answer_alternatives?: string[]
+          difficulty: Difficulty
+          is_ai_generated?: boolean
+          order_index?: number | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['questions_new']['Insert']>
+        Relationships: []
+      }
+      question_steps_new: {
+        Row: {
+          id: string
+          question_id: string
+          step_order: number
+          step_description: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          step_order: number
+          step_description: string
+        }
+        Update: Partial<Database['public']['Tables']['question_steps_new']['Insert']>
+        Relationships: []
+      }
+      // ── New user tables (migration 0018) ────────────────────────────
+      user_progress_new: {
+        Row: {
+          id: string
+          user_id: string
+          topic_id: string
+          cluster_id: string
+          status: ProgressStatus
+          correct_streak: number
+          total_answered: number
+          total_correct: number
+          mastered_at: string | null
+          is_skipped: boolean
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          topic_id: string
+          cluster_id: string
+          status?: ProgressStatus
+          correct_streak?: number
+          total_answered?: number
+          total_correct?: number
+          mastered_at?: string | null
+          is_skipped?: boolean
+        }
+        Update: Partial<Database['public']['Tables']['user_progress_new']['Insert']>
+        Relationships: []
+      }
+      user_sessions_new: {
+        Row: {
+          id: string
+          user_id: string
+          topic_id: string
+          cluster_id: string
+          started_at: string
+          ended_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          topic_id: string
+          cluster_id: string
+          started_at?: string
+          ended_at?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['user_sessions_new']['Insert']>
+        Relationships: []
+      }
+      session_answers_new: {
+        Row: {
+          id: string
+          session_id: string
+          question_id: string
+          user_answer: string | null
+          is_correct: boolean | null
+          hints_used: number
+          is_careless: boolean
+          time_spent_sec: number | null
+          answered_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          question_id: string
+          user_answer?: string | null
+          is_correct?: boolean | null
+          hints_used?: number
+          is_careless?: boolean
+          time_spent_sec?: number | null
+          answered_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['session_answers_new']['Insert']>
+        Relationships: []
+      }
+      step_mistakes_new: {
+        Row: {
+          id: string
+          answer_id: string
+          step_id: string
+          is_careless: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          answer_id: string
+          step_id: string
+          is_careless?: boolean
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['step_mistakes_new']['Insert']>
+        Relationships: []
+      }
+      question_flags_new: {
+        Row: {
+          id: string
+          question_id: string
+          user_id: string
+          reason: string | null
+          status: 'open' | 'resolved' | 'dismissed'
+          created_at: string
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          user_id: string
+          reason?: string | null
+          status?: 'open' | 'resolved' | 'dismissed'
+          created_at?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['question_flags_new']['Insert']>
+        Relationships: []
+      }
+      known_wrong_answers_new: {
+        Row: {
+          id: string
+          question_id: string
+          wrong_answer: string
+          error_explanation: string
+          category: string | null
+          seen_count: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          wrong_answer: string
+          error_explanation: string
+          category?: string | null
+          seen_count?: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['known_wrong_answers_new']['Insert']>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

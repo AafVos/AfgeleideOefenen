@@ -15,7 +15,7 @@ type FlagRow = {
   user_id: string
   question: {
     id: string
-    body: string
+    latex_body: string | null
     difficulty: number
   } | null
 }
@@ -36,9 +36,9 @@ export default async function AdminFlagsPage({
   const supabase = createServiceRoleClient()
 
   const { data: flags } = await supabase
-    .from('question_flags')
+    .from('question_flags_new')
     .select(
-      'id, reason, status, created_at, user_id, question:questions(id, body, difficulty)',
+      'id, reason, status, created_at, user_id, question:questions_new(id, latex_body, difficulty)',
     )
     .eq('status', activeStatus)
     .order('created_at', { ascending: false })
@@ -121,8 +121,8 @@ export default async function AdminFlagsPage({
                     </div>
 
                     {flag.question ? (
-                      <p className="font-serif text-base leading-snug text-text">
-                        {flag.question.body}
+                      <p className="font-mono text-sm text-text">
+                        {flag.question.latex_body ?? '(geen vraagtekst)'}
                       </p>
                     ) : (
                       <p className="text-sm italic text-text-muted">

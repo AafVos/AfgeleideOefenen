@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 
 import { cn } from '@/components/ui'
 
-import { flagQuestionAction } from './flag-actions'
+import { flagQuestionNewAction } from '@/lib/practice/chapter-actions'
 
 export function FlagQuestionButton({ questionId }: { questionId: string }) {
   const [open, setOpen] = useState(false)
@@ -16,7 +16,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
   function submit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      const result = await flagQuestionAction(questionId, reason)
+      const result = await flagQuestionNewAction(questionId, reason)
       if (result.ok) {
         setStatus('sent')
         setOpen(false)
