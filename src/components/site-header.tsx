@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
 import { LanguageSwitcher } from './language-switcher'
+import { MobileNav } from './mobile-nav'
 
 export async function SiteHeader({ locale }: { locale: string }) {
   const supabase = await createClient()
@@ -25,7 +26,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'Header' })
 
   return (
-    <header className="sticky top-0 z-30 h-14 border-b border-border bg-surface/85 backdrop-blur">
+    <header className="relative sticky top-0 z-30 h-14 border-b border-border bg-surface/85 backdrop-blur">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4">
         <Link
           href={`/${locale}`}
@@ -34,7 +35,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
           {t('brand')}<span className="text-accent">{t('brandSuffix')}</span>
         </Link>
 
-        <nav className="flex items-center gap-1 text-sm">
+        <nav className="hidden items-center gap-1 text-sm md:flex">
           {user ? (
             <>
               <Link
@@ -111,6 +112,17 @@ export async function SiteHeader({ locale }: { locale: string }) {
           )}
           <LanguageSwitcher currentLocale={locale} />
         </nav>
+
+        {/* Mobile: language switcher + hamburger */}
+        <div className="flex items-center gap-1 md:hidden">
+          <LanguageSwitcher currentLocale={locale} />
+          <MobileNav
+            locale={locale}
+            isLoggedIn={!!user}
+            username={username}
+            role={role}
+          />
+        </div>
       </div>
     </header>
   )

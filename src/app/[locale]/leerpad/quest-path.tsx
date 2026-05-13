@@ -38,6 +38,7 @@ export function QuestPath({
   const topicParam = params.get('topic')
   const clusterParam = params.get('cluster')
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
     setLoadingId(null)
@@ -95,28 +96,84 @@ export function QuestPath({
     return null
   }, [activeClusterId, path, topicParam])
 
+  const renderNodes = (onSelect?: () => void) =>
+    nodes.map((node, i) => (
+      <PathRow
+        key={node.cluster.id}
+        node={node}
+        index={i}
+        prev={nodes[i - 1] ?? null}
+        isActive={node.cluster.id === computedActiveId}
+        isLoading={loadingId === node.cluster.id}
+        onLoadStart={() => {
+          setLoadingId(node.cluster.id)
+          onSelect?.()
+        }}
+        tint={TOPIC_TINTS[node.chapterIdx % TOPIC_TINTS.length]}
+      />
+    ))
+
   return (
-    <aside className="hidden border-r border-border bg-surface lg:block lg:w-[22rem] lg:shrink-0">
-      <div className="sticky top-[3.5rem] max-h-[calc(100vh-3.5rem)] overflow-y-auto px-6 py-8">
-        <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+    <>
+      {/* Mobile trigger bar */}
+      <div className="sticky top-14 z-20 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-2 backdrop-blur lg:hidden">
+        <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
           Leerpad
-        </p>
-        <div className="mt-4 flex flex-col">
-          {nodes.map((node, i) => (
-            <PathRow
-              key={node.cluster.id}
-              node={node}
-              index={i}
-              prev={nodes[i - 1] ?? null}
-              isActive={node.cluster.id === computedActiveId}
-              isLoading={loadingId === node.cluster.id}
-              onLoadStart={() => setLoadingId(node.cluster.id)}
-              tint={TOPIC_TINTS[node.chapterIdx % TOPIC_TINTS.length]}
-            />
-          ))}
-        </div>
+        </span>
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          className="flex items-center gap-1.5 rounded-md bg-surface-2 px-3 py-1.5 text-sm font-medium text-text"
+        >
+          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          Overzicht
+        </button>
       </div>
-    </aside>
+
+      {/* Mobile drawer */}
+      {drawerOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 z-50 flex w-[min(22rem,90vw)] flex-col overflow-hidden bg-surface shadow-2xl lg:hidden">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-text-muted">Leerpad</p>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="flex size-7 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
+                aria-label="Sluiten"
+              >
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto px-4 py-6">
+              <div className="flex flex-col">
+                {renderNodes(() => setDrawerOpen(false))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="hidden border-r border-border bg-surface lg:block lg:w-[22rem] lg:shrink-0">
+        <div className="sticky top-[3.5rem] max-h-[calc(100vh-3.5rem)] overflow-y-auto px-6 py-8">
+          <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+            Leerpad
+          </p>
+          <div className="mt-4 flex flex-col">
+            {renderNodes()}
+          </div>
+        </div>
+      </aside>
+    </>
   )
 }
 
