@@ -43,7 +43,6 @@ export function MobileNav({
           <nav className="flex flex-col p-2 space-y-0.5">
             {isLoggedIn ? (
               <>
-                <NavLink href={`/${locale}/leerpad`} onClick={() => setOpen(false)}>{t('leerpad')}</NavLink>
                 <NavLink href={`/${locale}/oefenen`} onClick={() => setOpen(false)}>{t('freeExercise')}</NavLink>
                 <NavLink href={`/${locale}/zelf-toets`} onClick={() => setOpen(false)}>{t('zelfToets')}</NavLink>
                 <NavLink href={`/${locale}/theorie`} onClick={() => setOpen(false)}>{t('theory')}</NavLink>

@@ -61,14 +61,5 @@ export async function completeOnboardingAction(
     return { error: 'Er ging iets mis: ' + error.message }
   }
 
-  switch (mode as LearningMode) {
-    case 'guided':
-      redirect(`/${locale}/leerpad`)
-    case 'topic_select':
-      redirect(`/${locale}/onboarding/pad`)
-    case 'diagnostic':
-      redirect(`/${locale}/onboarding/toets`)
-    case 'free':
-      redirect(`/${locale}/oefenen`)
-  }
+  redirect(`/${locale}/oefenen`)
 }

@@ -152,14 +152,8 @@ export default async function DashboardPage() {
         </h1>
         <div className="flex gap-2">
           <Link
-            href="/leerpad"
-            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
-          >
-            {t('continueLeerpad')}
-          </Link>
-          <Link
             href="/oefenen"
-            className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-2"
+            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
           >
             {t('freeExercise')}
           </Link>
