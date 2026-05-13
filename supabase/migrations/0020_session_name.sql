@@ -9,10 +9,10 @@
 BEGIN;
 
 ALTER TABLE public.user_sessions_new
-  ADD COLUMN name text;
+  ADD COLUMN IF NOT EXISTS name text;
 
 ALTER TABLE public.user_sessions_new
-  ADD COLUMN show_answers text NOT NULL DEFAULT 'immediate'
+  ADD COLUMN IF NOT EXISTS show_answers text NOT NULL DEFAULT 'immediate'
     CHECK (show_answers IN ('immediate', 'end'));
 
 COMMIT;
