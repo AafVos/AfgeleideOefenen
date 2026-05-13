@@ -68,8 +68,8 @@ export function DashboardGrid({
 function KpiHero({ pct, mastered, total }: { pct: number; mastered: number; total: number }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="flex items-center gap-4">
-        <Ring pct={pct} size={76} stroke={8} />
+      <div className="flex items-center gap-3">
+        <Ring pct={pct} size={60} stroke={7} />
         <div>
           <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">Mastery</div>
           <div className="font-serif text-xl text-text">

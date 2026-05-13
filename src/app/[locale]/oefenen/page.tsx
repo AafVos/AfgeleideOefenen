@@ -168,7 +168,7 @@ export default async function OefenenPage({ searchParams }: PageProps) {
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <aside className="border-b border-border bg-surface p-4 lg:w-64 lg:border-b-0 lg:border-r lg:overflow-y-auto lg:py-8">
+      <aside className="overflow-x-auto border-b border-border bg-surface p-4 lg:w-64 lg:overflow-x-visible lg:border-b-0 lg:border-r lg:overflow-y-auto lg:py-8">
         <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
           {t('chapterLabel')}
         </p>
@@ -272,8 +272,8 @@ export default async function OefenenPage({ searchParams }: PageProps) {
                                       href={`/oefenen?chapter=${encodeURIComponent(ch.slug)}&topic=${encodeURIComponent(tp.slug)}&cluster=${encodeURIComponent(cl.slug)}`}
                                       className={
                                         clActive
-                                          ? 'flex items-center gap-2 rounded-md py-1 pl-12 pr-3 text-xs font-medium text-accent'
-                                          : 'flex items-center gap-2 rounded-md py-1 pl-12 pr-3 text-xs text-text-muted hover:text-text'
+                                          ? 'flex items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs font-medium text-accent'
+                                          : 'flex items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs text-text-muted hover:text-text'
                                       }
                                     >
                                       <span
