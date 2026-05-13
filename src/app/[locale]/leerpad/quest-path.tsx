@@ -48,19 +48,25 @@ export function QuestPath({
       cluster: TopicWithClustersNew['clusters'][number]
       topic: TopicWithClustersNew
       topicIdx: number
+      chapterIdx: number
       clusterIdx: number
       isFirstInTopic: boolean
       isFirstInChapter: boolean
     }> = []
     let prevChapterSlug: string | null = null
+    let chapterIdx = -1
     path.forEach((topic, topicIdx) => {
       topic.clusters.forEach((cluster, clusterIdx) => {
         const isFirstInChapter = clusterIdx === 0 && topic.chapter_slug !== prevChapterSlug
-        if (clusterIdx === 0) prevChapterSlug = topic.chapter_slug
+        if (isFirstInChapter) {
+          chapterIdx++
+          prevChapterSlug = topic.chapter_slug
+        }
         out.push({
           cluster,
           topic,
           topicIdx,
+          chapterIdx,
           clusterIdx,
           isFirstInTopic: clusterIdx === 0,
           isFirstInChapter,
@@ -105,7 +111,7 @@ export function QuestPath({
               isActive={node.cluster.id === computedActiveId}
               isLoading={loadingId === node.cluster.id}
               onLoadStart={() => setLoadingId(node.cluster.id)}
-              tint={TOPIC_TINTS[node.topicIdx % TOPIC_TINTS.length]}
+              tint={TOPIC_TINTS[node.chapterIdx % TOPIC_TINTS.length]}
             />
           ))}
         </div>
@@ -149,34 +155,20 @@ function PathRow({
     <div>
       {/* Chapter header — shown when the chapter changes */}
       {node.isFirstInChapter && (
-        <div className="mt-8 mb-1 flex justify-center first:mt-0">
-          <div className="rounded-full border border-border bg-surface-2 px-3 py-0.5">
-            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-text-muted">
+        <div className="mt-8 mb-4 first:mt-0">
+          <div className="rounded-xl border border-border bg-surface px-4 py-3 shadow-sm">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-text-muted">
               {node.topic.chapter_slug.toUpperCase()}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Topic header — shown at the start of each topic */}
-      {node.isFirstInTopic && (
-        <div className="mt-4 mb-3 flex justify-center first:mt-0">
-          <div
-            className="flex items-center gap-2 rounded-full border bg-surface px-4 py-1.5"
-            style={{
-              borderColor: node.topic.isLocked ? 'var(--color-border)' : tint,
-              color: node.topic.isLocked ? 'var(--color-text-muted)' : tint,
-            }}
-          >
-            <span className="font-serif text-base">{node.topic.title}</span>
-            {node.topic.isLocked && <span className="text-[10px]">🔒</span>}
-            {node.topic.isMastered && <span className="text-[11px]">✓</span>}
+            </p>
+            <p className="mt-0.5 font-serif text-base font-medium leading-snug text-text">
+              {node.topic.chapter_title}
+            </p>
           </div>
         </div>
       )}
 
       <div className="relative flex min-h-[3.25rem] items-center justify-center">
-        {prev && !node.isFirstInTopic && (
+        {prev && !node.isFirstInChapter && (
           <Connector
             prevOffset={Math.round(Math.sin((index - 1) * 0.55) * 60)}
             currOffset={offsetPx}
