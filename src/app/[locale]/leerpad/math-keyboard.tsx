@@ -44,7 +44,7 @@ export function MathKeyboard({
   disabled?: boolean
 }) {
   return (
-    <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Wiskundig toetsenbord">
+    <div className="mt-2 flex flex-wrap gap-1 sm:gap-1.5" aria-label="Wiskundig toetsenbord">
       {KEYS.map((k) => (
         <button
           key={k.title}
@@ -54,7 +54,7 @@ export function MathKeyboard({
           title={k.title}
           aria-label={k.title}
           className={cn(
-            'h-10 min-w-10 rounded-md border border-border bg-surface px-3 font-mono text-base text-text shadow-sm transition hover:border-accent hover:bg-accent-light disabled:opacity-50',
+            'h-9 min-w-9 rounded-md border border-border bg-surface px-2.5 font-mono text-sm text-text shadow-sm transition hover:border-accent hover:bg-accent-light disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-3 sm:text-base',
             k.className,
           )}
         >
@@ -62,14 +62,14 @@ export function MathKeyboard({
         </button>
       ))}
 
-      <div className="ml-auto flex gap-1.5">
+      <div className="ml-auto flex gap-1 sm:gap-1.5">
         <button
           type="button"
           onClick={onBackspace}
           disabled={disabled}
           title="Backspace"
           aria-label="Backspace"
-          className="h-10 rounded-md border border-border bg-surface px-3 text-sm font-medium text-text shadow-sm transition hover:border-accent-2 hover:bg-accent-2-light disabled:opacity-50"
+          className="h-9 rounded-md border border-border bg-surface px-2.5 text-sm font-medium text-text shadow-sm transition hover:border-accent-2 hover:bg-accent-2-light disabled:opacity-50 sm:h-10 sm:px-3"
         >
           ⌫
         </button>
@@ -79,7 +79,7 @@ export function MathKeyboard({
           disabled={disabled}
           title="Wis alles"
           aria-label="Wis alles"
-          className="h-10 rounded-md border border-border bg-surface px-3 text-sm font-medium text-text shadow-sm transition hover:border-accent-2 hover:bg-accent-2-light disabled:opacity-50"
+          className="h-9 rounded-md border border-border bg-surface px-2.5 text-sm font-medium text-text shadow-sm transition hover:border-accent-2 hover:bg-accent-2-light disabled:opacity-50 sm:h-10 sm:px-3"
         >
           Wis
         </button>
