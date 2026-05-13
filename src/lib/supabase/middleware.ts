@@ -27,9 +27,19 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  const user = userData.user
+
+  // Stale or revoked refresh token (e.g. user was deleted). Clear all Supabase
+  // auth cookies so the next request starts fresh — otherwise every request
+  // logs an Invalid Refresh Token error.
+  if (userError?.code === 'refresh_token_not_found' && !user) {
+    for (const cookie of request.cookies.getAll()) {
+      if (cookie.name.startsWith('sb-')) {
+        supabaseResponse.cookies.delete(cookie.name)
+      }
+    }
+  }
 
   const path = request.nextUrl.pathname
 
