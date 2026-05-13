@@ -46,11 +46,18 @@ export default async function ZelfToetsRunnerPage({
     redirect(`/${locale}/zelf-toets/resultaat/${sessionId}`)
   }
 
-  const { data: question } = await supabase
-    .from('questions_new')
-    .select('id, latex_body, difficulty')
-    .eq('id', state.nextQuestionId)
-    .maybeSingle()
+  const [{ data: question }, { data: steps }] = await Promise.all([
+    supabase
+      .from('questions_new')
+      .select('id, latex_body, difficulty')
+      .eq('id', state.nextQuestionId)
+      .maybeSingle(),
+    supabase
+      .from('question_steps_new')
+      .select('id, step_order, step_description')
+      .eq('question_id', state.nextQuestionId)
+      .order('step_order'),
+  ])
 
   if (!question) {
     redirect(`/${locale}/zelf-toets/resultaat/${sessionId}`)
@@ -90,6 +97,7 @@ export default async function ZelfToetsRunnerPage({
           latex_body: question.latex_body,
           difficulty: question.difficulty,
         }}
+        steps={steps ?? []}
         showAnswers={state.showAnswers}
       />
     </div>
