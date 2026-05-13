@@ -8,7 +8,7 @@ import { Button, ErrorBanner, cn } from '@/components/ui'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import type { DiagnosticQuestion } from '@/lib/practice/diagnostic'
 
-import { MathKeyboard } from '@/app/[locale]/leerpad/math-keyboard'
+import { MathKeyboard } from '@/components/math-keyboard'
 
 import {
   checkDiagnosticAction,

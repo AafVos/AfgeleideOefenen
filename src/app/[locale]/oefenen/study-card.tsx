@@ -12,7 +12,7 @@ import {
 } from '@/lib/practice/chapter-actions'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
-import { MathKeyboard } from '../leerpad/math-keyboard'
+import { MathKeyboard } from '@/components/math-keyboard'
 
 const MASTERY_THRESHOLD = 3
 

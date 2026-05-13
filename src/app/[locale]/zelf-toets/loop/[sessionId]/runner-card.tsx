@@ -8,7 +8,7 @@ import { Math as TeX, RichMath } from '@/components/math'
 import { Badge, Button, ErrorBanner } from '@/components/ui'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
-import { MathKeyboard } from '../../../leerpad/math-keyboard'
+import { MathKeyboard } from '@/components/math-keyboard'
 import {
   submitCustomTestAnswerAction,
   type CustomTestAnswerResult,
