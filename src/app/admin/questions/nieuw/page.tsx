@@ -9,18 +9,16 @@ import { QuestionForm } from '../question-form'
 export default async function NewQuestionPage() {
   const supabase = await createClient()
 
-  const [{ data: topics }, { data: clusters }, { data: rootCauses }] =
-    await Promise.all([
-      supabase
-        .from('topics')
-        .select('id, title, order_index')
-        .order('order_index'),
-      supabase
-        .from('topic_clusters')
-        .select('id, topic_id, title, order_index')
-        .order('order_index'),
-      supabase.from('root_causes').select('slug, description, topic_id'),
-    ])
+  const [{ data: topics }, { data: clusters }] = await Promise.all([
+    supabase
+      .from('topics_new')
+      .select('id, title, order_index')
+      .order('order_index'),
+    supabase
+      .from('topic_clusters_new')
+      .select('id, topic_id, title, order_index')
+      .order('order_index'),
+  ])
 
   return (
     <div className="space-y-6">
@@ -39,7 +37,6 @@ export default async function NewQuestionPage() {
           action={createQuestion}
           topics={topics ?? []}
           clusters={clusters ?? []}
-          rootCauses={rootCauses ?? []}
           submitLabel="Vraag opslaan"
         />
       </Card>

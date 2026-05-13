@@ -7,20 +7,17 @@ import { cn } from '@/components/ui'
 import { TopicBlock, type TopicData } from './topic-block'
 
 export type ActivityDay = { date: string; count: number }
-export type Stumble = { slug: string; label: string; topic: string; count: number }
 
 export function DashboardGrid({
   topicData,
   streakDays = 0,
   activity = [],
-  stumbles = [],
   totalAnswered = 0,
   totalCorrect = 0,
 }: {
   topicData: TopicData[]
   streakDays?: number
   activity?: ActivityDay[]
-  stumbles?: Stumble[]
   totalAnswered?: number
   totalCorrect?: number
 }) {
@@ -59,10 +56,9 @@ export function DashboardGrid({
           </div>
         </div>
 
-        {/* Right: activity + stumbles */}
+        {/* Right: activity */}
         <div className="space-y-3">
           <ActivityCard activity={activity} />
-          <StumbleCard stumbles={stumbles} />
         </div>
       </div>
     </>
@@ -139,38 +135,6 @@ function ActivityCard({ activity }: { activity: ActivityDay[] }) {
         <span>14 dgn geleden</span>
         <span>vandaag</span>
       </div>
-    </div>
-  )
-}
-
-function StumbleCard({ stumbles }: { stumbles: Stumble[] }) {
-  const max = Math.max(1, ...stumbles.map((s) => s.count))
-  return (
-    <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">
-        Waar struikel je het vaakst?
-      </div>
-      {stumbles.length === 0 ? (
-        <p className="mt-3 text-sm text-text-muted">Nog geen foutpatroon zichtbaar — blijf oefenen.</p>
-      ) : (
-        <ul className="mt-3 space-y-2.5">
-          {stumbles.slice(0, 5).map((s) => (
-            <li key={s.slug} className="flex items-center gap-3 text-sm">
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-text">{s.label}</div>
-                {s.topic && <div className="text-[10px] text-text-muted">{s.topic}</div>}
-              </div>
-              <div className="h-1.5 w-20 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="h-full rounded-full bg-accent-2"
-                  style={{ width: `${(s.count / max) * 100}%` }}
-                />
-              </div>
-              <span className="w-6 shrink-0 text-right text-xs tabular-nums text-text-muted">{s.count}×</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   )
 }

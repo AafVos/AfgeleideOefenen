@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
-import { Button, Card, Input, Select, Badge } from '@/components/ui'
+import { Button, Card, Input, Badge } from '@/components/ui'
 
 import {
   addStep,
@@ -22,34 +22,29 @@ export default async function QuestionEditPage({
   const supabase = await createClient()
 
   const { data: question } = await supabase
-    .from('questions')
+    .from('questions_new')
     .select('*')
     .eq('id', id)
     .maybeSingle()
 
   if (!question) notFound()
 
-  const [{ data: topics }, { data: clusters }, { data: rootCauses }, { data: steps }] =
+  const [{ data: topics }, { data: clusters }, { data: steps }] =
     await Promise.all([
       supabase
-        .from('topics')
+        .from('topics_new')
         .select('id, title, order_index')
         .order('order_index'),
       supabase
-        .from('topic_clusters')
+        .from('topic_clusters_new')
         .select('id, topic_id, title, order_index')
         .order('order_index'),
-      supabase.from('root_causes').select('id, slug, description, topic_id'),
       supabase
-        .from('question_steps')
-        .select('id, step_order, step_description, root_cause_id')
+        .from('question_steps_new')
+        .select('id, step_order, step_description')
         .eq('question_id', id)
         .order('step_order'),
     ])
-
-  const rootCausesForTopic = rootCauses?.filter(
-    (r) => r.topic_id === question.topic_id,
-  )
 
   const updateThisQuestion = updateQuestion.bind(null, id)
   const deleteThisQuestion = deleteQuestion.bind(null, id)
@@ -75,16 +70,13 @@ export default async function QuestionEditPage({
           action={updateThisQuestion}
           topics={topics ?? []}
           clusters={clusters ?? []}
-          rootCauses={rootCauses ?? []}
           initial={{
             topic_id: question.topic_id,
             cluster_id: question.cluster_id,
-            body: question.body,
             latex_body: question.latex_body,
             answer: question.answer,
             latex_answer: question.latex_answer,
             difficulty: question.difficulty,
-            root_cause_tags: question.root_cause_tags,
             order_index: question.order_index,
           }}
           submitLabel="Wijzigingen opslaan"
@@ -95,8 +87,7 @@ export default async function QuestionEditPage({
       <div>
         <h3 className="mb-2 font-serif text-lg text-text">Stappenplan</h3>
         <p className="mb-3 text-sm text-text-muted">
-          De stappen die de student doorloopt als hij een fout maakt. Koppel
-          elke stap aan een root cause zodat we weten waar het misging.
+          De stappen die de student doorloopt als hij een fout maakt.
         </p>
 
         <div className="space-y-2">
@@ -105,7 +96,7 @@ export default async function QuestionEditPage({
             const remove = deleteStep.bind(null, s.id, id)
             return (
               <Card key={s.id}>
-                <form action={update} className="grid gap-3 sm:grid-cols-[80px_1fr_1fr_auto] sm:items-end">
+                <form action={update} className="grid gap-3 sm:grid-cols-[80px_1fr_auto] sm:items-end">
                   <Input
                     name="step_order"
                     label="#"
@@ -119,18 +110,6 @@ export default async function QuestionEditPage({
                     required
                     defaultValue={s.step_description}
                   />
-                  <Select
-                    name="root_cause_id"
-                    label="Root cause"
-                    defaultValue={s.root_cause_id ?? ''}
-                  >
-                    <option value="">— Geen —</option>
-                    {rootCausesForTopic?.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.slug}
-                      </option>
-                    ))}
-                  </Select>
                   <div className="flex gap-2">
                     <Button type="submit" variant="secondary">
                       Opslaan
@@ -149,7 +128,7 @@ export default async function QuestionEditPage({
 
         <Card className="mt-4">
           <h4 className="mb-3 font-serif text-base text-text">Stap toevoegen</h4>
-          <form action={addStepHere} className="grid gap-3 sm:grid-cols-[80px_1fr_1fr_auto] sm:items-end">
+          <form action={addStepHere} className="grid gap-3 sm:grid-cols-[80px_1fr_auto] sm:items-end">
             <Input
               name="step_order"
               label="#"
@@ -163,14 +142,6 @@ export default async function QuestionEditPage({
               required
               placeholder="Verlaag de exponent met 1"
             />
-            <Select name="root_cause_id" label="Root cause" defaultValue="">
-              <option value="">— Geen —</option>
-              {rootCausesForTopic?.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.slug}
-                </option>
-              ))}
-            </Select>
             <Button type="submit">Toevoegen</Button>
           </form>
         </Card>

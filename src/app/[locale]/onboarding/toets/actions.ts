@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
-import { applyDiagnosticResults } from '@/lib/practice/bulk-progress'
+import {
+  applyDiagnosticResultsNew,
+  applyPadSelectionsNew,
+} from '@/lib/practice/bulk-progress-new'
 import { answersMatch } from '@/lib/practice/engine'
 import { loadDiagnosticQuestions } from '@/lib/practice/diagnostic'
 import { createClient } from '@/lib/supabase/server'
@@ -16,7 +19,6 @@ export type DiagnosticCheckResult = {
   topicSlug: string
   topicTitle: string
   questionId: string
-  body: string
   latexBody: string | null
   correctAnswer: string
   latexAnswer: string | null
@@ -36,10 +38,6 @@ export type DiagnosticCheckResponse = {
   allTopics: TopicRow[]
 }
 
-/**
- * Kijkt de toets na en geeft de resultaten terug — slaat niets op.
- * De leerling ziet daarna een verslag en kan het aanbevolen leerpad aanpassen.
- */
 export async function checkDiagnosticAction(
   payload: { questionId: string; raw: string }[],
 ): Promise<{ error: string } | DiagnosticCheckResponse> {
@@ -75,7 +73,6 @@ export async function checkDiagnosticAction(
       topicSlug: q.topic_slug,
       topicTitle: q.topic_title,
       questionId: q.id,
-      body: q.body,
       latexBody: q.latex_body,
       correctAnswer: q.answer,
       latexAnswer: q.latex_answer,
@@ -85,7 +82,7 @@ export async function checkDiagnosticAction(
   })
 
   const { data: topics } = await supabase
-    .from('topics')
+    .from('topics_new')
     .select('id, slug, title, order_index')
     .order('order_index')
 
@@ -100,10 +97,6 @@ export type PadPayload = {
   wilOefenen: boolean
 }[]
 
-/**
- * Sla de padkeuze op die de leerling (eventueel aangepast) heeft bevestigd
- * na de diagnostische toets.
- */
 export async function saveDiagnosticPadAction(
   topicIds: string[],
   payload: PadPayload,
@@ -117,14 +110,12 @@ export async function saveDiagnosticPadAction(
   const locale = await getLocale()
   if (!user) redirect(`/${locale}/inloggen`)
 
-  const { applyPadSelections } = await import('@/lib/practice/bulk-progress')
-
   const map = new Map(
     payload.map((p) => [p.topicId, { kenIk: p.kenIk, wilOefenen: p.wilOefenen }]),
   )
 
   try {
-    await applyPadSelections(supabase, user.id, topicIds, map)
+    await applyPadSelectionsNew(supabase, user.id, topicIds, map)
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
@@ -136,7 +127,7 @@ export async function saveDiagnosticPadAction(
   redirect(`/${locale}/leerpad`)
 }
 
-// ── Oude directe action (behoud voor backward compat) ────────────────────────
+// ── Directe opslaan na toets (zonder padkeuze) ───────────────────────────────
 
 export async function submitDiagnosticAction(
   payload: { questionId: string; raw: string }[],
@@ -179,7 +170,7 @@ export async function submitDiagnosticAction(
   const orderedTopicIds = canonical.map((q) => q.topic_id)
 
   try {
-    await applyDiagnosticResults(
+    await applyDiagnosticResultsNew(
       supabase,
       user.id,
       orderedTopicIds,

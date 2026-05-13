@@ -5,8 +5,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import {
   findActiveCluster,
-  loadLearningPath,
-  pickNextQuestion,
+  loadLearningPathNew,
+  pickNextQuestionNew,
 } from '@/lib/practice/engine'
 import { Card } from '@/components/ui'
 
@@ -43,12 +43,8 @@ export default async function LeerpadPage({ searchParams }: PageProps) {
   const clusterParam = params.cluster?.trim()
 
   const [{ data: greetProfile }, path] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('display_name')
-      .eq('id', user.id)
-      .maybeSingle(),
-    loadLearningPath(supabase, user.id),
+    supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
+    loadLearningPathNew(supabase, user.id),
   ])
   const greeting =
     greetProfile?.display_name?.trim().split(/\s+/)[0]?.trim() || null
@@ -82,26 +78,19 @@ export default async function LeerpadPage({ searchParams }: PageProps) {
         </p>
         <h1 className="font-serif text-3xl text-text">{t('completeH1')}</h1>
         <p className="mt-3 max-w-md text-text-muted">{t('completeBody')}</p>
-        <Link
-          href="/dashboard"
-          className="mt-6 rounded-md bg-accent px-4 py-2 text-white"
-        >
+        <Link href="/dashboard" className="mt-6 rounded-md bg-accent px-4 py-2 text-white">
           {t('completeCta')}
         </Link>
       </div>
     )
   }
 
-  const question = await pickNextQuestion(supabase, user.id, active.cluster.id)
+  const question = await pickNextQuestionNew(supabase, user.id, active.cluster.id)
 
-  let steps: Array<{
-    id: string
-    step_order: number
-    step_description: string
-  }> = []
+  let steps: Array<{ id: string; step_order: number; step_description: string }> = []
   if (question) {
     const { data } = await supabase
-      .from('question_steps')
+      .from('question_steps_new')
       .select('id, step_order, step_description')
       .eq('question_id', question.id)
       .order('step_order')
@@ -131,7 +120,11 @@ export default async function LeerpadPage({ searchParams }: PageProps) {
               topicSlug={active.topic.slug}
               clusterSlug={active.cluster.slug}
             />
-            <ProgressBar streak={active.cluster.correct_streak} threshold={3} streakLabel={t('streakLabel')} />
+            <ProgressBar
+              streak={active.cluster.correct_streak}
+              threshold={3}
+              streakLabel={t('streakLabel')}
+            />
           </div>
 
           {question ? (
@@ -139,7 +132,6 @@ export default async function LeerpadPage({ searchParams }: PageProps) {
               key={question.id}
               question={{
                 id: question.id,
-                body: question.body,
                 latex_body: question.latex_body,
                 difficulty: question.difficulty,
               }}

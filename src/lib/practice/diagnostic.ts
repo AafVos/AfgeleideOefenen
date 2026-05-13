@@ -16,10 +16,15 @@ const TOPIC_ORDER = [
 ] as const
 
 export type DiagnosticQuestion =
-  Database['public']['Tables']['questions']['Row'] & {
+  Database['public']['Tables']['questions_new']['Row'] & {
     topic_slug: string
     topic_title: string
   }
+
+/** Strip the chapter prefix (h2_, h3_, …) from a new-style topic slug. */
+function topicSuffix(newSlug: string): string {
+  return newSlug.replace(/^h\d+_/, '')
+}
 
 /** Eén representatieve vraag per topic — laagste cluster, eerst difficulty 2. */
 export async function loadDiagnosticQuestions(
@@ -27,16 +32,24 @@ export async function loadDiagnosticQuestions(
 ): Promise<DiagnosticQuestion[]> {
   const out: DiagnosticQuestion[] = []
 
-  for (const slug of TOPIC_ORDER) {
-    const { data: topic } = await db
-      .from('topics')
-      .select('id, title')
-      .eq('slug', slug)
-      .maybeSingle()
+  const { data: allTopics } = await db
+    .from('topics_new')
+    .select('id, slug, title')
+
+  const topicBySuffix = new Map<
+    string,
+    { id: string; slug: string; title: string }
+  >()
+  for (const tp of allTopics ?? []) {
+    topicBySuffix.set(topicSuffix(tp.slug), tp)
+  }
+
+  for (const suffix of TOPIC_ORDER) {
+    const topic = topicBySuffix.get(suffix)
     if (!topic) continue
 
     const { data: clusters } = await db
-      .from('topic_clusters')
+      .from('topic_clusters_new')
       .select('id')
       .eq('topic_id', topic.id)
       .order('order_index')
@@ -46,7 +59,7 @@ export async function loadDiagnosticQuestions(
     if (!clusterId) continue
 
     const { data: qD2 } = await db
-      .from('questions')
+      .from('questions_new')
       .select('*')
       .eq('cluster_id', clusterId)
       .eq('difficulty', 2)
@@ -57,7 +70,7 @@ export async function loadDiagnosticQuestions(
     let q = qD2
     if (!q) {
       const alt = await db
-        .from('questions')
+        .from('questions_new')
         .select('*')
         .eq('cluster_id', clusterId)
         .order('difficulty')
@@ -67,7 +80,7 @@ export async function loadDiagnosticQuestions(
     }
 
     if (q) {
-      out.push({ ...q, topic_slug: slug, topic_title: topic.title })
+      out.push({ ...q, topic_slug: topic.slug, topic_title: topic.title })
     }
   }
 

@@ -8,6 +8,7 @@ import { cn } from '@/components/ui'
 
 export type ClusterData = {
   id: string
+  slug: string
   title: string
   topicId: string
   totalAnswered: number
@@ -20,6 +21,7 @@ export type TopicData = {
   id: string
   slug: string
   title: string
+  chapterSlug: string
   clusters: ClusterData[]
 }
 
@@ -82,7 +84,7 @@ export function TopicBlock({ topic }: { topic: TopicData }) {
                   )}
                 />
                 <Link
-                  href={`/oefenen?topic=${encodeURIComponent(topic.slug)}`}
+                  href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}&cluster=${encodeURIComponent(cluster.slug)}`}
                   className="min-w-0 flex-1 truncate text-text hover:text-accent hover:underline"
                 >
                   {cluster.title}

@@ -21,9 +21,9 @@ import {
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function renderBody(q: DiagnosticQuestion) {
-  const src = q.latex_body ?? q.body
+  const src = q.latex_body ?? ''
   if (src.includes('$')) return <RichMath source={src} />
-  return <TeX tex={src} />
+  return <TeX tex={src} displayMode />
 }
 
 // ── main component ───────────────────────────────────────────────────────────
