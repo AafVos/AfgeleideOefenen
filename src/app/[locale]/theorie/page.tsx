@@ -18,9 +18,23 @@ export async function generateMetadata({
   return { title: t('title'), description: t('description') }
 }
 
-/** Strip chapter prefix (h2_, h3_, …) to get the theory content map key. */
+/**
+ * Map a topics_new slug to the legacy theory content key.
+ * Strips the chapter prefix (h2_, h6_, …) and then aliases the renamed
+ * topics back to their original keys so TOPIC_FORMULA / TOPIC_INTROS /
+ * CLUSTER_THEORY (all keyed by legacy slug) still resolve.
+ */
+const LEGACY_TOPIC_ALIAS: Record<string, string> = {
+  machten: 'basis',
+  termsgewijs: 'somregel',
+  e_machten: 'emacht',
+  goniometrie_diff: 'goniometrie',
+  logaritmes: 'lnlog',
+}
+
 function theoryTopicSlug(newSlug: string): string {
-  return newSlug.replace(/^h\d+_/, '')
+  const stripped = newSlug.replace(/^h\d+_/, '')
+  return LEGACY_TOPIC_ALIAS[stripped] ?? stripped
 }
 
 export default async function TheoriePage() {
