@@ -120,11 +120,9 @@ export async function saveDiagnosticPadAction(
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
 
-  revalidatePath(`/nl/leerpad`)
-  revalidatePath(`/en/leerpad`)
   revalidatePath(`/nl/dashboard`)
   revalidatePath(`/en/dashboard`)
-  redirect(`/${locale}/leerpad`)
+  redirect(`/${locale}/oefenen`)
 }
 
 // ── Directe opslaan na toets (zonder padkeuze) ───────────────────────────────
@@ -180,9 +178,7 @@ export async function submitDiagnosticAction(
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
 
-  revalidatePath(`/nl/leerpad`)
-  revalidatePath(`/en/leerpad`)
   revalidatePath(`/nl/dashboard`)
   revalidatePath(`/en/dashboard`)
-  redirect(`/${locale}/leerpad`)
+  redirect(`/${locale}/oefenen`)
 }

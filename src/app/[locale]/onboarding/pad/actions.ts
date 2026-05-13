@@ -33,9 +33,7 @@ export async function savePadSelectionsAction(
     return { error: e instanceof Error ? e.message : 'Opslaan mislukt.' }
   }
 
-  revalidatePath(`/nl/leerpad`)
-  revalidatePath(`/en/leerpad`)
   revalidatePath(`/nl/dashboard`)
   revalidatePath(`/en/dashboard`)
-  redirect(`/${locale}/leerpad`)
+  redirect(`/${locale}/oefenen`)
 }

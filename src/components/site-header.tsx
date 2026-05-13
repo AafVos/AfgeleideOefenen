@@ -39,12 +39,6 @@ export async function SiteHeader({ locale }: { locale: string }) {
           {user ? (
             <>
               <Link
-                href={`/${locale}/leerpad`}
-                className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-              >
-                {t('leerpad')}
-              </Link>
-              <Link
                 href={`/${locale}/oefenen`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >

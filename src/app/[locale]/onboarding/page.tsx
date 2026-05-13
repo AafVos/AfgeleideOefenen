@@ -1,23 +1,11 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 
-import { OnboardingWizard } from './wizard'
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}) {
-  const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'Onboarding' })
-  return {
-    title: t('title'),
-    robots: { index: false, follow: false },
-  }
-}
-
+// Onboarding temporarily skipped — leerpad (its destination) is disabled.
+// We still mark the profile as onboarded so the middleware doesn't loop.
+// To restore: revert this file from git.
 export default async function OnboardingPage() {
   const supabase = await createClient()
   const locale = await getLocale()
@@ -26,15 +14,12 @@ export default async function OnboardingPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/inloggen`)
 
-  const { data: profile } = await supabase
+  // Mark onboarded so the middleware gate won't redirect back here.
+  await supabase
     .from('profiles')
-    .select('onboarded_at, display_name, username')
+    .update({ onboarded_at: new Date().toISOString() })
     .eq('id', user.id)
-    .maybeSingle()
+    .is('onboarded_at', null)
 
-  if (profile?.onboarded_at) redirect(`/${locale}/leerpad`)
-
-  const defaultName = profile?.display_name?.trim() ?? ''
-
-  return <OnboardingWizard defaultName={defaultName} />
+  redirect(`/${locale}/oefenen`)
 }
