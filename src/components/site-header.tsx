@@ -50,6 +50,12 @@ export async function SiteHeader({ locale }: { locale: string }) {
                 {t('freeExercise')}
               </Link>
               <Link
+                href={`/${locale}/zelf-toets`}
+                className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+              >
+                {t('zelfToets')}
+              </Link>
+              <Link
                 href={`/${locale}/theorie`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
