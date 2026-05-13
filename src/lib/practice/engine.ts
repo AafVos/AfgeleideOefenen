@@ -284,10 +284,20 @@ export async function loadLearningPathNew(
     clustersByTopic.set(c.topic_id, list)
   }
 
+  // Sort topics by chapter order first, then by topic order within the chapter.
+  // topics_new.order_index is scoped per chapter (1, 2, 3…) so a plain global
+  // sort would interleave chapters with the same order_index values.
+  const sortedTopics = [...(topics ?? [])].sort((a, b) => {
+    const ca = chapterById.get(a.chapter_id)?.order_index ?? 999
+    const cb = chapterById.get(b.chapter_id)?.order_index ?? 999
+    if (ca !== cb) return ca - cb
+    return a.order_index - b.order_index
+  })
+
   const result: TopicWithClustersNew[] = []
   let previousTopicMastered = true
 
-  for (const t of topics ?? []) {
+  for (const t of sortedTopics) {
     const chapter = chapterById.get(t.chapter_id)
     const topicClusters = clustersByTopic.get(t.id) ?? []
 
