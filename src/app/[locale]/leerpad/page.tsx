@@ -98,7 +98,7 @@ export default async function LeerpadPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="flex">
+    <div className="flex flex-col lg:flex-row">
       <QuestPath path={path} activeClusterId={active.cluster.id} />
 
       <div className="flex-1">
