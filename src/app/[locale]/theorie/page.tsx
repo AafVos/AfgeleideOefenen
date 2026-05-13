@@ -103,19 +103,17 @@ export default async function TheoriePage() {
                 <li key={tp.id} className="flex">
                   <a
                     href={`#${tp.slug}`}
-                    className="group flex h-full w-full items-center gap-3 rounded-xl border border-border bg-surface-2 px-4 py-4 transition hover:border-accent hover:bg-accent-light"
+                    className="group flex h-full w-full flex-col gap-2 rounded-xl border border-border bg-surface-2 px-4 py-3 transition hover:border-accent hover:bg-accent-light"
                   >
-                    <span className="self-start shrink-0 text-sm text-text-muted group-hover:text-accent">
+                    <span className="text-sm text-text-muted group-hover:text-accent">
                       <span className="font-serif tabular-nums">{i + 1}.</span>{' '}
                       <span className="font-sans">{tp.title}</span>
                     </span>
-                    <span className="min-w-0 flex-1 overflow-x-auto">
-                      {formula ? (
+                    {formula && (
+                      <span className="min-w-0 overflow-x-auto text-[0.95em] leading-tight">
                         <TeX tex={formula} displayMode />
-                      ) : (
-                        <span className="text-sm text-text">{tp.title}</span>
-                      )}
-                    </span>
+                      </span>
+                    )}
                   </a>
                 </li>
               )
