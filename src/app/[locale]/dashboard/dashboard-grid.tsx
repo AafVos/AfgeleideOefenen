@@ -4,24 +4,27 @@ import { useMemo } from 'react'
 
 import { cn } from '@/components/ui'
 
-import { TopicBlock, type TopicData } from './topic-block'
+import { ChapterBlock, type ChapterData } from './topic-block'
 
 export type ActivityDay = { date: string; count: number }
 
 export function DashboardGrid({
-  topicData,
+  chapterData,
   streakDays = 0,
   activity = [],
   totalAnswered = 0,
   totalCorrect = 0,
 }: {
-  topicData: TopicData[]
+  chapterData: ChapterData[]
   streakDays?: number
   activity?: ActivityDay[]
   totalAnswered?: number
   totalCorrect?: number
 }) {
-  const allClusters = useMemo(() => topicData.flatMap((t) => t.clusters), [topicData])
+  const allClusters = useMemo(
+    () => chapterData.flatMap((ch) => ch.topics.flatMap((t) => t.clusters)),
+    [chapterData],
+  )
   const mastered = allClusters.filter((c) => c.isKnown).length
   const total = allClusters.length
   const weightedProgress = allClusters.reduce((sum, c) => {
@@ -50,8 +53,8 @@ export function DashboardGrid({
             Voortgang per hoofdstuk
           </p>
           <div className="space-y-2">
-            {topicData.map((topic) => (
-              <TopicBlock key={topic.id} topic={topic} />
+            {chapterData.map((chapter) => (
+              <ChapterBlock key={chapter.id} chapter={chapter} />
             ))}
           </div>
         </div>

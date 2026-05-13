@@ -25,17 +25,30 @@ export type TopicData = {
   clusters: ClusterData[]
 }
 
-export function TopicBlock({ topic }: { topic: TopicData }) {
-  const [open, setOpen] = useState(false)
+export type ChapterData = {
+  id: string
+  slug: string
+  title: string
+  topics: TopicData[]
+}
 
-  const mastered = topic.clusters.filter((c) => c.isKnown).length
-  const total = topic.clusters.length
-  const weightedProgress = topic.clusters.reduce((sum, c) => {
+function computeProgress(clusters: ClusterData[]) {
+  const mastered = clusters.filter((c) => c.isKnown).length
+  const total = clusters.length
+  const weighted = clusters.reduce((sum, c) => {
     if (c.isKnown) return sum + 1
     if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
     return sum
   }, 0)
-  const pct = total > 0 ? Math.round((weightedProgress / total) * 100) : 0
+  const pct = total > 0 ? Math.round((weighted / total) * 100) : 0
+  return { mastered, total, pct }
+}
+
+export function ChapterBlock({ chapter }: { chapter: ChapterData }) {
+  const [open, setOpen] = useState(false)
+
+  const allClusters = chapter.topics.flatMap((t) => t.clusters)
+  const { mastered, total, pct } = computeProgress(allClusters)
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -52,7 +65,10 @@ export function TopicBlock({ topic }: { topic: TopicData }) {
         >
           <path d="M8 5l8 7-8 7V5z" />
         </svg>
-        <span className="flex-1 font-serif text-[15px] text-text">{topic.title}</span>
+        <span className="font-mono text-[11px] font-semibold text-text-muted">
+          {chapter.slug.toUpperCase()}
+        </span>
+        <span className="flex-1 font-serif text-[15px] text-text">{chapter.title}</span>
         <span className="tabular-nums text-xs text-text-muted">{mastered}/{total}</span>
         <span
           className={cn(
@@ -70,32 +86,32 @@ export function TopicBlock({ topic }: { topic: TopicData }) {
 
       {open && (
         <ul className="pb-2 pt-1">
-          {topic.clusters.map((cluster) => {
-            const acc =
-              cluster.totalAnswered > 0
-                ? Math.round((cluster.totalCorrect / cluster.totalAnswered) * 100)
-                : null
+          {chapter.topics.map((topic) => {
+            const { mastered: tMastered, total: tTotal, pct: tPct } = computeProgress(topic.clusters)
             return (
-              <li key={cluster.id} className="flex items-center gap-3 px-4 py-1.5 text-sm">
+              <li key={topic.id} className="flex items-center gap-3 px-4 py-2 text-sm">
                 <span
                   className={cn(
                     'size-1.5 shrink-0 rounded-full',
-                    cluster.isKnown ? 'bg-accent' : 'bg-border',
+                    tPct === 100 ? 'bg-accent' : 'bg-border',
                   )}
                 />
                 <Link
-                  href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}&cluster=${encodeURIComponent(cluster.slug)}`}
+                  href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}`}
                   className="min-w-0 flex-1 truncate text-text hover:text-accent hover:underline"
                 >
-                  {cluster.title}
+                  {topic.title}
                 </Link>
+                <span className="shrink-0 tabular-nums text-xs text-text-muted">
+                  {tMastered}/{tTotal}
+                </span>
                 <span
                   className={cn(
-                    'shrink-0 tabular-nums text-xs',
-                    acc === null ? 'text-text-muted/40' : acc >= 70 ? 'font-medium text-accent' : 'text-text-muted',
+                    'w-9 shrink-0 text-right tabular-nums text-xs',
+                    tPct === 100 ? 'font-medium text-accent' : 'text-text-muted',
                   )}
                 >
-                  {acc === null ? '—' : `${acc}%`}
+                  {tPct}%
                 </span>
               </li>
             )
