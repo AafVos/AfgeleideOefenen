@@ -97,27 +97,27 @@ export default async function TheoriePage() {
             {t('formulaNavTitle')}
           </p>
           <ol className="grid items-stretch gap-3 sm:grid-cols-2">
-            {topicList.map((tp, i) => {
-              const formula = TOPIC_FORMULA[theoryTopicSlug(tp.slug)]
-              return (
-                <li key={tp.id} className="flex">
-                  <a
-                    href={`#${tp.slug}`}
-                    className="group flex h-full w-full flex-col gap-2 rounded-xl border border-border bg-surface-2 px-4 py-3 transition hover:border-accent hover:bg-accent-light"
-                  >
-                    <span className="text-sm text-text-muted group-hover:text-accent">
-                      <span className="font-serif tabular-nums">{i + 1}.</span>{' '}
-                      <span className="font-sans">{tp.title}</span>
-                    </span>
-                    {formula && (
+            {topicList
+              .filter((tp) => TOPIC_FORMULA[theoryTopicSlug(tp.slug)])
+              .map((tp, i) => {
+                const formula = TOPIC_FORMULA[theoryTopicSlug(tp.slug)]!
+                return (
+                  <li key={tp.id} className="flex">
+                    <a
+                      href={`#${tp.slug}`}
+                      className="group flex h-full w-full flex-col gap-2 rounded-xl border border-border bg-surface-2 px-4 py-3 transition hover:border-accent hover:bg-accent-light"
+                    >
+                      <span className="text-sm text-text-muted group-hover:text-accent">
+                        <span className="font-serif tabular-nums">{i + 1}.</span>{' '}
+                        <span className="font-sans">{tp.title}</span>
+                      </span>
                       <span className="min-w-0 overflow-x-auto text-[0.95em] leading-tight">
                         <TeX tex={formula} displayMode />
                       </span>
-                    )}
-                  </a>
-                </li>
-              )
-            })}
+                    </a>
+                  </li>
+                )
+              })}
           </ol>
         </nav>
       )}
