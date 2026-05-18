@@ -10,6 +10,7 @@ import {
 } from '@/lib/practice/bulk-progress-new'
 import { answersMatch } from '@/lib/practice/engine'
 import { loadDiagnosticQuestions } from '@/lib/practice/diagnostic'
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 // ── Nakijken (geen opslaan) ──────────────────────────────────────────────────
@@ -84,6 +85,7 @@ export async function checkDiagnosticAction(
   const { data: topics } = await supabase
     .from('topics_new')
     .select('id, slug, title, order_index')
+    .eq('site', SITE)
     .order('order_index')
 
   return { results, allTopics: topics ?? [] }

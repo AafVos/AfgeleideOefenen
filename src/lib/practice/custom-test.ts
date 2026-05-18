@@ -6,6 +6,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { SITE } from '@/config/site'
 import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
@@ -50,18 +51,22 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
       db
         .from('chapters')
         .select('id, slug, title, order_index')
+        .eq('site', SITE)
         .order('order_index'),
       db
         .from('topics_new')
         .select('id, slug, title, chapter_id, order_index')
+        .eq('site', SITE)
         .order('order_index'),
       db
         .from('topic_clusters_new')
         .select('id, slug, title, topic_id, order_index')
+        .eq('site', SITE)
         .order('order_index'),
       db
         .from('questions_new')
-        .select('id, cluster_id'),
+        .select('id, cluster_id')
+        .eq('site', SITE),
     ])
 
   // Build cluster → question IDs map
@@ -135,6 +140,7 @@ export async function pickQuestionsForTest(
   const { data: questions } = await db
     .from('questions_new')
     .select('id, cluster_id')
+    .eq('site', SITE)
     .in('cluster_id', clusterIds)
 
   let pool = (questions ?? []).map((q) => q.id)
@@ -193,10 +199,10 @@ export async function loadTestSessionState(
 ): Promise<TestSessionState | null> {
   const { data: session } = await db
     .from('user_sessions_new')
-    .select('id, user_id, kind, ended_at, show_answers')
+    .select('id, user_id, session_type, ended_at, show_answers')
     .eq('id', sessionId)
     .maybeSingle()
-  if (!session || session.user_id !== userId || session.kind !== 'custom_test') {
+  if (!session || session.user_id !== userId || session.session_type !== 'custom_test') {
     return null
   }
 
@@ -258,10 +264,10 @@ export async function loadTestResults(
 ): Promise<ResultBreakdown | null> {
   const { data: session } = await db
     .from('user_sessions_new')
-    .select('id, user_id, kind')
+    .select('id, user_id, session_type')
     .eq('id', sessionId)
     .maybeSingle()
-  if (!session || session.user_id !== userId || session.kind !== 'custom_test') {
+  if (!session || session.user_id !== userId || session.session_type !== 'custom_test') {
     return null
   }
 

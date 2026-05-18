@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next'
 
+import { SITE_CONFIG } from '@/config/site'
+
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleideoefenen.nl'
+  process.env.NEXT_PUBLIC_SITE_URL ?? `https://${SITE_CONFIG.domain}`
 
 export default function robots(): MetadataRoute.Robots {
   return {

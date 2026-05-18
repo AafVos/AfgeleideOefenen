@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Badge, Button, cn, ErrorBanner } from '@/components/ui'
+import { Button, cn, ErrorBanner } from '@/components/ui'
 import {
   submitStudyAnswerAction,
   type StudyResult,
@@ -144,17 +144,6 @@ export function StudyCard({
               #{questionNumber}
             </span>
           )}
-          <Badge
-            tone={
-              question.difficulty === 1
-                ? 'accent'
-                : question.difficulty === 2
-                  ? 'warn'
-                  : 'danger'
-            }
-          >
-            {t('difficulty', { n: question.difficulty })}
-          </Badge>
         </div>
       </div>
 

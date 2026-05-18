@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Badge, Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner } from '@/components/ui'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
 import { MathKeyboard } from '@/components/math-keyboard'
@@ -137,20 +137,6 @@ export function TestRunnerCard({
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <Badge
-          tone={
-            question.difficulty === 1
-              ? 'accent'
-              : question.difficulty === 2
-                ? 'warn'
-                : 'danger'
-          }
-        >
-          {t('difficulty', { n: question.difficulty })}
-        </Badge>
-      </div>
-
       <div className="mb-6 font-serif text-2xl leading-snug text-text">
         {question.latex_body?.includes('$') ? (
           <RichMath source={question.latex_body} />

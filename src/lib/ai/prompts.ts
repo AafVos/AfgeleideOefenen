@@ -2,6 +2,8 @@
  * Prompt-templates voor de AI-laag.
  */
 
+import { SITE_CONFIG } from '@/config/site'
+
 export function buildCheckAnswerPromptNew(input: {
   questionBody: string
   correctAnswer: string
@@ -10,14 +12,14 @@ export function buildCheckAnswerPromptNew(input: {
   clusterTitle: string
   stepsAlreadyExist: boolean
 }): string {
-  return `Je bent een wiskundedocent voor VWO-leerlingen die leren differentiëren.
+  return `Je bent een wiskundedocent voor VWO-leerlingen die leren ${SITE_CONFIG.subjectVerbNl}.
 De site gebruikt de notatie van Getal & Ruimte.
 Antwoord ALTIJD in het Nederlands en ALLEEN met geldige JSON (geen Markdown, geen uitleg erbuiten).
 
 Context:
 - Topic: ${input.topicTitle}
 - Cluster: ${input.clusterTitle}
-- Vraag: Bepaal de afgeleide van ${input.questionBody}
+- Vraag: ${SITE_CONFIG.taskPromptNl} ${input.questionBody}
 - Correct antwoord: ${input.correctAnswer}
 - Antwoord van de leerling: ${input.studentAnswer}
 
@@ -77,14 +79,14 @@ export function buildCheckAnswerPrompt(input: {
     .map((r) => `- ${r.slug}: ${r.description}`)
     .join('\n')
 
-  return `Je bent een wiskundedocent voor VWO-leerlingen die leren differentiëren.
+  return `Je bent een wiskundedocent voor VWO-leerlingen die leren ${SITE_CONFIG.subjectVerbNl}.
 De site gebruikt de notatie van Getal & Ruimte.
 Antwoord ALTIJD in het Nederlands en ALLEEN met geldige JSON (geen Markdown, geen uitleg erbuiten).
 
 Context:
 - Topic: ${input.topicTitle}
 - Cluster: ${input.clusterTitle}
-- Vraag: Bepaal de afgeleide van ${input.questionBody}
+- Vraag: ${SITE_CONFIG.taskPromptNl} ${input.questionBody}
 - Correct antwoord: ${input.correctAnswer}
 - Antwoord van de leerling: ${input.studentAnswer}
 

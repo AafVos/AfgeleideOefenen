@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
+import { SITE_CONFIG } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
-  title: 'Admin · afgeleideoefenen.nl',
+  title: `Admin · ${SITE_CONFIG.domain}`,
 }
 
 const NAV = [

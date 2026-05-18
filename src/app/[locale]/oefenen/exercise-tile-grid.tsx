@@ -25,22 +25,12 @@ function TileGrid({
   tiles: NewExerciseTile[]
   activeQuestionId: string | null
   labels: {
-    easy: string
-    medium: string
-    hard: string
     lastCorrect: string
     lastWrong: string
     notTried: string
     exercise: string
-    level: string
   }
 }) {
-  const DIFF_LABEL: Record<1 | 2 | 3, string> = {
-    1: labels.easy,
-    2: labels.medium,
-    3: labels.hard,
-  }
-
   return (
     <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {tiles.map((tile) => {
@@ -64,29 +54,11 @@ function TileGrid({
                   'border-border bg-surface hover:bg-surface-2',
               )}
               aria-current={active ? 'page' : undefined}
-              aria-label={`${labels.exercise} ${tile.ordinal}, ${labels.level} ${tile.difficulty}, ${DIFF_LABEL[tile.difficulty]}.${tile.preview ? ` ${tile.preview}` : ''}${tile.lastCorrect === true ? ` ${labels.lastCorrect}` : ''}${tile.lastCorrect === false ? ` ${labels.lastWrong}` : ''}${tile.lastCorrect == null ? ` ${labels.notTried}` : ''}`}
+              aria-label={`${labels.exercise} ${tile.ordinal}.${tile.preview ? ` ${tile.preview}` : ''}${tile.lastCorrect === true ? ` ${labels.lastCorrect}` : ''}${tile.lastCorrect === false ? ` ${labels.lastWrong}` : ''}${tile.lastCorrect == null ? ` ${labels.notTried}` : ''}`}
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="text-xs font-medium text-text-muted">
                   #{tile.ordinal}
-                </span>
-                <span
-                  title={DIFF_LABEL[tile.difficulty]}
-                  className={cn(
-                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
-                    tile.lastCorrect === true &&
-                      'bg-emerald-100 text-emerald-700',
-                    tile.lastCorrect === false &&
-                      'bg-rose-100 text-rose-700',
-                    tile.lastCorrect == null && tile.difficulty === 1 &&
-                      'bg-accent-light text-accent',
-                    tile.lastCorrect == null && tile.difficulty === 2 &&
-                      'bg-surface-2 text-text-muted',
-                    tile.lastCorrect == null && tile.difficulty === 3 &&
-                      'border border-accent-2/30 bg-accent-2-light text-accent-2',
-                  )}
-                >
-                  {DIFF_LABEL[tile.difficulty]}
                 </span>
               </div>
               <ExerciseTileMathPreview latex_body={tile.latex_body} />
@@ -110,28 +82,20 @@ export function ExerciseTileGrid({
   labels: {
     heading: string
     sortedBy: string
-    easy: string
-    medium: string
-    hard: string
     lastCorrect: string
     lastWrong: string
     notTried: string
     exercise: string
-    level: string
   }
 }) {
   const totalTiles = sections.flatMap((s) => s.subSections.flatMap((ss) => ss.tiles)).length
   if (!totalTiles) return null
 
   const tileLabels = {
-    easy: labels.easy,
-    medium: labels.medium,
-    hard: labels.hard,
     lastCorrect: labels.lastCorrect,
     lastWrong: labels.lastWrong,
     notTried: labels.notTried,
     exercise: labels.exercise,
-    level: labels.level,
   }
 
   return (

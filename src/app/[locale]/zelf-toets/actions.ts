@@ -57,7 +57,7 @@ export async function createCustomTestAction(
 
   const { data: session, error: sessionErr } = await supabase
     .from('user_sessions_new')
-    .insert({ user_id: user.id, kind: 'custom_test', name: trimmedName, show_answers: showAnswers })
+    .insert({ user_id: user.id, session_type: 'custom_test', name: trimmedName, show_answers: showAnswers })
     .select('id')
     .single()
   if (sessionErr || !session) {
@@ -107,10 +107,10 @@ export async function submitCustomTestAnswerAction(
   // Verify the session belongs to the user and is a custom test
   const { data: session } = await supabase
     .from('user_sessions_new')
-    .select('id, user_id, kind, ended_at')
+    .select('id, user_id, session_type, ended_at')
     .eq('id', sessionId)
     .maybeSingle()
-  if (!session || session.user_id !== user.id || session.kind !== 'custom_test') {
+  if (!session || session.user_id !== user.id || session.session_type !== 'custom_test') {
     return { kind: 'error', message: 'Sessie niet gevonden.' }
   }
   if (session.ended_at) {

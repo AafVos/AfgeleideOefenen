@@ -2,12 +2,10 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { domainForLocale } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 import { HomeDemo } from './home-demo'
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleideoefenen.nl'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -21,6 +19,9 @@ export default async function HomePage() {
   }
 
   const t = await getTranslations('Home')
+
+  const domain = domainForLocale(locale)
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`
 
   const FAQ_ITEMS = [
     { question: t('faq1Q'), answer: t('faq1A') },
@@ -39,7 +40,7 @@ export default async function HomePage() {
         '@type': 'WebSite',
         '@id': `${SITE_URL}#website`,
         url: SITE_URL,
-        name: 'afgeleideoefenen.nl',
+        name: domain,
       },
       {
         '@type': 'FAQPage',

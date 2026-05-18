@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 import { PadForm, type TopicPadRow } from './pad-form'
@@ -41,6 +42,7 @@ export default async function PadPage() {
   const { data: topics } = await supabase
     .from('topics_new')
     .select('id, title, slug, order_index')
+    .eq('site', SITE)
     .order('order_index')
 
   const rows = (topics ?? []) as TopicPadRow[]

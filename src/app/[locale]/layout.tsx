@@ -4,10 +4,8 @@ import { getMessages, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { SiteHeader } from '@/components/site-header'
+import { domainForLocale } from '@/config/site'
 import { routing } from '@/i18n/routing'
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://afgeleideoefenen.nl'
 
 export async function generateMetadata({
   params,
@@ -16,22 +14,26 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const isNl = locale === 'nl'
+  const domain = domainForLocale(locale)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`
 
+  // TODO: subject-specific marketing copy. Move to per-site messages files
+  // when integralen-content is authored.
   const SITE_DESCRIPTION = isNl
     ? 'Differentiëren oefenen voor wiskunde B VWO — gratis en adaptief. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen.'
     : 'Practise derivatives and differentiation rules — free and adaptive. Power rule, product rule, quotient rule, chain rule, trigonometry, exponentials and logarithms. Perfect for exam preparation.'
 
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase: new URL(siteUrl),
     title: {
       default: isNl
-        ? 'Differentiëren oefenen — afgeleide wiskunde B VWO | afgeleideoefenen.nl'
-        : 'Practise derivatives — differentiation rules | afgeleideoefenen.nl',
-      template: '%s · afgeleideoefenen.nl',
+        ? `Differentiëren oefenen — afgeleide wiskunde B VWO | ${domain}`
+        : `Practise derivatives — differentiation rules | ${domain}`,
+      template: `%s · ${domain}`,
     },
     description: SITE_DESCRIPTION,
-    applicationName: 'afgeleideoefenen.nl',
-    authors: [{ name: 'afgeleideoefenen.nl' }],
+    applicationName: domain,
+    authors: [{ name: domain }],
     alternates: {
       canonical: `/${locale}`,
       languages: { nl: '/nl', en: '/en' },
@@ -39,8 +41,8 @@ export async function generateMetadata({
     openGraph: {
       type: 'website',
       locale: isNl ? 'nl_NL' : 'en_US',
-      url: SITE_URL,
-      siteName: 'afgeleideoefenen.nl',
+      url: siteUrl,
+      siteName: domain,
       title: isNl
         ? 'Afgeleide oefenen — wiskunde B VWO'
         : 'Practise derivatives — calculus',

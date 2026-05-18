@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 import { DashboardGrid } from './dashboard-grid'
@@ -40,16 +41,19 @@ export default async function DashboardPage() {
   const { data: chapters } = await supabase
     .from('chapters')
     .select('id, slug, title, order_index')
+    .eq('site', SITE)
     .order('order_index')
 
   const { data: topics } = await supabase
     .from('topics_new')
     .select('id, title, slug, chapter_id, order_index')
+    .eq('site', SITE)
     .order('order_index')
 
   const { data: clusters } = await supabase
     .from('topic_clusters_new')
     .select('id, title, slug, topic_id, order_index')
+    .eq('site', SITE)
     .order('order_index')
 
   const { data: progressRows } = await supabase

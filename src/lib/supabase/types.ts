@@ -287,6 +287,7 @@ export type Database = {
       chapters: {
         Row: {
           id: string
+          site: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           book_part: number
@@ -295,6 +296,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          site?: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           book_part: number
@@ -307,6 +309,7 @@ export type Database = {
       topics_new: {
         Row: {
           id: string
+          site: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           chapter_id: string
@@ -316,6 +319,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          site?: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           chapter_id: string
@@ -329,6 +333,7 @@ export type Database = {
       topic_clusters_new: {
         Row: {
           id: string
+          site: 'afgeleiden' | 'integralen'
           topic_id: string
           slug: string
           title: string
@@ -337,6 +342,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          site?: 'afgeleiden' | 'integralen'
           topic_id: string
           slug: string
           title: string
@@ -349,6 +355,7 @@ export type Database = {
       questions_new: {
         Row: {
           id: string
+          site: 'afgeleiden' | 'integralen'
           topic_id: string
           cluster_id: string
           latex_body: string | null
@@ -362,6 +369,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          site?: 'afgeleiden' | 'integralen'
           topic_id: string
           cluster_id: string
           latex_body?: string | null
@@ -427,7 +435,7 @@ export type Database = {
           user_id: string
           topic_id: string | null
           cluster_id: string | null
-          kind: 'practice' | 'custom_test'
+          session_type: 'practice' | 'custom_test'
           name: string | null
           show_answers: 'immediate' | 'end'
           started_at: string
@@ -438,7 +446,7 @@ export type Database = {
           user_id: string
           topic_id?: string | null
           cluster_id?: string | null
-          kind?: 'practice' | 'custom_test'
+          session_type?: 'practice' | 'custom_test'
           name?: string | null
           show_answers?: 'immediate' | 'end'
           started_at?: string

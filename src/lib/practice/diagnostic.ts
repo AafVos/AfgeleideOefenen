@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { SITE } from '@/config/site'
 import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
@@ -35,6 +36,7 @@ export async function loadDiagnosticQuestions(
   const { data: allTopics } = await db
     .from('topics_new')
     .select('id, slug, title')
+    .eq('site', SITE)
 
   const topicBySuffix = new Map<
     string,
