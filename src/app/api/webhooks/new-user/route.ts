@@ -1,5 +1,7 @@
 import { Resend } from 'resend'
 
+import { SITE_CONFIG } from '@/config/site'
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: Request) {
@@ -22,9 +24,9 @@ export async function POST(req: Request) {
     })
 
     await resend.emails.send({
-      from: 'noreply@afgeleideoefenen.nl',
+      from: `noreply@${SITE_CONFIG.domain}`,
       to: process.env.NOTIFY_EMAIL!,
-      subject: `Nieuwe gebruiker op afgeleideoefenen.nl`,
+      subject: `Nieuwe gebruiker op ${SITE_CONFIG.domain}`,
       html: `
         <h2>Nieuwe registratie</h2>
         <table cellpadding="6">

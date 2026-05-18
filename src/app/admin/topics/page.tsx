@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 import { Badge, Button, Card, Input } from '@/components/ui'
 
@@ -24,11 +25,13 @@ export default async function TopicsPage() {
       .select(
         'id, slug, title, chapter_id, order_index, is_unlocked_by_default, topic_clusters_new(count)',
       )
+      .eq('site', SITE)
       .order('order_index', { ascending: true })
       .returns<TopicRow[]>(),
     supabase
       .from('chapters')
       .select('id, slug, title, order_index')
+      .eq('site', SITE)
       .order('order_index'),
   ])
 

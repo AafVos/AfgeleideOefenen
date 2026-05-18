@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { SITE } from '@/config/site'
 import type { Database, ProgressStatus } from '@/lib/supabase/types'
 
 export const MASTERY_THRESHOLD = 3
@@ -262,9 +263,9 @@ export async function loadLearningPathNew(
     { data: clusters },
     { data: progress },
   ] = await Promise.all([
-    db.from('chapters').select('id, slug, title, order_index').order('order_index'),
-    db.from('topics_new').select('id, slug, title, chapter_id, order_index, is_unlocked_by_default').order('order_index'),
-    db.from('topic_clusters_new').select('id, slug, title, topic_id, order_index').order('order_index'),
+    db.from('chapters').select('id, slug, title, order_index').eq('site', SITE).order('order_index'),
+    db.from('topics_new').select('id, slug, title, chapter_id, order_index, is_unlocked_by_default').eq('site', SITE).order('order_index'),
+    db.from('topic_clusters_new').select('id, slug, title, topic_id, order_index').eq('site', SITE).order('order_index'),
     userId
       ? db.from('user_progress_new').select('cluster_id, status, correct_streak').eq('user_id', userId)
       : Promise.resolve({ data: [] as Array<{ cluster_id: string; status: ProgressStatus; correct_streak: number }> }),

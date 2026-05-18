@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 // ---------------------------------------------------------------------
@@ -20,6 +21,7 @@ export async function createTopic(formData: FormData) {
 
   const supabase = await createClient()
   const { error } = await supabase.from('topics_new').insert({
+    site: SITE,
     slug,
     title,
     chapter_id,
@@ -74,6 +76,7 @@ export async function createCluster(topicId: string, formData: FormData) {
 
   const supabase = await createClient()
   const { error } = await supabase.from('topic_clusters_new').insert({
+    site: SITE,
     topic_id: topicId,
     slug,
     title,

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 function parseDifficulty(v: FormDataEntryValue | null): 1 | 2 | 3 {
@@ -38,7 +39,7 @@ export async function createQuestion(formData: FormData) {
 
   const { data, error } = await supabase
     .from('questions_new')
-    .insert({ ...fields, is_ai_generated: false })
+    .insert({ ...fields, site: SITE, is_ai_generated: false })
     .select('id')
     .single()
   if (error) throw new Error(error.message)

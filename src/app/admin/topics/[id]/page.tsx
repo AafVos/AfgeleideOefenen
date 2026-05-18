@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 import { Button, Card, Input } from '@/components/ui'
 
@@ -29,6 +30,7 @@ export default async function TopicEditPage({
     supabase
       .from('chapters')
       .select('id, slug, title, order_index')
+      .eq('site', SITE)
       .order('order_index'),
   ])
 

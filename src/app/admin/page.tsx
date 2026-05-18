@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { SITE } from '@/config/site'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui'
 
@@ -8,12 +9,13 @@ export default async function AdminDashboardPage() {
   const admin = createServiceRoleClient()
 
   const [topics, clusters, questions, aiQuestions] = await Promise.all([
-    supabase.from('topics_new').select('*', { count: 'exact', head: true }),
-    supabase.from('topic_clusters_new').select('*', { count: 'exact', head: true }),
-    supabase.from('questions_new').select('*', { count: 'exact', head: true }),
+    supabase.from('topics_new').select('*', { count: 'exact', head: true }).eq('site', SITE),
+    supabase.from('topic_clusters_new').select('*', { count: 'exact', head: true }).eq('site', SITE),
+    supabase.from('questions_new').select('*', { count: 'exact', head: true }).eq('site', SITE),
     supabase
       .from('questions_new')
       .select('*', { count: 'exact', head: true })
+      .eq('site', SITE)
       .eq('is_ai_generated', true),
   ])
 

@@ -8,7 +8,9 @@
 -- Schema changes:
 --   • user_sessions_new.topic_id / cluster_id become nullable — a custom test
 --     spans multiple clusters and isn't tied to one.
---   • user_sessions_new.kind: 'practice' (existing behaviour) | 'custom_test'.
+--   • user_sessions_new.session_type: 'practice' (existing behaviour) |
+--     'custom_test'. (Named session_type rather than kind to avoid colliding
+--     with the pre-existing 'kind' column on this table.)
 --   • custom_test_questions: ordered list of pre-picked question IDs per test
 --     session, so the runner knows what to ask in what order and we can
 --     compute per-test results afterwards.
@@ -26,13 +28,13 @@ ALTER TABLE public.user_sessions_new
   ALTER COLUMN cluster_id DROP NOT NULL;
 
 ALTER TABLE public.user_sessions_new
-  ADD COLUMN kind text NOT NULL DEFAULT 'practice'
-    CHECK (kind IN ('practice', 'custom_test'));
+  ADD COLUMN IF NOT EXISTS session_type text NOT NULL DEFAULT 'practice'
+    CHECK (session_type IN ('practice', 'custom_test'));
 
-CREATE INDEX user_sessions_new_user_kind_idx
-  ON public.user_sessions_new (user_id, kind);
+CREATE INDEX IF NOT EXISTS user_sessions_new_user_session_type_idx
+  ON public.user_sessions_new (user_id, session_type);
 
-CREATE TABLE public.custom_test_questions (
+CREATE TABLE IF NOT EXISTS public.custom_test_questions (
   session_id   uuid NOT NULL REFERENCES public.user_sessions_new(id) ON DELETE CASCADE,
   question_id  uuid NOT NULL REFERENCES public.questions_new(id)     ON DELETE CASCADE,
   order_index  int  NOT NULL,
@@ -40,7 +42,7 @@ CREATE TABLE public.custom_test_questions (
   UNIQUE (session_id, question_id)
 );
 
-CREATE INDEX custom_test_questions_session_idx
+CREATE INDEX IF NOT EXISTS custom_test_questions_session_idx
   ON public.custom_test_questions (session_id, order_index);
 
 ALTER TABLE public.custom_test_questions ENABLE ROW LEVEL SECURITY;

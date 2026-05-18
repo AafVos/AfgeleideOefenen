@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Badge, Button, cn, ErrorBanner } from '@/components/ui'
+import { Button, cn, ErrorBanner } from '@/components/ui'
 import {
   flagQuestionNewAction,
   resolveWithStepsNewAction,
@@ -158,13 +158,6 @@ export function PracticeCard({
           {questionNumber != null && (
             <span className="text-xs font-medium text-text-muted">#{questionNumber}</span>
           )}
-          <Badge
-            tone={
-              question.difficulty === 1 ? 'accent' : question.difficulty === 2 ? 'warn' : 'danger'
-            }
-          >
-            {t('difficulty', { n: question.difficulty })}
-          </Badge>
         </div>
         <FlagQuestionButton questionId={question.id} />
       </div>

@@ -324,14 +324,10 @@ export default async function OefenenPage({ searchParams }: PageProps) {
               labels={{
                 heading: t('tilesHeading'),
                 sortedBy: t('tilesSortedBy'),
-                easy: t('easy'),
-                medium: t('medium'),
-                hard: t('hard'),
                 lastCorrect: t('tileLastCorrect'),
                 lastWrong: t('tileLastWrong'),
                 notTried: t('tileNotTried'),
                 exercise: t('tileExercise'),
-                level: t('tileLevel'),
               }}
             />
           )}

@@ -1,6 +1,6 @@
 {
   "Header": {
-    "brand": "DerivativePractice",
+    "brand": "__BRAND__",
     "brandSuffix": ".nl",
     "leerpad": "Learning path",
     "freeExercise": "Free practice",
@@ -72,7 +72,7 @@
     "faq7A": "The exercises were originally written in Dutch, but the theory and all interface text are available in English. The mathematical content is of course universal."
   },
   "HoeHetWerkt": {
-    "title": "How it works · derivativepractice.nl",
+    "title": "How it works · __DOMAIN__",
     "description": "The difference between the learning path and free practice, how the site adapts, and how to set your preferences on the first visit.",
     "eyebrow": "The idea behind this site",
     "h1": "Two ways to practise derivatives",
@@ -111,7 +111,7 @@
     "ctaBack": "← Back to home"
   },
   "Theorie": {
-    "title": "Differentiation — all rules on one page · derivativepractice.nl",
+    "title": "Differentiation — all rules on one page · __DOMAIN__",
     "description": "All differentiation rules for high school calculus on one page: power rule, sum rule, product rule, quotient rule, chain rule, exponential, trigonometry and ln. With examples and steps.",
     "eyebrow": "Theory",
     "h1": "Differentiation — all rules on one page",
@@ -126,7 +126,7 @@
     "noTheory": "No theory for this section yet — exercises only."
   },
   "Login": {
-    "title": "Log in · derivativepractice.nl",
+    "title": "Log in · __DOMAIN__",
     "h1": "Log in",
     "subtitle": "Welcome back. Log in to continue practising.",
     "emailLabel": "Email address",
@@ -145,7 +145,7 @@
     "resendSuccess": "Email sent — check your inbox (and spam folder)."
   },
   "Register": {
-    "title": "Sign up · derivativepractice.nl",
+    "title": "Sign up · __DOMAIN__",
     "h1": "Create account",
     "subtitle": "Free, and you can start practising right away.",
     "usernameLabel": "Username (optional)",
@@ -161,7 +161,7 @@
     "hidePassword": "Hide"
   },
   "ForgotPassword": {
-    "title": "Forgot password · derivativepractice.nl",
+    "title": "Forgot password · __DOMAIN__",
     "h1": "Forgot your password",
     "subtitle": "Enter your email address. If an account exists, you'll receive a link to reset your password.",
     "emailLabel": "Email address",
@@ -171,7 +171,7 @@
     "backToLogin": "← Back to login"
   },
   "NewPassword": {
-    "title": "New password · derivativepractice.nl",
+    "title": "New password · __DOMAIN__",
     "h1": "Set new password",
     "passwordLabel": "New password",
     "passwordHint": "At least 8 characters.",
@@ -181,7 +181,7 @@
     "submitPending": "Saving…"
   },
   "Onboarding": {
-    "title": "Welcome · derivativepractice.nl",
+    "title": "Welcome · __DOMAIN__",
     "step1Eyebrow": "Step 1 of 4",
     "step1H1": "What level are you at?",
     "step1Intro": "This helps us tailor the content to your level.",
@@ -226,7 +226,7 @@
     "pending": "Loading…"
   },
   "OnboardingPad": {
-    "title": "Build learning path · derivativepractice.nl",
+    "title": "Build learning path · __DOMAIN__",
     "eyebrow": "Build your learning path",
     "h1": "What do you already know, what do you want to practise?",
     "intro": "Tick which topics you already know well and which you want to practise. We'll build your learning path based on that.",
@@ -240,7 +240,7 @@
     "skipHint": "the default learning path stays as it is"
   },
   "OnboardingToets": {
-    "title": "Short test · derivativepractice.nl",
+    "title": "Short test · __DOMAIN__",
     "eyebrow": "Short test",
     "h1": "This is how we estimate your starting point",
     "intro": "One question per main topic. Based on your answers we'll set up your learning path.",
@@ -263,7 +263,7 @@
     "submitPending": "Saving…"
   },
   "Dashboard": {
-    "title": "Dashboard · derivativepractice.nl",
+    "title": "Dashboard · __DOMAIN__",
     "greetingWithName": "Hi {name}",
     "progressTitle": "Your progress",
     "progressSubtitle": "Here you can see how far you are on the learning path.",
@@ -310,7 +310,7 @@
     "cancel": "Cancel"
   },
   "Leerpad": {
-    "title": "Learning path · derivativepractice.nl",
+    "title": "Learning path · __DOMAIN__",
     "hi": "Hi {name}",
     "completeEyebrow": "🎉 Done",
     "completeH1": "You've mastered everything",
@@ -392,7 +392,7 @@
     "genericError": "Something went wrong."
   },
   "FreeExercise": {
-    "title": "Free practice · derivativepractice.nl",
+    "title": "Free practice · __DOMAIN__",
     "h1": "Free practice",
     "topicLabel": "Topic",
     "chapterLabel": "Chapter",
@@ -416,7 +416,7 @@
     "tileLevel": "level"
   },
   "ZelfToets": {
-    "title": "Self-test · afgeleideoefenen.nl",
+    "title": "Self-test · __DOMAIN__",
     "runnerTitle": "Self-test in progress",
     "resultsTitle": "Self-test results",
     "eyebrow": "Self-test",

@@ -33,7 +33,7 @@ export default async function ZelfToetsPage() {
       .from('user_sessions_new')
       .select('id, name, started_at, ended_at')
       .eq('user_id', user.id)
-      .eq('kind', 'custom_test')
+      .eq('session_type', 'custom_test')
       .order('started_at', { ascending: false }),
   ])
 
