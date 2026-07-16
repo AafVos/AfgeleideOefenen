@@ -134,6 +134,14 @@ export default async function OefenenPage({ searchParams }: PageProps) {
 
   const initialTiles = await loadTilesForClusters(supabase, tileClusterIds)
 
+  // Alle opgaven van alle zichtbare hoofdstukken (overzicht + navigator)
+  const allClusterIdsOrdered = visibleChapters.flatMap((ch) =>
+    allTopics
+      .filter((t) => t.chapter_id === ch.id)
+      .flatMap((t) => (clustersByTopic.get(t.id) ?? []).map((c) => c.id)),
+  )
+  const allTiles = await loadTilesForClusters(supabase, allClusterIdsOrdered)
+
   const validQuestionIds = new Set(initialTiles.map((t) => t.questionId))
   const question =
     qParam && validQuestionIds.has(qParam)
@@ -154,19 +162,22 @@ export default async function OefenenPage({ searchParams }: PageProps) {
       initialTopicSlug={activeTopic?.slug ?? null}
       initialClusterSlug={activeCluster?.slug ?? null}
       initialTiles={initialTiles}
+      allTiles={allTiles}
       question={question}
       labels={{
         chapterLabel: t('chapterLabel'),
         h1: t('h1'),
         difficultyHint: t('difficultyHint'),
         tilesHeading: t('tilesHeading'),
-        tilesSortedBy: t('tilesSortedBy'),
         tileLastCorrect: t('tileLastCorrect'),
         tileLastWrong: t('tileLastWrong'),
         tileNotTried: t('tileNotTried'),
         tileExercise: t('tileExercise'),
         backToAll: t('backToAll'),
         noExercises: t('noExercises'),
+        questionsNav: t('questionsNav'),
+        collapseSidebar: t('collapseSidebar'),
+        expandSidebar: t('expandSidebar'),
       }}
     />
   )

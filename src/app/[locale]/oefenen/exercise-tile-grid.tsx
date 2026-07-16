@@ -11,6 +11,7 @@ export type TileSubSection = {
 }
 
 export type TileSection = {
+  id?: string                // anchor voor scroll-navigatie vanuit de zijbalk
   label?: string             // topic name — undefined = no heading
   subSections: TileSubSection[]
 }
@@ -39,8 +40,7 @@ function TileGrid({
         return (
           <li key={tile.questionId}>
             <Link
-              href={`${tileHref}#oefenen-practice`}
-              scroll
+              href={tileHref as '/oefenen'}
               prefetch={false}
               className={cn(
                 'block min-h-[6.75rem] rounded-xl border px-3 py-3 transition',
@@ -81,7 +81,6 @@ export function ExerciseTileGrid({
   activeQuestionId: string | null
   labels: {
     heading: string
-    sortedBy: string
     lastCorrect: string
     lastWrong: string
     notTried: string
@@ -99,16 +98,9 @@ export function ExerciseTileGrid({
   }
 
   return (
-    <section className="mt-10" aria-labelledby="oefenen-overzicht">
-      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
-        <h2 id="oefenen-overzicht" className="font-serif text-xl text-text">
-          {labels.heading}
-        </h2>
-        <p className="text-xs text-text-muted">{labels.sortedBy}</p>
-      </div>
-
+    <section className="mt-6" aria-label={labels.heading}>
       {sections.map((section, si) => (
-        <div key={si} className={si > 0 ? 'mt-10' : ''}>
+        <div key={si} id={section.id} className={cn('scroll-mt-4', si > 0 && 'mt-10')}>
           {section.label && (
             <h3 className="mt-6 font-serif text-lg text-text">
               {section.label}

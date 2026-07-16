@@ -105,17 +105,26 @@ export function ConfigForm({
     return m
   }, [config.topics])
 
-  // Pool size for selected clusters based on source
-  const availableInScope = useMemo(() => {
-    let total = 0
+  // Pool size per bron voor de geselecteerde clusters
+  const sourceCounts = useMemo(() => {
+    const counts: Record<QuestionSource, number> = { new: 0, all: 0, wrong: 0 }
     for (const cl of config.clusters) {
       if (!selectedClusters.has(cl.id)) continue
-      if (source === 'new') total += cl.newCount
-      else if (source === 'wrong') total += cl.wrongCount
-      else total += cl.questionCount
+      counts.new += cl.newCount
+      counts.wrong += cl.wrongCount
+      counts.all += cl.questionCount
     }
-    return total
-  }, [config.clusters, selectedClusters, source])
+    return counts
+  }, [config.clusters, selectedClusters])
+
+  const availableInScope = sourceCounts[source]
+
+  // Gekozen bron heeft geen vragen meer in deze selectie: val terug op 'alle vragen'
+  useEffect(() => {
+    if (selectedClusters.size === 0) return
+    if (source === 'all' || sourceCounts[source] > 0) return
+    if (sourceCounts.all > 0) setSource('all')
+  }, [selectedClusters, source, sourceCounts])
 
   useEffect(() => {
     if (countTouched) return
@@ -376,24 +385,38 @@ export function ConfigForm({
             {t('sourceLabel')}
           </p>
           <div className="space-y-2">
-            {(['new', 'all', 'wrong'] as const).map((s) => (
-              <label key={s} className="flex cursor-pointer items-start gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="source"
-                  value={s}
-                  checked={source === s}
-                  onChange={() => setSource(s)}
-                  className="mt-1 accent-accent"
-                />
-                <span>
-                  <span className="font-medium text-text">{t(`source.${s}`)}</span>
-                  <span className="block text-xs text-text-muted">
-                    {t(`source.${s}Hint`)}
+            {(['new', 'all', 'wrong'] as const).map((s) => {
+              const unavailable = selectedClusters.size > 0 && sourceCounts[s] === 0
+              return (
+                <label
+                  key={s}
+                  className={`flex items-start gap-2 text-sm ${
+                    unavailable ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="source"
+                    value={s}
+                    checked={source === s}
+                    onChange={() => setSource(s)}
+                    disabled={unavailable}
+                    className="mt-1 accent-accent"
+                  />
+                  <span>
+                    <span className="font-medium text-text">{t(`source.${s}`)}</span>
+                    {selectedClusters.size > 0 && (
+                      <span className="ml-1.5 text-xs tabular-nums text-text-muted">
+                        ({sourceCounts[s]})
+                      </span>
+                    )}
+                    <span className="block text-xs text-text-muted">
+                      {t(`source.${s}Hint`)}
+                    </span>
                   </span>
-                </span>
-              </label>
-            ))}
+                </label>
+              )
+            })}
           </div>
         </div>
 

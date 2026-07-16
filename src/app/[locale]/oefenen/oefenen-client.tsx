@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
-import { Link } from '@/i18n/navigation'
-import { Card } from '@/components/ui'
+import { Link, useRouter } from '@/i18n/navigation'
+import { Card, cn } from '@/components/ui'
 import type {
   ChapterInfo,
   ClusterInfo,
@@ -22,18 +22,26 @@ type Question = {
   steps: Array<{ id: string; step_order: number; step_description: string }>
 }
 
+type ChapterGroup = {
+  chapter: ChapterInfo
+  tiles: NewExerciseTile[]
+  sections: TileSection[]
+}
+
 type Labels = {
   chapterLabel: string
   h1: string
   difficultyHint: string
   tilesHeading: string
-  tilesSortedBy: string
   tileLastCorrect: string
   tileLastWrong: string
   tileNotTried: string
   tileExercise: string
   backToAll: string
   noExercises: string
+  questionsNav: string
+  collapseSidebar: string
+  expandSidebar: string
 }
 
 type Props = {
@@ -48,6 +56,7 @@ type Props = {
   initialTopicSlug: string | null
   initialClusterSlug: string | null
   initialTiles: NewExerciseTile[]
+  allTiles: NewExerciseTile[]
   question: Question | null
   labels: Labels
 }
@@ -62,36 +71,8 @@ function buildClustersByTopic(clusters: ClusterInfo[]): Map<string, ClusterInfo[
   return map
 }
 
-function computeSections(
-  tiles: NewExerciseTile[],
-  chapterTopics: TopicInfo[],
-  clustersByTopic: Map<string, ClusterInfo[]>,
-  selectedTopic: TopicInfo | null,
-  selectedCluster: ClusterInfo | null,
-): TileSection[] {
-  if (selectedCluster) {
-    return [{ subSections: [{ label: '', tiles }] }]
-  }
-  if (selectedTopic) {
-    const clusters = clustersByTopic.get(selectedTopic.id) ?? []
-    return clusters
-      .map((cl) => ({
-        subSections: [{ label: cl.title, tiles: tiles.filter((t) => t.clusterId === cl.id) }],
-      }))
-      .filter((s) => s.subSections[0].tiles.length > 0)
-  }
-  return chapterTopics
-    .map((tp) => {
-      const tpClusters = clustersByTopic.get(tp.id) ?? []
-      const subSections = tpClusters
-        .map((cl) => ({
-          label: tpClusters.length > 1 ? cl.title : '',
-          tiles: tiles.filter((t) => t.clusterId === cl.id),
-        }))
-        .filter((ss) => ss.tiles.length > 0)
-      return { label: tp.title, subSections }
-    })
-    .filter((s) => s.subSections.length > 0)
+function sectionId(chapterSlug: string, topicSlug: string): string {
+  return `sect-${chapterSlug}-${topicSlug}`
 }
 
 export function OefenenClient({
@@ -106,9 +87,11 @@ export function OefenenClient({
   initialTopicSlug,
   initialClusterSlug,
   initialTiles,
+  allTiles,
   question,
   labels,
 }: Props) {
+  const router = useRouter()
   const clustersByTopic = useMemo(() => buildClustersByTopic(allClusters), [allClusters])
 
   const initChapter = useMemo(
@@ -131,10 +114,29 @@ export function OefenenClient({
     initialClusterSlug ?? null,
   )
   const [tiles, setTiles] = useState<NewExerciseTile[]>(initialTiles)
-  const [loadingTiles, setLoadingTiles] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [allTilesState, setAllTilesState] = useState<NewExerciseTile[]>(allTiles)
+
+  // URL-navigatie (bijv. via de opgaven-navigator naar een ander hoofdstuk)
+  // is leidend: synchroniseer de client-selectie met de nieuwe props.
+  const urlKey = `${initialChapterSlug}|${initialTopicSlug}|${initialClusterSlug}`
+  const [syncedUrlKey, setSyncedUrlKey] = useState(urlKey)
+  if (urlKey !== syncedUrlKey) {
+    setSyncedUrlKey(urlKey)
+    const ch = initialChapterSlug
+      ? (chapters.find((c) => c.slug === initialChapterSlug) ?? null)
+      : null
+    if (ch && ch.id !== selectedChapter?.id) {
+      setSelectedChapter(ch)
+      expandChapter(ch.id)
+    }
+    setSelectedTopicSlug(initialTopicSlug ?? null)
+    setSelectedClusterSlug(initialClusterSlug ?? null)
+    setTiles(initialTiles)
+  }
 
   function isChapterExpanded(chapterId: string): boolean {
-    return selectedChapterIds.has(chapterId) || selectedChapter?.id === chapterId
+    return selectedChapterIds.has(chapterId)
   }
 
   function expandChapter(chapterId: string) {
@@ -147,7 +149,6 @@ export function OefenenClient({
   }
 
   function toggleChapterExpansion(chapterId: string) {
-    if (selectedChapter?.id === chapterId) return
     setExpandedChapterIds((prev) => {
       const next = new Set(prev)
       if (next.has(chapterId)) next.delete(chapterId)
@@ -185,46 +186,85 @@ export function OefenenClient({
     selectedTopic ? `&topic=${encodeURIComponent(selectedTopic.slug)}` : ''
   }${selectedCluster ? `&cluster=${encodeURIComponent(selectedCluster.slug)}` : ''}`
 
-  const tileSections = useMemo(
-    () => computeSections(tiles, chapterTopics, clustersByTopic, selectedTopic, selectedCluster),
-    [tiles, chapterTopics, clustersByTopic, selectedTopic, selectedCluster],
-  )
+  // Alle opgaven, gegroepeerd per hoofdstuk en per hoofdstuk genummerd
+  const chapterGroups: ChapterGroup[] = useMemo(() => {
+    const chapterIdByClusterId = new Map<string, string>()
+    for (const cl of allClusters) {
+      const tp = allTopics.find((t) => t.id === cl.topic_id)
+      if (tp) chapterIdByClusterId.set(cl.id, tp.chapter_id)
+    }
+    return chapters
+      .map((ch) => {
+        const chTopics = allTopics.filter((t) => t.chapter_id === ch.id)
+        const chTiles = allTilesState
+          .filter((t) => chapterIdByClusterId.get(t.clusterId) === ch.id)
+          .map((t, i) => ({ ...t, ordinal: i + 1 }))
+        const sections: TileSection[] = chTopics
+          .map((tp) => {
+            const tpClusters = clustersByTopic.get(tp.id) ?? []
+            const subSections = tpClusters
+              .map((cl) => ({
+                label: tpClusters.length > 1 ? cl.title : '',
+                tiles: chTiles.filter((t) => t.clusterId === cl.id),
+              }))
+              .filter((ss) => ss.tiles.length > 0)
+            return { id: sectionId(ch.slug, tp.slug), label: tp.title, subSections }
+          })
+          .filter((s) => s.subSections.length > 0)
+        return { chapter: ch, tiles: chTiles, sections }
+      })
+      .filter((g) => g.tiles.length > 0)
+  }, [chapters, allTopics, allClusters, allTilesState, clustersByTopic])
 
   const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
   const nextTile = tiles[(currentIdx + 1) % tiles.length] ?? tiles[0] ?? null
   const nextHref = nextTile
-    ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}#oefenen-practice`
+    ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}`
     : baseHref
 
-  async function fetchTiles(clusterIds: string[]) {
-    if (!clusterIds.length) {
-      setTiles([])
-      return
+  function chapterHref(slug: string): string {
+    return `/oefenen?${catQS}chapter=${encodeURIComponent(slug)}`
+  }
+
+  // Scroll-spy: markeer in de zijbalk het hoofdstuk dat in beeld is
+  const mainScrollRef = useRef<HTMLDivElement | null>(null)
+  function handleMainScroll() {
+    if (question) return
+    const root = mainScrollRef.current
+    if (!root) return
+    const rootTop = root.getBoundingClientRect().top
+    let current: ChapterInfo | null = null
+    for (const g of chapterGroups) {
+      const el = document.getElementById(`hoofdstuk-${g.chapter.slug}`)
+      if (!el) continue
+      if (el.getBoundingClientRect().top - rootTop <= 140) current = g.chapter
     }
-    setLoadingTiles(true)
-    try {
-      const res = await fetch(`/api/oefenen/tiles?clusterIds=${clusterIds.join(',')}`)
-      if (res.ok) setTiles(await res.json())
-    } finally {
-      setLoadingTiles(false)
+    if (current && current.id !== selectedChapter?.id) {
+      setSelectedChapter(current)
+      setSelectedTopicSlug(null)
+      setSelectedClusterSlug(null)
     }
   }
 
-  function clusterIdsFor(topicIds: string[]): string[] {
-    return allClusters.filter((cl) => topicIds.includes(cl.topic_id)).map((cl) => cl.id)
+  /** Scroll naar een sectie in het overzicht; vanuit een vraag eerst terug navigeren. */
+  function goToSection(id: string, chapterSlug: string) {
+    if (question) {
+      router.push(`${chapterHref(chapterSlug)}#${id}` as '/oefenen')
+      return
+    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   function handleChapterClick(ch: ChapterInfo) {
     if (ch.id === selectedChapter?.id) {
       toggleChapterExpansion(ch.id)
-      return
+    } else {
+      setSelectedChapter(ch)
+      expandChapter(ch.id)
+      setSelectedTopicSlug(null)
+      setSelectedClusterSlug(null)
     }
-    setSelectedChapter(ch)
-    expandChapter(ch.id)
-    setSelectedTopicSlug(null)
-    setSelectedClusterSlug(null)
-    const topics = allTopics.filter((t) => t.chapter_id === ch.id)
-    fetchTiles(clusterIdsFor(topics.map((t) => t.id)))
+    goToSection(`hoofdstuk-${ch.slug}`, ch.slug)
   }
 
   function handleTopicClick(tp: TopicInfo) {
@@ -232,10 +272,9 @@ export function OefenenClient({
     const sameChapter = tpChapter?.id === selectedChapter?.id
 
     if (tp.slug === selectedTopicSlug && sameChapter) {
+      // Actief onderwerp opnieuw aanklikken: alleen inklappen in de zijbalk
       setSelectedTopicSlug(null)
       setSelectedClusterSlug(null)
-      const topics = allTopics.filter((t) => t.chapter_id === selectedChapter!.id)
-      fetchTiles(clusterIdsFor(topics.map((t) => t.id)))
       return
     }
 
@@ -245,35 +284,63 @@ export function OefenenClient({
     }
     setSelectedTopicSlug(tp.slug)
     setSelectedClusterSlug(null)
-    fetchTiles((clustersByTopic.get(tp.id) ?? []).map((cl) => cl.id))
+    if (tpChapter) goToSection(sectionId(tpChapter.slug, tp.slug), tpChapter.slug)
   }
 
   function handleClusterClick(cl: ClusterInfo, tp: TopicInfo) {
     const tpChapter = chapters.find((c) => c.id === tp.chapter_id) ?? null
     const sameChapter = tpChapter?.id === selectedChapter?.id
 
-    if (cl.slug === selectedClusterSlug && sameChapter) {
-      setSelectedClusterSlug(null)
-      fetchTiles((clustersByTopic.get(tp.id) ?? []).map((c) => c.id))
-      return
-    }
-
     if (tpChapter && !sameChapter) {
       setSelectedChapter(tpChapter)
       expandChapter(tpChapter.id)
     }
     setSelectedTopicSlug(tp.slug)
-    setSelectedClusterSlug(cl.slug)
-    fetchTiles([cl.id])
+    setSelectedClusterSlug(cl.slug === selectedClusterSlug && sameChapter ? null : cl.slug)
+    if (tpChapter) goToSection(sectionId(tpChapter.slug, tp.slug), tpChapter.slug)
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
-      {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <aside className="overflow-x-auto border-b border-border bg-surface p-4 lg:w-64 lg:overflow-x-visible lg:border-b-0 lg:border-r lg:overflow-y-auto lg:py-8">
-        <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
-          {labels.chapterLabel}
-        </p>
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
+      {/* ── Sidebar (staat vast; content scrolt zelf) ───────────────── */}
+      <aside
+        className={cn(
+          'nice-scrollbar border-b border-border bg-surface lg:h-full lg:border-b-0 lg:border-r',
+          sidebarOpen
+            ? 'overflow-x-auto p-4 lg:w-64 lg:overflow-x-visible lg:overflow-y-auto lg:py-8'
+            : 'p-2 lg:w-12 lg:py-4',
+        )}
+      >
+        <div className={sidebarOpen ? 'flex items-center justify-between gap-2' : 'flex justify-center'}>
+          {sidebarOpen && (
+            <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+              {labels.chapterLabel}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen((v) => !v)}
+            aria-expanded={sidebarOpen}
+            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            className="rounded-md p-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`size-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="m11 17-5-5 5-5" />
+              <path d="m18 17-5-5 5-5" />
+            </svg>
+          </button>
+        </div>
+        {sidebarOpen && (
         <ul className="mt-3 space-y-0.5">
           {chapters.map((ch) => {
             const chActive = ch.id === selectedChapter?.id
@@ -398,10 +465,15 @@ export function OefenenClient({
             )
           })}
         </ul>
+        )}
       </aside>
 
-      {/* ── Main content ────────────────────────────────────────────── */}
-      <div className="flex-1">
+      {/* ── Main content (eigen scroll-gebied) ──────────────────────── */}
+      <div
+        ref={mainScrollRef}
+        onScroll={handleMainScroll}
+        className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
+      >
         {showCategories && (
           <nav className="border-b border-border bg-surface">
             <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
@@ -426,66 +498,155 @@ export function OefenenClient({
         )}
 
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <p className="text-xs font-medium uppercase tracking-wider text-accent">{labels.h1}</p>
-          <h1 className="font-serif text-2xl text-text">
-            {selectedCluster?.title ?? selectedTopic?.title ?? selectedChapter?.title ?? labels.h1}
-          </h1>
+          <h1 className="sr-only">{labels.h1}</h1>
 
-          {!question && !loadingTiles && tiles.length > 0 && (
+          {!question && chapterGroups.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
           )}
 
-          {loadingTiles && (
-            <p className="mt-10 text-sm text-text-muted" aria-live="polite">
-              Laden…
-            </p>
-          )}
-
-          {!loadingTiles && tiles.length > 0 && (
-            <ExerciseTileGrid
-              baseHref={baseHref}
-              sections={tileSections}
-              activeQuestionId={question?.id ?? null}
-              labels={{
-                heading: labels.tilesHeading,
-                sortedBy: labels.tilesSortedBy,
-                lastCorrect: labels.tileLastCorrect,
-                lastWrong: labels.tileLastWrong,
-                notTried: labels.tileNotTried,
-                exercise: labels.tileExercise,
-              }}
-            />
-          )}
+          {!question &&
+            chapterGroups.map((g) => (
+              <section
+                key={g.chapter.id}
+                id={`hoofdstuk-${g.chapter.slug}`}
+                className="scroll-mt-4"
+              >
+                <h2 className="mt-20 border-b border-border pb-3 font-serif text-2xl text-text first:mt-6">
+                  <span className="font-mono font-semibold">
+                    {g.chapter.slug.toUpperCase()}
+                  </span>
+                  {' – '}
+                  {g.chapter.title}
+                </h2>
+                <ExerciseTileGrid
+                  baseHref={chapterHref(g.chapter.slug)}
+                  sections={g.sections}
+                  activeQuestionId={null}
+                  labels={{
+                    heading: labels.tilesHeading,
+                    lastCorrect: labels.tileLastCorrect,
+                    lastWrong: labels.tileLastWrong,
+                    notTried: labels.tileNotTried,
+                    exercise: labels.tileExercise,
+                  }}
+                />
+              </section>
+            ))}
 
           {question ? (
-            <section
-              id="oefenen-practice"
-              className="mt-10 scroll-mt-[var(--sticky-offset,6rem)]"
-            >
-              <div className="mb-4">
-                <Link
-                  href={baseHref as '/oefenen'}
-                  className="text-sm font-medium text-accent underline-offset-2 hover:underline"
-                >
-                  {labels.backToAll}
-                </Link>
+            <div className="mt-8 flex flex-col gap-8 lg:flex-row">
+              {/* Vraag centraal */}
+              <div className="min-w-0 flex-1">
+                <div className="mx-auto max-w-3xl">
+                  <div className="mb-5">
+                    <Link
+                      href={baseHref as '/oefenen'}
+                      aria-label={labels.backToAll}
+                      title={labels.backToAll}
+                      className="inline-flex text-text-muted transition hover:-translate-x-0.5 hover:text-text"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="size-7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M19 12H5" />
+                        <path d="m12 19-7-7 7-7" />
+                      </svg>
+                    </Link>
+                  </div>
+                  <StudyCard
+                    key={question.id}
+                    question={question}
+                    steps={question.steps}
+                    nextHref={nextHref}
+                    questionNumber={
+                      chapterGroups
+                        .flatMap((g) => g.tiles)
+                        .find((t) => t.questionId === question.id)?.ordinal ??
+                      (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
+                    }
+                    onAnswered={(questionId, isCorrect) => {
+                      setTiles((prev) =>
+                        prev.map((t) =>
+                          t.questionId === questionId ? { ...t, lastCorrect: isCorrect } : t,
+                        ),
+                      )
+                      setAllTilesState((prev) =>
+                        prev.map((t) =>
+                          t.questionId === questionId ? { ...t, lastCorrect: isCorrect } : t,
+                        ),
+                      )
+                    }}
+                  />
+                </div>
               </div>
-              <StudyCard
-                key={question.id}
-                question={question}
-                steps={question.steps}
-                nextHref={nextHref}
-                questionNumber={currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined}
-                onAnswered={(questionId, isCorrect) =>
-                  setTiles((prev) =>
-                    prev.map((t) =>
-                      t.questionId === questionId ? { ...t, lastCorrect: isCorrect } : t,
-                    ),
-                  )
-                }
-              />
-            </section>
-          ) : !loadingTiles && tiles.length === 0 && selectedChapter ? (
+
+              {/* Opgaven-navigatie rechts: alle hoofdstukken, scrollbaar */}
+              <aside className="shrink-0 lg:sticky lg:top-0 lg:w-64 lg:self-start">
+                <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+                  {labels.questionsNav}
+                </p>
+                <div className="nice-scrollbar mt-2 space-y-5 pt-1 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto lg:pb-4 lg:pl-1 lg:pr-3">
+                  {chapterGroups.map((g) => (
+                    <div key={g.chapter.slug}>
+                      <p className="text-xs font-medium text-text-muted">
+                        <span className="font-mono font-semibold">
+                          {g.chapter.slug.toUpperCase()}
+                        </span>
+                        {' – '}
+                        {g.chapter.title}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {g.tiles.map((q) => {
+                          const active = q.questionId === question.id
+                          const inCurrentScope =
+                            g.chapter.slug === selectedChapter?.slug &&
+                            tiles.some((t) => t.questionId === q.questionId)
+                          const href = inCurrentScope
+                            ? `${baseHref}&q=${encodeURIComponent(q.questionId)}`
+                            : `${chapterHref(g.chapter.slug)}&q=${encodeURIComponent(q.questionId)}`
+                          return (
+                            <Link
+                              key={q.questionId}
+                              href={href as '/oefenen'}
+                              prefetch={false}
+                              aria-current={active ? 'page' : undefined}
+                              aria-label={`${g.chapter.slug.toUpperCase()} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
+                              className={cn(
+                                'flex size-9 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
+                                active &&
+                                  'ring-2 ring-offset-1 ring-offset-[var(--color-bg)]',
+                                active &&
+                                  (q.lastCorrect === true
+                                    ? 'ring-emerald-500/80'
+                                    : q.lastCorrect === false
+                                      ? 'ring-rose-500/80'
+                                      : 'ring-neutral-400'),
+                                q.lastCorrect === true &&
+                                  'border-emerald-300/70 bg-emerald-50 text-emerald-900 hover:border-emerald-400',
+                                q.lastCorrect === false &&
+                                  'border-rose-300/70 bg-rose-50/90 text-rose-900 hover:border-rose-400',
+                                q.lastCorrect == null &&
+                                  'border-border bg-surface text-text-muted hover:bg-surface-2 hover:text-text',
+                              )}
+                            >
+                              {q.ordinal}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            </div>
+          ) : chapterGroups.length === 0 ? (
             <Card className="mt-8">
               <p className="font-medium text-text">{labels.noExercises}</p>
             </Card>

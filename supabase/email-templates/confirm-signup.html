@@ -1,22 +1,81 @@
 <!--
   Supabase: Authentication → Email Templates → Confirm signup
-  Paste the inner content into the template body (or wrap in <!DOCTYPE html> if your provider needs a full document).
+  Plak de inhoud hieronder in de template-body.
+  Beschikbare variabelen: {{ .ConfirmationURL }}, {{ .Email }}
 -->
-<div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f7f6f3; color: #1a1a18;">
-  <p style="font-size: 22px; font-family: Georgia, serif; margin: 0 0 16px;">
-    Bevestig je account
-  </p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: #f7f6f3; padding: 32px 12px;">
+  <tr>
+    <td align="center">
 
-  <p style="font-size: 15px; color: #7a7870; line-height: 1.6; margin: 0 0 28px;">
-    Klik op de knop hieronder om je account te activeren en te beginnen met oefenen.
-  </p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 540px;">
 
-  <a href="{{ .ConfirmationURL }}"
-     style="display: inline-block; background: #2d6a4f; color: #fff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;">
-    Account bevestigen
-  </a>
+        <!-- Merknaam -->
+        <tr>
+          <td align="center" style="padding: 0 0 20px;">
+            <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #1a1a18;">
+              AfgeleideOefenen<span style="color: #2d6a4f;">.nl</span>
+            </span>
+          </td>
+        </tr>
 
-  <p style="font-size: 12px; color: #7a7870; margin-top: 32px; line-height: 1.5;">
-    Als je je niet hebt aangemeld bij afgeleideoefenen.nl, kun je deze e-mail negeren.
-  </p>
-</div>
+        <!-- Kaart -->
+        <tr>
+          <td style="background: #ffffff; border: 1px solid #e6e3db; border-radius: 14px; padding: 36px 32px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+
+              <tr>
+                <td align="center" style="font-family: Georgia, 'Times New Roman', serif; font-size: 26px; line-height: 1.3; color: #1a1a18; padding-bottom: 12px;">
+                  Welkom! Nog &eacute;&eacute;n klik.
+                </td>
+              </tr>
+
+              <tr>
+                <td align="center" style="font-family: 'DM Sans', Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #6f6d65; padding-bottom: 28px;">
+                  Leuk dat je erbij bent. Bevestig je e-mailadres om je account
+                  te activeren &mdash; daarna kun je meteen beginnen met oefenen.
+                </td>
+              </tr>
+
+              <!-- Knop -->
+              <tr>
+                <td align="center" style="padding-bottom: 28px;">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display: inline-block; background: #2d6a4f; color: #ffffff !important; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-family: 'DM Sans', Arial, sans-serif; font-size: 15px; font-weight: 600;">
+                    Account bevestigen
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Kleine formule-knipoog -->
+              <tr>
+                <td align="center" style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 14px; color: #a8a599; padding-bottom: 24px;">
+                  f&nbsp;&prime;(jij) = vooruitgang
+                </td>
+              </tr>
+
+              <!-- Fallback-link -->
+              <tr>
+                <td style="border-top: 1px solid #eeece5; padding-top: 20px; font-family: 'DM Sans', Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #8b897f;">
+                  Werkt de knop niet? Kopieer dan deze link naar je browser:<br>
+                  <a href="{{ .ConfirmationURL }}" style="color: #2d6a4f; word-break: break-all;">{{ .ConfirmationURL }}</a>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+
+        <!-- Voettekst -->
+        <tr>
+          <td align="center" style="font-family: 'DM Sans', Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #a8a599; padding: 20px 16px 0;">
+            Deze e-mail is verstuurd naar {{ .Email }} omdat er een account is
+            aangemaakt op afgeleideoefenen.nl.<br>
+            Was jij dit niet? Dan kun je deze e-mail veilig negeren.
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>

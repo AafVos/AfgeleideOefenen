@@ -776,6 +776,16 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         id: 'somregel',
         title: 'Somregel',
         formula: "f(x) = g(x) + h(x) \\implies f'(x) = g'(x) + h'(x)",
+        examples: [
+          {
+            problem: 'f(x) = x^3 + 5x^2',
+            answer: "f'(x) = 3x^2 + 10x",
+            steps: [
+              'Differentieer elke term apart: $(x^3)\' = 3x^2$ en $(5x^2)\' = 10x$',
+              "Tel op: $f'(x) = 3x^2 + 10x$",
+            ],
+          },
+        ],
       },
       {
         id: 'productregel',
@@ -839,11 +849,32 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         id: 'gonio_basis',
         title: 'Basisformules goniometrie',
         formula: "\\begin{gathered} f(x) = \\sin(x) \\implies f'(x) = \\cos(x) \\\\ f(x) = \\cos(x) \\implies f'(x) = -\\sin(x) \\\\ f(x) = \\tan(x) \\implies f'(x) = \\dfrac{1}{\\cos^2(x)} \\end{gathered}",
+        examples: [
+          {
+            problem: 'f(x) = 3\\sin(x) - 2\\cos(x)',
+            answer: "f'(x) = 3\\cos(x) + 2\\sin(x)",
+            steps: [
+              "$(3\\sin(x))' = 3\\cos(x)$",
+              "$(-2\\cos(x))' = -2 \\cdot -\\sin(x) = 2\\sin(x)$",
+              "$f'(x) = 3\\cos(x) + 2\\sin(x)$",
+            ],
+          },
+        ],
       },
       {
         id: 'gonio_kettingregel',
         title: 'Kettingregel met goniometrie',
         formula: "\\begin{gathered} f(x) = \\cos\\bigl(u(x)\\bigr) \\implies f'(x) = -u'(x) \\cdot \\sin\\bigl(u(x)\\bigr) \\\\ f(x) = \\sin\\bigl(u(x)\\bigr) \\implies f'(x) = u'(x) \\cdot \\cos\\bigl(u(x)\\bigr) \\end{gathered}",
+        examples: [
+          {
+            problem: 'f(x) = \\sin(3x^2)',
+            answer: "f'(x) = 6x\\cos(3x^2)",
+            steps: [
+              "Binnenste functie: $u(x) = 3x^2$, dus $u'(x) = 6x$",
+              "$f'(x) = u'(x) \\cdot \\cos\\bigl(u(x)\\bigr) = 6x\\cos(3x^2)$",
+            ],
+          },
+        ],
       },
     ],
   },

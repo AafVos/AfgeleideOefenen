@@ -26,13 +26,25 @@ export function toLatexPreview(raw: string): string {
   s = s.replace(/√([A-Za-z0-9]+)/g, '\\sqrt{$1}')
 
   // a^(...) — pakt groepen tussen haakjes, ook met negatief teken en /
-  s = s.replace(/\^\(\s*([^()]*?)\s*\)/g, '^{$1}')
+  s = s.replace(/\^\(\s*([^()]+?)\s*\)/g, '^{$1}')
   // a^token — losse exponent zonder haakjes (1 of meer cijfers/letters of -
   //  gevolgd door cijfers/letters)
   s = s.replace(/\^(-?[A-Za-z0-9]+)/g, '^{$1}')
 
-  // (num)/(den) → \dfrac{...}{...}
-  s = s.replace(/\(([^()]+)\)\s*\/\s*\(([^()]+)\)/g, '\\dfrac{$1}{$2}')
+  // Onaffe machten: laat een placeholder-vakje zien zodat de preview niet
+  // breekt terwijl je nog typt.
+  //   x^()      → x^{□}
+  //   x^(-1     → x^{-1□}   (haakje nog niet gesloten)
+  //   x^        → x^{□}
+  s = s.replace(/\^\(\s*\)/g, '^{\\square}')
+  s = s.replace(/\^\(\s*([^()]*)$/g, '^{$1\\square}')
+  s = s.replace(/\^(?=$|[^{])/g, '^{\\square}')
+
+  // (num)/(den) → \dfrac{...}{...} — lege groepen krijgen een placeholder-
+  // vakje zodat je bij het typen alvast de breukvorm ziet
+  s = s.replace(/\(([^()]*)\)\s*\/\s*\(([^()]*)\)/g, (_m, a: string, b: string) =>
+    `\\dfrac{${a.trim() || '\\square'}}{${b.trim() || '\\square'}}`,
+  )
   // num/den met simpele tokens
   s = s.replace(
     /(^|[\s(+\-*/=,])(-?[A-Za-z0-9.]+)\s*\/\s*(-?[A-Za-z0-9.]+)(?=$|[\s)+\-*/=,])/g,

@@ -14,16 +14,57 @@ export function SignupForm() {
   const t = useTranslations('Register')
   const [showPassword, setShowPassword] = useState(false)
 
+  if (state.notice) {
+    return (
+      <div className="space-y-4">
+        <p
+          role="status"
+          className="rounded-md border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent"
+        >
+          {state.notice}
+        </p>
+        <Link
+          href="/inloggen"
+          className="block w-full rounded-md bg-accent px-4 py-2.5 text-center font-medium text-white shadow-sm transition hover:bg-accent/90"
+        >
+          {t('toLoginLabel')}
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <form action={formAction} className="space-y-4">
-      <Field label={t('usernameLabel')} name="username" type="text" autoComplete="username" />
-      <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
+      <Field
+        label={t('usernameLabel')}
+        name="username"
+        type="text"
+        autoComplete="username"
+        defaultValue={state.values?.username}
+      />
+      <Field
+        label={t('emailLabel')}
+        name="email"
+        type="email"
+        autoComplete="email"
+        required
+        defaultValue={state.values?.email}
+      />
       <PasswordField
         label={t('passwordLabel')}
         name="password"
         autoComplete="new-password"
         required
         hint={t('passwordHint')}
+        showPassword={showPassword}
+        onToggle={() => setShowPassword((prev) => !prev)}
+        toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
+      />
+      <PasswordField
+        label={t('passwordConfirmLabel')}
+        name="passwordConfirm"
+        autoComplete="new-password"
+        required
         showPassword={showPassword}
         onToggle={() => setShowPassword((prev) => !prev)}
         toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
@@ -38,25 +79,14 @@ export function SignupForm() {
         </p>
       )}
 
-      {state.notice && (
-        <p
-          role="status"
-          className="rounded-md border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent"
-        >
-          {state.notice}
-        </p>
-      )}
-
       <SubmitButton />
 
-      {!state.notice && (
-        <p className="pt-1 text-center text-sm text-text-muted">
-          {t('hasAccount')}{' '}
-          <Link href="/inloggen" className="font-medium text-accent hover:underline">
-            {t('loginLink')}
-          </Link>
-        </p>
-      )}
+      <p className="pt-1 text-center text-sm text-text-muted">
+        {t('hasAccount')}{' '}
+        <Link href="/inloggen" className="font-medium text-accent hover:underline">
+          {t('loginLink')}
+        </Link>
+      </p>
     </form>
   )
 }
@@ -68,6 +98,7 @@ function Field({
   autoComplete,
   required,
   hint,
+  defaultValue,
 }: {
   label: string
   name: string
@@ -75,6 +106,7 @@ function Field({
   autoComplete?: string
   required?: boolean
   hint?: string
+  defaultValue?: string
 }) {
   return (
     <label className="block">
@@ -84,6 +116,7 @@ function Field({
         type={type}
         autoComplete={autoComplete}
         required={required}
+        defaultValue={defaultValue}
         minLength={type === 'password' ? 8 : undefined}
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
