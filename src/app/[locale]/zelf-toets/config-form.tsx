@@ -1,8 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
+
+import { useRouter } from '@/i18n/navigation'
 
 import { Button, ErrorBanner } from '@/components/ui'
 import type {
