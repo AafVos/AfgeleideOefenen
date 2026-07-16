@@ -473,6 +473,12 @@
     "viewResult": "Resultaat bekijken",
     "newTest": "Nieuwe toets",
     "toDashboard": "Naar dashboard",
+    "viewDetails": "Bekijk uitwerking",
+    "finishedHeadlinePerfect": "Perfect — alles goed!",
+    "finishedHeadlineGreat": "Sterk gedaan!",
+    "finishedHeadlineGood": "Goed bezig",
+    "finishedHeadlineKeepGoing": "Toets afgerond",
+    "finishedScoreLine": "Je hebt {pct}% goed beantwoord.",
     "runnerNotFound": "Deze toets-sessie bestaat niet meer."
   }
 }

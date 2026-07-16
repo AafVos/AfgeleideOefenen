@@ -473,6 +473,12 @@
     "viewResult": "View results",
     "newTest": "New test",
     "toDashboard": "Back to dashboard",
+    "viewDetails": "View details",
+    "finishedHeadlinePerfect": "Perfect — every one correct!",
+    "finishedHeadlineGreat": "Strong work!",
+    "finishedHeadlineGood": "Nice going",
+    "finishedHeadlineKeepGoing": "Test finished",
+    "finishedScoreLine": "You answered {pct}% correctly.",
     "runnerNotFound": "This test session no longer exists."
   }
 }

@@ -100,6 +100,22 @@ export default async function TopicEditPage({
             defaultValue={topic.order_index}
             min={0}
           />
+          <div>
+            <label className="mb-1 block text-sm font-medium text-text">
+              Categorie
+            </label>
+            <select
+              name="category"
+              defaultValue={topic.category ?? ''}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+            >
+              <option value="">— geen —</option>
+              <option value="primitiveren">Primitiveren</option>
+              <option value="integralen">Integralen</option>
+              <option value="vergelijkingen">Vergelijkingen</option>
+              <option value="toepassingen">Toepassingen</option>
+            </select>
+          </div>
           <label className="flex items-center gap-2 self-end pb-2 text-sm text-text">
             <input
               type="checkbox"

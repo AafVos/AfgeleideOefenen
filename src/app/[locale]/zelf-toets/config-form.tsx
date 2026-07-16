@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Button, ErrorBanner } from '@/components/ui'
@@ -76,7 +76,9 @@ export function ConfigForm({
     new Set(config.chapters.map((c) => c.id)),
   )
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set())
-  const [count, setCount] = useState(10)
+  const [countInput, setCountInput] = useState('10')
+  const [countTouched, setCountTouched] = useState(false)
+  const count = Math.max(0, parseInt(countInput, 10) || 0)
   const [source, setSource] = useState<QuestionSource>('new')
   const [showAnswers, setShowAnswers] = useState<'immediate' | 'end'>('immediate')
   const [error, setError] = useState<string | null>(null)
@@ -113,6 +115,12 @@ export function ConfigForm({
     }
     return total
   }, [config.clusters, selectedClusters, source])
+
+  useEffect(() => {
+    if (countTouched) return
+    if (availableInScope <= 0) return
+    setCountInput(String(Math.min(10, availableInScope)))
+  }, [availableInScope, countTouched])
 
   function toggleCluster(id: string) {
     setSelectedClusters((prev) => {
@@ -422,8 +430,16 @@ export function ConfigForm({
             type="number"
             min={1}
             max={Math.max(1, availableInScope)}
-            value={count}
-            onChange={(e) => setCount(Math.max(1, Number(e.target.value) || 1))}
+            value={countInput}
+            onChange={(e) => {
+              setCountInput(e.target.value)
+              setCountTouched(true)
+            }}
+            onBlur={() => {
+              if (count <= 0) {
+                setCountInput(String(Math.min(10, Math.max(1, availableInScope))))
+              }
+            }}
             className="w-32 rounded-md border border-border bg-surface px-3 py-2 text-sm"
           />
           <p className="mt-2 text-xs text-text-muted">

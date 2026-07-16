@@ -1,8 +1,9 @@
 import { getTranslations, getLocale } from 'next-intl/server'
+import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
 import { Card } from '@/components/ui'
-import { loadTestSessionState } from '@/lib/practice/custom-test'
+import { loadTestResults, loadTestSessionState } from '@/lib/practice/custom-test'
 import { createClient } from '@/lib/supabase/server'
 
 import { TestRunnerCard } from './runner-card'
@@ -42,8 +43,66 @@ export default async function ZelfToetsRunnerPage({
     )
   }
 
-  if (state.totalCount === 0 || state.ended || !state.nextQuestionId) {
-    redirect(`/${locale}/zelf-toets/resultaat/${sessionId}`)
+  if (state.totalCount === 0) {
+    redirect(`/${locale}/zelf-toets`)
+  }
+
+  if (state.ended || !state.nextQuestionId) {
+    const results = await loadTestResults(supabase, user.id, sessionId)
+    const correctCount = results?.correctCount ?? 0
+    const totalCount = results?.totalCount ?? state.totalCount
+    const pct =
+      totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0
+
+    const headlineKey =
+      pct === 100
+        ? 'finishedHeadlinePerfect'
+        : pct >= 80
+          ? 'finishedHeadlineGreat'
+          : pct >= 50
+            ? 'finishedHeadlineGood'
+            : 'finishedHeadlineKeepGoing'
+
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wider text-accent">
+            {t('eyebrow')}
+          </p>
+          <h1 className="mt-2 font-serif text-3xl text-text">
+            {t(headlineKey)}
+          </h1>
+          <p className="mt-4 font-serif text-5xl text-text">
+            {correctCount}{' '}
+            <span className="text-text-muted">/ {totalCount}</span>
+          </p>
+          <p className="mt-1 text-sm text-text-muted">
+            {t('finishedScoreLine', { pct })}
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/dashboard"
+              className="rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90"
+            >
+              {t('toDashboard')}
+            </Link>
+            <Link
+              href={`/zelf-toets/resultaat/${sessionId}`}
+              className="rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text hover:bg-surface-2"
+            >
+              {t('viewDetails')}
+            </Link>
+            <Link
+              href="/zelf-toets"
+              className="rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text hover:bg-surface-2"
+            >
+              {t('newTest')}
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const [{ data: question }, { data: steps }] = await Promise.all([

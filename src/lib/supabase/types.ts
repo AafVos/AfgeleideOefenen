@@ -315,6 +315,7 @@ export type Database = {
           chapter_id: string
           order_index: number
           is_unlocked_by_default: boolean
+          category: 'primitiveren' | 'integralen' | 'vergelijkingen' | 'toepassingen' | null
           created_at: string
         }
         Insert: {
@@ -325,6 +326,7 @@ export type Database = {
           chapter_id: string
           order_index: number
           is_unlocked_by_default?: boolean
+          category?: 'primitiveren' | 'integralen' | 'vergelijkingen' | 'toepassingen' | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['topics_new']['Insert']>
