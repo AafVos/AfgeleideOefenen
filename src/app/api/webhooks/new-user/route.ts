@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     })
 
     await resend.emails.send({
-      from: `noreply@${SITE_CONFIG.domain}`,
+      from: process.env.EMAIL_FROM ?? `no-reply@${SITE_CONFIG.domain}`,
       to: process.env.NOTIFY_EMAIL!,
       subject: `Nieuwe gebruiker op ${SITE_CONFIG.domain}`,
       html: `

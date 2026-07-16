@@ -2,15 +2,19 @@
   "Header": {
     "brand": "__BRAND__",
     "brandSuffix": ".nl",
+    "overview": "Overview",
     "leerpad": "Learning path",
-    "freeExercise": "Free practice",
+    "freeExercise": "Practice",
     "zelfToets": "Self-test",
     "theory": "Theory",
-    "dashboard": "Dashboard",
+    "dashboard": "Progress",
     "admin": "Admin",
     "login": "Log in",
     "register": "Sign up",
-    "logout": "Log out"
+    "logout": "Log out",
+    "signedInAs": "Signed in as",
+    "settings": "Settings",
+    "feedback": "Send feedback"
   },
   "Home": {
     "eyebrow": "Mathematics · High School",
@@ -123,7 +127,11 @@
     "noTopics": "No topics available yet.",
     "example": "Example",
     "step": "Step {n}",
-    "noTheory": "No theory for this section yet — exercises only."
+    "noTheory": "No theory for this section yet — exercises only.",
+    "chapterLabel": "Chapter",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "detailsLabel": "Explanation and examples"
   },
   "Login": {
     "title": "Log in · __DOMAIN__",
@@ -152,10 +160,12 @@
     "emailLabel": "Email address",
     "passwordLabel": "Password",
     "passwordHint": "At least 8 characters.",
+    "passwordConfirmLabel": "Repeat password",
     "submitLabel": "Create account",
     "submitPending": "Creating account…",
     "hasAccount": "Already have an account?",
     "loginLink": "Log in",
+    "toLoginLabel": "Go to login page",
     "forgotPassword": "Forgot your password?",
     "showPassword": "Show",
     "hidePassword": "Hide"
@@ -362,8 +372,10 @@
   },
   "PracticeCard": {
     "difficulty": "Difficulty {n}",
-    "checking": "Your answer is being checked with AI",
+    "checking": "Checking your answer…",
     "yourAnswer": "Your answer",
+    "previousAttempt": "Previous attempt",
+    "showAnswer": "Show the correct answer",
     "placeholder": "E.g. 12x^2",
     "preview": "Preview",
     "submit": "Check",
@@ -392,8 +404,8 @@
     "genericError": "Something went wrong."
   },
   "FreeExercise": {
-    "title": "Free practice · __DOMAIN__",
-    "h1": "Free practice",
+    "title": "Practice · __DOMAIN__",
+    "h1": "Practice",
     "topicLabel": "Topic",
     "chapterLabel": "Chapter",
     "difficultyHint": "Choose an exercise to begin",
@@ -405,7 +417,7 @@
     "noTopics": "No topics available yet.",
     "noCluster": "Choose a section on the left.",
     "clickTile": "Click a tile to start an exercise.",
-    "backToAll": "← All exercises in this section",
+    "backToAll": "All exercises in this section",
     "lastChecked": "Last checked",
     "tilesHeading": "Exercise overview",
     "tilesSortedBy": "Sorted by level (1→3).",
@@ -413,7 +425,10 @@
     "tileLastWrong": "Last time wrong.",
     "tileNotTried": "Not tried yet.",
     "tileExercise": "Exercise",
-    "tileLevel": "level"
+    "tileLevel": "level",
+    "questionsNav": "Your progress",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "ZelfToets": {
     "title": "Self-test · __DOMAIN__",
@@ -480,5 +495,48 @@
     "finishedHeadlineKeepGoing": "Test finished",
     "finishedScoreLine": "You answered {pct}% correctly.",
     "runnerNotFound": "This test session no longer exists."
+  },
+  "Settings": {
+    "title": "Settings · __DOMAIN__",
+    "h1": "Settings",
+    "accountH2": "Account",
+    "emailLabel": "Email address",
+    "usernameLabel": "Username",
+    "passwordH2": "Change password",
+    "newPasswordLabel": "New password",
+    "repeatPasswordLabel": "Repeat new password",
+    "passwordHint": "At least 8 characters.",
+    "save": "Save",
+    "savePassword": "Change password",
+    "savePending": "Saving…",
+    "change": "Change",
+    "cancel": "Cancel",
+    "noUsername": "Not set yet"
+  },
+  "Feedback": {
+    "title": "Feedback · __DOMAIN__",
+    "h1": "Send feedback",
+    "intro": "Missing something, found a mistake, or have an idea? Let us know — all feedback is welcome.",
+    "placeholder": "Tell us what’s on your mind…",
+    "submitLabel": "Send",
+    "submitPending": "Sending…",
+    "thanks": "Thank you! Your feedback has been sent."
+  },
+  "Tour": {
+    "welcome": "Hi! I'm Aaf. Welcome! Want a quick tour?",
+    "stepTheorie": "Theory has all the rules per chapter, with explanations and examples you can expand.",
+    "stepOefenen": "Practice is where you do exercises per chapter. Green is correct, red is wrong — so you always know where you stand.",
+    "stepZelfToets": "Ready for a test? Self-test lets you build your own practice test from the chapters you pick.",
+    "stepVoortgang": "And Progress shows how you are doing per topic.",
+    "done": "Good luck! Click me in the bottom-right corner to see this tour again.",
+    "start": "Yes, please!",
+    "next": "Next",
+    "finish": "Done!",
+    "skip": "Skip",
+    "restart": "View the tour",
+    "askTitle": "Ask Aaf",
+    "askPlaceholder": "Type your question… you will get a reply by email.",
+    "askSend": "Send",
+    "askThanks": "Thank you! You will get a reply at your email address as soon as possible."
   }
 }

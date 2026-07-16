@@ -33,6 +33,9 @@ export function normalizeAnswer(raw: string): string {
     .replace(/\s+/g, '')
     .replace(/\*/g, '')
     .replace(/·/g, '')
+    // ^(5), ^(-1), ^(x) → ^5, ^-1, ^x — alleen simpele exponenten, zodat
+    // bv. e^(x+1) niet gelijk wordt aan e^x+1
+    .replace(/\^\((-?\d+|-?[a-z])\)/g, '^$1')
     .replace(/x\^1\b/g, 'x')
     .replace(/\+-/g, '-')
     .replace(/−/g, '-')

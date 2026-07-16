@@ -36,6 +36,13 @@ Voorbeelden van NIET-equivalente antwoorden (is_mathematically_correct = false):
 - Student: "3*(2x+1)*2"    →  Correct: "6(2x+1)^2"  →  6(2x+1) ≠ 6(2x+1)^2        ✗ FOUT (exponent ontbreekt)
 - Student: "7x^2"          →  Correct: "21x^2"       →  7 ≠ 21                       ✗ FOUT
 
+Behandel een overduidelijke tik- of spelfout ook als EQUIVALENT, zolang de wiskundige
+bedoeling ondubbelzinnig overeenkomt met het correcte antwoord:
+- Student: "coss(3x)*3"  →  Correct: "3cos(3x)"  →  dubbele s is duidelijk een tikfout van cos  ✓ EQUIVALENT
+- Student: "2 sinx"      →  Correct: "2sin(x)"    →  haakjes vergeten, bedoeling ondubbelzinnig  ✓ EQUIVALENT
+Maar alléén als er geen andere wiskundige interpretatie mogelijk is; een andere functienaam,
+variabele of ontbrekende term is GEEN tikfout (bijv. "tan" i.p.v. "sin" is gewoon fout).
+
 Als is_mathematically_correct = true: stel alleen is_mathematically_correct=true in, laat de andere velden LEEG ("" / []), en stop.
 
 === STAP 2 (alleen als het echt fout is) ===

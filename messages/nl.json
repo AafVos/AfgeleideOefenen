@@ -2,15 +2,19 @@
   "Header": {
     "brand": "__BRAND__",
     "brandSuffix": ".nl",
+    "overview": "Overzicht",
     "leerpad": "Leerpad",
-    "freeExercise": "Vrij oefenen",
+    "freeExercise": "Oefenen",
     "zelfToets": "Zelf-toets",
     "theory": "Theorie",
-    "dashboard": "Dashboard",
+    "dashboard": "Voortgang",
     "admin": "Admin",
     "login": "Inloggen",
     "register": "Registreren",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "signedInAs": "Ingelogd als",
+    "settings": "Instellingen",
+    "feedback": "Feedback sturen"
   },
   "Home": {
     "eyebrow": "Wiskunde B · VWO 4 / 5 / 6",
@@ -123,7 +127,11 @@
     "noTopics": "Er zijn nog geen onderwerpen beschikbaar.",
     "example": "Voorbeeld",
     "step": "Stap {n}",
-    "noTheory": "Nog geen theorie voor dit onderdeel — alleen oefenvragen."
+    "noTheory": "Nog geen theorie voor dit onderdeel — alleen oefenvragen.",
+    "chapterLabel": "Hoofdstuk",
+    "collapseSidebar": "Zijbalk inklappen",
+    "expandSidebar": "Zijbalk uitklappen",
+    "detailsLabel": "Uitleg en voorbeelden"
   },
   "Login": {
     "title": "Inloggen · __DOMAIN__",
@@ -152,10 +160,12 @@
     "emailLabel": "E-mailadres",
     "passwordLabel": "Wachtwoord",
     "passwordHint": "Minstens 8 tekens.",
+    "passwordConfirmLabel": "Herhaal wachtwoord",
     "submitLabel": "Account aanmaken",
     "submitPending": "Bezig met registreren…",
     "hasAccount": "Heb je al een account?",
     "loginLink": "Log in",
+    "toLoginLabel": "Naar inlogpagina",
     "forgotPassword": "Wachtwoord vergeten?",
     "showPassword": "Toon",
     "hidePassword": "Verberg"
@@ -362,8 +372,10 @@
   },
   "PracticeCard": {
     "difficulty": "Moeilijkheid {n}",
-    "checking": "Jouw antwoord wordt nagekeken met AI",
+    "checking": "Even nakijken…",
     "yourAnswer": "Jouw antwoord",
+    "previousAttempt": "Vorige poging",
+    "showAnswer": "Laat het goede antwoord zien",
     "placeholder": "Bijv. 12x^2",
     "preview": "Preview",
     "submit": "Nakijken",
@@ -392,8 +404,8 @@
     "genericError": "Er ging iets mis."
   },
   "FreeExercise": {
-    "title": "Vrij oefenen · __DOMAIN__",
-    "h1": "Vrij oefenen",
+    "title": "Oefenen · __DOMAIN__",
+    "h1": "Oefenen",
     "topicLabel": "Onderwerp",
     "chapterLabel": "Hoofdstuk",
     "difficultyHint": "Kies een opgave om te beginnen",
@@ -405,7 +417,7 @@
     "noTopics": "Er zijn nog geen onderwerpen beschikbaar.",
     "noCluster": "Kies een onderdeel aan de linkerkant.",
     "clickTile": "Klik op een tegel om een opgave te beginnen.",
-    "backToAll": "← Alle opgaven in dit onderdeel",
+    "backToAll": "Alle opgaven in dit onderdeel",
     "lastChecked": "Laatste keer nakijken",
     "tilesHeading": "Opgaven-overzicht",
     "tilesSortedBy": "Gesorteerd op niveau (1→3).",
@@ -413,7 +425,10 @@
     "tileLastWrong": "Laatste keer fout.",
     "tileNotTried": "Nog niet geprobeerd.",
     "tileExercise": "Opgave",
-    "tileLevel": "niveau"
+    "tileLevel": "niveau",
+    "questionsNav": "Jouw voortgang",
+    "collapseSidebar": "Zijbalk inklappen",
+    "expandSidebar": "Zijbalk uitklappen"
   },
   "ZelfToets": {
     "title": "Zelf-toets · __DOMAIN__",
@@ -480,5 +495,48 @@
     "finishedHeadlineKeepGoing": "Toets afgerond",
     "finishedScoreLine": "Je hebt {pct}% goed beantwoord.",
     "runnerNotFound": "Deze toets-sessie bestaat niet meer."
+  },
+  "Settings": {
+    "title": "Instellingen · __DOMAIN__",
+    "h1": "Instellingen",
+    "accountH2": "Account",
+    "emailLabel": "E-mailadres",
+    "usernameLabel": "Gebruikersnaam",
+    "passwordH2": "Wachtwoord wijzigen",
+    "newPasswordLabel": "Nieuw wachtwoord",
+    "repeatPasswordLabel": "Herhaal nieuw wachtwoord",
+    "passwordHint": "Minstens 8 tekens.",
+    "save": "Opslaan",
+    "savePassword": "Wachtwoord wijzigen",
+    "savePending": "Bezig met opslaan…",
+    "change": "Wijzigen",
+    "cancel": "Annuleren",
+    "noUsername": "Nog niet ingesteld"
+  },
+  "Feedback": {
+    "title": "Feedback · __DOMAIN__",
+    "h1": "Feedback sturen",
+    "intro": "Mis je iets, klopt er iets niet, of heb je een idee? Laat het weten — alle feedback is welkom.",
+    "placeholder": "Vertel wat je kwijt wilt…",
+    "submitLabel": "Versturen",
+    "submitPending": "Bezig met versturen…",
+    "thanks": "Dankjewel! Je feedback is verstuurd."
+  },
+  "Tour": {
+    "welcome": "Hoi! Ik ben Aaf. Welkom! Zal ik je even snel rondleiden?",
+    "stepTheorie": "Bij Theorie vind je per hoofdstuk alle regels, met uitleg en voorbeelden om uit te klappen.",
+    "stepOefenen": "Bij Oefenen maak je opgaven per hoofdstuk. Groen is goed, rood is fout — zo zie je precies waar je staat.",
+    "stepZelfToets": "Klaar voor de toets? Bij Zelf-toets stel je je eigen proeftoets samen over de hoofdstukken die jij kiest.",
+    "stepVoortgang": "En bij Voortgang zie je hoe je ervoor staat per onderwerp.",
+    "done": "Veel succes! Klik rechtsonder op mij als je de rondleiding nog eens wilt zien.",
+    "start": "Ja, graag!",
+    "next": "Volgende",
+    "finish": "Klaar!",
+    "skip": "Overslaan",
+    "restart": "Rondleiding bekijken",
+    "askTitle": "Vraag het Aaf",
+    "askPlaceholder": "Typ je vraag… je krijgt antwoord per e-mail.",
+    "askSend": "Versturen",
+    "askThanks": "Dankjewel! Je krijgt zo snel mogelijk antwoord op je e-mailadres."
   }
 }

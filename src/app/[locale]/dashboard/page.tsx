@@ -1,5 +1,4 @@
 import { getTranslations, getLocale } from 'next-intl/server'
-import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
 import { SITE } from '@/config/site'
@@ -171,26 +170,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-3 py-6">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-2">
         <h1 className="font-serif text-2xl text-text">
           {firstName
             ? t('greetingWithName', { name: firstName })
             : t('progressTitle')}
         </h1>
-        <div className="flex gap-2">
-          <Link
-            href="/oefenen"
-            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
-          >
-            {t('freeExercise')}
-          </Link>
-          <Link
-            href="/zelf-toets"
-            className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-2"
-          >
-            {t('zelfToets')}
-          </Link>
-        </div>
       </div>
 
       <DashboardGrid
