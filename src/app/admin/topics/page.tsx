@@ -13,6 +13,7 @@ type TopicRow = {
   chapter_id: string
   order_index: number
   is_unlocked_by_default: boolean
+  category: string | null
   topic_clusters_new: Array<{ count: number }>
 }
 
@@ -23,7 +24,7 @@ export default async function TopicsPage() {
     supabase
       .from('topics_new')
       .select(
-        'id, slug, title, chapter_id, order_index, is_unlocked_by_default, topic_clusters_new(count)',
+        'id, slug, title, chapter_id, order_index, is_unlocked_by_default, category, topic_clusters_new(count)',
       )
       .eq('site', SITE)
       .order('order_index', { ascending: true })
@@ -54,6 +55,7 @@ export default async function TopicsPage() {
               <th className="px-4 py-2 font-medium">#</th>
               <th className="px-4 py-2 font-medium">Titel</th>
               <th className="px-4 py-2 font-medium">Hoofdstuk</th>
+              <th className="px-4 py-2 font-medium">Categorie</th>
               <th className="px-4 py-2 font-medium">Slug</th>
               <th className="px-4 py-2 font-medium">Clusters</th>
               <th className="px-4 py-2 font-medium">Toegang</th>
@@ -67,6 +69,9 @@ export default async function TopicsPage() {
                 <td className="px-4 py-2 font-medium">{t.title}</td>
                 <td className="px-4 py-2 text-text-muted">
                   {chapterById.get(t.chapter_id)?.slug ?? '—'}
+                </td>
+                <td className="px-4 py-2 text-xs text-text-muted">
+                  {t.category ?? '—'}
                 </td>
                 <td className="px-4 py-2 font-mono text-xs text-text-muted">
                   {t.slug}
@@ -94,7 +99,7 @@ export default async function TopicsPage() {
             {!topics?.length && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-4 py-8 text-center text-text-muted"
                 >
                   Nog geen topics. Voeg er hieronder een toe.
@@ -117,7 +122,7 @@ export default async function TopicsPage() {
             placeholder="h3_integraalregel"
             hint="Kleine letters, cijfers, - of _"
           />
-          <div className="sm:col-span-2">
+          <div>
             <label className="mb-1 block text-sm font-medium text-text">
               Hoofdstuk
             </label>
@@ -132,6 +137,21 @@ export default async function TopicsPage() {
                   {c.slug} — {c.title}
                 </option>
               ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-text">
+              Categorie
+            </label>
+            <select
+              name="category"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+            >
+              <option value="">— geen —</option>
+              <option value="primitiveren">Primitiveren</option>
+              <option value="integralen">Integralen</option>
+              <option value="vergelijkingen">Vergelijkingen</option>
+              <option value="toepassingen">Toepassingen</option>
             </select>
           </div>
           <Input

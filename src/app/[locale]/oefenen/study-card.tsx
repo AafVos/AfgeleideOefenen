@@ -39,11 +39,13 @@ export function StudyCard({
   steps,
   nextHref,
   questionNumber,
+  onAnswered,
 }: {
   question: StudyQuestion
   steps: Step[]
   nextHref?: string
   questionNumber?: number
+  onAnswered?: (questionId: string, isCorrect: boolean) => void
 }) {
   const router = useRouter()
   const t = useTranslations('PracticeCard')
@@ -123,9 +125,11 @@ export function StudyCard({
         return
       }
       if (result.kind === 'correct') {
+        onAnswered?.(question.id, true)
         setState({ phase: 'correct', streak: result.streak, mastered: result.mastered })
         return
       }
+      onAnswered?.(question.id, false)
       setState({
         phase: 'wrong',
         correctAnswer: result.correctAnswer,

@@ -13,12 +13,19 @@ export type ChapterInfo = {
   order_index: number
 }
 
+export type TopicCategory =
+  | 'primitiveren'
+  | 'integralen'
+  | 'vergelijkingen'
+  | 'toepassingen'
+
 export type TopicInfo = {
   id: string
   slug: string
   title: string
   chapter_id: string
   order_index: number
+  category: TopicCategory | null
 }
 
 export type ClusterInfo = {
@@ -69,7 +76,7 @@ export async function loadChapters(db: DB): Promise<ChapterInfo[]> {
 export async function loadAllTopics(db: DB): Promise<TopicInfo[]> {
   const { data, error } = await db
     .from('topics_new')
-    .select('id, slug, title, chapter_id, order_index')
+    .select('id, slug, title, chapter_id, order_index, category')
     .eq('site', SITE)
     .order('order_index')
   if (error) throw new Error(error.message)
@@ -111,6 +118,23 @@ export async function loadTilesForClusters(
     return (a.order_index ?? 999) - (b.order_index ?? 999)
   })
 
+  // Laatste goed/fout-status per vraag (RLS beperkt tot eigen sessies)
+  const lastCorrectByQuestionId = new Map<string, boolean>()
+  if (sorted.length) {
+    const { data: attempts, error: aErr } = await db
+      .from('session_answers_new')
+      .select('question_id, is_correct, answered_at')
+      .in('question_id', sorted.map((q) => q.id))
+      .order('answered_at', { ascending: false })
+    if (aErr) throw new Error(aErr.message)
+    for (const row of attempts ?? []) {
+      if (row.is_correct !== true && row.is_correct !== false) continue
+      if (!lastCorrectByQuestionId.has(row.question_id)) {
+        lastCorrectByQuestionId.set(row.question_id, row.is_correct)
+      }
+    }
+  }
+
   return sorted.map((q, i) => ({
     questionId: q.id,
     clusterId: q.cluster_id,
@@ -118,7 +142,7 @@ export async function loadTilesForClusters(
     difficulty: clampDiff(q.difficulty),
     latex_body: q.latex_body,
     preview: stripForPreview(q.latex_body ?? '', 56),
-    lastCorrect: null as boolean | null,
+    lastCorrect: lastCorrectByQuestionId.get(q.id) ?? null,
   }))
 }
 
