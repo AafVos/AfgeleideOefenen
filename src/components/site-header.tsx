@@ -2,7 +2,6 @@ import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
-import { LanguageSwitcher } from './language-switcher'
 import { MobileNav } from './mobile-nav'
 
 export async function SiteHeader({ locale }: { locale: string }) {
@@ -104,12 +103,10 @@ export async function SiteHeader({ locale }: { locale: string }) {
               </Link>
             </>
           )}
-          <LanguageSwitcher currentLocale={locale} />
         </nav>
 
-        {/* Mobile: language switcher + hamburger */}
+        {/* Mobile: hamburger */}
         <div className="flex items-center gap-1 md:hidden">
-          <LanguageSwitcher currentLocale={locale} />
           <MobileNav
             locale={locale}
             isLoggedIn={!!user}
