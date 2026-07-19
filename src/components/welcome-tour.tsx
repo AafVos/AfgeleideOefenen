@@ -4,8 +4,9 @@ import { useActionState, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { askAafAction, type FeedbackState } from '@/app/[locale]/feedback/actions'
+import { markTourSeenAction } from '@/lib/tour-actions'
 
-const STORAGE_KEY = 'aaf-tour-done'
+
 const GUIDE_WIDTH = 400
 
 type Step = { target?: string; text: string }
@@ -135,7 +136,7 @@ function Aaf({ size = 84 }: { size?: number }) {
   )
 }
 
-export function WelcomeTour() {
+export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
   const t = useTranslations('Tour')
   const [phase, setPhase] = useState<'hidden' | 'tour' | 'rest'>('hidden')
   const [stepIdx, setStepIdx] = useState(0)
@@ -155,17 +156,17 @@ export function WelcomeTour() {
   const step = steps[stepIdx]!
   const isLast = stepIdx === steps.length - 1
 
-  // Eerste bezoek: start de rondleiding (alleen op brede schermen)
+  // Eerste keer inloggen: start de rondleiding (alleen op brede schermen)
   useEffect(() => {
     const id = window.setTimeout(() => {
-      if (localStorage.getItem(STORAGE_KEY)) {
+      if (tourSeen) {
         setPhase('rest')
       } else if (window.innerWidth >= 900) {
         setPhase('tour')
       }
     }, 700)
     return () => window.clearTimeout(id)
-  }, [])
+  }, [tourSeen])
 
   // Plaats de gids bij de actieve stap en zet een ring om het doelwit
   useEffect(() => {
@@ -202,7 +203,7 @@ export function WelcomeTour() {
   }, [phase, stepIdx, steps])
 
   function finish() {
-    localStorage.setItem(STORAGE_KEY, '1')
+    void markTourSeenAction()
     setPhase('rest')
     setStepIdx(0)
   }
