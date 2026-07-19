@@ -61,14 +61,16 @@ export async function SiteHeader({ locale }: { locale: string }) {
 
   let username: string | null = null
   let role: string | null = null
+  let tourSeen = true
   if (user) {
     const { data } = await supabase
       .from('profiles')
-      .select('username, role')
+      .select('username, role, tour_seen_at')
       .eq('id', user.id)
       .maybeSingle()
     username = data?.username ?? null
     role = data?.role ?? null
+    tourSeen = data ? data.tour_seen_at != null : true
   }
 
   const chapters = user ? await loadChapters(supabase) : []

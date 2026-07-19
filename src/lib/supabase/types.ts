@@ -130,6 +130,7 @@ export type Database = {
           display_name: string | null
           learning_mode: LearningMode | null
           onboarded_at: string | null
+          tour_seen_at: string | null
           created_at: string
         }
         Insert: {
@@ -140,6 +141,7 @@ export type Database = {
           display_name?: string | null
           learning_mode?: LearningMode | null
           onboarded_at?: string | null
+          tour_seen_at?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
