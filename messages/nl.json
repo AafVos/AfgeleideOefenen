@@ -150,7 +150,8 @@
     "callbackError": "Inloggen mislukt. Probeer het opnieuw of gebruik een andere inlogmethode.",
     "resendButton": "Stuur bevestigingsmail opnieuw",
     "resendPending": "Bezig met versturen…",
-    "resendSuccess": "Mail verstuurd — check je inbox (en je spammap)."
+    "resendSuccess": "Mail verstuurd — check je inbox (en je spammap).",
+    "confirmedNotice": "Je account is bevestigd! Je kunt nu inloggen."
   },
   "Register": {
     "title": "Registreren · __DOMAIN__",

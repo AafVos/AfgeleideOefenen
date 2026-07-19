@@ -14,6 +14,15 @@ export async function GET(request: NextRequest) {
       : `/nl${nextParam}`  // no locale prefix → prepend default locale
     : '/nl/dashboard'      // no next param → default
 
+  // Bestemming is de inlogpagina (bv. na e-mailbevestiging): geen sessie
+  // aanmaken, zodat de gebruiker daar echt zelf kan inloggen. Het account is
+  // op dat moment al bevestigd door Supabase's verify-endpoint.
+  if (/^\/(nl|en)\/inloggen(\/|$|\?)/.test(next)) {
+    const url = new URL(next, origin)
+    url.searchParams.set('bevestigd', '1')
+    return NextResponse.redirect(url)
+  }
+
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)

@@ -51,12 +51,14 @@ export async function signupAction(
 
   const supabase = await createClient()
   const origin = (await headers()).get('origin') ?? ''
+  const locale = await getLocale()
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      // Na het bevestigen van de e-mail direct naar de inlogpagina
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
       data: username ? { username } : undefined,
     },
   })
@@ -79,7 +81,6 @@ export async function signupAction(
     await supabase.from('profiles').update({ username }).eq('id', data.user.id)
   }
 
-  const locale = await getLocale()
   revalidatePath('/', 'layout')
   redirect(`/${locale}/onboarding`)
 }

@@ -150,7 +150,8 @@
     "callbackError": "Login failed. Please try again or use a different login method.",
     "resendButton": "Resend confirmation email",
     "resendPending": "Sending…",
-    "resendSuccess": "Email sent — check your inbox (and spam folder)."
+    "resendSuccess": "Email sent — check your inbox (and spam folder).",
+    "confirmedNotice": "Your account is confirmed! You can now log in."
   },
   "Register": {
     "title": "Sign up · __DOMAIN__",
