@@ -190,7 +190,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
       </div>
     </header>
     {/* Buiten de header: backdrop-blur maakt position:fixed anders relatief aan de header */}
-    {user && <WelcomeTour />}
+    {user && <WelcomeTour tourSeen={tourSeen} />}
     </>
   )
 }
