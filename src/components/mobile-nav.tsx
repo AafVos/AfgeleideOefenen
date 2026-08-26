@@ -46,6 +46,7 @@ export function MobileNav({
                 <NavLink href={`/${locale}/theorie`} onClick={() => setOpen(false)}>{t('theory')}</NavLink>
                 <NavLink href={`/${locale}/oefenen`} onClick={() => setOpen(false)}>{t('freeExercise')}</NavLink>
                 <NavLink href={`/${locale}/zelf-toets`} onClick={() => setOpen(false)}>{t('zelfToets')}</NavLink>
+                <NavLink href={`/${locale}/stoomcursus`} onClick={() => setOpen(false)}>{t('stoomcursus')}</NavLink>
                 <NavLink href={`/${locale}/dashboard`} onClick={() => setOpen(false)}>{t('dashboard')}</NavLink>
                 {role === 'admin' && (
                   <NavLink href="/admin" onClick={() => setOpen(false)}>{t('admin')}</NavLink>
@@ -67,6 +68,7 @@ export function MobileNav({
             ) : (
               <>
                 <NavLink href={`/${locale}/theorie`} onClick={() => setOpen(false)}>{t('theory')}</NavLink>
+                <NavLink href={`/${locale}/stoomcursus`} onClick={() => setOpen(false)}>{t('stoomcursus')}</NavLink>
                 <NavLink href={`/${locale}/inloggen`} onClick={() => setOpen(false)}>{t('login')}</NavLink>
                 <NavLink href={`/${locale}/registreren`} onClick={() => setOpen(false)}>{t('register')}</NavLink>
               </>

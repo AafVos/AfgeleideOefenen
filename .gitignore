@@ -44,6 +44,19 @@ supabase/.temp/
 # local migration tooling / data (CSVs + scripts)
 /files/
 
+# boek-brontranscripties (auteursrecht Noordhoff) — lokaal, niet in versiebeheer/build
+/content-bron/
+/getal-en-ruimte-*.pdf
+/uit-getal-en-ruimte-*.pdf
+# examen-PDF's (bronmateriaal) — lokaal
+/vw-*.pdf
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lokale Claude-instellingen
+.claude/settings.local.json
+
+# vastgelopen iCloud-restanten (mag weg)
+/.git-stuck-objects/

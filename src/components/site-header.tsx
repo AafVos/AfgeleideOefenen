@@ -42,6 +42,14 @@ function IconBook() {
   )
 }
 
+function IconBolt() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M13 2 3 14h7l-1 8 12-14h-8z" />
+    </svg>
+  )
+}
+
 function IconChart() {
   return (
     <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -132,6 +140,13 @@ export async function SiteHeader({ locale }: { locale: string }) {
                 {t('zelfToets')}
               </Link>
               <Link
+                href={`/${locale}/stoomcursus`}
+                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+              >
+                <IconBolt />
+                {t('stoomcursus')}
+              </Link>
+              <Link
                 href={`/${locale}/dashboard`}
                 data-tour="voortgang"
                 className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
@@ -162,6 +177,13 @@ export async function SiteHeader({ locale }: { locale: string }) {
           ) : (
             <>
               {theorieDropdown}
+              <Link
+                href={`/${locale}/stoomcursus`}
+                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+              >
+                <IconBolt />
+                {t('stoomcursus')}
+              </Link>
               <Link
                 href={`/${locale}/inloggen`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"

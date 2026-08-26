@@ -6,6 +6,7 @@
     "leerpad": "Leerpad",
     "freeExercise": "Oefenen",
     "zelfToets": "Zelf-toets",
+    "stoomcursus": "Stoomcursus",
     "theory": "Theorie",
     "dashboard": "Voortgang",
     "admin": "Admin",
@@ -113,6 +114,367 @@
     "summary3Same": "dezelfde vragenbasis",
     "ctaRegister": "Account aanmaken",
     "ctaBack": "← Terug naar home"
+  },
+  "Stoomcursus": {
+    "title": "Stoomcursus differentiëren · __DOMAIN__",
+    "description": "De stoomcursus differentiëren: in drie onderdelen langs alles wat je nodig hebt voor elke afgeleide-vraag.",
+    "eyebrow": "Stoomcursus",
+    "welcome": "Welkom bij de stoomcursus differentiëren. In een korte, snelle route nemen we je mee langs alles wat je nodig hebt om elke afgeleide-vraag aan te kunnen. Klaar om te beginnen?",
+    "start": "Start",
+    "partsIntro": "Alle afgeleide-vragen bestaan uit maximaal deze drie onderdelen",
+    "partLabel": "Onderdeel {number}",
+    "part1Title": "Begrijp het verhaaltje",
+    "part2Title": "Vind de afgeleide",
+    "part3Title": "Gebruik oplosmethodes",
+    "next": "Volgende",
+    "back": "Terug",
+    "exampleEyebrow": "Voorbeeldopgave",
+    "exampleGiven": "Gegeven is de functie $f(x) = -x^2 + 4x + 1$.",
+    "exampleQuestion": "Bereken het maximum van $f$.",
+    "howSolve": "Hoe los je dit op?",
+    "part1Body": "Een maximum is de top van de grafiek. Daar is de helling $0$, dus: $f'(x) = 0$.",
+    "part2Body": "$f(x) = -x^2 + 4x + 1$ geeft $f'(x) = -2x + 4$.",
+    "part3Body": "$f'(x) = 0$ geeft $-2x + 4 = 0$. Dan is $2x = 4$, dus $x = 2$. Het maximum is $f(2) = -(2)^2 + 4 \\cdot 2 + 1 = 5$.",
+    "answerEyebrow": "Antwoord",
+    "answerBody": "Het maximum van $f$ is $f(2) = 5$.",
+    "methodTitle": "Zo werkt de stoomcursus",
+    "methodBody": "Onze gedachte: je wordt het snelst beter door de drie onderdelen eerst los van elkaar te oefenen. Beheers je ze alle drie apart, dan kan geen enkele afgeleide-vraag je meer verrassen.",
+    "choosePrompt": "Kies met welk onderdeel je wilt beginnen.",
+    "oefenPlaceholder": "Hier komt het oefenen van „{title}”.",
+    "verhaaltjesTitle": "Herken het verhaaltje",
+    "verhaaltjesIntro": "Elke afgeleide-vraag met een verhaaltje valt in één van deze groepen. Zie je wat ze vragen, dan weet je meteen wat je doet: als dít gevraagd wordt, dan doe je dát.",
+    "vGroep1Title": "Toppen en buigpunten",
+    "vGroep2Title": "Helling en raaklijnen",
+    "vGroep3Title": "Snelheid en verandering",
+    "vGroep4Title": "Aantal oplossingen",
+    "vGroep5Title": "Met een parameter $p$",
+    "vGroep6Title": "Werken vanuit de afgeleide",
+    "verhaaltje1Als": "Als ze vragen om een maximum, minimum, extreme waarden of de toppen",
+    "verhaaltje1Dan": "$f'(x) = 0$",
+    "verhaaltje1Stappen": [
+      "Vind $f'(x)$",
+      "Stel $f'(x) = 0$",
+      "Maak $x$ los → $x_{top}$",
+      "Vul de gevonden $x_{top}$ in: $f(x_{top})$"
+    ],
+    "verhaaltje2Als": "Als ze vragen om buigpunten of de bolle/holle kant",
+    "verhaaltje2Dan": "$f''(x) = 0$",
+    "verhaaltje2Stappen": [
+      "Vind $f'(x)$ en daarna $f''(x)$",
+      "Stel $f''(x) = 0$",
+      "Maak $x$ los → $x_{buig}$",
+      "Vul de gevonden $x_{buig}$ in: $f(x_{buig})$"
+    ],
+    "verhaaltje3Als": "Als ze vragen om de helling of richtingscoëfficiënt in een punt met $x = a$",
+    "verhaaltje3Dan": "$f'(a)$ invullen",
+    "verhaaltje3Stappen": [
+      "Vind $f'(x)$",
+      "Vul $x = a$ in: $f'(a)$ is de helling"
+    ],
+    "verhaaltje4Als": "Als ze vragen om de snelheid of versnelling op een tijdstip",
+    "verhaaltje4Dan": "$v = s'$ en $a = s''$, dan invullen",
+    "verhaaltje4Stappen": [
+      "Vind $s'(t)$ — dat is de snelheid $v$ (voor versnelling ook $s''(t)$)",
+      "Vul het gevraagde tijdstip in",
+      "Check het teken: negatief = afnemen/dalen"
+    ],
+    "verhaaltje5Als": "Als ze vragen om de raaklijn in een gegeven punt $A$",
+    "verhaaltje5Dan": "rc $= f'(a)$, dan $b$",
+    "verhaaltje5Stappen": [
+      "Vind $f'(x)$",
+      "rc $= f'(a)$",
+      "Bereken $y_A = f(a)$",
+      "Vul $A$ in $y = \\text{rc} \\cdot x + b$ en bereken $b$"
+    ],
+    "verhaaltje6Als": "Als de helling gegeven is („rc …”, „evenwijdig aan …”) en ze het punt of de raaklijn zoeken",
+    "verhaaltje6Dan": "$f'(x) = c$ oplossen",
+    "verhaaltje6Stappen": [
+      "Vind $f'(x)$",
+      "Stel $f'(x) = c$ (de gegeven helling)",
+      "Los op → $x$",
+      "Punt nodig? Vul $x$ in $f(x)$ in"
+    ],
+    "verhaaltje7Als": "Als ze vragen om de buigraaklijn",
+    "verhaaltje7Dan": "$f''(x) = 0$, dan $f'$ invullen voor de rc",
+    "verhaaltje7Stappen": [
+      "Stel $f''(x) = 0$ → $x_{buig}$",
+      "rc $= f'(x_{buig})$",
+      "Bereken $y = f(x_{buig})$",
+      "Vul het buigpunt in $y = \\text{rc} \\cdot x + b$ en bereken $b$"
+    ],
+    "verhaaltje8Als": "Als de afgeleide of hellinggrafiek gegeven is en je $f$ zoekt",
+    "verhaaltje8Dan": "terugrekenen: van $f'$ naar $f$",
+    "verhaaltje8Stappen": [
+      "Zoek $h(x)$ waarvan de afgeleide $g(x)$ is (machten worden één hoger)",
+      "Zet er een constante achter: $h(x) = \\ldots + c$",
+      "Gebruik het gegeven punt of minimum om $c$ te berekenen"
+    ],
+    "verhaaltje9Als": "Als ze vragen voor welke $p$ de vergelijking $f(x) = p$ drie/twee/één oplossingen heeft",
+    "verhaaltje9Dan": "toppen bepalen, dan aflezen",
+    "verhaaltje9Stappen": [
+      "Bereken de toppen: $f'(x) = 0$, dan $f(x_{top})$",
+      "Schets de grafiek met de toppen erin",
+      "Schuif de lijn $y = p$ en lees af wanneer die het gevraagde aantal snijpunten heeft"
+    ],
+    "verhaaltje10Als": "Als ze vragen naar het aantal oplossingen van $f(x) = ax$ (lijn door de oorsprong), of naar het aantal raaklijnen vanuit een gegeven punt",
+    "verhaaltje10Dan": "raaklijn door dat punt",
+    "verhaaltje10Stappen": [
+      "De grens zit waar de lijn door het gegeven punt de grafiek raakt (bij $f(x) = ax$: door de oorsprong)",
+      "Stel het stelsel op: lijn $= f(x)$ én helling van de lijn $= f'(x)$",
+      "Los op → het raakpunt (of de raakpunten)",
+      "Lees af hoeveel raaklijnen / oplossingen er bij de gevraagde waarde horen"
+    ],
+    "verhaaltje11Als": "Als ze vragen voor welke $p$ er een bepaald aantal extreme waarden zijn — of raaklijnen met een gegeven helling",
+    "verhaaltje11Dan": "discriminant van $f'(x) = c$ onderzoeken",
+    "verhaaltje11Stappen": [
+      "Vind $f_p'(x)$",
+      "Zet gelijk aan de gevraagde helling: $f_p'(x) = 0$ voor extremen, of $f_p'(x) = c$ voor raaklijnen met rc $c$",
+      "Bereken de discriminant $D$: twee oplossingen bij $D > 0$, geen bij $D < 0$ — los op voor $p$"
+    ],
+    "verhaaltje12Als": "Als een raaklijn gegeven is en je $p$ moet berekenen",
+    "verhaaltje12Dan": "$f_p'(x_A) =$ rc, oplossen voor $p$",
+    "verhaaltje12Stappen": [
+      "Vind $f_p'(x)$",
+      "Stel $f_p'(x_A) =$ rc van de raaklijn",
+      "Los op naar $p$",
+      "Meer gevraagd (zoals $q$)? Vul het raakpunt $f_p(x_A)$ in"
+    ],
+    "verhaaltje13Als": "Als ze vragen om de kromme waarop alle toppen liggen",
+    "verhaaltje13Dan": "$f_p'(x) = 0$, $p$ vrijmaken, invullen",
+    "verhaaltje13Stappen": [
+      "Stel $f_p'(x) = 0$",
+      "Maak $p$ los: $p = \\ldots$ (uitgedrukt in $x$)",
+      "Vul die $p$ in $f_p(x)$ in → een formule met alleen $x$: de kromme"
+    ],
+    "verhaaltje14Als": "Als ze vragen om de gemiddelde snelheid of toename over $[a, b]$",
+    "verhaaltje14Dan": "differentiequotiënt $(f(b) - f(a)) / (b - a)$ — níet de afgeleide!",
+    "verhaaltje14Stappen": [
+      "Bereken $f(a)$ en $f(b)$",
+      "Deel het verschil door de intervalbreedte: $(f(b) - f(a)) / (b - a)$",
+      "Let op: „óp tijdstip $a$” is wél de afgeleide $f'(a)$"
+    ],
+    "verhaaltje15Als": "Als ze vragen om de afgeleide via de definitie of het differentiequotiënt",
+    "verhaaltje15Dan": "limiet met $h \\to 0$ uitwerken",
+    "verhaaltje15Stappen": [
+      "Schrijf het differentiequotiënt op: $\\frac{f(a + h) - f(a)}{h}$",
+      "Werk de teller uit en deel door $h$",
+      "Laat $h \\to 0$ gaan → $f'(a)$"
+    ],
+    "verhaaltje16Als": "Als ze vragen waar $f$ stijgt, daalt of een top heeft",
+    "verhaaltje16Dan": "teken van $f'$ bekijken",
+    "verhaaltje16Stappen": [
+      "Kijk waar $f' > 0$ (daar stijgt $f$) en waar $f' < 0$ (daar daalt $f$)",
+      "Waar $f'$ van teken wisselt zit een top: van $+$ naar $-$ een maximum, van $-$ naar $+$ een minimum"
+    ],
+    "verhaaltje17Als": "Als ze vragen voor welke $p$ er twee of geen buigpunten zijn",
+    "verhaaltje17Dan": "discriminant van $f''$ onderzoeken",
+    "verhaaltje17Stappen": [
+      "Vind $f_p'(x)$ en daarna $f_p''(x)$",
+      "Buigpunten ⇔ $f_p''(x) = 0$ heeft twee oplossingen: bereken de discriminant $D$",
+      "Twee buigpunten: $D > 0$; geen: $D < 0$ — los de ongelijkheid op voor $p$"
+    ],
+    "oplosTitle": "Kies de juiste oplosmethode",
+    "oplosIntro": "Uit een verhaaltje plus de afgeleide komt een vergelijking. Aan de vórm daarvan zie je meteen welke methode werkt: als de vergelijking er zó uitziet, pak je díe aanpak. Klik een regel aan voor de stappen.",
+    "oplosGroep1Title": "Kwadratische vergelijkingen",
+    "oplosGroep2Title": "Ontbinden en breuken",
+    "oplosGroep3Title": "Wortels en machten",
+    "oplosGroep4Title": "Exponentieel en logaritme",
+    "oplosGroep5Title": "Goniometrie",
+    "oplos1Als": "Als er $ax^2 + bx + c = 0$ staat",
+    "oplos1Dan": "eerst ontbinden; lukt dat niet, dan de abc-formule",
+    "oplos1Stappen": [
+      "Probeer te ontbinden (product-som): twee getallen met product $a \\cdot c$ en som $b$",
+      "Lukt netjes ontbinden niet? Gebruik de abc-formule: $x = \\frac{-b \\pm \\sqrt{D}}{2a}$ met $D = b^2 - 4ac$",
+      "Bij $D < 0$ zijn er geen oplossingen"
+    ],
+    "oplos2Als": "Als er een verborgen kwadraat in zit — bv. $e^x$ én $e^{2x}$, $\\sin(x)$ én $\\sin^2(x)$, of $x$ én $\\sqrt{x}$",
+    "oplos2Dan": "substitutie: los kwadratisch op, zet dan terug",
+    "oplos2Stappen": [
+      "Kies een nieuwe letter, bv. $u = e^x$ (of $u = \\sin(x)$, $u = \\sqrt{x}$, …)",
+      "De vergelijking wordt kwadratisch in $u$: los $u$ op",
+      "Zet terug ($e^x = u$) en los de laatste stap op"
+    ],
+    "oplos3Als": "Als elke term een gemeenschappelijke factor heeft — bv. $x\\,e^x - 3x = 0$",
+    "oplos3Dan": "factor buiten haakjes, dan $A \\cdot B = 0$",
+    "oplos3Stappen": [
+      "Haal de gemeenschappelijke factor buiten haakjes",
+      "$A \\cdot B = 0$ geeft $A = 0 \\vee B = 0$",
+      "Los elk deel apart op"
+    ],
+    "oplos4Als": "Als een breuk gelijk is aan $0$",
+    "oplos4Dan": "teller $= 0$ (en noemer $\\neq 0$)",
+    "oplos4Stappen": [
+      "Een breuk is $0$ zodra de teller $0$ is: stel de teller $= 0$",
+      "Los op",
+      "Controleer dat de noemer bij die $x$ niet $0$ wordt"
+    ],
+    "oplos5Als": "Als er een wortel in de vergelijking staat",
+    "oplos5Dan": "isoleer de wortel en kwadrateer",
+    "oplos5Stappen": [
+      "Zet de wortel alleen aan één kant van het gelijkteken",
+      "Kwadrateer beide kanten om de wortel weg te werken",
+      "Los op en controleer op schijnoplossingen door in te vullen"
+    ],
+    "oplos6Als": "Als een e-macht (of $g$-macht) geïsoleerd staat: $e^A = b$",
+    "oplos6Dan": "neem de logaritme: $A = \\ln(b)$",
+    "oplos6Stappen": [
+      "Zorg dat de macht alleen staat: $e^A = b$",
+      "Neem $\\ln$ (of ${}^g\\log$) van beide kanten: $A = \\ln(b)$",
+      "Los de overgebleven vergelijking op"
+    ],
+    "oplos7Als": "Als beide kanten dezelfde grondtal-macht zijn: $g^A = g^B$",
+    "oplos7Dan": "$A = B$",
+    "oplos7Stappen": [
+      "Schrijf beide kanten als macht met hetzelfde grondtal",
+      "$g^A = g^B$ geeft $A = B$",
+      "Los op"
+    ],
+    "oplos8Als": "Als er een logaritme-vergelijking staat: ${}^g\\log(A) = {}^g\\log(B)$ of ${}^g\\log(A) = c$",
+    "oplos8Dan": "gelijke logaritmen: $A = B$; los een getal op: $A = g^c$",
+    "oplos8Stappen": [
+      "Werk met de rekenregels toe naar één logaritme per kant",
+      "${}^g\\log(A) = {}^g\\log(B)$ geeft $A = B$",
+      "Of: ${}^g\\log(A) = c$ geeft $A = g^c$",
+      "Controleer dat $A$ (en $B$) groter dan $0$ zijn"
+    ],
+    "oplos9Als": "Als er $\\sin(A) = \\sin(B)$ of $\\cos(A) = \\cos(B)$ staat",
+    "oplos9Dan": "sin: $A = B + k\\cdot 2\\pi \\vee A = \\pi - B + k\\cdot 2\\pi$ — cos: $A = B + k\\cdot 2\\pi \\vee A = -B + k\\cdot 2\\pi$",
+    "oplos9Stappen": [
+      "Schrijf beide kanten als sin (of cos) van iets",
+      "sin: $A = B + k\\cdot 2\\pi \\vee A = \\pi - B + k\\cdot 2\\pi$",
+      "cos: $A = B + k\\cdot 2\\pi \\vee A = -B + k\\cdot 2\\pi$",
+      "Vul $k = 0, \\pm 1, \\ldots$ in voor de oplossingen op het gevraagde interval"
+    ],
+    "oplos10Als": "Als er $\\tan(A) = \\tan(B)$ staat",
+    "oplos10Dan": "$A = B + k\\pi$",
+    "oplos10Stappen": [
+      "$\\tan(A) = \\tan(B)$ geeft $A = B + k\\pi$",
+      "Vul $k$ in voor het gevraagde interval"
+    ],
+    "oplos11Als": "Als er zowel $\\sin(x)$ als $\\cos(x)$ in de vergelijking staat en je die wilt combineren",
+    "oplos11Dan": "isoleer er één, kwadrateer, en gebruik $\\sin^2(x) + \\cos^2(x) = 1$",
+    "oplos11Stappen": [
+      "Zet de sinus (of cosinus) alleen aan één kant",
+      "Kwadrateer beide kanten",
+      "Vervang $\\sin^2(x)$ door $1 - \\cos^2(x)$ (of andersom), zodat er één soort overblijft",
+      "Los de overgebleven (vaak kwadratische) vergelijking op; controleer op schijnoplossingen"
+    ],
+    "oplos12Als": "Als twee breuken aan elkaar gelijk zijn: $\\frac{A}{B} = \\frac{C}{D}$",
+    "oplos12Dan": "kruislings vermenigvuldigen: $A \\cdot D = B \\cdot C$",
+    "oplos12Stappen": [
+      "Vermenigvuldig kruislings: $\\frac{A}{B} = \\frac{C}{D}$ geeft $A \\cdot D = B \\cdot C$",
+      "Los de overgebleven vergelijking op",
+      "Controleer dat geen enkele noemer $0$ wordt bij je oplossing"
+    ],
+    "oplos13Als": "Als er een macht-vergelijking met gebroken exponent staat: $x^{p} = c$, bv. $x^{3/2} = 6$",
+    "oplos13Dan": "verhef beide kanten tot de omgekeerde macht: $x = c^{1/p}$",
+    "oplos13Stappen": [
+      "Zorg dat de macht van $x$ alleen staat: $x^{p} = c$",
+      "Verhef beide kanten tot $\\frac{1}{p}$: $x = c^{1/p}$ (bv. $x^{3/2} = 6$ geeft $x = 6^{2/3} = \\sqrt[3]{36}$)",
+      "Reken de macht uit of laat het exact staan"
+    ],
+    "groenTitle": "Kies de juiste rekenregel",
+    "groenIntro": "Om de afgeleide te vinden kijk je naar de vórm van de functie: elke vorm hoort bij een rekenregel. Klik een regel aan voor de stappen.",
+    "groenGroep1Title": "Eerst herschrijven",
+    "groenGroep2Title": "Basisregels",
+    "groenGroep3Title": "Product, quotiënt en ketting",
+    "groenGroep4Title": "Standaardafgeleiden (uit je hoofd)",
+    "groen1Als": "Als je de haakjes makkelijk kunt wegwerken (bv. een product van veeltermen)",
+    "groen1Dan": "werk eerst de haakjes weg, differentieer daarna term voor term",
+    "groen1Stappen": [
+      "Werk de haakjes uit tot een som van machten",
+      "Differentieer elke term met de machtsregel",
+      "Soms is de productregel sneller — kies wat handig is"
+    ],
+    "groen2Als": "Als er een breuk of wortel staat",
+    "groen2Dan": "schrijf als macht (negatieve/gebroken exponent) vóór je differentieert",
+    "groen2Stappen": [
+      "$\\frac{1}{x^n} = x^{-n}$ en $\\sqrt[n]{x^m} = x^{m/n}$",
+      "Een breuk met losse termen: splits eerst per term",
+      "Differentieer daarna met de machtsregel"
+    ],
+    "groen3Als": "Als er een macht $ax^n$ staat",
+    "groen3Dan": "machtsregel: $n \\cdot a\\,x^{n-1}$",
+    "groen3Stappen": [
+      "Exponent naar voren, exponent één omlaag: $ax^n \\to n\\,ax^{n-1}$",
+      "Werkt voor elke $n$ (ook negatief of gebroken)",
+      "Een losse constante $\\to 0$"
+    ],
+    "groen4Als": "Als het een som of verschil van termen is",
+    "groen4Dan": "differentieer term voor term (somregel)",
+    "groen4Stappen": [
+      "$(f + g)' = f' + g'$ en $(f - g)' = f' - g'$",
+      "Pak elke term apart"
+    ],
+    "groen5Als": "Als er een constante vóór de functie staat: $c \\cdot f(x)$",
+    "groen5Dan": "constante blijft staan: $c \\cdot f'(x)$",
+    "groen5Stappen": [
+      "De constante factor verandert niet",
+      "Differentieer alleen $f$"
+    ],
+    "groen6Als": "Als het een product van twee functies is: $f(x) \\cdot g(x)$",
+    "groen6Dan": "productregel: $f' \\cdot g + f \\cdot g'$",
+    "groen6Stappen": [
+      "Afgeleide eerste $\\times$ tweede, plus eerste $\\times$ afgeleide tweede",
+      "$(f \\cdot g)' = f'g + fg'$"
+    ],
+    "groen7Als": "Als het een breuk van functies is: $\\frac{t(x)}{n(x)}$",
+    "groen7Dan": "quotiëntregel: $\\frac{n\\,t' - t\\,n'}{n^2}$ (of eerst uitdelen)",
+    "groen7Stappen": [
+      "Kun je de breuk eerst uitdelen tot losse machten? Doe dat — vaak sneller",
+      "Anders de quotiëntregel: $\\left(\\frac{t}{n}\\right)' = \\frac{n\\,t' - t\\,n'}{n^2}$",
+      "Ezelsbruggetje: „noemer × afgeleide teller − teller × afgeleide noemer, gedeeld door de noemer in het kwadraat”"
+    ],
+    "groen8Als": "Als er een functie ín een functie staat: $(\\ldots)^n$, $\\sqrt{\\ldots}$, $e^{\\ldots}$, $\\sin(\\ldots)$",
+    "groen8Dan": "kettingregel: $u'(v(x)) \\cdot v'(x)$",
+    "groen8Stappen": [
+      "Herken de buitenste functie $u$ en de binnenste $v$",
+      "Afgeleide van buiten $\\times$ afgeleide van binnen: $u'(v) \\cdot v'$",
+      "Bv. $\\sqrt{3x + 1} \\to \\frac{1}{2\\sqrt{3x + 1}} \\cdot 3$"
+    ],
+    "groen9Als": "$\\sin(x)$",
+    "groen9Dan": "$\\cos(x)$",
+    "groen9Stappen": [
+      "Met kettingregel: $\\sin(ax + b) \\to a\\cos(ax + b)$"
+    ],
+    "groen10Als": "$\\cos(x)$",
+    "groen10Dan": "$-\\sin(x)$",
+    "groen10Stappen": [
+      "Met kettingregel: $\\cos(ax + b) \\to -a\\sin(ax + b)$"
+    ],
+    "groen11Als": "$\\tan(x)$",
+    "groen11Dan": "$\\frac{1}{\\cos^2(x)}$ (ofwel $1 + \\tan^2(x)$)",
+    "groen11Stappen": [
+      "Volgt uit de quotiëntregel op $\\frac{\\sin(x)}{\\cos(x)}$"
+    ],
+    "groen12Als": "$e^x$ en $g^x$",
+    "groen12Dan": "$e^x \\to e^x$; $g^x \\to g^x \\cdot \\ln(g)$",
+    "groen12Stappen": [
+      "$e^x$ is zijn eigen afgeleide",
+      "Met kettingregel: $e^{ax + b} \\to a\\,e^{ax + b}$"
+    ],
+    "groen13Als": "$\\ln(x)$ en ${}^g\\log(x)$",
+    "groen13Dan": "$\\ln(x) \\to \\frac{1}{x}$; ${}^g\\log(x) \\to \\frac{1}{x\\ln(g)}$",
+    "groen13Stappen": [
+      "Met kettingregel: $\\ln(v) \\to \\frac{v'}{v}$"
+    ],
+    "quizStart": "Oefen met vragen",
+    "quizVraagVan": "Vraag {nummer} van {totaal}",
+    "quizPrompt": "Welke aanpak hoort bij deze opgave?",
+    "quizGoed": "Goed!",
+    "quizFout": "Niet helemaal — de juiste aanpak is groen gemarkeerd.",
+    "quizVolgende": "Volgende vraag",
+    "quizResultaat": "Bekijk resultaat",
+    "quizKlaarTitel": "Klaar!",
+    "quizScore": "Je had {score} van de {totaal} vragen goed.",
+    "quizOpnieuw": "Opnieuw oefenen",
+    "quizTerugOverzicht": "Terug naar het overzicht",
+    "hubStatusNieuw": "Nog niet begonnen",
+    "hubStatusBezig": "Bezig",
+    "hubStatusKlaar": "Afgerond ✓",
+    "hubFinaleTitle": "De finale",
+    "hubFinaleLocked": "Ontgrendelt als alle drie de onderdelen zijn afgerond.",
+    "hubFinaleSoon": "Alle onderdelen afgerond — de finale komt binnenkort!"
   },
   "Theorie": {
     "title": "Differentiëren — alle regels op één pagina · __DOMAIN__",
