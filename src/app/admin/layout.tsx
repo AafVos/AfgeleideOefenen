@@ -12,6 +12,7 @@ const NAV = [
   { href: '/admin', label: 'Overzicht' },
   { href: '/admin/topics', label: 'Topics' },
   { href: '/admin/questions', label: 'Vragen' },
+  { href: '/admin/boom', label: 'Beslisboom' },
   { href: '/admin/flags', label: 'Flags' },
   { href: '/admin/users', label: 'Gebruikers' },
 ]

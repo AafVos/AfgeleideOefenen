@@ -308,6 +308,90 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['chapters']['Insert']>
         Relationships: []
       }
+      beslisboom_nodes: {
+        Row: {
+          id: string
+          site: 'afgeleiden' | 'integralen'
+          parent_id: string | null
+          label: string
+          vraag: string | null
+          stappen: string[]
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          site?: 'afgeleiden' | 'integralen'
+          parent_id?: string | null
+          label: string
+          vraag?: string | null
+          stappen?: string[]
+          order_index?: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['beslisboom_nodes']['Insert']>
+        Relationships: []
+      }
+      beslisboom_node_vragen: {
+        Row: {
+          node_id: string
+          exam_question_id: string
+        }
+        Insert: {
+          node_id: string
+          exam_question_id: string
+        }
+        Update: Partial<
+          Database['public']['Tables']['beslisboom_node_vragen']['Insert']
+        >
+        Relationships: []
+      }
+      exam_questions: {
+        Row: {
+          id: string
+          site: 'afgeleiden' | 'integralen'
+          bron_type: 'examen' | 'boek'
+          jaar: number | null
+          tijdvak: number | null
+          paragraaf: string | null
+          onderdeel: string | null
+          boek_categorie: 'verhaaltje' | 'afgeleide' | 'geen' | null
+          niveau: string | null
+          nummer: number
+          onderwerp: string
+          context: string
+          vraag: string
+          verhaaltjes: number[]
+          afgeleides: number[]
+          oplosmethoden: number[]
+          toelichting: string | null
+          bron: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          site?: 'afgeleiden' | 'integralen'
+          bron_type?: 'examen' | 'boek'
+          jaar?: number | null
+          tijdvak?: number | null
+          paragraaf?: string | null
+          onderdeel?: string | null
+          boek_categorie?: 'verhaaltje' | 'afgeleide' | 'geen' | null
+          niveau?: string | null
+          nummer: number
+          onderwerp: string
+          context: string
+          vraag: string
+          verhaaltjes?: number[]
+          afgeleides?: number[]
+          oplosmethoden?: number[]
+          toelichting?: string | null
+          bron: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['exam_questions']['Insert']>
+        Relationships: []
+      }
       topics_new: {
         Row: {
           id: string
@@ -561,6 +645,28 @@ export type Database = {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['known_wrong_answers_new']['Insert']>
+        Relationships: []
+      }
+      stoomcursus_progress: {
+        Row: {
+          user_id: string
+          site: 'afgeleiden' | 'integralen'
+          step: 'welkom' | 'onderdelen' | 'uitleg' | 'vervolg' | 'oefenen'
+          placed: number
+          part: number | null
+          data: Record<string, unknown>
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          site?: 'afgeleiden' | 'integralen'
+          step?: 'welkom' | 'onderdelen' | 'uitleg' | 'vervolg' | 'oefenen'
+          placed?: number
+          part?: number | null
+          data?: Record<string, unknown>
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['stoomcursus_progress']['Insert']>
         Relationships: []
       }
     }

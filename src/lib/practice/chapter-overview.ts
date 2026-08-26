@@ -118,13 +118,17 @@ export async function loadTilesForClusters(
     return (a.order_index ?? 999) - (b.order_index ?? 999)
   })
 
-  // Laatste goed/fout-status per vraag (RLS beperkt tot eigen sessies)
+  // Laatste goed/fout-status per vraag (RLS beperkt tot eigen sessies).
+  // In batches: honderden id's in één .in() maken de request-URL langer dan
+  // de API-gateway toestaat ("URI too long").
   const lastCorrectByQuestionId = new Map<string, boolean>()
-  if (sorted.length) {
+  const BATCH = 100
+  for (let i = 0; i < sorted.length; i += BATCH) {
+    const batchIds = sorted.slice(i, i + BATCH).map((q) => q.id)
     const { data: attempts, error: aErr } = await db
       .from('session_answers_new')
       .select('question_id, is_correct, answered_at')
-      .in('question_id', sorted.map((q) => q.id))
+      .in('question_id', batchIds)
       .order('answered_at', { ascending: false })
     if (aErr) throw new Error(aErr.message)
     for (const row of attempts ?? []) {

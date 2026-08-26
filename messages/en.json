@@ -114,6 +114,18 @@
     "ctaRegister": "Create account",
     "ctaBack": "← Back to home"
   },
+  "Stoomcursus": {
+    "title": "Differentiation crash course · __DOMAIN__",
+    "description": "The differentiation crash course: three building blocks that cover everything you need for any derivative question.",
+    "eyebrow": "Crash course",
+    "welcome": "Welcome to the differentiation crash course. In one short, fast-paced route we take you past everything you need to handle any derivative question. Ready to begin?",
+    "start": "Start",
+    "partsIntro": "Every derivative question consists of at most these three parts",
+    "partLabel": "Part {number}",
+    "part1Title": "Understand the story",
+    "part2Title": "Find the derivative",
+    "part3Title": "Use solving methods"
+  },
   "Theorie": {
     "title": "Differentiation — all rules on one page · __DOMAIN__",
     "description": "All differentiation rules for high school calculus on one page: power rule, sum rule, product rule, quotient rule, chain rule, exponential, trigonometry and ln. With examples and steps.",
