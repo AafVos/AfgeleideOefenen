@@ -42,6 +42,15 @@ function IconBook() {
   )
 }
 
+function IconPlayCircle() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m10 8.5 5 3.5-5 3.5Z" />
+    </svg>
+  )
+}
+
 function IconChart() {
   return (
     <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -100,6 +109,16 @@ export async function SiteHeader({ locale }: { locale: string }) {
     />
   )
 
+  const videosLink = (
+    <Link
+      href={`/${locale}/uitleg-videos`}
+      className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+    >
+      <IconPlayCircle />
+      {t('videos')}
+    </Link>
+  )
+
   return (
     <>
     <header className="relative sticky top-0 z-30 h-14 border-b border-border bg-surface/85 backdrop-blur">
@@ -115,6 +134,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
           {user ? (
             <>
               {theorieDropdown}
+              {videosLink}
               <NavDropdown
                 label={t('freeExercise')}
                 icon={<IconPencil />}
@@ -162,6 +182,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
           ) : (
             <>
               {theorieDropdown}
+              {videosLink}
               <Link
                 href={`/${locale}/inloggen`}
                 className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"

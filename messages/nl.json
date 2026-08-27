@@ -14,7 +14,8 @@
     "logout": "Uitloggen",
     "signedInAs": "Ingelogd als",
     "settings": "Instellingen",
-    "feedback": "Feedback sturen"
+    "feedback": "Feedback sturen",
+    "videos": "Uitlegvideo's"
   },
   "Home": {
     "eyebrow": "Wiskunde B · VWO 4 / 5 / 6",
@@ -539,5 +540,32 @@
     "askPlaceholder": "Typ je vraag… je krijgt antwoord per e-mail.",
     "askSend": "Versturen",
     "askThanks": "Dankjewel! Je krijgt zo snel mogelijk antwoord op je e-mailadres."
+  },
+  "UitlegVideos": {
+    "title": "Uitlegvideo's",
+    "h1": "Uitlegvideo's",
+    "intro": "Korte video's waarin Aaf jullie vragen beantwoordt — met oefenvragen om meteen mee te doen.",
+    "playlistTitle": "Video's",
+    "practiceTitle": "Oefen meteen mee",
+    "preview": "Voorbeeld",
+    "placeholder": "Typ je antwoord…",
+    "check": "Check",
+    "checking": "Nakijken…",
+    "correct": "Goed gedaan!",
+    "wrongTitle": "Nog niet helemaal…",
+    "yourAnswer": "Jouw antwoord",
+    "correctAnswer": "Goede antwoord",
+    "stepsTitle": "Uitwerking",
+    "nextQuestion": "Volgende",
+    "morePractice": "Meer oefenen met dit onderwerp",
+    "loginToPractice": "Log in om mee te oefenen met dit onderwerp",
+    "askTitle": "Welke uitleg mis jij?",
+    "askIntro": "Stel je vraag — grote kans dat hij een video wordt.",
+    "askPlaceholder": "Bijv. wanneer gebruik ik de kettingregel?",
+    "askSend": "Verstuur",
+    "askThanks": "Dank je! Grote kans dat jouw vraag een video wordt.",
+    "loginToAsk": "Log in om een vraag in te sturen",
+    "questionTile": "Vraag {n}",
+    "previousQuestion": "Vorige"
   }
 }
