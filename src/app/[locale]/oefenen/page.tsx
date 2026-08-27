@@ -65,7 +65,6 @@ export default async function OefenenPage({ searchParams }: PageProps) {
   } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/inloggen`)
 
-  const t = await getTranslations('FreeExercise')
   const params = (await searchParams) ?? {}
   const categoryParam = params.category?.trim() ?? null
   const chapterParam = params.chapter?.trim() ?? null
@@ -80,7 +79,8 @@ export default async function OefenenPage({ searchParams }: PageProps) {
       : 'primitiveren'
     : null
 
-  const [chapters, allTopicsRaw] = await Promise.all([
+  const [t, chapters, allTopicsRaw] = await Promise.all([
+    getTranslations('FreeExercise'),
     loadChapters(supabase),
     loadAllTopics(supabase),
   ])
@@ -132,8 +132,6 @@ export default async function OefenenPage({ searchParams }: PageProps) {
       ? topicClusters.map((c) => c.id)
       : chapterTopics.flatMap((t) => (clustersByTopic.get(t.id) ?? []).map((c) => c.id))
 
-  const initialTiles = await loadTilesForClusters(supabase, tileClusterIds)
-
   // Alle opgaven van alle zichtbare hoofdstukken (overzicht + navigator)
   const allClusterIdsOrdered = visibleChapters.flatMap((ch) =>
     allTopics
@@ -141,6 +139,13 @@ export default async function OefenenPage({ searchParams }: PageProps) {
       .flatMap((t) => (clustersByTopic.get(t.id) ?? []).map((c) => c.id)),
   )
   const allTiles = await loadTilesForClusters(supabase, allClusterIdsOrdered)
+
+  // Starttegels afleiden uit allTiles i.p.v. een tweede query; de client
+  // hernummert bij navigatie op dezelfde manier (zie chapterGroups)
+  const tileClusterIdSet = new Set(tileClusterIds)
+  const initialTiles = allTiles
+    .filter((tile) => tileClusterIdSet.has(tile.clusterId))
+    .map((tile, i) => ({ ...tile, ordinal: i + 1 }))
 
   const validQuestionIds = new Set(initialTiles.map((t) => t.questionId))
   const question =
