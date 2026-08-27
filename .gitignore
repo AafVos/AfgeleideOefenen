@@ -40,9 +40,17 @@ yarn-error.log*
 
 # supabase cli
 supabase/.temp/
+supabase/.branches/
 
 # local migration tooling / data (CSVs + scripts)
 /files/
+
+# boek-brontranscripties (auteursrecht Noordhoff) — lokaal, niet in versiebeheer/build
+/content-bron/
+/getal-en-ruimte-*.pdf
+/uit-getal-en-ruimte-*.pdf
+# examen-PDF's (bronmateriaal) — lokaal
+/vw-*.pdf
 
 # typescript
 *.tsbuildinfo

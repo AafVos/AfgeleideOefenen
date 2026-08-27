@@ -118,19 +118,29 @@ export async function loadTilesForClusters(
     return (a.order_index ?? 999) - (b.order_index ?? 999)
   })
 
-  // Laatste goed/fout-status per vraag (RLS beperkt tot eigen sessies)
+  // Laatste goed/fout-status per vraag (RLS beperkt tot eigen sessies).
+  // In brokken van 100 id's: alle id's in één .in() maakt de request-URI te lang.
   const lastCorrectByQuestionId = new Map<string, boolean>()
   if (sorted.length) {
-    const { data: attempts, error: aErr } = await db
-      .from('session_answers_new')
-      .select('question_id, is_correct, answered_at')
-      .in('question_id', sorted.map((q) => q.id))
-      .order('answered_at', { ascending: false })
-    if (aErr) throw new Error(aErr.message)
-    for (const row of attempts ?? []) {
-      if (row.is_correct !== true && row.is_correct !== false) continue
-      if (!lastCorrectByQuestionId.has(row.question_id)) {
-        lastCorrectByQuestionId.set(row.question_id, row.is_correct)
+    const ids = sorted.map((q) => q.id)
+    const chunks: string[][] = []
+    for (let i = 0; i < ids.length; i += 100) chunks.push(ids.slice(i, i + 100))
+    const results = await Promise.all(
+      chunks.map((chunk) =>
+        db
+          .from('session_answers_new')
+          .select('question_id, is_correct, answered_at')
+          .in('question_id', chunk)
+          .order('answered_at', { ascending: false }),
+      ),
+    )
+    for (const { data: attempts, error: aErr } of results) {
+      if (aErr) throw new Error(aErr.message)
+      for (const row of attempts ?? []) {
+        if (row.is_correct !== true && row.is_correct !== false) continue
+        if (!lastCorrectByQuestionId.has(row.question_id)) {
+          lastCorrectByQuestionId.set(row.question_id, row.is_correct)
+        }
       }
     }
   }
