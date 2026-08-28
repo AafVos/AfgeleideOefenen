@@ -1,5 +1,8 @@
 # Uitlegvideo's met Aaf
 
+> Nieuwe video maken? Lees eerst [GUIDELINES.md](GUIDELINES.md) — daar staat
+> waar elke video aan moet voldoen (stijl, didactiek, voice-over, timing).
+
 Remotion-project voor uitlegvideo's in de stijl van de app: witte achtergrond,
 Aaf rechtsonder (dezelfde tekening als in `src/components/welcome-tour.tsx`),
 DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
