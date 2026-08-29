@@ -4,25 +4,32 @@ Ingesproken door ElevenLabs-stem **Pauline**. De tekst per scène staat (als
 bron) in `scripts/genereer-voiceover-som29.sh`; na een tekstwijziging: script
 draaien, fragmentduren checken en de scèneduren + beats bijstellen.
 
+## Notatie-afspraken
+
+- **Somregel: u en v** — zowel in de regelkaart (`f(x) = u(x) + v(x) ⟹ f′(x) =
+  u′(x) + v′(x)`) als in de uitwerking. Zo botst het niet met de productregel.
+- **Productregel: g en h** — daar rekenen we `v′(q)` uit.
+- **In beeld altijd mét `(q)`** (`u(q) = 1`), terwijl de stem de letters kaal
+  uitspreekt ("u is één"). Stap 3 spiegelt exact de groene regelkaart.
+
 ## Opbouw (vijf scènes)
 
 **Scène 1 · #29** — de opgave in beeld, Aaf zwaait.
 
 **Scène 2 · Stap 0: Analyseer de vorm** — q licht even op (marker, verdwijnt
-weer; q i.p.v. x maakt niet uit, met pauze erna), groene cirkel om de 1 en
-rode om −(3q²−2)²: twee delen met een − ertussen → somregel, en de
-somregel-kaart komt in beeld.
+weer), dan groene cirkel om de 1 en rode om (3q²−2)²; het minteken splitst en
+blijft buiten de cirkels. Chip: "Somregel!", daarna de somregel-kaart.
 
-**Scène 3 · De somregel** — stap 1: g(q) = 1 en h(q) = −(3q²−2)² (met labels
-onder de som). Stap 2: g′(q) = 0 (geen q in g); h herschrijven als
-−(3q²−2)·(3q²−2) ("schrijf een kwadraat altijd op als de term keer
-zichzelf") → een product → productregel!
+**Scène 3 · De somregel** — stap 1: u(q) = 1 en v(q) = (3q²−2)² (labels onder
+de som). Stap 2: u′(q) = 0 (geen q in u); v herschrijven als
+(3q²−2)·(3q²−2) ("handig: schrijf een kwadraat altijd op als de term keer
+zichzelf"), pauze, dan chip "Productregel!".
 
-**Scène 4 · De productregel** — kaart + h(q) staan klaar; stap 1 (factoren),
-stap 2 (afgeleiden, pratend langs: "g van q is …, en h van q is …"), stap 3
-invullen met de − ervoor → eindantwoord h′(q) = −12q(3q²−2).
+**Scène 4 · De productregel** — kaart + v(q) staan klaar; stap 1 (g en h),
+stap 2 (afgeleiden), stap 3: eerst `v′(q) = g′(q)·h(q) + g(q)·h′(q)`, dan
+ingevuld, dan uitgerekend → v′(q) = 12q(3q²−2).
 
-**Scène 5 · Voeg alles samen** — m(q), m′(q) = g′(q) + h′(q),
+**Scène 5 · Voeg alles samen** — m(q), m′(q) = u′(q) − v′(q),
 m′(q) = 0 − 12q(3q²−2), en de uitkomst groot in beeld.
 
 ## Zelf inspreken in plaats van Pauline?
