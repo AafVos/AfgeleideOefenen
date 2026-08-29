@@ -19,7 +19,7 @@ const groen = theme.accent
 const rood = theme.accent2
 
 /** x tot de macht n, in boekstijl. */
-function Xp({ n }: { n: number }) {
+export function Xp({ n }: { n: number }) {
   return (
     <span>
       <X />
@@ -29,7 +29,7 @@ function Xp({ n }: { n: number }) {
 }
 
 /** f(x), g′, h′(x) enz.: naam + optioneel accent + optioneel (x). */
-function Fn({ naam, accent = false, vanX = false }: { naam: string; accent?: boolean; vanX?: boolean }) {
+export function Fn({ naam, accent = false, vanX = false }: { naam: string; accent?: boolean; vanX?: boolean }) {
   return (
     <span>
       <span style={{ fontStyle: 'italic' }}>{naam}</span>
@@ -43,7 +43,7 @@ function Fn({ naam, accent = false, vanX = false }: { naam: string; accent?: boo
   )
 }
 
-const kaartStijl: CSSProperties = {
+export const kaartStijl: CSSProperties = {
   backgroundColor: theme.surface2,
   border: `3px solid ${theme.border}`,
   borderRadius: 28,
@@ -55,7 +55,7 @@ const kaartStijl: CSSProperties = {
 }
 
 /** Groene regel-reminder, zoals de formulekaarten in de app. */
-function RegelKaart({ fontSize = 48, children }: { fontSize?: number; children: ReactNode }) {
+export function RegelKaart({ fontSize = 48, children }: { fontSize?: number; children: ReactNode }) {
   return (
     <div
       style={{
@@ -73,7 +73,7 @@ function RegelKaart({ fontSize = 48, children }: { fontSize?: number; children: 
   )
 }
 
-const sceneTitelStijl: CSSProperties = {
+export const sceneTitelStijl: CSSProperties = {
   ...titleStyle,
   fontSize: 60,
 }
@@ -212,7 +212,7 @@ export function RegelsSom() {
 }
 
 /** Factor met een gekleurd naamlabel (g of h) eronder, verschijnt op `from`. */
-function FactorLabel({
+export function FactorLabel({
   label,
   from,
   children,

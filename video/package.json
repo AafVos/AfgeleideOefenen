@@ -6,7 +6,8 @@
     "studio": "remotion studio",
     "render": "remotion render SomProduct out/som-product.mp4",
     "render:regels": "remotion render SomOfProductregel out/somregel-of-productregel.mp4",
-    "still": "remotion still SomProduct"
+    "still": "remotion still SomProduct",
+    "render:som29": "remotion render Som29 out/som-29.mp4"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
