@@ -171,6 +171,39 @@ export function Circled({
   )
 }
 
+/** Markeerstift-highlight die op `from` verschijnt en op `until` weer vervaagt. */
+export function Marker({
+  from,
+  until,
+  color = theme.accent2Light,
+  children,
+}: {
+  from: number
+  until: number
+  color?: string
+  children: ReactNode
+}) {
+  const frame = useCurrentFrame()
+  const opacity = interpolate(frame, [from, from + 15, until, until + 20], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  })
+  return (
+    <span style={{ position: 'relative', display: 'inline-block' }}>
+      <span
+        style={{
+          position: 'absolute',
+          inset: '-2px -8px',
+          backgroundColor: color,
+          borderRadius: 12,
+          opacity,
+        }}
+      />
+      <span style={{ position: 'relative' }}>{children}</span>
+    </span>
+  )
+}
+
 /** Rood kruis dat zichzelf over het kind heen tekent vanaf frame `from`. */
 export function CrossOut({ from, children }: { from: number; children: ReactNode }) {
   const frame = useCurrentFrame()

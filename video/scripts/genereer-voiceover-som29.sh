@@ -11,12 +11,9 @@ UIT="public/voiceover-som29"
 mkdir -p "$UIT"
 
 teksten=(
-  "Hoi! Eén van jullie vroeg om uitleg bij som negenentwintig. Goede keuze, want in deze som komt alles samen. We gaan differentiëren: m van q, is één min, drie q kwadraat min twee, in het kwadraat."
-  "Kijk eerst goed naar de functie. Twee dingen vallen op. Eén: de variabele is hier geen x, maar q. Dat verandert niets aan de regels — je differentieert gewoon naar q. Twee: er staat een kwadraat. En een kwadraat is stiekem een product: drie q kwadraat min twee, keer, drie q kwadraat min twee. Dus, je voelt hem al: de productregel!"
-  "We pakken het rustig aan, stukje voor stukje. Links: de losse één vooraan. Een getal heeft afgeleide nul, dus die valt straks gewoon weg. Rechts: de twee stukken van het product. Die zijn allebei hetzelfde: g van q is drie q kwadraat min twee. En de afgeleide daarvan is zes q."
-  "Nu de productregel op het kwadraat. De regel zegt: de afgeleide van g keer g, is: de afgeleide van g, keer g, plus, g, keer de afgeleide van g. Vullen we dat in, dan krijgen we: zes q keer drie q kwadraat min twee, plus, drie q kwadraat min twee, keer zes q. Maar kijk eens goed: die twee termen zijn precies hetzelfde! Dus samen wordt het: twee keer zes q, keer drie q kwadraat min twee."
-  "Bijna klaar. Voor het kwadraat stond nog een minteken, en dat moet mee. De afgeleide van m wordt dus: min twee keer zes q, keer drie q kwadraat min twee. En netjes uitgewerkt is dat: min twaalf q, keer drie q kwadraat min twee. Gelukt!"
-  "Samengevat. Eén: check de variabele — hier is dat q, geen x. Twee: een kwadraat is een product, dus je gebruikt de productregel. Drie: een los getal valt weg bij het differentiëren. En vier: staat er een min voor? Vergeet die niet mee te nemen. Succes!"
+  "Deze uitlegvideo gaat over som negenentwintig."
+  "In deze som werken we met q, in plaats van x. Maar dat maakt voor het differentiëren niets uit. Je ziet hier duidelijk dat de som uit twee delen bestaat. Het lijkt er dus op dat we de somregel gaan gebruiken. Maar let op: er zit geen q in het eerste deel, dus we hoeven alleen naar het tweede deel te kijken. De één strepen we door. Om het jezelf makkelijk te maken, schrijf je een term tussen haakjes tot de macht twee altijd op als: de term, keer zichzelf. Nu zie je twee termen tussen haakjes, met een keer-teken ertussen. En dan gebruiken we: de productregel!"
+  "Hier zie je de productregel. Volg bij de productregel altijd deze drie stappen: kies g en h. Bepaal de afgeleiden. En vul de formule in. De regel staat er met x, maar bij ons is de variabele q. Dat werkt precies hetzelfde: we nemen de regel gewoon over, met q. Stap één: wat zijn bij ons g en h? Allebei: drie q kwadraat min twee. Stap twee: bepaal de afgeleiden. Allebei: zes q. Stap drie: vul de formule in. De doorgestreepte één wordt nul. Daarachter komt: de afgeleide van g, keer h, plus, g, keer de afgeleide van h. Vullen we alles in, dan staat er: nul min, zes q keer drie q kwadraat min twee, plus, drie q kwadraat min twee, keer zes q. En netjes uitgewerkt is dat: min twaalf q, keer drie q kwadraat min twee. Gelukt!"
 )
 
 for i in "${!teksten[@]}"; do
