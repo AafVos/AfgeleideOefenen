@@ -564,9 +564,11 @@
     "askPlaceholder": "Bijv. wanneer gebruik ik de kettingregel?",
     "askSend": "Verstuur",
     "askThanks": "Dank je! Grote kans dat jouw vraag een video wordt.",
-    "loginToAsk": "Log in om een vraag in te sturen",
     "questionTile": "Vraag {n}",
     "previousQuestion": "Vorige",
-    "askCta": "Stel je vraag"
+    "askCta": "Stel je vraag",
+    "askNoAccount": "Dit kan nog niet: je hebt een account nodig om een vraag in te sturen.",
+    "askLogin": "Inloggen",
+    "askRegister": "Account maken"
   }
 }

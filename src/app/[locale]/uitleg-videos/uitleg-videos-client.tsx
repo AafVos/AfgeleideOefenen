@@ -57,7 +57,9 @@ type Labels = {
   askPlaceholder: string
   askSend: string
   askThanks: string
-  loginToAsk: string
+  askNoAccount: string
+  askLogin: string
+  askRegister: string
 }
 
 const initialVraagState: VideoVraagState = { error: null, sent: false }
@@ -76,6 +78,7 @@ export function UitlegVideosClient({
   vragen,
   isLoggedIn,
   loginHref,
+  registerHref,
   oefenHref,
   labels,
 }: {
@@ -84,13 +87,22 @@ export function UitlegVideosClient({
   vragen: OefenVraag[]
   isLoggedIn: boolean
   loginHref: string
+  registerHref: string
   oefenHref: string
   labels: Labels
 }) {
   const active = videos.find((v) => v.slug === activeSlug) ?? null
+  const [toonAccountMelding, setToonAccountMelding] = useState(false)
 
-  /** Springt naar het vraagformulier onderaan en zet de cursor in het tekstvak. */
+  /**
+   * Zonder account kan er geen vraag ingestuurd worden: dan tonen we een melding
+   * bij de knop. Ingelogd springen we naar het formulier onderaan.
+   */
   function naarVraagFormulier() {
+    if (!isLoggedIn) {
+      setToonAccountMelding(true)
+      return
+    }
     const sectie = document.getElementById('vraag-stellen')
     sectie?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     window.setTimeout(() => {
@@ -115,6 +127,15 @@ export function UitlegVideosClient({
           >
             {labels.askCta}
           </button>
+          {toonAccountMelding ? (
+            <div role="status" className="mt-3">
+              <AccountNodigMelding
+                loginHref={loginHref}
+                registerHref={registerHref}
+                labels={labels}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -201,14 +222,45 @@ export function UitlegVideosClient({
         {isLoggedIn ? (
           <VraagFormulier labels={labels} />
         ) : (
-          <p className="mt-4">
-            <Link href={loginHref as '/inloggen'} className="text-accent underline underline-offset-2">
-              {labels.loginToAsk}
-            </Link>
-          </p>
+          <div className="mt-4">
+            <AccountNodigMelding
+              loginHref={loginHref}
+              registerHref={registerHref}
+              labels={labels}
+            />
+          </div>
         )}
       </section>
     </main>
+  )
+}
+
+/* ── Melding: vraag stellen kan pas met een account ─────────────────── */
+
+function AccountNodigMelding({
+  loginHref,
+  registerHref,
+  labels,
+}: {
+  loginHref: string
+  registerHref: string
+  labels: Labels
+}) {
+  return (
+    <div className="rounded-xl border border-accent-2/40 bg-accent-2-light px-4 py-3">
+      <p className="text-sm text-accent-2">{labels.askNoAccount}</p>
+      <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        <Link href={loginHref as '/inloggen'} className="text-accent underline underline-offset-2">
+          {labels.askLogin}
+        </Link>
+        <Link
+          href={registerHref as '/registreren'}
+          className="text-accent underline underline-offset-2"
+        >
+          {labels.askRegister}
+        </Link>
+      </p>
+    </div>
   )
 }
 
