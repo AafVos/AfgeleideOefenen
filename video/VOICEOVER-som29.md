@@ -1,8 +1,44 @@
-# Voice-over: Uitleg bij som 29
+# Voice-over: Uitleg bij som 29 (zelf inspreken)
 
-Ingesproken door ElevenLabs-stem Emma. De tekst per scène staat (als bron) in
-`scripts/genereer-voiceover-som29.sh`; na een tekstwijziging: script draaien,
-fragmentduren checken en de scèneduren in `src/Som29Video.tsx` bijstellen.
+De compositie staat nu **zonder audio** en op een ruimer tempo (`TEMPO = 1.35`
+in `src/scenes-som29.tsx` — hoger = nog langzamer). Spreek per scène in aan de
+hand van het script hieronder; als leidraad kun je `out/som-29-stil.mp4`
+laten meelopen of de presenter gebruiken.
+
+## Script (leidraad per scène)
+
+**Scène 1 · #29 (±8 s)**
+> Deze uitlegvideo gaat over som 29.
+
+**Scène 2 · Stap 0: analyseer de vorm (±54 s)**
+> Stap nul: analyseer de vorm. In deze som werken we met q in plaats van x —
+> maar dat maakt voor het differentiëren niets uit. (pauze) Je ziet duidelijk
+> dat de som uit twee delen bestaat [groene en rode cirkel]. Het lijkt op de
+> somregel, maar er zit geen q in het eerste deel, dus we kijken alleen naar
+> deel twee. De één strepen we door. Een term tussen haakjes tot de macht twee
+> schrijf je altijd op als de term keer zichzelf. Twee termen met een
+> keer-teken ertussen — de productregel!
+
+**Scène 3 · De productregel (±75 s)**
+> Hier zie je de productregel en onze som, met de één al doorgestreept.
+> Stap één: kies g en h — allebei drie q kwadraat min twee.
+> Stap twee: bereken de afgeleiden — allebei zes q.
+> Stap drie: vul de formule in. Eerst uitgeschreven, dan alles ingevuld, dan
+> één stap uitgerekend, en dan de uitkomst: min twaalf q keer drie q kwadraat
+> min twee. Gelukt!
+
+## Opnemen en aanleveren
+
+1. Neem per scène op (bijv. Spraakmemo's) en exporteer als `scene-1`,
+   `scene-2`, `scene-3` (mp3 of m4a) in `public/voiceover-som29/`.
+2. Meld het — dan monteer ik de audio, stem ik alle beeldmomenten op jouw
+   tempo af en vervang ik de video op de site (daar staat nu de
+   Pauline-versie).
+
+## Terug naar een AI-stem?
+
+De Pauline-teksten staan als bron in `scripts/genereer-voiceover-som29.sh`
+(standaardstem: Pauline; wissel via `VOICE_ID=...`).
 
 ## Zelf inspreken met de presenter
 
