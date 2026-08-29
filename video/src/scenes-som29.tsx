@@ -1,19 +1,17 @@
-import type { CSSProperties } from 'react'
-import { useCurrentFrame } from 'remotion'
+import type { CSSProperties, ReactNode } from 'react'
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 
 import { theme } from './theme'
-import {
-  FactorLabel,
-  kaartStijl,
-  RegelKaart,
-  sceneTitelStijl,
-} from './scenes-regels'
+import { FnQ, Opgave, Q, Qp } from './som29-helpers'
+import { Fn, kaartStijl, RegelKaart, sceneTitelStijl } from './scenes-regels'
 import {
   AafCorner,
   captionStyle,
   Chip,
   Circled,
+  CrossOut,
   FadeUp,
+  Marker,
   mathStyle,
   Pop,
   Scene,
@@ -23,54 +21,15 @@ import {
 const groen = theme.accent
 const rood = theme.accent2
 
-/** Cursieve q, zoals in een boek. */
-function Q() {
-  return <span style={{ fontStyle: 'italic' }}>q</span>
-}
-
-/** q tot de macht n. */
-function Qp({ n }: { n: number }) {
-  return (
-    <span>
-      <Q />
-      <sup style={{ fontSize: '0.6em' }}>{n}</sup>
-    </span>
-  )
-}
-
-/** m(q), g′(q) enz. — zoals Fn, maar met q als variabele. */
-function FnQ({ naam, accent = false }: { naam: string; accent?: boolean }) {
-  return (
-    <span>
-      <span style={{ fontStyle: 'italic' }}>{naam}</span>
-      {accent && '′'}
-      <span>
-        (<Q />)
-      </span>
-    </span>
-  )
-}
-
-/** De opgave: m(q) = 1 − (3q² − 2)² */
-function Opgave({ fontSize = 76 }: { fontSize?: number }) {
-  return (
-    <div style={{ ...mathStyle, fontSize }}>
-      <FnQ naam="m" /> = 1 − (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
-    </div>
-  )
-}
-
-/* ── Scène 1 · Intro (16,7 s) ───────────────────────────────────────── */
+/* ── Scène 1 · #29 (7 s) ────────────────────────────────────────────── */
 export function Som29Intro() {
   const frame = useCurrentFrame()
   return (
     <Scene>
       <FadeUp from={10}>
-        <h1 style={titleStyle}>
-          Uitleg bij <span style={{ color: groen }}>som 29</span>
-        </h1>
+        <h1 style={{ ...titleStyle, color: groen }}>#29</h1>
       </FadeUp>
-      <FadeUp from={170}>
+      <FadeUp from={40}>
         <Opgave />
       </FadeUp>
       <AafCorner pose={frame > 45 ? 'wave' : 'idle'} poseFrame={frame - 45} enterAt={10} />
@@ -78,243 +37,239 @@ export function Som29Intro() {
   )
 }
 
-/* ── Scène 2 · Herkennen (24 s) ─────────────────────────────────────── */
+/* ── Scène 2 · Herkennen en herschrijven (39 s) ─────────────────────── */
 export function Som29Herkennen() {
   const frame = useCurrentFrame()
+  const pijl = <div style={{ ...captionStyle, fontSize: 40 }}>↓</div>
   return (
     <Scene>
-      <FadeUp from={10}>
-        <h2 style={sceneTitelStijl}>Kijk goed: wat valt op?</h2>
-      </FadeUp>
+      {/* De som bovenaan; de q licht even op en de twee delen worden omcirkeld */}
       <FadeUp from={20}>
-        <div style={{ ...mathStyle, fontSize: 64 }}>
+        <div style={{ ...mathStyle, fontSize: 60 }}>
           <span style={{ fontStyle: 'italic' }}>m</span>(
-          <Circled from={140} color={rood}>
+          <Marker from={30} until={195}>
             <Q />
-          </Circled>
-          ) = 1 −{' '}
-          <Circled from={330} color={groen}>
-            <span>
-              (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
-            </span>
-          </Circled>
+          </Marker>
+          ) ={' '}
+          <span style={{ margin: '0 18px' }}>
+            <Circled from={240} color={groen}>
+              <span>1</span>
+            </Circled>
+          </span>
+          <span style={{ marginLeft: 10 }}>
+            <Circled from={300} color={rood}>
+              <span>
+                − (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
+              </span>
+            </Circled>
+          </span>
         </div>
       </FadeUp>
-      <FadeUp from={200}>
-        <Chip color={rood} bg={theme.accent2Light}>
-          de variabele is q — differentieer naar q
-        </Chip>
-      </FadeUp>
-      <FadeUp from={400}>
+      <FadeUp from={610}>{pijl}</FadeUp>
+      {/* De 1 doet niet meer mee */}
+      <FadeUp from={635}>
         <div style={{ ...mathStyle, fontSize: 56 }}>
-          (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup> = (3<Qp n={2} /> − 2){' '}
-          <span style={{ color: groen }}>·</span> (3<Qp n={2} /> − 2)
+          <FnQ naam="m" /> ={' '}
+          <CrossOut from={660}>
+            <span style={{ color: theme.textMuted }}>1</span>
+          </CrossOut>{' '}
+          − (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
         </div>
       </FadeUp>
-      <Pop from={580}>
-        <Chip color={groen} bg={theme.accentLight}>
-          een kwadraat is een product → productregel!
+      <FadeUp from={860}>{pijl}</FadeUp>
+      {/* Kwadraat uitgeschreven als product */}
+      <FadeUp from={885}>
+        <div style={{ ...mathStyle, fontSize: 56 }}>
+          <FnQ naam="m" /> ={' '}
+          <CrossOut from={885}>
+            <span style={{ color: theme.textMuted }}>1</span>
+          </CrossOut>{' '}
+          − (3<Qp n={2} /> − 2) <span style={{ color: rood }}>·</span> (3<Qp n={2} /> − 2)
+        </div>
+      </FadeUp>
+      <Pop from={1090}>
+        <Chip color={rood} bg={theme.accent2Light}>
+          Productregel!
         </Chip>
       </Pop>
-      <AafCorner pose={frame >= 140 ? 'point' : 'idle'} poseFrame={frame - 140} />
+      <AafCorner pose={frame >= 240 ? 'point' : 'idle'} poseFrame={frame - 240} />
     </Scene>
   )
 }
 
-/* ── Scène 3 · De losse delen (21,5 s) ──────────────────────────────── */
-export function Som29Delen() {
+/**
+ * Stap-chipje voor het stappenplan: verschijnt klein, en popt groot en
+ * groen op zodra de stap aan de beurt is (`activeAt`).
+ */
+function StapChip({
+  n,
+  activeAt,
+  children,
+}: {
+  n: number
+  activeAt: number
+  children: ReactNode
+}) {
+  const frame = useCurrentFrame()
+  const { fps } = useVideoConfig()
+  const actief = frame >= activeAt
+  const s = actief ? spring({ frame: frame - activeAt, fps, config: { damping: 9, stiffness: 190 } }) : 0
+  const scale = 1 + 0.16 * s
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        transform: `scale(${scale})`,
+        fontFamily: theme.fontSans,
+        fontSize: 27,
+        fontWeight: 600,
+        color: actief ? '#ffffff' : groen,
+        backgroundColor: actief ? groen : theme.accentLight,
+        borderRadius: 999,
+        padding: '8px 22px',
+        transition: 'none',
+      }}
+    >
+      Stap {n} · {children}
+    </span>
+  )
+}
+
+/* ── Scène 3 · Productregel + stappenplan (57 s) ────────────────────── */
+export function Som29Productregel() {
   const frame = useCurrentFrame()
   const deelKaart: CSSProperties = {
     ...kaartStijl,
     backgroundColor: theme.surface,
     borderColor: groen,
-    padding: '22px 56px',
-    gap: 14,
+    padding: '18px 48px',
+    gap: 10,
   }
-  return (
-    <Scene>
-      <FadeUp from={10}>
-        <h2 style={sceneTitelStijl}>De losse delen</h2>
-      </FadeUp>
-      <FadeUp from={20}>
-        <Opgave fontSize={60} />
-      </FadeUp>
-      <div style={{ display: 'flex', gap: 150 }}>
-        <FadeUp from={110}>
-          <div style={deelKaart}>
-            <div style={{ ...mathStyle, fontSize: 54 }}>1</div>
-            <div style={{ ...captionStyle, fontSize: 44 }}>↓</div>
-            <div style={{ ...mathStyle, fontSize: 54, color: theme.textMuted }}>0</div>
-            <p style={{ ...captionStyle, fontSize: 32, margin: 0 }}>een getal valt weg</p>
-          </div>
-        </FadeUp>
-        <FadeUp from={300}>
-          <div style={deelKaart}>
-            <div style={{ ...mathStyle, fontSize: 54 }}>
-              <FnQ naam="g" /> = 3<Qp n={2} /> − 2
-            </div>
-            <div style={{ ...captionStyle, fontSize: 44 }}>↓</div>
-            <div style={{ ...mathStyle, fontSize: 54, color: groen }}>
-              <FnQ naam="g" accent /> = 6<Q />
-            </div>
-            <p style={{ ...captionStyle, fontSize: 32, margin: 0 }}>
-              beide stukken van het product zijn hetzelfde
-            </p>
-          </div>
-        </FadeUp>
-      </div>
-      <AafCorner pose={frame >= 480 ? 'nod' : 'idle'} poseFrame={frame - 480} />
-    </Scene>
-  )
-}
-
-/* ── Scène 4 · Productregel op het kwadraat (33,3 s) ────────────────── */
-export function Som29Productregel() {
-  const frame = useCurrentFrame()
+  const formuleRegel: CSSProperties = { ...mathStyle, fontSize: 40 }
   return (
     <Scene>
       <FadeUp from={10}>
         <h2 style={sceneTitelStijl}>
-          <span style={{ color: rood }}>Productregel</span> op het kwadraat
+          De <span style={{ color: rood }}>productregel</span>
         </h2>
       </FadeUp>
-      <FadeUp from={80}>
+      {/* De regel altijd in hetzelfde format, met x */}
+      <FadeUp from={30}>
         <RegelKaart fontSize={40}>
-          <FnQ naam="f" /> = <FnQ naam="g" /> · <FnQ naam="g" />{' '}
-          <span style={{ color: groen }}>⟹</span> <FnQ naam="f" accent /> ={' '}
+          <Fn naam="f" vanX /> = <Fn naam="g" vanX /> · <Fn naam="h" vanX />{' '}
+          <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
           <span style={{ color: groen }}>
-            <FnQ naam="g" accent /> · <FnQ naam="g" /> + <FnQ naam="g" /> · <FnQ naam="g" accent />
+            <Fn naam="g" accent vanX /> · <Fn naam="h" vanX /> + <Fn naam="g" vanX /> ·{' '}
+            <Fn naam="h" accent vanX />
           </span>
         </RegelKaart>
       </FadeUp>
-      <FadeUp from={320}>
-        <div style={{ ...mathStyle, fontSize: 50, paddingBottom: 40 }}>
-          <FactorLabel label="g′(q) · g(q)" from={590}>
-            <span>
-              6<Q /> · (3<Qp n={2} /> − 2)
-            </span>
-          </FactorLabel>{' '}
-          +{' '}
-          <FactorLabel label="g(q) · g′(q)" from={590}>
-            <span>
-              (3<Qp n={2} /> − 2) · 6<Q />
-            </span>
-          </FactorLabel>
+      {/* Stappenplan: meteen in beeld, popt per stap groot op */}
+      <div style={{ display: 'flex', gap: 20 }}>
+        <Pop from={100}>
+          <StapChip n={1} activeAt={610}>
+            kies <span style={{ fontStyle: 'italic' }}>g</span> en{' '}
+            <span style={{ fontStyle: 'italic' }}>h</span>
+          </StapChip>
+        </Pop>
+        <Pop from={140}>
+          <StapChip n={2} activeAt={760}>
+            bepaal de afgeleiden
+          </StapChip>
+        </Pop>
+        <Pop from={180}>
+          <StapChip n={3} activeAt={860}>
+            vul de formule in
+          </StapChip>
+        </Pop>
+      </div>
+      {/* Onze eigen functie: zelfde regel, maar met q */}
+      <FadeUp from={330}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <div style={{ ...mathStyle, fontSize: 44 }}>
+            <FnQ naam="m" /> ={' '}
+            <CrossOut from={330}>
+              <span style={{ color: theme.textMuted }}>1</span>
+            </CrossOut>{' '}
+            − (3<Qp n={2} /> − 2) · (3<Qp n={2} /> − 2)
+          </div>
+          <p style={{ ...captionStyle, fontSize: 32, margin: 0 }}>
+            zelfde regel — bij ons is de variabele <em>q</em> in plaats van <em>x</em>
+          </p>
         </div>
       </FadeUp>
-      <Pop from={620}>
-        <Chip color={groen} bg={theme.accentLight}>
-          twee keer precies dezelfde term!
-        </Chip>
-      </Pop>
-      <Pop from={730}>
-        <div style={{ ...mathStyle, fontSize: 58 }}>
-          = <span style={{ color: groen }}>2</span> · 6<Q />
-          (3<Qp n={2} /> − 2)
-        </div>
-      </Pop>
-      <AafCorner
-        pose={frame >= 620 ? 'nod' : frame >= 100 ? 'point' : 'idle'}
-        poseFrame={frame >= 620 ? frame - 620 : frame - 100}
-      />
-    </Scene>
-  )
-}
-
-/* ── Scène 5 · De min ervoor (17 s) ─────────────────────────────────── */
-export function Som29Min() {
-  const frame = useCurrentFrame()
-  return (
-    <Scene>
-      <FadeUp from={10}>
-        <h2 style={sceneTitelStijl}>Vergeet de min niet</h2>
-      </FadeUp>
-      <FadeUp from={20}>
-        <div style={{ ...mathStyle, fontSize: 56 }}>
-          <FnQ naam="m" /> = 1{' '}
-          <Circled from={60} color={rood}>
-            <span style={{ color: rood }}>−</span>
-          </Circled>{' '}
-          (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
-        </div>
-      </FadeUp>
-      <FadeUp from={140}>
-        <div style={{ ...mathStyle, fontSize: 58 }}>
-          <FnQ naam="m" accent /> = <span style={{ color: rood }}>−</span>2 · 6<Q />
-          (3<Qp n={2} /> − 2)
-        </div>
-      </FadeUp>
-      <Pop from={290}>
-        <div style={{ ...mathStyle, fontSize: 66 }}>
-          <FnQ naam="m" accent /> = <span style={{ color: groen }}>−12</span>
-          <Q />
-          (3<Qp n={2} /> − 2)
-        </div>
-      </Pop>
-      <AafCorner pose={frame >= 420 ? 'jump' : 'idle'} poseFrame={frame - 420} />
-    </Scene>
-  )
-}
-
-/* ── Scène 6 · Samenvatting (20,5 s) ────────────────────────────────── */
-export function Som29Samenvatting() {
-  const frame = useCurrentFrame()
-  const itemStijl: CSSProperties = {
-    fontFamily: theme.fontSans,
-    fontSize: 44,
-    color: theme.text,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 24,
-    textAlign: 'left',
-  }
-  const nummerStijl: CSSProperties = { fontFamily: theme.fontSerif, color: groen, fontSize: 52 }
-  return (
-    <Scene>
-      <FadeUp from={10}>
-        <h2 style={{ ...titleStyle, fontSize: 72 }}>Samengevat</h2>
-      </FadeUp>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 30, maxWidth: 1180 }}>
-        <FadeUp from={60}>
-          <div style={itemStijl}>
-            <span style={nummerStijl}>1.</span>
-            <span>
-              Check de <strong>variabele</strong> — hier is dat <em>q</em>, geen <em>x</em>
-            </span>
+      <div style={{ display: 'flex', gap: 120 }}>
+        <FadeUp from={630}>
+          <div style={deelKaart}>
+            <div style={{ ...mathStyle, fontSize: 44 }}>
+              <FnQ naam="g" /> = 3<Qp n={2} /> − 2
+            </div>
+            <FadeUp from={780}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <div style={{ ...captionStyle, fontSize: 34 }}>↓</div>
+                <div style={{ ...mathStyle, fontSize: 44, color: groen }}>
+                  <FnQ naam="g" accent /> = 6<Q />
+                </div>
+              </div>
+            </FadeUp>
           </div>
         </FadeUp>
-        <FadeUp from={190}>
-          <div style={itemStijl}>
-            <span style={nummerStijl}>2.</span>
-            <span>
-              Een <strong>kwadraat is een product</strong> →{' '}
-              <strong style={{ color: rood }}>productregel</strong>
-            </span>
-          </div>
-        </FadeUp>
-        <FadeUp from={330}>
-          <div style={itemStijl}>
-            <span style={nummerStijl}>3.</span>
-            <span>
-              Een <strong>los getal</strong> valt weg bij het differentiëren
-            </span>
-          </div>
-        </FadeUp>
-        <FadeUp from={440}>
-          <div style={itemStijl}>
-            <span style={nummerStijl}>4.</span>
-            <span>
-              Staat er een <strong style={{ color: rood }}>min</strong> voor? Neem hem mee!
-            </span>
+        <FadeUp from={670}>
+          <div style={deelKaart}>
+            <div style={{ ...mathStyle, fontSize: 44 }}>
+              <FnQ naam="h" /> = 3<Qp n={2} /> − 2
+            </div>
+            <FadeUp from={820}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <div style={{ ...captionStyle, fontSize: 34 }}>↓</div>
+                <div style={{ ...mathStyle, fontSize: 44, color: groen }}>
+                  <FnQ naam="h" accent /> = 6<Q />
+                </div>
+              </div>
+            </FadeUp>
           </div>
         </FadeUp>
       </div>
-      <FadeUp from={540}>
-        <p style={{ ...captionStyle, fontFamily: theme.fontSerif, fontSize: 54, color: theme.text }}>
-          Succes!
-        </p>
-      </FadeUp>
-      <AafCorner pose={frame >= 520 ? 'wave' : 'idle'} poseFrame={frame - 520} />
+      {/* Stap 3: eerst de formule met g en h, dan ingevuld, dan het resultaat */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <FadeUp from={890}>
+          <div style={formuleRegel}>
+            <FnQ naam="m" accent /> = <span style={{ color: theme.textMuted }}>0</span> − (
+            <span style={{ color: groen }}>
+              <FnQ naam="g" accent />
+            </span>{' '}
+            · <FnQ naam="h" /> + <FnQ naam="g" /> ·{' '}
+            <span style={{ color: groen }}>
+              <FnQ naam="h" accent />
+            </span>
+            )
+          </div>
+        </FadeUp>
+        <FadeUp from={1170}>
+          <div style={formuleRegel}>
+            <FnQ naam="m" accent /> = <span style={{ color: theme.textMuted }}>0</span> − (
+            <span style={{ color: groen }}>
+              6<Q />
+            </span>{' '}
+            · (3<Qp n={2} /> − 2) + (3<Qp n={2} /> − 2) ·{' '}
+            <span style={{ color: groen }}>
+              6<Q />
+            </span>
+            )
+          </div>
+        </FadeUp>
+        <Pop from={1460}>
+          <div style={{ ...mathStyle, fontSize: 54 }}>
+            <FnQ naam="m" accent /> = <span style={{ color: groen }}>−12</span>
+            <Q />
+            (3<Qp n={2} /> − 2)
+          </div>
+        </Pop>
+      </div>
+      <AafCorner
+        pose={frame >= 1620 ? 'jump' : frame >= 780 ? 'nod' : frame >= 50 ? 'point' : 'idle'}
+        poseFrame={frame >= 1620 ? frame - 1620 : frame >= 780 ? frame - 780 : frame - 50}
+      />
     </Scene>
   )
 }

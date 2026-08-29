@@ -39,7 +39,7 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       title: 'Uitleg bij som 29',
       description:
         'm(q) = 1 − (3q² − 2)² differentiëren: kwadraat als product, en de min niet vergeten. Op verzoek!',
-      duration: '2:13',
+      duration: '1:43',
       src: `${STORAGE_BASE}/som-29.mp4`,
       clusterIds: [
         // De productregel · Kwadraat van een polynoom (het cluster van som 29)
