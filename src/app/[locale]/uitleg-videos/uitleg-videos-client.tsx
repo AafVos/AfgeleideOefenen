@@ -53,6 +53,7 @@ type Labels = {
   loginToPractice: string
   askTitle: string
   askIntro: string
+  askCta: string
   askPlaceholder: string
   askSend: string
   askThanks: string
@@ -88,10 +89,34 @@ export function UitlegVideosClient({
 }) {
   const active = videos.find((v) => v.slug === activeSlug) ?? null
 
+  /** Springt naar het vraagformulier onderaan en zet de cursor in het tekstvak. */
+  function naarVraagFormulier() {
+    const sectie = document.getElementById('vraag-stellen')
+    sectie?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    window.setTimeout(() => {
+      sectie?.querySelector('textarea')?.focus({ preventScroll: true })
+    }, 600)
+  }
+
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
-      <h1 className="font-serif text-3xl text-text sm:text-4xl">{labels.h1}</h1>
-      <p className="mt-2 max-w-2xl text-text-muted">{labels.intro}</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-serif text-3xl text-text sm:text-4xl">{labels.h1}</h1>
+          <p className="mt-2 max-w-2xl text-text-muted">{labels.intro}</p>
+        </div>
+        <div className="shrink-0 rounded-2xl border border-border bg-surface-2 p-4 sm:max-w-64">
+          <p className="font-serif text-base text-text">{labels.askTitle}</p>
+          <p className="mt-1 text-sm text-text-muted">{labels.askIntro}</p>
+          <button
+            type="button"
+            onClick={naarVraagFormulier}
+            className="mt-3 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/90"
+          >
+            {labels.askCta}
+          </button>
+        </div>
+      </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         {/* Speler (rechts op desktop, bovenaan op mobiel) */}
@@ -167,7 +192,10 @@ export function UitlegVideosClient({
       ) : null}
 
       {/* Vraag insturen */}
-      <section className="mt-12 rounded-2xl border border-border bg-surface-2 p-5 sm:p-7">
+      <section
+        id="vraag-stellen"
+        className="mt-12 scroll-mt-20 rounded-2xl border border-border bg-surface-2 p-5 sm:p-7"
+      >
         <h2 className="font-serif text-2xl text-text">{labels.askTitle}</h2>
         <p className="mt-1 text-sm text-text-muted">{labels.askIntro}</p>
         {isLoggedIn ? (

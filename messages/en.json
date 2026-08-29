@@ -566,6 +566,7 @@
     "askThanks": "Dank je! Grote kans dat jouw vraag een video wordt.",
     "loginToAsk": "Log in om een vraag in te sturen",
     "questionTile": "Vraag {n}",
-    "previousQuestion": "Vorige"
+    "previousQuestion": "Vorige",
+    "askCta": "Stel je vraag"
   }
 }
