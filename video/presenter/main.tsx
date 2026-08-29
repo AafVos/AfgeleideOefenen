@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { SOM29_CUES, type Cue } from '../src/cues'
-import { Som29Video } from '../src/Som29Video'
+import { SOM29_DUUR, Som29Video } from '../src/Som29Video'
 
 const CUES: Cue[] = SOM29_CUES
-const DUUR = 4117
+const DUUR = SOM29_DUUR
 const FPS = 30
 
 function Presenter() {
