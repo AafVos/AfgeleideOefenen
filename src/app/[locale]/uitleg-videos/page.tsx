@@ -91,6 +91,7 @@ export default async function UitlegVideosPage({ params, searchParams }: PagePro
       vragen={vragen}
       isLoggedIn={!!user}
       loginHref={`/${locale}/inloggen`}
+      registerHref={`/${locale}/registreren`}
       oefenHref={`/${locale}/oefenen`}
       labels={{
         h1: t('h1'),
@@ -117,7 +118,9 @@ export default async function UitlegVideosPage({ params, searchParams }: PagePro
         askPlaceholder: t('askPlaceholder'),
         askSend: t('askSend'),
         askThanks: t('askThanks'),
-        loginToAsk: t('loginToAsk'),
+        askNoAccount: t('askNoAccount'),
+        askLogin: t('askLogin'),
+        askRegister: t('askRegister'),
       }}
     />
   )
