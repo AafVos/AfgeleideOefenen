@@ -113,6 +113,7 @@ export default async function UitlegVideosPage({ params, searchParams }: PagePro
         loginToPractice: t('loginToPractice'),
         askTitle: t('askTitle'),
         askIntro: t('askIntro'),
+        askCta: t('askCta'),
         askPlaceholder: t('askPlaceholder'),
         askSend: t('askSend'),
         askThanks: t('askThanks'),
