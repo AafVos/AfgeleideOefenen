@@ -15,6 +15,7 @@ DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
 | `npm run render` | Rendert "Som-productmethode" naar `out/som-product.mp4`. |
 | `npm run render:regels` | Rendert "Somregel of productregel?" naar `out/somregel-of-productregel.mp4`. |
 | `npm run still -- --frame=200 out/still.png` | Rendert één frame als afbeelding. |
+| `npm run presenter` | Opent de presenter: klik zelf per animatiestap door de video (voor eigen voice-over inspreken), zie `VOICEOVER-som29.md`. |
 
 ## Structuur
 

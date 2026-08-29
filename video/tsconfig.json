@@ -7,7 +7,14 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["react"]
+    "types": [
+      "react",
+      "react-dom"
+    ]
   },
-  "include": ["src", "remotion.config.ts"]
+  "include": [
+    "src",
+    "presenter",
+    "remotion.config.ts"
+  ]
 }

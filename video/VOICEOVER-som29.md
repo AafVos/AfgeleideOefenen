@@ -4,6 +4,26 @@ Ingesproken door ElevenLabs-stem Emma. De tekst per scène staat (als bron) in
 `scripts/genereer-voiceover-som29.sh`; na een tekstwijziging: script draaien,
 fragmentduren checken en de scèneduren in `src/Som29Video.tsx` bijstellen.
 
+## Zelf inspreken met de presenter
+
+Wil je Emma vervangen door je eigen stem? Start de presenter:
+
+```bash
+cd video && npm run presenter
+```
+
+Er opent een pagina met de video die per animatiestap pauzeert: **spatie** (of
+"Volgende") speelt tot de volgende stap, ←/→ werken ook. Het geluid staat uit.
+
+1. Start per scène een audio-opname (bijv. Spraakmemo's) en klik al pratend
+   door de stappen van die scène (de balk onderin zegt wat er komt).
+2. Bewaar de opnames als `scene-1`, `scene-2`, `scene-3` (mp3 of m4a).
+3. Lever ze aan — dan worden ze gemonteerd en de scèneduren en beeldmomenten
+   op jouw tempo afgestemd.
+
+De cue-punten staan in `src/cues.ts`; houd ze synchroon met de `from`-waardes
+in `src/scenes-som29.tsx` als je scènes aanpast.
+
 ## Opbouw
 
 **Scène 1 · #29 (0:00 – 0:07)** — de opgave in beeld, Aaf zwaait.
