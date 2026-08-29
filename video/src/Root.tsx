@@ -1,7 +1,7 @@
 import { Composition } from 'remotion'
 
 import { RegelsVideo } from './RegelsVideo'
-import { Som29Video } from './Som29Video'
+import { SOM29_DUUR, Som29Video } from './Som29Video'
 import { SomProductVideo } from './SomProductVideo'
 
 export function RemotionRoot() {
@@ -18,7 +18,7 @@ export function RemotionRoot() {
       <Composition
         id="Som29"
         component={Som29Video}
-        durationInFrames={4117}
+        durationInFrames={SOM29_DUUR}
         fps={30}
         width={1920}
         height={1080}
