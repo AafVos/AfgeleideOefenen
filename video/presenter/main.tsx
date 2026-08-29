@@ -6,7 +6,7 @@ import { SOM29_CUES, type Cue } from '../src/cues'
 import { Som29Video } from '../src/Som29Video'
 
 const CUES: Cue[] = SOM29_CUES
-const DUUR = 3050
+const DUUR = 4117
 const FPS = 30
 
 function Presenter() {

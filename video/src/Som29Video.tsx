@@ -1,37 +1,33 @@
-import { Audio, Sequence, Series, staticFile } from 'remotion'
+import { Series } from 'remotion'
 
-import { Som29Herkennen, Som29Intro, Som29Productregel } from './scenes-som29'
-
-/** Voice-overfragment dat `delay` frames na de scènestart begint. */
-function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
-  return (
-    <Sequence from={delay}>
-      <Audio src={staticFile(`voiceover-som29/scene-${scene}.mp3`)} />
-    </Sequence>
-  )
-}
+import { Som29Herkennen, Som29Intro, Som29Productregel, t } from './scenes-som29'
 
 /**
- * "Uitleg bij som 29" — m(q) = 1 − (3q² − 2)² differentiëren
- * (102 s bij 30 fps = 3050 frames). Gemaakt op leerlingverzoek.
+ * "Uitleg bij som 29" — m(q) = 1 − (3q² − 2)² differentiëren.
+ * Tempo is geschaald via TEMPO in scenes-som29.tsx (ruimer, voor zelf
+ * inspreken); totaalduur = t(180) + t(1200) + t(1670) frames.
  *
- * Voice-over: public/voiceover-som29/ (Pauline), opnieuw genereren met
- * scripts/genereer-voiceover-som29.sh.
+ * Voice-over: wordt zelf ingesproken (script: VOICEOVER-som29.md).
+ * Eigen opnames monteren: zet ze als scene-1.mp3 t/m scene-3.mp3 in
+ * public/voiceover-som29/ en zet per scène een blok terug zoals:
+ *
+ *   <Sequence from={15}><Audio src={staticFile('voiceover-som29/scene-1.mp3')} /></Sequence>
+ *
+ * (import { Audio, Sequence, staticFile } from 'remotion')
  */
+export const SOM29_DUUR = t(180) + t(1200) + t(1670)
+
 export function Som29Video() {
   return (
     <Series>
-      <Series.Sequence durationInFrames={180}>
+      <Series.Sequence durationInFrames={t(180)}>
         <Som29Intro />
-        <Stem scene={1} delay={30} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={1200}>
+      <Series.Sequence durationInFrames={t(1200)}>
         <Som29Herkennen />
-        <Stem scene={2} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={1670}>
+      <Series.Sequence durationInFrames={t(1670)}>
         <Som29Productregel />
-        <Stem scene={3} />
       </Series.Sequence>
     </Series>
   )

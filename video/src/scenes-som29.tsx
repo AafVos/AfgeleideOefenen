@@ -21,18 +21,26 @@ import {
 const groen = theme.accent
 const rood = theme.accent2
 
+/**
+ * Tempo-knop: 1 = het oorspronkelijke (Pauline-)tempo. Hoger = ruimer,
+ * zodat je bij het zelf inspreken genoeg tijd hebt. Scèneduren in
+ * Som29Video.tsx en de cues in cues.ts schalen mee via dezelfde factor.
+ */
+export const TEMPO = 1.35
+export const t = (n: number) => Math.round(n * TEMPO)
+
 /* ── Scène 1 · #29 (7 s) ────────────────────────────────────────────── */
 export function Som29Intro() {
   const frame = useCurrentFrame()
   return (
     <Scene>
-      <FadeUp from={10}>
+      <FadeUp from={t(10)}>
         <h1 style={{ ...titleStyle, color: groen }}>#29</h1>
       </FadeUp>
-      <FadeUp from={40}>
+      <FadeUp from={t(40)}>
         <Opgave />
       </FadeUp>
-      <AafCorner pose={frame > 45 ? 'wave' : 'idle'} poseFrame={frame - 45} enterAt={10} />
+      <AafCorner pose={frame > 45 ? 'wave' : 'idle'} poseFrame={frame - t(45)} enterAt={10} />
     </Scene>
   )
 }
@@ -43,26 +51,26 @@ export function Som29Herkennen() {
   const pijl = <div style={{ ...captionStyle, fontSize: 36 }}>↓</div>
   return (
     <Scene>
-      <FadeUp from={10}>
+      <FadeUp from={t(10)}>
         <h2 style={sceneTitelStijl}>
           Stap 0 · <span style={{ color: groen }}>analyseer de vorm</span>
         </h2>
       </FadeUp>
       {/* De som bovenaan; de q licht even op en de twee delen worden omcirkeld */}
-      <FadeUp from={20}>
+      <FadeUp from={t(20)}>
         <div style={{ ...mathStyle, fontSize: 54 }}>
           <span style={{ fontStyle: 'italic' }}>m</span>(
-          <Marker from={80} until={265}>
+          <Marker from={t(80)} until={t(265)}>
             <Q />
           </Marker>
           ) ={' '}
           <span style={{ margin: '0 18px' }}>
-            <Circled from={300} color={groen}>
+            <Circled from={t(300)} color={groen}>
               <span>1</span>
             </Circled>
           </span>
           <span style={{ marginLeft: 10 }}>
-            <Circled from={375} color={rood}>
+            <Circled from={t(375)} color={rood}>
               <span>
                 − (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
               </span>
@@ -70,34 +78,34 @@ export function Som29Herkennen() {
           </span>
         </div>
       </FadeUp>
-      <FadeUp from={680}>{pijl}</FadeUp>
+      <FadeUp from={t(680)}>{pijl}</FadeUp>
       {/* De 1 doet niet meer mee */}
-      <FadeUp from={705}>
+      <FadeUp from={t(705)}>
         <div style={{ ...mathStyle, fontSize: 50 }}>
           <FnQ naam="m" /> ={' '}
-          <CrossOut from={735}>
+          <CrossOut from={t(735)}>
             <span style={{ color: theme.textMuted }}>1</span>
           </CrossOut>{' '}
           − (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
         </div>
       </FadeUp>
-      <FadeUp from={915}>{pijl}</FadeUp>
+      <FadeUp from={t(915)}>{pijl}</FadeUp>
       {/* Kwadraat uitgeschreven als product */}
-      <FadeUp from={940}>
+      <FadeUp from={t(940)}>
         <div style={{ ...mathStyle, fontSize: 50 }}>
           <FnQ naam="m" /> ={' '}
-          <CrossOut from={940}>
+          <CrossOut from={t(940)}>
             <span style={{ color: theme.textMuted }}>1</span>
           </CrossOut>{' '}
           − (3<Qp n={2} /> − 2) <span style={{ color: rood }}>·</span> (3<Qp n={2} /> − 2)
         </div>
       </FadeUp>
-      <Pop from={1105}>
+      <Pop from={t(1105)}>
         <Chip color={rood} bg={theme.accent2Light}>
           Productregel!
         </Chip>
       </Pop>
-      <AafCorner pose={frame >= 300 ? 'point' : 'idle'} poseFrame={frame - 300} />
+      <AafCorner pose={frame >= t(300) ? 'point' : 'idle'} poseFrame={frame - t(300)} />
     </Scene>
   )
 }
@@ -131,12 +139,12 @@ export function Som29Productregel() {
   return (
     <Scene>
       {/* Regel en onze som staan klaar zodra de scène begint */}
-      <FadeUp from={5}>
+      <FadeUp from={t(5)}>
         <h2 style={sceneTitelStijl}>
           De <span style={{ color: rood }}>productregel</span>
         </h2>
       </FadeUp>
-      <FadeUp from={5}>
+      <FadeUp from={t(5)}>
         <RegelKaart fontSize={38}>
           <Fn naam="f" vanX /> = <Fn naam="g" vanX /> · <Fn naam="h" vanX />{' '}
           <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
@@ -146,10 +154,10 @@ export function Som29Productregel() {
           </span>
         </RegelKaart>
       </FadeUp>
-      <FadeUp from={5}>
+      <FadeUp from={t(5)}>
         <div style={{ ...mathStyle, fontSize: 42 }}>
           <FnQ naam="m" /> ={' '}
-          <CrossOut from={5}>
+          <CrossOut from={t(5)}>
             <span style={{ color: theme.textMuted }}>1</span>
           </CrossOut>{' '}
           − (3<Qp n={2} /> − 2) · (3<Qp n={2} /> − 2)
@@ -157,12 +165,12 @@ export function Som29Productregel() {
       </FadeUp>
       {/* Stap 1: label links, g en h rechts ernaast */}
       <div style={rijStijl}>
-        <Pop from={210}>
+        <Pop from={t(210)}>
           <StapLabel>
             Stap 1 · kies <em>g</em> en <em>h</em>
           </StapLabel>
         </Pop>
-        <FadeUp from={260}>
+        <FadeUp from={t(260)}>
           <div style={{ ...mathStyle, fontSize: 38 }}>
             <FnQ naam="g" /> = 3<Qp n={2} /> − 2
             <span style={{ ...captionStyle, fontSize: 30, margin: '0 26px' }}>en</span>
@@ -172,12 +180,12 @@ export function Som29Productregel() {
       </div>
       {/* Stap 2: de afgeleiden ernaast */}
       <div style={rijStijl}>
-        <Pop from={400}>
+        <Pop from={t(400)}>
           <StapLabel>
             Stap 2 · bereken <em>g</em>′ en <em>h</em>′
           </StapLabel>
         </Pop>
-        <FadeUp from={450}>
+        <FadeUp from={t(450)}>
           <div style={{ ...mathStyle, fontSize: 38, color: groen }}>
             <FnQ naam="g" accent /> = 6<Q />
             <span style={{ ...captionStyle, fontSize: 30, margin: '0 26px' }}>en</span>
@@ -187,11 +195,11 @@ export function Som29Productregel() {
       </div>
       {/* Stap 3: uitschrijven, invullen, uitrekenen, uitkomst */}
       <div style={{ ...rijStijl, alignItems: 'flex-start' }}>
-        <Pop from={560}>
+        <Pop from={t(560)}>
           <StapLabel>Stap 3 · vul de formule in</StapLabel>
         </Pop>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <FadeUp from={620}>
+          <FadeUp from={t(620)}>
             <div style={formuleRegel}>
               <FnQ naam="m" accent /> = <span style={{ color: theme.textMuted }}>0</span> − (
               <span style={{ color: groen }}>
@@ -204,7 +212,7 @@ export function Som29Productregel() {
               )
             </div>
           </FadeUp>
-          <FadeUp from={905}>
+          <FadeUp from={t(905)}>
             <div style={formuleRegel}>
               <FnQ naam="m" accent /> = <span style={{ color: theme.textMuted }}>0</span> − (
               <span style={{ color: groen }}>
@@ -217,13 +225,13 @@ export function Som29Productregel() {
               )
             </div>
           </FadeUp>
-          <FadeUp from={1300}>
+          <FadeUp from={t(1300)}>
             <div style={formuleRegel}>
               <FnQ naam="m" accent /> = −<span style={{ color: groen }}>2</span> · 6<Q />
               (3<Qp n={2} /> − 2)
             </div>
           </FadeUp>
-          <Pop from={1450}>
+          <Pop from={t(1450)}>
             <div style={{ ...mathStyle, fontSize: 48 }}>
               <FnQ naam="m" accent /> = <span style={{ color: groen }}>−12</span>
               <Q />
@@ -233,8 +241,8 @@ export function Som29Productregel() {
         </div>
       </div>
       <AafCorner
-        pose={frame >= 1470 ? 'jump' : frame >= 450 ? 'nod' : frame >= 30 ? 'point' : 'idle'}
-        poseFrame={frame >= 1470 ? frame - 1470 : frame >= 450 ? frame - 450 : frame - 30}
+        pose={frame >= t(1470) ? 'jump' : frame >= t(450) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
+        poseFrame={frame >= t(1470) ? frame - t(1470) : frame >= t(450) ? frame - t(450) : frame - t(30)}
       />
     </Scene>
   )
