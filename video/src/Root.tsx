@@ -18,7 +18,7 @@ export function RemotionRoot() {
       <Composition
         id="Som29"
         component={Som29Video}
-        durationInFrames={3080}
+        durationInFrames={3050}
         fps={30}
         width={1920}
         height={1080}

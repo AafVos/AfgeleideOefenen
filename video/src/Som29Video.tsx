@@ -13,23 +13,23 @@ function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
 
 /**
  * "Uitleg bij som 29" — m(q) = 1 − (3q² − 2)² differentiëren
- * (103 s bij 30 fps = 3080 frames). Gemaakt op leerlingverzoek.
+ * (102 s bij 30 fps = 3050 frames). Gemaakt op leerlingverzoek.
  *
- * Voice-over: public/voiceover-som29/ (Emma), opnieuw genereren met
+ * Voice-over: public/voiceover-som29/ (Pauline), opnieuw genereren met
  * scripts/genereer-voiceover-som29.sh.
  */
 export function Som29Video() {
   return (
     <Series>
-      <Series.Sequence durationInFrames={210}>
+      <Series.Sequence durationInFrames={180}>
         <Som29Intro />
         <Stem scene={1} delay={30} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={1170}>
+      <Series.Sequence durationInFrames={1200}>
         <Som29Herkennen />
         <Stem scene={2} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={1700}>
+      <Series.Sequence durationInFrames={1670}>
         <Som29Productregel />
         <Stem scene={3} />
       </Series.Sequence>
