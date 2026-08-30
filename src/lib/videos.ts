@@ -1,9 +1,18 @@
 import { SITE, type SiteId } from '@/config/site'
 
+/**
+ * `algemeen` legt een onderwerp of regelkeuze uit; `vraaguitwerking` werkt één
+ * opgave uit, meestal op verzoek van een leerling.
+ */
+export type VideoSoort = 'algemeen' | 'vraaguitwerking'
+
 export type UitlegVideo = {
   slug: string
   title: string
   description: string
+  soort: VideoSoort
+  /** Hoofdstuk waar de video bij hoort, bv. "H2". Null = niet hoofdstukgebonden. */
+  chapter: string | null
   /** Weergaveduur, bv. "2:21". */
   duration: string
   /** Publieke mp4-URL (Supabase Storage, bucket `videos` op prod). */
@@ -29,7 +38,9 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       title: 'Somregel of productregel?',
       description:
         'Wanneer gebruik je welke regel, en hoe de somregel binnen de productregel terugkomt.',
-      duration: '2:21',
+      soort: 'algemeen',
+      chapter: 'H2',
+      duration: '2:20',
       src: `${STORAGE_BASE}/somregel-of-productregel.mp4`,
       clusterIds: [
         // Termsgewijs differentiëren · Polynoom differentiëren (somregel)
@@ -43,7 +54,9 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       title: 'Uitleg bij #29 (H2)',
       description:
         'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
-      duration: '2:09',
+      soort: 'vraaguitwerking',
+      chapter: 'H2',
+      duration: '2:14',
       src: `${STORAGE_BASE}/som-29.mp4`,
       clusterIds: [
         // De productregel · Kwadraat van een polynoom (het cluster van som 29)
@@ -55,6 +68,8 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       title: 'Uitleg bij #30 (H2)',
       description:
         'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
+      soort: 'vraaguitwerking',
+      chapter: 'H2',
       duration: '2:35',
       src: `${STORAGE_BASE}/som-30.mp4`,
       clusterIds: [
@@ -67,6 +82,8 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       title: 'Uitleg bij #34 (H2)',
       description:
         'Hoofdstuk 2, som 34: f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel. Op verzoek!',
+      soort: 'vraaguitwerking',
+      chapter: 'H2',
       duration: '1:20',
       src: `${STORAGE_BASE}/som-34.mp4`,
       clusterIds: [
@@ -80,4 +97,26 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
 
 export function getUitlegVideos(): UitlegVideo[] {
   return VIDEOS[SITE]
+}
+
+/** De hoofdstukken waar video's bij horen, in de volgorde H2, H6, H7, H9. */
+export function getVideoChapters(): string[] {
+  const uniek = new Set(
+    VIDEOS[SITE].map((v) => v.chapter).filter((c): c is string => c !== null),
+  )
+  return [...uniek].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
+}
+
+/**
+ * De uitlegvideo die bij een cluster hoort, of null. Zo kan de oefenpagina bij
+ * een vraag laten zien dat er uitleg over dat onderwerp klaarstaat.
+ * Hoort een cluster bij meerdere video's, dan wint de laatst toegevoegde.
+ */
+export function getVideoForCluster(clusterId: string | null): UitlegVideo | null {
+  if (!clusterId) return null
+  const videos = VIDEOS[SITE]
+  for (let i = videos.length - 1; i >= 0; i--) {
+    if (videos[i].clusterIds.includes(clusterId)) return videos[i]
+  }
+  return null
 }

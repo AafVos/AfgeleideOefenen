@@ -112,7 +112,8 @@ export async function SiteHeader({ locale }: { locale: string }) {
   const videosLink = (
     <Link
       href={`/${locale}/uitleg-videos`}
-      className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+      data-tour="videos"
+      className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
     >
       <IconPlayCircle />
       {t('videos')}
@@ -146,7 +147,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
               <Link
                 href={`/${locale}/zelf-toets`}
                 data-tour="zelftoets"
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
                 <IconClipboardCheck />
                 {t('zelfToets')}
@@ -154,7 +155,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
               <Link
                 href={`/${locale}/dashboard`}
                 data-tour="voortgang"
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
               >
                 <IconChart />
                 {t('dashboard')}
@@ -162,7 +163,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
               {role === 'admin' && (
                 <Link
                   href="/admin"
-                  className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+                  className="shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
                 >
                   {t('admin')}
                 </Link>

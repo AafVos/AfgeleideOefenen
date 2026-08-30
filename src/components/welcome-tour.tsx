@@ -146,6 +146,7 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
     () => [
       { text: t('welcome') },
       { target: 'theorie', text: t('stepTheorie') },
+      { target: 'videos', text: t('stepVideos') },
       { target: 'oefenen', text: t('stepOefenen') },
       { target: 'zelftoets', text: t('stepZelfToets') },
       { target: 'voortgang', text: t('stepVoortgang') },

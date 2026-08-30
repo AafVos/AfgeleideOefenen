@@ -83,16 +83,16 @@ export function RegelsIntro() {
   const frame = useCurrentFrame()
   return (
     <Scene>
-      <FadeUp from={60}>
+      <FadeUp from={56}>
         <h1 style={titleStyle}>
           <span style={{ color: groen }}>Somregel</span> of{' '}
           <span style={{ color: rood }}>productregel</span>?
         </h1>
       </FadeUp>
-      <FadeUp from={130}>
+      <FadeUp from={118}>
         <p style={captionStyle}>kijk hoe de functie is geplakt</p>
       </FadeUp>
-      <AafCorner pose={frame > 45 ? 'wave' : 'idle'} poseFrame={frame - 45} enterAt={10} />
+      <AafCorner pose={frame > 43 ? 'wave' : 'idle'} poseFrame={frame - 43} enterAt={10} />
     </Scene>
   )
 }
@@ -124,7 +124,7 @@ export function RegelsLijm() {
           <div style={kaartStijl}>
             <div style={{ ...mathStyle, fontSize: 72 }}>
               (<Xp n={2} /> − 4){' '}
-              <Circled from={270} color={rood}>
+              <Circled from={271} color={rood}>
                 <span style={{ color: rood }}>·</span>
               </Circled>{' '}
               (<Xp n={3} /> + 2<X />)
@@ -164,20 +164,20 @@ export function RegelsSom() {
           <Fn naam="g" accent vanX /> + <Fn naam="h" accent vanX />
         </RegelKaart>
       </FadeUp>
-      <FadeUp from={430}>
+      <FadeUp from={434}>
         <div style={{ ...mathStyle, fontSize: 68, paddingBottom: 40 }}>
           <Fn naam="f" vanX /> ={' '}
-          <FactorLabel label="g(x)" from={560}>
+          <FactorLabel label="g(x)" from={565}>
             <Xp n={3} />
           </FactorLabel>{' '}
           +{' '}
-          <FactorLabel label="h(x)" from={560}>
+          <FactorLabel label="h(x)" from={565}>
             5<Xp n={2} />
           </FactorLabel>
         </div>
       </FadeUp>
       <div style={{ display: 'flex', gap: 150 }}>
-        <FadeUp from={760}>
+        <FadeUp from={767}>
           <div style={termKaart}>
             <div style={{ ...mathStyle, fontSize: 54 }}>
               <Fn naam="g" vanX /> = <Xp n={3} />
@@ -188,7 +188,7 @@ export function RegelsSom() {
             </div>
           </div>
         </FadeUp>
-        <FadeUp from={860}>
+        <FadeUp from={868}>
           <div style={termKaart}>
             <div style={{ ...mathStyle, fontSize: 54 }}>
               <Fn naam="h" vanX /> = 5<Xp n={2} />
@@ -200,13 +200,13 @@ export function RegelsSom() {
           </div>
         </FadeUp>
       </div>
-      <Pop from={1050}>
+      <Pop from={1059}>
         <div style={{ ...mathStyle, fontSize: 64 }}>
           <Fn naam="f" accent vanX /> = 3<Xp n={2} />{' '}
           <span style={{ color: groen }}>+</span> 10<X />
         </div>
       </Pop>
-      <AafCorner pose={frame >= 1070 ? 'nod' : 'idle'} poseFrame={frame - 1070} />
+      <AafCorner pose={frame >= 1079 ? 'nod' : 'idle'} poseFrame={frame - 1079} />
     </Scene>
   )
 }
@@ -283,7 +283,7 @@ export function RegelsProduct() {
           <span style={{ color: rood }}>Productregel</span>
         </h2>
       </FadeUp>
-      <FadeUp from={50}>
+      <FadeUp from={49}>
         <RegelKaart fontSize={42}>
           <Fn naam="f" vanX /> = <Fn naam="g" vanX /> · <Fn naam="h" vanX />{' '}
           <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
@@ -293,37 +293,37 @@ export function RegelsProduct() {
           </span>
         </RegelKaart>
       </FadeUp>
-      <FadeUp from={470}>
+      <FadeUp from={463}>
         <div style={{ ...mathStyle, fontSize: 60, paddingBottom: 40 }}>
           <Fn naam="f" vanX /> ={' '}
-          <FactorLabel label="g(x)" from={530}>
+          <FactorLabel label="g(x)" from={523}>
             (<Xp n={2} /> − 4)
           </FactorLabel>{' '}
           ·{' '}
-          <FactorLabel label="h(x)" from={530}>
+          <FactorLabel label="h(x)" from={523}>
             (<Xp n={3} /> + 2<X />)
           </FactorLabel>
         </div>
       </FadeUp>
       <div style={{ display: 'flex', gap: 150 }}>
-        <FadeUp from={870}>
+        <FadeUp from={858}>
           <div style={deelKaart}>
             <div style={{ ...mathStyle, fontSize: 50 }}>
               <Fn naam="g" vanX /> = <Xp n={2} /> − 4
             </div>
-            <SomBadge from={960} />
+            <SomBadge from={946} />
             <div style={{ ...captionStyle, fontSize: 44 }}>↓</div>
             <div style={{ ...mathStyle, fontSize: 50, color: groen }}>
               <Fn naam="g" accent vanX /> = 2<X />
             </div>
           </div>
         </FadeUp>
-        <FadeUp from={1170}>
+        <FadeUp from={1153}>
           <div style={deelKaart}>
             <div style={{ ...mathStyle, fontSize: 50 }}>
               <Fn naam="h" vanX /> = <Xp n={3} /> + 2<X />
             </div>
-            <SomBadge from={1290} />
+            <SomBadge from={1272} />
             <div style={{ ...captionStyle, fontSize: 44 }}>↓</div>
             <div style={{ ...mathStyle, fontSize: 50, color: groen }}>
               <Fn naam="h" accent vanX /> = 3<Xp n={2} /> + 2
@@ -331,15 +331,15 @@ export function RegelsProduct() {
           </div>
         </FadeUp>
       </div>
-      <Pop from={1550}>
+      <Pop from={1528}>
         <div style={{ ...mathStyle, fontSize: 54 }}>
           <Fn naam="f" accent vanX /> = <span style={{ color: groen }}>2<X /></span>(<Xp n={3} /> + 2
           <X />) + (<Xp n={2} /> − 4)<span style={{ color: groen }}>(3<Xp n={2} /> + 2)</span>
         </div>
       </Pop>
       <AafCorner
-        pose={frame >= 1580 ? 'jump' : frame >= 70 ? 'point' : 'idle'}
-        poseFrame={frame >= 1580 ? frame - 1580 : frame - 70}
+        pose={frame >= 1557 ? 'jump' : frame >= 69 ? 'point' : 'idle'}
+        poseFrame={frame >= 1557 ? frame - 1557 : frame - 69}
       />
     </Scene>
   )
@@ -364,7 +364,7 @@ export function RegelsSamenvatting() {
         <h2 style={{ ...titleStyle, fontSize: 72 }}>Samengevat</h2>
       </FadeUp>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 34, maxWidth: 1180 }}>
-        <FadeUp from={40}>
+        <FadeUp from={41}>
           <div style={itemStijl}>
             <span style={nummerStijl}>1.</span>
             <span>
@@ -373,7 +373,7 @@ export function RegelsSamenvatting() {
             </span>
           </div>
         </FadeUp>
-        <FadeUp from={250}>
+        <FadeUp from={257}>
           <div style={itemStijl}>
             <span style={nummerStijl}>2.</span>
             <span>
@@ -383,12 +383,12 @@ export function RegelsSamenvatting() {
           </div>
         </FadeUp>
       </div>
-      <FadeUp from={400}>
+      <FadeUp from={412}>
         <p style={{ ...captionStyle, fontFamily: theme.fontSerif, fontSize: 54, color: theme.text }}>
           Succes!
         </p>
       </FadeUp>
-      <AafCorner pose={frame >= 380 ? 'wave' : 'idle'} poseFrame={frame - 380} />
+      <AafCorner pose={frame >= 391 ? 'wave' : 'idle'} poseFrame={frame - 391} />
     </Scene>
   )
 }

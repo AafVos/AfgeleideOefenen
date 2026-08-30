@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source .env
 
-VOICE_ID="${VOICE_ID:-cgSgspJ2msm6clMCkdW9}" # Jessica; wissel via VOICE_ID=... voor een andere stem
+VOICE_ID="${VOICE_ID:-6UGZSawYvSTRIMHxH2uW}" # Pauline (native NL); wissel via VOICE_ID=...
 MODEL="eleven_multilingual_v2"
 UIT="public/voiceover"
 mkdir -p "$UIT"

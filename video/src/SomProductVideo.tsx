@@ -19,36 +19,36 @@ function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
 }
 
 /**
- * Volledige uitlegvideo (98 s bij 30 fps = 2940 frames).
+ * Volledige uitlegvideo (94 s bij 30 fps = 2825 frames).
  * Tijden per scène staan ook in VOICEOVER.md — houd die synchroon.
  *
- * De mp3's in public/voiceover/ komen uit ElevenLabs (stem "Jessica");
+ * De mp3's in public/voiceover/ komen uit ElevenLabs (stem "Pauline");
  * opnieuw genereren kan met scripts/genereer-voiceover.sh.
  */
 export function SomProductVideo() {
   return (
     <Series>
-      <Series.Sequence durationInFrames={300}>
+      <Series.Sequence durationInFrames={265}>
         <SceneIntro />
         <Stem scene={1} delay={30} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={450}>
+      <Series.Sequence durationInFrames={404}>
         <SceneKern />
         <Stem scene={2} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={600}>
+      <Series.Sequence durationInFrames={557}>
         <SceneZoeken />
         <Stem scene={3} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={330}>
+      <Series.Sequence durationInFrames={289}>
         <SceneOplossen />
         <Stem scene={4} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={600}>
+      <Series.Sequence durationInFrames={655}>
         <SceneWanneerNiet />
         <Stem scene={5} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={660}>
+      <Series.Sequence durationInFrames={655}>
         <SceneSamenvatting />
         <Stem scene={6} />
       </Series.Sequence>

@@ -12,11 +12,14 @@ import type {
   TopicInfo,
 } from '@/lib/practice/chapter-overview'
 
+import { getVideoForCluster } from '@/lib/videos'
+
 import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
 import { StudyCard } from './study-card'
 
 type Question = {
   id: string
+  cluster_id: string | null
   latex_body: string | null
   difficulty: 1 | 2 | 3
   steps: Array<{ id: string; step_order: number; step_description: string }>
@@ -565,6 +568,7 @@ export function OefenenClient({
                     question={question}
                     steps={question.steps}
                     nextHref={nextHref}
+                    video={getVideoForCluster(question.cluster_id)}
                     questionNumber={
                       chapterGroups
                         .flatMap((g) => g.tiles)

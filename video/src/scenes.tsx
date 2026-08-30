@@ -31,17 +31,17 @@ export function SceneIntro() {
   const frame = useCurrentFrame()
   return (
     <Scene>
-      <FadeUp from={60}>
+      <FadeUp from={55}>
         <h1 style={titleStyle}>
           Wanneer kies je de
           <br />
           <span style={{ color: groen }}>som-productmethode</span>?
         </h1>
       </FadeUp>
-      <FadeUp from={130}>
+      <FadeUp from={113}>
         <p style={captionStyle}>kwadratische vergelijkingen oplossen</p>
       </FadeUp>
-      <AafCorner pose={frame > 45 ? 'wave' : 'idle'} poseFrame={frame - 45} enterAt={10} />
+      <AafCorner pose={frame > 42 ? 'wave' : 'idle'} poseFrame={frame - 42} enterAt={10} />
     </Scene>
   )
 }
@@ -49,12 +49,12 @@ export function SceneIntro() {
 /* ── Scène 2 · Kijk naar de vergelijking (15 s) ─────────────────────── */
 export function SceneKern() {
   const frame = useCurrentFrame()
-  const pose = frame >= 110 ? 'point' : 'idle'
+  const pose = frame >= 97 ? 'point' : 'idle'
   return (
     <Scene>
-      <FadeUp from={20}>
+      <FadeUp from={19}>
         <div style={mathStyle}>
-          <Circled from={120}>
+          <Circled from={106}>
             <X2 />
           </Circled>
           <span> + 7</span>
@@ -62,13 +62,13 @@ export function SceneKern() {
           <span> + 12 = 0</span>
         </div>
       </FadeUp>
-      <FadeUp from={160}>
+      <FadeUp from={140}>
         <p style={captionStyle}>
           er staat <strong style={{ color: theme.text }}>geen getal</strong> voor{' '}
           <span style={{ fontFamily: theme.fontSerif }}>x²</span> &nbsp;→&nbsp; som-product kan!
         </p>
       </FadeUp>
-      <AafCorner pose={pose} poseFrame={frame - 110} />
+      <AafCorner pose={pose} poseFrame={frame - 97} />
     </Scene>
   )
 }
@@ -86,7 +86,7 @@ export function SceneZoeken() {
   } as const
   return (
     <Scene>
-      <FadeUp from={0}>
+      <FadeUp from={1}>
         <div style={{ ...mathStyle, fontSize: 84 }}>
           <X2 />
           <span> + </span>
@@ -97,7 +97,7 @@ export function SceneZoeken() {
           <span> = 0</span>
         </div>
       </FadeUp>
-      <FadeUp from={60} style={{ display: 'flex', gap: 32 }}>
+      <FadeUp from={56} style={{ display: 'flex', gap: 32 }}>
         <Chip color={groen} bg={theme.accentLight}>
           keer elkaar: 12
         </Chip>
@@ -106,35 +106,35 @@ export function SceneZoeken() {
         </Chip>
       </FadeUp>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 12 }}>
-        <FadeUp from={150}>
+        <FadeUp from={138}>
           <div style={rijStijl}>
             <span>1 × 12</span>
             <span style={{ ...captionStyle, fontSize: 48 }}>som 13</span>
             <Kruis />
           </div>
         </FadeUp>
-        <FadeUp from={260}>
+        <FadeUp from={239}>
           <div style={rijStijl}>
             <span>2 × 6</span>
             <span style={{ ...captionStyle, fontSize: 48 }}>som 8</span>
             <Kruis />
           </div>
         </FadeUp>
-        <FadeUp from={370}>
+        <FadeUp from={340}>
           <div style={rijStijl}>
             <span style={{ marginRight: 18 }}>
-              <Circled from={445}>
+              <Circled from={408}>
                 <span>3 × 4</span>
               </Circled>
             </span>
             <span style={{ ...captionStyle, fontSize: 48 }}>som 7</span>
-            <Pop from={440}>
+            <Pop from={404}>
               <Vink />
             </Pop>
           </div>
         </FadeUp>
       </div>
-      <AafCorner pose={frame >= 440 ? 'nod' : 'idle'} poseFrame={frame - 440} />
+      <AafCorner pose={frame >= 404 ? 'nod' : 'idle'} poseFrame={frame - 404} />
     </Scene>
   )
 }
@@ -150,17 +150,17 @@ export function SceneOplossen() {
           <X /> + <span style={{ color: groen }}>4</span>) = 0
         </div>
       </FadeUp>
-      <Pop from={110}>
+      <Pop from={95}>
         <div style={{ ...mathStyle, fontSize: 84 }}>
           <X /> = −3 <span style={{ color: theme.textMuted, fontSize: 60 }}>of</span> <X /> = −4
         </div>
       </Pop>
-      <FadeUp from={190}>
+      <FadeUp from={162}>
         <p style={captionStyle}>
           check: 3 × 4 = 12 <Vink /> &nbsp;en&nbsp; 3 + 4 = 7 <Vink />
         </p>
       </FadeUp>
-      <AafCorner pose={frame >= 130 ? 'jump' : 'idle'} poseFrame={frame - 130} />
+      <AafCorner pose={frame >= 112 ? 'jump' : 'idle'} poseFrame={frame - 112} />
     </Scene>
   )
 }
@@ -168,14 +168,14 @@ export function SceneOplossen() {
 /* ── Scène 5 · Wanneer níét? (20 s) ─────────────────────────────────── */
 export function SceneWanneerNiet() {
   const frame = useCurrentFrame()
-  const pose = frame >= 430 ? 'point' : frame >= 200 ? 'think' : 'idle'
-  const poseFrame = frame >= 430 ? frame - 430 : frame - 200
+  const pose = frame >= 475 ? 'point' : frame >= 220 ? 'think' : 'idle'
+  const poseFrame = frame >= 475 ? frame - 475 : frame - 220
   return (
     <Scene>
-      <FadeUp from={10}>
+      <FadeUp from={9}>
         <h2 style={{ ...titleStyle, fontSize: 64 }}>Maar soms lukt het niet…</h2>
       </FadeUp>
-      <FadeUp from={60}>
+      <FadeUp from={65}>
         <div style={{ ...mathStyle, fontSize: 84 }}>
           <X2 />
           <span> + </span>
@@ -186,7 +186,7 @@ export function SceneWanneerNiet() {
           <span> = 0</span>
         </div>
       </FadeUp>
-      <FadeUp from={170}>
+      <FadeUp from={187}>
         <div
           style={{
             fontFamily: theme.fontSerif,
@@ -199,12 +199,12 @@ export function SceneWanneerNiet() {
         >
           <span>1 × 3</span>
           <span style={{ ...captionStyle, fontSize: 44 }}>som 4, geen 5</span>
-          <Pop from={230}>
+          <Pop from={253}>
             <span style={{ color: rood, fontWeight: 700 }}>✗</span>
           </Pop>
         </div>
       </FadeUp>
-      <FadeUp from={400}>
+      <FadeUp from={442}>
         <div
           style={{
             backgroundColor: theme.surface2,
@@ -268,7 +268,7 @@ export function SceneSamenvatting() {
         <h2 style={{ ...titleStyle, fontSize: 72 }}>Samengevat</h2>
       </FadeUp>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 34, maxWidth: 1150 }}>
-        <FadeUp from={90}>
+        <FadeUp from={89}>
           <div style={itemStijl}>
             <span style={{ fontFamily: theme.fontSerif, color: groen, fontSize: 54 }}>1.</span>
             <span>
@@ -277,7 +277,7 @@ export function SceneSamenvatting() {
             </span>
           </div>
         </FadeUp>
-        <FadeUp from={210}>
+        <FadeUp from={208}>
           <div style={itemStijl}>
             <span style={{ fontFamily: theme.fontSerif, color: groen, fontSize: 54 }}>2.</span>
             <span>
@@ -287,7 +287,7 @@ export function SceneSamenvatting() {
           </div>
         </FadeUp>
       </div>
-      <FadeUp from={340} style={{ display: 'flex', gap: 32, marginTop: 10 }}>
+      <FadeUp from={337} style={{ display: 'flex', gap: 32, marginTop: 10 }}>
         <Chip color={groen} bg={theme.accentLight}>
           2 × ja → som-product
         </Chip>
@@ -295,12 +295,12 @@ export function SceneSamenvatting() {
           anders → abc-formule
         </Chip>
       </FadeUp>
-      <FadeUp from={470}>
+      <FadeUp from={466}>
         <p style={{ ...captionStyle, fontFamily: theme.fontSerif, fontSize: 54, color: theme.text }}>
           Succes!
         </p>
       </FadeUp>
-      <AafCorner pose={frame >= 420 ? 'wave' : 'idle'} poseFrame={frame - 420} />
+      <AafCorner pose={frame >= 416 ? 'wave' : 'idle'} poseFrame={frame - 416} />
     </Scene>
   )
 }

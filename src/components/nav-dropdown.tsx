@@ -88,7 +88,7 @@ export function NavDropdown({
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen(false)}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 ${
+        className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 ${
           open ? 'bg-surface-2 text-text' : 'text-text-muted'
         } hover:bg-surface-2 hover:text-text`}
       >

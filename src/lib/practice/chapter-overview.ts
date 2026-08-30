@@ -161,6 +161,7 @@ export async function loadQuestionNew(
   questionId: string,
 ): Promise<{
   id: string
+  cluster_id: string | null
   latex_body: string | null
   difficulty: 1 | 2 | 3
   steps: Array<{ id: string; step_order: number; step_description: string }>
@@ -181,6 +182,7 @@ export async function loadQuestionNew(
 
   return {
     id: q.id,
+    cluster_id: q.cluster_id ?? null,
     latex_body: q.latex_body,
     difficulty: clampDiff(q.difficulty),
     steps: (steps ?? []) as Array<{
