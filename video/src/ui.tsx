@@ -5,7 +5,7 @@ import { Aaf, type AafPose } from './Aaf'
 import { theme } from './theme'
 
 /** Witte scene-achtergrond met gecentreerd uitlegvlak (rechts ruimte voor Aaf). */
-export function Scene({ children }: { children: ReactNode }) {
+export function Scene({ children, gap = 44 }: { children: ReactNode; gap?: number }) {
   return (
     <AbsoluteFill style={{ backgroundColor: theme.surface }}>
       <div
@@ -30,7 +30,7 @@ export function Scene({ children }: { children: ReactNode }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 44,
+          gap,
         }}
       >
         {children}
@@ -294,6 +294,50 @@ export const captionStyle: CSSProperties = {
   color: theme.textMuted,
   textAlign: 'center',
   margin: 0,
+}
+
+/** Breuk met een echte streep: teller boven, noemer onder. */
+export function Breuk({
+  teller,
+  noemer,
+  streepKleur,
+}: {
+  teller: ReactNode
+  noemer: ReactNode
+  streepKleur?: string
+}) {
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        verticalAlign: 'middle',
+        margin: '0 8px',
+      }}
+    >
+      <span style={{ padding: '0 12px 4px' }}>{teller}</span>
+      <span
+        style={{
+          width: '100%',
+          height: 3,
+          borderRadius: 2,
+          backgroundColor: streepKleur ?? 'currentColor',
+        }}
+      />
+      <span style={{ padding: '4px 12px 0' }}>{noemer}</span>
+    </span>
+  )
+}
+
+/** Iets tot de macht n, met nette superscript. */
+export function Macht({ children, n }: { children: ReactNode; n: number | string }) {
+  return (
+    <span>
+      {children}
+      <sup style={{ fontSize: '0.6em' }}>{n}</sup>
+    </span>
+  )
 }
 
 /** Cursieve wiskunde-x zoals in een boek. */
