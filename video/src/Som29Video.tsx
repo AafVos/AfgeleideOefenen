@@ -27,7 +27,7 @@ function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
  * scripts/genereer-voiceover-som29.sh. Beats zijn op haar tempo getimed
  * (TEMPO = 1 in scenes-som29.tsx).
  */
-export const SOM29_SCENES = [180, 560, 1000, 1400, 590].map(t)
+export const SOM29_SCENES = [200, 560, 1000, 1400, 730].map(t)
 export const SOM29_DUUR = SOM29_SCENES.reduce((a, b) => a + b, 0)
 
 export function Som29Video() {

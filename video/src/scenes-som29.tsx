@@ -51,13 +51,15 @@ function StapLabel({ children }: { children: ReactNode }) {
 
 const rijStijl: CSSProperties = { display: 'flex', alignItems: 'center', gap: 40, width: 1180 }
 
-/* ── Scène 1 · #29 ──────────────────────────────────────────────────── */
+/* ── Scène 1 · H2 · #29 ──────────────────────────────────────────────────── */
 export function Som29Intro() {
   const frame = useCurrentFrame()
   return (
     <Scene>
       <FadeUp from={t(10)}>
-        <h1 style={{ ...titleStyle, color: groen }}>#29</h1>
+        <h1 style={titleStyle}>
+          H2 · <span style={{ color: groen }}>#29</span>
+        </h1>
       </FadeUp>
       <FadeUp from={t(40)}>
         <Opgave />
@@ -334,29 +336,29 @@ export function Som29Samen() {
           Voeg alles <span style={{ color: groen }}>samen</span>
         </h2>
       </FadeUp>
-      <FadeUp from={t(60)}>
+      <FadeUp from={t(40)}>
         <Opgave fontSize={54} />
       </FadeUp>
-      <FadeUp from={t(160)}>
+      <FadeUp from={t(90)}>
         <div style={{ ...mathStyle, fontSize: 50 }}>
           <FnQ naam="m" accent /> = <FnQ naam="u" accent /> − <FnQ naam="v" accent />
         </div>
       </FadeUp>
-      <FadeUp from={t(255)}>
+      <FadeUp from={t(265)}>
         <div style={{ ...mathStyle, fontSize: 50 }}>
           <FnQ naam="m" accent /> = <span style={{ color: theme.textMuted }}>0</span> − 12
           <Q />
           (3<Qp n={2} /> − 2)
         </div>
       </FadeUp>
-      <Pop from={t(395)}>
+      <Pop from={t(455)}>
         <div style={{ ...mathStyle, fontSize: 62 }}>
           <FnQ naam="m" accent /> = <span style={{ color: groen }}>−12</span>
           <Q />
           (3<Qp n={2} /> − 2)
         </div>
       </Pop>
-      <AafCorner pose={frame >= t(415) ? 'jump' : 'idle'} poseFrame={frame - t(415)} />
+      <AafCorner pose={frame >= t(480) ? 'jump' : 'idle'} poseFrame={frame - t(480)} />
     </Scene>
   )
 }

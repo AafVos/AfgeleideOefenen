@@ -30,7 +30,7 @@ Elk fragment start 0,5 s na het begin van zijn scène (zie `Stem` in
 
 **Scène 4 · Oplossen (0:45 – 0:56)**
 > Dus je schrijft: x plus drie, keer x plus vier, is nul. De oplossingen zijn
-> dan x is min drie, of x is min vier. Gelukt!
+> dan x is min drie, of x is min vier.
 
 **Scène 5 · Wanneer níét? (0:56 – 1:16)**
 > Maar soms lukt het niet. Kijk naar x-kwadraat plus vijf x plus drie is nul.
