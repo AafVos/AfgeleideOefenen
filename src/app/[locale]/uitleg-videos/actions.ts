@@ -21,7 +21,71 @@ export type VideoVraagState = {
   sent: boolean
 }
 
-/** Video-verzoek: leerling mist een uitleg; mailt de vraag door, slaat niets op. */
+/** Foto's van een boekopgave mogen mee met een video-verzoek. */
+const MAX_FOTOS = 3
+/**
+ * De browser verkleint foto's al (lib/images/compress.ts) en bewaakt het
+ * totaal; dit is het vangnet voor het geval dat mislukt. Blijf onder de
+ * bodySizeLimit van 4 MB uit next.config.ts.
+ */
+const MAX_FOTO_BYTES = 3 * 1024 * 1024
+const MAX_TOTAAL_BYTES = 3.2 * 1024 * 1024
+const TOEGESTANE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+
+type Bijlage = {
+  filename: string
+  content: string
+  contentType: string
+  /** Zonder contentId komt de foto alleen als bijlage mee en zie je hem niet in de mail. */
+  contentId: string
+}
+
+/**
+ * Leest de meegestuurde foto's uit het formulier en zet ze om naar
+ * base64-bijlagen. Geeft een foutmelding terug zodra er iets niet klopt, zodat
+ * de leerling het meteen ziet in plaats van dat de mail stil zonder foto vertrekt.
+ */
+async function leesFotos(
+  formData: FormData,
+): Promise<{ bijlagen: Bijlage[] } | { error: string }> {
+  const bestanden = formData
+    .getAll('fotos')
+    .filter((f): f is File => f instanceof File && f.size > 0)
+
+  if (bestanden.length === 0) return { bijlagen: [] }
+  if (bestanden.length > MAX_FOTOS) {
+    return { error: `Maximaal ${MAX_FOTOS} foto's per vraag.` }
+  }
+
+  const totaal = bestanden.reduce((som, f) => som + f.size, 0)
+  if (totaal > MAX_TOTAAL_BYTES) {
+    return { error: "Deze foto's zijn samen te groot. Kies er minder." }
+  }
+
+  const bijlagen: Bijlage[] = []
+  for (const [i, bestand] of bestanden.entries()) {
+    if (!TOEGESTANE_TYPES.includes(bestand.type)) {
+      return { error: 'Alleen foto\'s (jpg, png, webp of heic) kunnen mee.' }
+    }
+    if (bestand.size > MAX_FOTO_BYTES) {
+      return { error: 'Deze foto is te groot. Maak er een nieuwe of kies een kleinere.' }
+    }
+    const buffer = Buffer.from(await bestand.arrayBuffer())
+    bijlagen.push({
+      filename: bestand.name || `foto-${i + 1}.jpg`,
+      content: buffer.toString('base64'),
+      contentType: bestand.type || 'image/jpeg',
+      contentId: `foto-${i + 1}`,
+    })
+  }
+  return { bijlagen }
+}
+
+/**
+ * Video-verzoek: leerling mist een uitleg; mailt de vraag door, slaat niets op.
+ * Foto's van een boekopgave gaan als bijlage mee, zodat de opgave niet
+ * overgetypt hoeft te worden.
+ */
 export async function vraagVideoAction(
   _prev: VideoVraagState,
   formData: FormData,
@@ -41,6 +105,9 @@ export async function vraagVideoAction(
   } = await supabase.auth.getUser()
   if (!user) return { error: 'Log in om een vraag in te sturen.', sent: false }
 
+  const fotos = await leesFotos(formData)
+  if ('error' in fotos) return { error: fotos.error, sent: false }
+
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
@@ -48,10 +115,23 @@ export async function vraagVideoAction(
       to: 'alhvos@gmail.com',
       replyTo: user.email ?? undefined,
       subject: `Video-verzoek via ${SITE_CONFIG.domain}`,
+      attachments: fotos.bijlagen.length > 0 ? fotos.bijlagen : undefined,
       html: `
         <h2>Video-verzoek (uitlegvideo's)</h2>
         <p><b>Van:</b> ${escapeHtml(user.email ?? user.id)}</p>
         <p style="white-space:pre-wrap">${escapeHtml(message)}</p>
+        ${
+          fotos.bijlagen.length > 0
+            ? `<p><b>Foto's van de opgave:</b></p>
+               ${fotos.bijlagen
+                 .map(
+                   (b) =>
+                     `<p><img src="cid:${b.contentId}" alt="${escapeHtml(b.filename)}"
+                        style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:8px" /></p>`,
+                 )
+                 .join('')}`
+            : ''
+        }
       `,
     })
     if (error) {

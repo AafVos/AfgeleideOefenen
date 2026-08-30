@@ -569,6 +569,11 @@
     "askCta": "Stel je vraag",
     "askNoAccount": "Dit kan nog niet: je hebt een account nodig om een vraag in te sturen.",
     "askLogin": "Inloggen",
-    "askRegister": "Account maken"
+    "askRegister": "Account maken",
+    "askPhoto": "Foto van de opgave toevoegen",
+    "askPhotoHint": "Staat je vraag in het boek? Maak een foto, dan hoef je hem niet over te typen. Maximaal 3 foto's; ze worden automatisch verkleind.",
+    "askPhotoRemove": "Foto verwijderen",
+    "askPhotoBusy": "Foto's verkleinen…",
+    "askPhotoTooBig": "Deze foto's zijn samen te groot. Kies er minder of maak een nieuwe foto."
   }
 }
