@@ -11,15 +11,21 @@ UIT="public/voiceover-som29"
 mkdir -p "$UIT"
 
 teksten=(
-  "Deze uitlegvideo gaat over som negenentwintig."
+  "Deze uitlegvideo gaat over som negenentwintig, uit hoofdstuk twee."
   "Stap nul: analyseer de vorm. We werken hier met q, in plaats van x. Maar dat maakt voor het differentiëren niets uit. <break time=\"1.3s\" /> Je ziet dat de som uit twee delen bestaat, gesplitst door het minteken. En dan gebruiken we: de somregel. Die zie je hier."
   "Stap één: kies u en v. <break time=\"1.0s\" /> u is één. En v is: drie q kwadraat min twee, in het kwadraat. <break time=\"1.3s\" /> Stap twee: bereken de afgeleiden. De afgeleide van u is nul, want er zit geen q in. Voor v schrijven we het kwadraat eerst anders op: als de term, keer zichzelf. Dat is altijd handig om te doen. <break time=\"1.2s\" /> En kijk: nu hebben we weer twee termen, met een keer-teken ertussen. Dus voor de afgeleide van v gebruiken we: de productregel!"
   "Hier zie je de productregel, en onze v. Stap één: g is drie q kwadraat min twee, en h is óók drie q kwadraat min twee. Stap twee: de afgeleide van g is zes q, en de afgeleide van h is zes q. Stap drie: vul de formule in. Eerst schrijven we hem op: de afgeleide van v is: de afgeleide van g, keer h, plus, g, keer de afgeleide van h. Dan vullen we in: zes q keer drie q kwadraat min twee, plus, drie q kwadraat min twee, keer zes q. Samen is dat: twee keer zes q, keer drie q kwadraat min twee. En dan is de afgeleide van v: twaalf q, keer drie q kwadraat min twee."
-  "Nu voegen we alles samen. De afgeleide van m, is de afgeleide van u, min de afgeleide van v. Dat is: nul, min twaalf q keer drie q kwadraat min twee. En dat geeft de uitkomst: min twaalf q, keer drie q kwadraat min twee. Gelukt!"
+  "Nu voegen we alles samen. De afgeleide van m, is de afgeleide van u, min de afgeleide van v. Dat is: nul, min twaalf q keer drie q kwadraat min twee. En dat geeft de uitkomst: min twaalf q, keer drie q kwadraat min twee."
 )
+
+# SCENES=5 of SCENES=2,5 genereert alleen die fragmenten opnieuw (scheelt credits).
+SCENES="${SCENES:-}"
 
 for i in "${!teksten[@]}"; do
   n=$((i + 1))
+  if [ -n "$SCENES" ] && [[ ",$SCENES," != *",$n,"* ]]; then
+    continue
+  fi
   echo "Scène $n…"
   json=$(python3 -c "import json,sys; print(json.dumps({'text': sys.argv[1], 'model_id': sys.argv[2]}))" "${teksten[$i]}" "$MODEL")
   http=$(curl -s -o "$UIT/scene-$n.mp3" -w "%{http_code}" \

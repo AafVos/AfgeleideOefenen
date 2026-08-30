@@ -1,4 +1,4 @@
-# Voice-over: Uitleg bij som 29
+# Voice-over: Uitleg bij som 29 (H2)
 
 Ingesproken door ElevenLabs-stem **Pauline**. De tekst per scène staat (als
 bron) in `scripts/genereer-voiceover-som29.sh`; na een tekstwijziging: script
@@ -14,7 +14,7 @@ draaien, fragmentduren checken en de scèneduren + beats bijstellen.
 
 ## Opbouw (vijf scènes)
 
-**Scène 1 · #29** — de opgave in beeld, Aaf zwaait.
+**Scène 1 · H2 · #29** — hoofdstuk + somnummer en de opgave in beeld, Aaf zwaait.
 
 **Scène 2 · Stap 0: Analyseer de vorm** — q licht even op (marker, verdwijnt
 weer), dan groene cirkel om de 1 en rode om (3q²−2)²; het minteken splitst en

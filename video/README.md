@@ -14,8 +14,10 @@ DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
 | `npm run studio` | Opent Remotion Studio in de browser: video afspelen, per frame doorspoelen, live aanpassen. |
 | `npm run render` | Rendert "Som-productmethode" naar `out/som-product.mp4`. |
 | `npm run render:regels` | Rendert "Somregel of productregel?" naar `out/somregel-of-productregel.mp4`. |
+| `npm run render:som29` | Rendert "Uitleg bij som 29" naar `out/som-29.mp4`. |
+| `npm run render:som30` | Rendert "Uitleg bij som 30" naar `out/som-30.mp4`. |
 | `npm run still -- --frame=200 out/still.png` | Rendert één frame als afbeelding. |
-| `npm run presenter` | Opent de presenter: klik zelf per animatiestap door de video (voor eigen voice-over inspreken), zie `VOICEOVER-som29.md`. |
+| `npm run presenter` | Opent de presenter: klik zelf per animatiestap door de video (voor eigen voice-over inspreken). Kies de video met `?video=som30` in de URL; zie `VOICEOVER-som29.md` / `VOICEOVER-som30.md`. |
 
 ## Structuur
 
@@ -24,9 +26,15 @@ DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
 - `src/scenes.tsx` + `src/SomProductVideo.tsx` — video "Som-productmethode" (kwadratische vergelijkingen).
 - `src/scenes-regels.tsx` + `src/RegelsVideo.tsx` — video "Somregel of productregel?" (differentiëren).
 - `scripts/genereer-voiceover*.sh` — voice-over genereren via ElevenLabs (API-key in `.env`).
+- `src/scenes-som29.tsx` + `src/Som29Video.tsx` — video "Uitleg bij som 29".
+- `src/scenes-som30.tsx` + `src/Som30Video.tsx` — video "Uitleg bij som 30".
 - `VOICEOVER.md` — het insprekscript van de som-productvideo met tijden.
 
 ## Nieuwe video maken
+
+Gaat het om een uitlegvideo bij één som? Volg dan de vaste vijf-scène-opzet uit
+[GUIDELINES.md](GUIDELINES.md#vaste-opzet-uitlegvideo-bij-een-som) en kopieer
+`scenes-som30.tsx` als sjabloon.
 
 1. Kopieer `scenes.tsx` + `SomProductVideo.tsx` naar bijv. `AbcFormuleVideo.tsx`.
 2. Registreer een tweede `<Composition>` in `src/Root.tsx` met een eigen `id`.

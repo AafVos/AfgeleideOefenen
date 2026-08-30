@@ -16,7 +16,7 @@ const o5 = o4 + SOM29_SCENES[3]
 
 export const SOM29_CUES: Cue[] = [
   { frame: 0, label: 'start — druk op spatie om te beginnen' },
-  { frame: t(130), label: '#29 en de opgave in beeld' },
+  { frame: t(130), label: 'H2 · #29 en de opgave in beeld' },
   { frame: o2 + t(160), label: 'stap 0 · de som in beeld, q gemarkeerd' },
   { frame: o2 + t(285), label: 'de marker op q vervaagt' },
   { frame: o2 + t(340), label: 'groene cirkel om de 1' },
@@ -35,9 +35,9 @@ export const SOM29_CUES: Cue[] = [
   { frame: o4 + t(950), label: 'formule ingevuld' },
   { frame: o4 + t(1160), label: 'één stap uitgerekend' },
   { frame: o4 + t(1300), label: 'eindantwoord v′(q) = 12q(3q²−2)' },
-  { frame: o5 + t(110), label: 'scène 5 · voeg alles samen: de opgave' },
-  { frame: o5 + t(210), label: 'm′(q) = u′(q) − v′(q)' },
-  { frame: o5 + t(310), label: 'm′(q) = 0 − 12q(3q²−2)' },
-  { frame: o5 + t(450), label: 'de uitkomst' },
+  { frame: o5 + t(70), label: 'scène 5 · voeg alles samen: de opgave' },
+  { frame: o5 + t(120), label: 'm′(q) = u′(q) − v′(q)' },
+  { frame: o5 + t(295), label: 'm′(q) = 0 − 12q(3q²−2)' },
+  { frame: o5 + t(485), label: 'de uitkomst' },
   { frame: SOM29_DUUR - 1, label: 'einde · Aaf springt' },
 ]

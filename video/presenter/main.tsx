@@ -3,10 +3,21 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { SOM29_CUES, type Cue } from '../src/cues'
+import { SOM30_CUES } from '../src/cues-som30'
 import { SOM29_DUUR, Som29Video } from '../src/Som29Video'
+import { SOM30_DUUR, Som30Video } from '../src/Som30Video'
 
-const CUES: Cue[] = SOM29_CUES
-const DUUR = SOM29_DUUR
+/** Welke video de presenter toont: ?video=som30 in de URL, standaard som29. */
+const VIDEOS = {
+  som29: { cues: SOM29_CUES, duur: SOM29_DUUR, component: Som29Video },
+  som30: { cues: SOM30_CUES, duur: SOM30_DUUR, component: Som30Video },
+} as const
+
+const gekozen = new URLSearchParams(window.location.search).get('video')
+const VIDEO = VIDEOS[gekozen === 'som30' ? 'som30' : 'som29']
+
+const CUES: Cue[] = VIDEO.cues
+const DUUR = VIDEO.duur
 const FPS = 30
 
 function Presenter() {
@@ -79,7 +90,7 @@ function Presenter() {
     <div style={{ maxWidth: 1280, margin: '0 auto', padding: 16 }}>
       <Player
         ref={spelerRef}
-        component={Som29Video}
+        component={VIDEO.component}
         durationInFrames={DUUR}
         compositionWidth={1920}
         compositionHeight={1080}

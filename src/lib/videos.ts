@@ -15,8 +15,12 @@ export type UitlegVideo = {
   clusterIds: string[]
 }
 
-const STORAGE_BASE =
-  'https://dccjsuyuolxwqqcjxtqe.supabase.co/storage/v1/object/public/videos'
+/**
+ * Basis-URL van de publieke Storage-bucket `videos`. Volgt de omgeving: lokaal
+ * en dev lezen uit hun eigen bucket, productie uit die van prod. Zet een nieuwe
+ * mp4 dus in de bucket van élke omgeving waar je hem wilt zien.
+ */
+const STORAGE_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/videos`
 
 const VIDEOS: Record<SiteId, UitlegVideo[]> = {
   afgeleiden: [
@@ -36,14 +40,26 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
     },
     {
       slug: 'som-29',
-      title: 'Uitleg bij som 29',
+      title: 'Uitleg bij #29 (H2)',
       description:
-        'm(q) = 1 − (3q² − 2)² differentiëren: eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
-      duration: '2:04',
+        'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren — eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
+      duration: '2:09',
       src: `${STORAGE_BASE}/som-29.mp4`,
       clusterIds: [
         // De productregel · Kwadraat van een polynoom (het cluster van som 29)
         'd622e23a-4112-4eca-81fa-69187f8d48a1',
+      ],
+    },
+    {
+      slug: 'som-30',
+      title: 'Uitleg bij #30 (H2)',
+      description:
+        'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren — eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
+      duration: '2:35',
+      src: `${STORAGE_BASE}/som-30.mp4`,
+      clusterIds: [
+        // Productregel: twee polynomen (het cluster van som 30)
+        'faa995e4-1e45-4d93-8145-ee749232725d',
       ],
     },
   ],
