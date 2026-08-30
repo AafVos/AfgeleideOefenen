@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
   // Fix: multiple package-lock.json files on this machine confuse Next.js
   // file tracing. Pin the root explicitly so Vercel builds work correctly.
   outputFileTracingRoot: path.resolve(__dirname),
+  experimental: {
+    serverActions: {
+      // Video-verzoeken mogen foto's van een boekopgave meesturen. Standaard
+      // is 1 MB, te weinig voor een telefoonfoto. De browser verkleint ze al
+      // (zie lib/images/compress.ts); 4 MB is de marge, en blijft onder de
+      // ~4,5 MB die Vercel per request toestaat.
+      bodySizeLimit: '4mb',
+    },
+  },
 }
 
 export default withNextIntl(nextConfig)
