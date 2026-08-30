@@ -27,6 +27,8 @@ type VideoItem = {
   slug: string
   title: string
   description: string
+  soort: 'algemeen' | 'vraaguitwerking'
+  chapter: string | null
   duration: string
   src: string
   href: string
@@ -63,6 +65,9 @@ type Labels = {
   askPhotoRemove: string
   askPhotoBusy: string
   askPhotoTooBig: string
+  groupGeneral: string
+  groupWalkthrough: string
+  chapterOther: string
   askNoAccount: string
   askLogin: string
   askRegister: string
@@ -75,6 +80,77 @@ function IconPlay() {
     <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14Z" />
     </svg>
+  )
+}
+
+/** Eén regel in de playlist. */
+function VideoLink({ video, isActive }: { video: VideoItem; isActive: boolean }) {
+  return (
+    <li>
+      <Link
+        href={video.href as '/uitleg-videos'}
+        scroll={false}
+        aria-current={isActive ? 'true' : undefined}
+        className={`flex items-start gap-2.5 rounded-xl border p-3 transition ${
+          isActive
+            ? 'border-accent bg-accent-light text-text'
+            : 'border-border bg-surface text-text-muted hover:border-accent/40 hover:text-text'
+        }`}
+      >
+        <span className={isActive ? 'mt-0.5 text-accent' : 'mt-0.5'}>
+          <IconPlay />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-sm font-medium leading-snug">{video.title}</span>
+          <span className="mt-0.5 block text-xs opacity-70">{video.duration}</span>
+        </span>
+      </Link>
+    </li>
+  )
+}
+
+/** Uitklapbaar hoofdstuk met de vraaguitwerkingen die erbij horen. */
+function Hoofdstukgroep({
+  titel,
+  items,
+  activeSlug,
+}: {
+  titel: string
+  items: VideoItem[]
+  activeSlug: string | null
+}) {
+  const [open, setOpen] = useState(true)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-text transition hover:text-accent"
+      >
+        <svg
+          className={`size-3.5 shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span>{titel}</span>
+        <span className="text-xs font-normal text-text-muted">({items.length})</span>
+      </button>
+      {open && (
+        <ul className="mt-1 space-y-2 pl-2">
+          {items.map((v) => (
+            <VideoLink key={v.slug} video={v} isActive={v.slug === activeSlug} />
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -108,6 +184,24 @@ export function UitlegVideosClient({
 }) {
   const active = videos.find((v) => v.slug === activeSlug) ?? null
   const [toonAccountMelding, setToonAccountMelding] = useState(false)
+  const algemeen = useMemo(() => videos.filter((v) => v.soort === 'algemeen'), [videos])
+
+  /** Vraaguitwerkingen per hoofdstuk, H2 vóór H6/H7/H9; zonder hoofdstuk achteraan. */
+  const perHoofdstuk = useMemo(() => {
+    const uitwerkingen = videos.filter((v) => v.soort === 'vraaguitwerking')
+    const kaart = new Map<string, VideoItem[]>()
+    for (const v of uitwerkingen) {
+      const sleutel = v.chapter ?? ''
+      kaart.set(sleutel, [...(kaart.get(sleutel) ?? []), v])
+    }
+    return [...kaart.entries()]
+      .map(([chapter, items]) => ({ chapter, items }))
+      .sort((a, b) => {
+        if (a.chapter === '') return 1
+        if (b.chapter === '') return -1
+        return Number(a.chapter.slice(1)) - Number(b.chapter.slice(1))
+      })
+  }, [videos])
 
   /**
    * Zonder account kan er geen vraag ingestuurd worden: dan tonen we een melding
@@ -179,33 +273,37 @@ export function UitlegVideosClient({
           <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
             {labels.playlistTitle}
           </p>
-          <ul className="mt-2 space-y-2">
-            {videos.map((v) => {
-              const isActive = v.slug === activeSlug
-              return (
-                <li key={v.slug}>
-                  <Link
-                    href={v.href as '/uitleg-videos'}
-                    scroll={false}
-                    aria-current={isActive ? 'true' : undefined}
-                    className={`flex items-start gap-2.5 rounded-xl border p-3 transition ${
-                      isActive
-                        ? 'border-accent bg-accent-light text-text'
-                        : 'border-border bg-surface text-text-muted hover:border-accent/40 hover:text-text'
-                    }`}
-                  >
-                    <span className={isActive ? 'mt-0.5 text-accent' : 'mt-0.5'}>
-                      <IconPlay />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium leading-snug">{v.title}</span>
-                      <span className="mt-0.5 block text-xs opacity-70">{v.duration}</span>
-                    </span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
+
+          {algemeen.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                {labels.groupGeneral}
+              </p>
+              <ul className="mt-2 space-y-2">
+                {algemeen.map((v) => (
+                  <VideoLink key={v.slug} video={v} isActive={v.slug === activeSlug} />
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {perHoofdstuk.length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                {labels.groupWalkthrough}
+              </p>
+              <div className="mt-2 space-y-1.5">
+                {perHoofdstuk.map(({ chapter, items }) => (
+                  <Hoofdstukgroep
+                    key={chapter || 'overig'}
+                    titel={chapter || labels.chapterOther}
+                    items={items}
+                    activeSlug={activeSlug}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </aside>
       </div>
 

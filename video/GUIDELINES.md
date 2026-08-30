@@ -128,32 +128,37 @@ mis bij leerlingen.
 - **De noemer blijft `(h(x))²` staan** — niet uitwerken, ook niet als het kan.
   De video gaat over de regelkeuze.
 
-### Botsende letters: hernoem, en zeg dat hardop
+### Botsende letters: elke regelpagina begint bij zijn eigen f
 
 **Elke regel gebruikt gewoon `f`, `g` en `h`** — precies zoals in het boek, zodat
 video en boek dezelfde taal spreken. De opgave zelf houdt de naam die het boek
 eraan geeft (`k(x)`, `m(q)`).
 
 Dat botst zodra je een deel meeneemt naar een volgende scène en dáár weer een
-regel toepast: de `h(x)` van de somregel zou dan ineens de `f(x)` van de
+regel toepast: de `h(q)` van de somregel zou dan ineens de `f(q)` van de
 productregel zijn, met een nieuwe `g` en `h` eronder. Los dat niet op met een
-apart letterpaar, maar **geef dat deel eerst een eigen naam — in beeld én in de
-voice-over**:
+apart letterpaar, maar **laat elke regelpagina bij zijn eigen `f` beginnen**.
 
-> "Om verwarring te voorkomen noemen we onze subfunctie p van x."
+Op de somregel-pagina blijft alles gewoon `f`, `g` en `h`; daar wordt niets
+hernoemd. De volgende pagina opent met één regel die het deel overneemt als de
+`f` van díé pagina:
 
-Zet die hernoeming als losse regel in beeld (`p(x) = 3(x⁴ − x)(x + 1)`) vóórdat
-de nieuwe regelkaart verschijnt, zodat de kijker de overstap ziet gebeuren.
-Daarna pas je de nieuwe regel gewoon toe: `p(x) = g(x) · h(x)`, met een verse
-`g` en `h`.
+> "De functie van de vorige pagina noemen we hier f."
+>
+> `f(q) = (3q² − 2) · (3q² − 2)`
 
-- **Subfuncties heten `p`, dan `q`, dan `r`** — in die volgorde, zodat je altijd
-  weet welke bij welke stap hoort.
-- **Sla een letter over** als hij al in de opgave voorkomt, als functienaam of
-  als variabele (bij `m(q)` gebruik je dus geen `q`, maar `p` en dan `r`).
-- In de slotscène reken je terug naar de oorspronkelijke letters: eerst
-  `p′(x) = …`, dan `h′(x) = p′(x)`, dan pas `k′(x) = g′(x) − h′(x)`. Zo sluit de
-  cirkel en snapt de kijker waar zijn subfunctie gebleven is.
+Daarna pas je de nieuwe regel gewoon toe: `f(q) = g(q) · h(q)`, met een verse
+`g` en `h`. Zo is elke pagina op zichzelf te lezen en hoeft de kijker geen
+extra letter te onthouden.
+
+- **Zeg niets over verwarring voorkomen.** Je stelt de functie van deze pagina
+  vast, meer niet. Een zin als "om verwarring te voorkomen noemen we…" maakt van
+  een gewone stap een probleem.
+- **De hernoeming staat bovenaan de nieuwe pagina**, vóór het stappenplan, met
+  één regel eronder die zegt waar hij vandaan komt.
+- In de slotscène koppel je terug: het antwoord van die pagina is de afgeleide
+  die je op de vorige pagina nodig had (`h′(q) = 12q(3q² − 2)`), en pas daarna
+  volgt `m′(q) = g′(q) − h′(q)`.
 
 Komt er een regel bij die hier nog niet staat (kettingregel), geef die dan een
 eigen vaste letters en stappen volgens hetzelfde patroon, en leg hem hier vast
@@ -199,10 +204,11 @@ zodra hij één keer gebruikt is.
 
 ## Voice-over
 
-- **ElevenLabs, stem Pauline** (`6UGZSawYvSTRIMHxH2uW`, native NL) — de stem
-  van de som-video's; houd de hele reeks op dezelfde stem. Geen Engelse
-  premade-stemmen: de r en de l klinken dan Engels. (De eerdere video's
-  gebruikten Emma, `OlBRrVAItyi00MuGMbna`.)
+- **ElevenLabs, stem Pauline** (`6UGZSawYvSTRIMHxH2uW`, native NL) voor
+  **alle** video's, algemene uitleg én vraaguitwerkingen. Eén stem over de hele
+  reeks, zodat het één serie blijft. Geen Engelse premade-stemmen: de r en de l
+  klinken dan Engels. Wissel je toch van stem, meet dan opnieuw en schaal de
+  beats mee: elke stem heeft zijn eigen tempo.
 - **Zeg nooit "accent"** ("g-accent") — zeg "de afgeleide van g".
 - **Nooit "Gelukt!"** (of iets anders zelffelicitatie-achtigs) aan het eind.
   De video stopt bij het antwoord; de uitkomst groot in beeld is de afsluiting.

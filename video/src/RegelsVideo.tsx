@@ -19,15 +19,15 @@ function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
 
 /**
  * "Somregel of productregel?" — wanneer gebruik je welke regel bij het
- * differentiëren (141 s bij 30 fps = 4220 frames).
+ * differentiëren (140 s bij 30 fps = 4210 frames).
  *
  * Voice-over: public/voiceover-regels/, opnieuw genereren met
- * scripts/genereer-voiceover-regels.sh.
+ * scripts/genereer-voiceover-regels.sh (stem Pauline).
  */
 export function RegelsVideo() {
   return (
     <Series>
-      <Series.Sequence durationInFrames={300}>
+      <Series.Sequence durationInFrames={280}>
         <RegelsIntro />
         <Stem scene={1} delay={30} />
       </Series.Sequence>
@@ -35,15 +35,15 @@ export function RegelsVideo() {
         <RegelsLijm />
         <Stem scene={2} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={1290}>
+      <Series.Sequence durationInFrames={1300}>
         <RegelsSom />
         <Stem scene={3} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={1700}>
+      <Series.Sequence durationInFrames={1680}>
         <RegelsProduct />
         <Stem scene={4} />
       </Series.Sequence>
-      <Series.Sequence durationInFrames={480}>
+      <Series.Sequence durationInFrames={500}>
         <RegelsSamenvatting />
         <Stem scene={5} />
       </Series.Sequence>

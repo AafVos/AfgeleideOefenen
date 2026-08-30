@@ -1,6 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+
+import { Link } from '@/i18n/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -12,6 +14,7 @@ import {
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
+import type { UitlegVideo } from '@/lib/videos'
 
 import { MathKeyboard } from '@/components/math-keyboard'
 
@@ -27,6 +30,15 @@ function answerPrefix(latexBody: string | null): string {
 }
 
 type Step = { id: string; step_order: number; step_description: string }
+
+/** Klein icoontje: er staat een uitlegvideo klaar over dit onderwerp. */
+function IconVideo() {
+  return (
+    <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14Z" />
+    </svg>
+  )
+}
 
 type StudyQuestion = {
   id: string
@@ -50,12 +62,15 @@ export function StudyCard({
   steps,
   nextHref,
   questionNumber,
+  video,
   onAnswered,
 }: {
   question: StudyQuestion
   steps: Step[]
   nextHref?: string
   questionNumber?: number
+  /** Uitlegvideo over dit onderwerp, als die er is. */
+  video?: UitlegVideo | null
   onAnswered?: (questionId: string, isCorrect: boolean) => void
 }) {
   const router = useRouter()
@@ -170,6 +185,16 @@ export function StudyCard({
             </span>
           )}
         </div>
+        {video && (
+          <Link
+            href={`/uitleg-videos?video=${encodeURIComponent(video.slug)}` as '/uitleg-videos'}
+            title={video.title}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent-light px-2.5 py-1 text-xs font-medium text-accent transition hover:border-accent/60"
+          >
+            <IconVideo />
+            <span>{t('hasVideo')}</span>
+          </Link>
+        )}
       </div>
 
       <div className="mb-6">

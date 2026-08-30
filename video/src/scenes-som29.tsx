@@ -49,9 +49,32 @@ function StapLabel({ children }: { children: ReactNode }) {
   )
 }
 
-const rijStijl: CSSProperties = { display: 'flex', alignItems: 'center', gap: 40, width: 1180 }
+const rijStijl: CSSProperties = { display: 'flex', alignItems: 'center', gap: 36, width: 1180 }
 
-/* ── Scène 1 · H2 · #29 ──────────────────────────────────────────────────── */
+/** (3q² − 2)², de tweede term van de opgave. */
+function Kwadraat() {
+  return (
+    <span>
+      (3
+      <Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
+    </span>
+  )
+}
+
+/** De somregel, met de boekletters f, g en h. */
+function SomKaart({ fontSize = 38 }: { fontSize?: number }) {
+  return (
+    <RegelKaart fontSize={fontSize}>
+      <Fn naam="f" vanX /> = <Fn naam="g" vanX /> + <Fn naam="h" vanX />{' '}
+      <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
+      <span style={{ color: groen }}>
+        <Fn naam="g" accent vanX /> + <Fn naam="h" accent vanX />
+      </span>
+    </RegelKaart>
+  )
+}
+
+/* ── Scène 1 · H2 · #29 ─────────────────────────────────────────────── */
 export function Som29Intro() {
   const frame = useCurrentFrame()
   return (
@@ -69,21 +92,21 @@ export function Som29Intro() {
   )
 }
 
-/* ── Scène 2 · Stap 0: Analyseer de vorm ────────────────────────────── */
+/* ── Scène 2 · Stap 0: Analyseer de buitenste schil ─────────────────── */
 export function Som29Analyse() {
   const frame = useCurrentFrame()
   return (
     <Scene>
       <FadeUp from={t(10)}>
         <h2 style={sceneTitelStijl}>
-          Stap 0 · <span style={{ color: groen }}>Analyseer de vorm</span>
+          Stap 0 · <span style={{ color: groen }}>Analyseer de buitenste schil</span>
         </h2>
       </FadeUp>
-      {/* De som; de q licht even op, daarna de twee delen (de − splitst) */}
+      {/* De q licht even op, daarna de twee delen; de − splitst en blijft los */}
       <FadeUp from={t(20)}>
         <div style={{ ...mathStyle, fontSize: 54 }}>
           <span style={{ fontStyle: 'italic' }}>m</span>(
-          <Marker from={t(75)} until={t(260)}>
+          <Marker from={t(85)} until={t(255)}>
             <Q />
           </Marker>
           ) ={' '}
@@ -92,115 +115,99 @@ export function Som29Analyse() {
               <span>1</span>
             </Circled>
           </span>
-          <span style={{ margin: '0 14px' }}>−</span>
+          <span style={{ margin: '0 36px' }}>−</span>
           <Circled from={t(350)} color={rood}>
-            <span>
-              (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
-            </span>
+            <Kwadraat />
           </Circled>
         </div>
       </FadeUp>
-      <Pop from={t(430)}>
+      <Pop from={t(460)}>
         <Chip color={groen} bg={theme.accentLight}>
           Somregel!
         </Chip>
       </Pop>
-      {/* De somregel komt in beeld */}
-      <FadeUp from={t(480)}>
-        <RegelKaart fontSize={40}>
-          <Fn naam="f" vanX /> = <Fn naam="u" vanX /> + <Fn naam="v" vanX />{' '}
-          <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
-          <span style={{ color: groen }}>
-            <Fn naam="u" accent vanX /> + <Fn naam="v" accent vanX />
-          </span>
-        </RegelKaart>
+      <FadeUp from={t(520)}>
+        <SomKaart fontSize={40} />
       </FadeUp>
       <AafCorner pose={frame >= t(290) ? 'point' : 'idle'} poseFrame={frame - t(290)} />
     </Scene>
   )
 }
 
-/* ── Scène 3 · De somregel: stap 1 en 2 ─────────────────────────────── */
+/* ── Scène 3 · De somregel, met de hernoeming naar p ────────────────── */
 export function Som29Somregel() {
   const frame = useCurrentFrame()
   return (
-    <Scene>
+    <Scene gap={20}>
       <FadeUp from={t(5)}>
         <h2 style={sceneTitelStijl}>
           De <span style={{ color: groen }}>somregel</span>
         </h2>
       </FadeUp>
       <FadeUp from={t(5)}>
-        <RegelKaart fontSize={38}>
-          <Fn naam="f" vanX /> = <Fn naam="u" vanX /> + <Fn naam="v" vanX />{' '}
-          <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
-          <span style={{ color: groen }}>
-            <Fn naam="u" accent vanX /> + <Fn naam="v" accent vanX />
-          </span>
-        </RegelKaart>
+        <SomKaart />
       </FadeUp>
       {/* De som met g en h eronder gelabeld (de − splitst en blijft los) */}
       <FadeUp from={t(5)}>
-        <div style={{ ...mathStyle, fontSize: 46, paddingBottom: 40 }}>
+        <div style={{ ...mathStyle, fontSize: 44, paddingBottom: 38 }}>
           <FnQ naam="m" /> ={' '}
-          <FactorLabel label="u(q)" from={t(110)}>
+          <FactorLabel label="g(q)" from={t(100)}>
             <span>1</span>
           </FactorLabel>
           <span style={{ margin: '0 14px' }}>−</span>
-          <FactorLabel label="v(q)" from={t(110)}>
-            <span>
-              (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
-            </span>
+          <FactorLabel label="h(q)" from={t(100)}>
+            <Kwadraat />
           </FactorLabel>
         </div>
       </FadeUp>
       {/* Stap 1 */}
       <div style={rijStijl}>
-        <Pop from={t(70)}>
+        <Pop from={t(20)}>
           <StapLabel>
-            Stap 1 · kies <em>u</em> en <em>v</em>
+            Stap 1 · kies <em>g</em> en <em>h</em>
           </StapLabel>
         </Pop>
-        <FadeUp from={t(135)}>
-          <div style={{ ...mathStyle, fontSize: 36 }}>
-            <FnQ naam="u" /> = 1
-            <span style={{ ...captionStyle, fontSize: 28, margin: '0 24px' }}>en</span>
-            <FnQ naam="v" /> = (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
+        <FadeUp from={t(130)}>
+          <div style={{ ...mathStyle, fontSize: 34 }}>
+            <FnQ naam="g" /> = 1
+            <span style={{ ...captionStyle, fontSize: 26, margin: '0 22px' }}>en</span>
+            <FnQ naam="h" /> = <Kwadraat />
           </div>
         </FadeUp>
       </div>
-      {/* Stap 2: g′ direct, h herschrijven */}
+      {/* Stap 2: g′ direct, h krijgt een eigen naam en wordt herschreven */}
       <div style={{ ...rijStijl, alignItems: 'flex-start' }}>
-        <Pop from={t(355)}>
+        <Pop from={t(285)}>
           <StapLabel>
-            Stap 2 · bereken <em>u</em>′ en <em>v</em>′
+            Stap 2 · bereken <em>g</em>′ en <em>h</em>′
           </StapLabel>
         </Pop>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <FadeUp from={t(400)}>
-            <div style={{ ...mathStyle, fontSize: 36 }}>
-              <FnQ naam="u" accent /> = <span style={{ color: groen }}>0</span>
-              <span style={{ ...captionStyle, fontSize: 26, marginLeft: 24 }}>
-                (er zit geen q in)
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <FadeUp from={t(350)}>
+            <div style={{ ...mathStyle, fontSize: 34 }}>
+              <FnQ naam="g" accent /> = <span style={{ color: groen }}>0</span>
+              <span style={{ ...captionStyle, fontSize: 25, marginLeft: 22 }}>
+                (er zit geen <Q /> in)
               </span>
             </div>
           </FadeUp>
-          <FadeUp from={t(505)}>
-            <div style={{ ...mathStyle, fontSize: 36 }}>
-              <FnQ naam="v" /> = (3<Qp n={2} /> − 2)<sup style={{ fontSize: '0.6em' }}>2</sup>
+          <FadeUp from={t(480)}>
+            <div style={{ ...mathStyle, fontSize: 34 }}>
+              <FnQ naam="h" /> = <Kwadraat />
             </div>
           </FadeUp>
-          <FadeUp from={t(590)}>
-            <div style={{ ...captionStyle, fontSize: 30, textAlign: 'left' }}>↓</div>
+          <FadeUp from={t(535)}>
+            <div style={{ ...captionStyle, fontSize: 28, textAlign: 'left' }}>↓</div>
           </FadeUp>
-          <FadeUp from={t(615)}>
-            <div style={{ ...mathStyle, fontSize: 36 }}>
-              <FnQ naam="v" /> = (3<Qp n={2} /> − 2) <span style={{ color: rood }}>·</span> (3
+          <FadeUp from={t(565)}>
+            <div style={{ ...mathStyle, fontSize: 34 }}>
+              <FnQ naam="h" /> = (3
+              <Qp n={2} /> − 2) <span style={{ color: rood }}>·</span> (3
               <Qp n={2} /> − 2)
             </div>
           </FadeUp>
-          <FadeUp from={t(665)}>
-            <p style={{ ...captionStyle, fontSize: 26, margin: 0, textAlign: 'left' }}>
+          <FadeUp from={t(615)}>
+            <p style={{ ...captionStyle, fontSize: 25, margin: 0, textAlign: 'left' }}>
               handig: schrijf een kwadraat altijd op als de term keer zichzelf
             </p>
           </FadeUp>
@@ -212,20 +219,19 @@ export function Som29Somregel() {
         </Chip>
       </Pop>
       <AafCorner
-        pose={frame >= t(400) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
-        poseFrame={frame >= t(400) ? frame - t(400) : frame - t(30)}
+        pose={frame >= t(350) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
+        poseFrame={frame >= t(350) ? frame - t(350) : frame - t(30)}
       />
     </Scene>
   )
 }
 
-/* ── Scène 4 · De productregel: v′ uitrekenen met g en h ────────────── */
+/* ── Scène 4 · De productregel: p′ uitrekenen met g en h ────────────── */
 export function Som29Productregel() {
   const frame = useCurrentFrame()
-  const formuleRegel: CSSProperties = { ...mathStyle, fontSize: 36 }
+  const formuleRegel: CSSProperties = { ...mathStyle, fontSize: 34 }
   return (
-    <Scene>
-      {/* Regel en onze v staan klaar zodra de scène begint */}
+    <Scene gap={26}>
       <FadeUp from={t(5)}>
         <h2 style={sceneTitelStijl}>
           De <span style={{ color: rood }}>productregel</span>
@@ -241,59 +247,67 @@ export function Som29Productregel() {
           </span>
         </RegelKaart>
       </FadeUp>
-      <FadeUp from={t(5)}>
-        <div style={{ ...mathStyle, fontSize: 42 }}>
-          <FnQ naam="v" /> = (3<Qp n={2} /> − 2) · (3<Qp n={2} /> − 2)
-        </div>
-      </FadeUp>
+      {/* Deze pagina begint bij zijn eigen f: het deel dat we meenamen */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <FadeUp from={t(30)}>
+          <p style={{ ...captionStyle, fontSize: 25, margin: 0 }}>
+            de functie van de vorige pagina noemen we hier <em>f</em>
+          </p>
+        </FadeUp>
+        <FadeUp from={t(130)}>
+          <div style={{ ...mathStyle, fontSize: 40 }}>
+            <FnQ naam="f" /> = (3<Qp n={2} /> − 2) · (3<Qp n={2} /> − 2)
+          </div>
+        </FadeUp>
+      </div>
       {/* Stap 1 */}
       <div style={rijStijl}>
-        <Pop from={t(140)}>
+        <Pop from={t(310)}>
           <StapLabel>
             Stap 1 · kies <em>g</em> en <em>h</em>
           </StapLabel>
         </Pop>
-        <FadeUp from={t(175)}>
-          <div style={{ ...mathStyle, fontSize: 36 }}>
+        <FadeUp from={t(345)}>
+          <div style={{ ...mathStyle, fontSize: 34 }}>
             <FnQ naam="g" /> = 3<Qp n={2} /> − 2
-            <span style={{ ...captionStyle, fontSize: 28, margin: '0 24px' }}>en</span>
+            <span style={{ ...captionStyle, fontSize: 26, margin: '0 22px' }}>en</span>
             <FnQ naam="h" /> = 3<Qp n={2} /> − 2
           </div>
         </FadeUp>
       </div>
       {/* Stap 2 */}
       <div style={rijStijl}>
-        <Pop from={t(345)}>
+        <Pop from={t(510)}>
           <StapLabel>
             Stap 2 · bereken <em>g</em>′ en <em>h</em>′
           </StapLabel>
         </Pop>
-        <FadeUp from={t(380)}>
-          <div style={{ ...mathStyle, fontSize: 36, color: groen }}>
+        <FadeUp from={t(545)}>
+          <div style={{ ...mathStyle, fontSize: 34, color: groen }}>
             <FnQ naam="g" accent /> = 6<Q />
-            <span style={{ ...captionStyle, fontSize: 28, margin: '0 24px' }}>en</span>
+            <span style={{ ...captionStyle, fontSize: 26, margin: '0 22px' }}>en</span>
             <FnQ naam="h" accent /> = 6<Q />
           </div>
         </FadeUp>
       </div>
-      {/* Stap 3: eerst de formule opschrijven, dan invullen, uitrekenen, uitkomst */}
+      {/* Stap 3 */}
       <div style={{ ...rijStijl, alignItems: 'flex-start' }}>
-        <Pop from={t(540)}>
+        <Pop from={t(670)}>
           <StapLabel>Stap 3 · vul de formule in</StapLabel>
         </Pop>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <FadeUp from={t(625)}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <FadeUp from={t(730)}>
             <div style={formuleRegel}>
-              <FnQ naam="v" accent /> ={' '}
+              <FnQ naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
                 <FnQ naam="g" accent /> · <FnQ naam="h" /> + <FnQ naam="g" /> ·{' '}
                 <FnQ naam="h" accent />
               </span>
             </div>
           </FadeUp>
-          <FadeUp from={t(885)}>
+          <FadeUp from={t(960)}>
             <div style={formuleRegel}>
-              <FnQ naam="v" accent /> ={' '}
+              <FnQ naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
                 6<Q />
               </span>{' '}
@@ -303,15 +317,15 @@ export function Som29Productregel() {
               </span>
             </div>
           </FadeUp>
-          <FadeUp from={t(1100)}>
+          <FadeUp from={t(1200)}>
             <div style={formuleRegel}>
-              <FnQ naam="v" accent /> = <span style={{ color: groen }}>2</span> · 6<Q />
+              <FnQ naam="f" accent /> = <span style={{ color: groen }}>2</span> · 6<Q />
               (3<Qp n={2} /> − 2)
             </div>
           </FadeUp>
-          <Pop from={t(1245)}>
-            <div style={{ ...mathStyle, fontSize: 46 }}>
-              <FnQ naam="v" accent /> = <span style={{ color: groen }}>12</span>
+          <Pop from={t(1320)}>
+            <div style={{ ...mathStyle, fontSize: 42 }}>
+              <FnQ naam="f" accent /> = <span style={{ color: groen }}>12</span>
               <Q />
               (3<Qp n={2} /> − 2)
             </div>
@@ -319,8 +333,8 @@ export function Som29Productregel() {
         </div>
       </div>
       <AafCorner
-        pose={frame >= t(380) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
-        poseFrame={frame >= t(380) ? frame - t(380) : frame - t(30)}
+        pose={frame >= t(545) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
+        poseFrame={frame >= t(545) ? frame - t(545) : frame - t(30)}
       />
     </Scene>
   )
@@ -330,35 +344,43 @@ export function Som29Productregel() {
 export function Som29Samen() {
   const frame = useCurrentFrame()
   return (
-    <Scene>
+    <Scene gap={30}>
       <FadeUp from={t(10)}>
         <h2 style={sceneTitelStijl}>
           Voeg alles <span style={{ color: groen }}>samen</span>
         </h2>
       </FadeUp>
-      <FadeUp from={t(40)}>
-        <Opgave fontSize={54} />
+      <FadeUp from={t(30)}>
+        <Opgave fontSize={50} />
       </FadeUp>
-      <FadeUp from={t(90)}>
-        <div style={{ ...mathStyle, fontSize: 50 }}>
-          <FnQ naam="m" accent /> = <FnQ naam="u" accent /> − <FnQ naam="v" accent />
+      {/* Koppel het antwoord van de vorige pagina terug aan h */}
+      <FadeUp from={t(70)}>
+        <div style={{ ...mathStyle, fontSize: 40 }}>
+          <FnQ naam="h" accent /> = 12
+          <Q />
+          (3<Qp n={2} /> − 2)
         </div>
       </FadeUp>
-      <FadeUp from={t(265)}>
-        <div style={{ ...mathStyle, fontSize: 50 }}>
+      <FadeUp from={t(255)}>
+        <div style={{ ...mathStyle, fontSize: 44 }}>
+          <FnQ naam="m" accent /> = <FnQ naam="g" accent /> − <FnQ naam="h" accent />
+        </div>
+      </FadeUp>
+      <FadeUp from={t(370)}>
+        <div style={{ ...mathStyle, fontSize: 44 }}>
           <FnQ naam="m" accent /> = <span style={{ color: theme.textMuted }}>0</span> − 12
           <Q />
           (3<Qp n={2} /> − 2)
         </div>
       </FadeUp>
-      <Pop from={t(455)}>
-        <div style={{ ...mathStyle, fontSize: 62 }}>
+      <Pop from={t(485)}>
+        <div style={{ ...mathStyle, fontSize: 56 }}>
           <FnQ naam="m" accent /> = <span style={{ color: groen }}>−12</span>
           <Q />
           (3<Qp n={2} /> − 2)
         </div>
       </Pop>
-      <AafCorner pose={frame >= t(480) ? 'jump' : 'idle'} poseFrame={frame - t(480)} />
+      <AafCorner pose={frame >= t(510) ? 'jump' : 'idle'} poseFrame={frame - t(510)} />
     </Scene>
   )
 }

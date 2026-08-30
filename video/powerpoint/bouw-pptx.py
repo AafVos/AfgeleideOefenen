@@ -28,6 +28,7 @@ ROOD_LICHT = RGBColor.from_string("FBEEED")
 TEKST = RGBColor.from_string("1A1A18")
 GRIJS = RGBColor.from_string("7A7870")
 RAND = RGBColor.from_string("E4E2D9")
+WIT = RGBColor.from_string("FFFFFF")
 
 SERIF = "DM Serif Display"
 SANS = "DM Sans"
@@ -198,7 +199,8 @@ r_q0 = px_breedte(r"$m($", PT_OPGAVE) / vol
 r_q1 = px_breedte(r"$m(q$", PT_OPGAVE) / vol
 r_e1 = px_breedte(r"$m(q) = 1$", PT_OPGAVE) / vol
 r_e0 = r_e1 - 0.92 * px_breedte(r"$1$", PT_OPGAVE) / vol
-r_r0 = r_e1 + 0.015
+r_min = px_breedte(r"$m(q) = 1 -$", PT_OPGAVE) / vol  # eind van het minteken
+r_r0 = r_min + 0.012
 
 OPGAVE_PROD = r"$m(q) = 1 - (3q^2-2) \cdot (3q^2-2)$"
 PT_PROD = 40
@@ -211,22 +213,49 @@ def sub_x(img_x, img_w, ratio):
     return Emu(int(img_x + ratio * img_w))
 
 
-# ── Slide 1 · #29 ──────────────────────────────────────────────────────────
+# ── Gedeelde bouwstenen voor de slides ─────────────────────────────────────
+
+def scene_titel(slide, runs, y=Inches(0.25), pt=32):
+    return tekstvak(slide, Inches(1.0), y, Inches(10.0), Inches(0.7), runs, pt, font=SERIF, vet=True)
+
+
+def stap_label(slide, y, tekst, x=Inches(0.75), w=Inches(2.9)):
+    """Groen stap-pilletje, zoals de StapLabel in de video."""
+    return chip(slide, x, y, w, Inches(0.42), tekst, WIT, GROEN, 13)
+
+
+def regelkaart(slide, y, asset, breedte=Inches(7.6), hoogte=Inches(0.85)):
+    """Groene reminder-kaart met de regel erin; geeft (kaart, formule) terug."""
+    kaart_x = Emu(int(MIDden - breedte / 2))
+    vlak = kaart(slide, kaart_x, y, breedte, hoogte, GROEN_LICHT)
+    form, _h = afbeelding(slide, asset, MIDden, Emu(int(y + Inches(0.2))), Emu(int(breedte - Inches(1.0))))
+    return vlak, form
+
+
+def bijschrift(slide, y, tekst, x=Inches(3.4), w=Inches(6.4), align=PP_ALIGN.LEFT):
+    return tekstvak(slide, x, y, w, Inches(0.34), [(tekst, GRIJS)], 12, align=align)
+
+
+# ── Slide 1 · H2 · #29 ─────────────────────────────────────────────────────
 s1 = prs.slides.add_slide(blanco)
 logo(s1)
 aaf(s1, "wave")
-titel29 = tekstvak(s1, Inches(3.0), Inches(2.0), Inches(6.0), Inches(1.1), [("#29", GROEN)], 60, font=SERIF, vet=True)
-opg1, h1 = afbeelding(s1, "assets/opgave.png", MIDden, Inches(3.5), Inches(5.4))
+titel29 = tekstvak(
+    s1, Inches(3.0), Inches(2.1), Inches(6.0), Inches(1.1),
+    [("H2 · ", TEKST), ("#29", GROEN)], 60, font=SERIF, vet=True,
+)
+opg1, _ = afbeelding(s1, "assets/opgave.png", MIDden, Inches(3.6), Inches(5.4))
 voeg_animaties_toe(s1, [[(titel29, "in")], [(opg1, "in")]])
 
-# ── Slide 2 · Herkennen en herschrijven ───────────────────────────────────
+# ── Slide 2 · Stap 0: Analyseer de buitenste schil ─────────────────────────
 s2 = prs.slides.add_slide(blanco)
 logo(s2)
 aaf(s2, "point")
+titel2 = scene_titel(s2, [("Stap 0 · ", TEKST), ("Analyseer de buitenste schil", GROEN)], Inches(0.45))
 
 eq_w = Inches(5.2)
 eq_x = Emu(int(MIDden - eq_w / 2))
-eq_y = Inches(0.85)
+eq_y = Inches(1.75)
 
 # marker achter de q (eerst toevoegen = achter de formule)
 mark_x = sub_x(eq_x, eq_w, r_q0)
@@ -235,46 +264,15 @@ marker = kaart(s2, Emu(int(mark_x - Inches(0.03))), Emu(int(eq_y - Inches(0.04))
 
 opg2, h2 = afbeelding(s2, "assets/opgave.png", MIDden, eq_y, eq_w)
 
-# cirkels om de twee delen
 c1_x = sub_x(eq_x, eq_w, r_e0)
-c1_w = Emu(int((r_e1 - r_e0) * eq_w + Inches(0.28)))
-cirkel1 = ovaal(s2, Emu(int(c1_x - Inches(0.06))), Emu(int(eq_y - Inches(0.16))), c1_w, Emu(int(h2 + Inches(0.32))), GROEN)
+c1_w = Emu(int((r_e1 - r_e0) * eq_w + Inches(0.20)))
+cirkel1 = ovaal(s2, Emu(int(c1_x - Inches(0.05))), Emu(int(eq_y - Inches(0.16))), c1_w, Emu(int(h2 + Inches(0.32))), GROEN)
 c2_x = sub_x(eq_x, eq_w, r_r0)
-c2_w = Emu(int((1.0 - r_r0) * eq_w + Inches(0.3)))
-cirkel2 = ovaal(s2, Emu(int(c2_x - Inches(0.1))), Emu(int(eq_y - Inches(0.16))), c2_w, Emu(int(h2 + Inches(0.32))), ROOD)
+c2_w = Emu(int((1.0 - r_r0) * eq_w + Inches(0.22)))
+cirkel2 = ovaal(s2, Emu(int(c2_x - Inches(0.03))), Emu(int(eq_y - Inches(0.16))), c2_w, Emu(int(h2 + Inches(0.32))), ROOD)
 
-pijl1 = pijl_omlaag(s2, MIDden, Inches(1.95))
-
-opg3, h3 = afbeelding(s2, "assets/opgave.png", MIDden, Inches(2.55), eq_w)
-s1_x = sub_x(eq_x, eq_w, r_e0)
-s1_w = (r_e1 - r_e0) * eq_w
-streep1 = streep(
-    s2,
-    Emu(int(s1_x - Inches(0.06))),
-    Emu(int(Inches(2.55) + h3 + Inches(0.04))),
-    Emu(int(s1_x + s1_w + Inches(0.06))),
-    Emu(int(Inches(2.55) - Inches(0.04))),
-    ROOD,
-)
-
-pijl2 = pijl_omlaag(s2, MIDden, Inches(3.6))
-
-prod_w = Inches(6.4)
-prod_x = Emu(int(MIDden - prod_w / 2))
-prod_y = Inches(4.2)
-opg4, h4 = afbeelding(s2, "assets/opgave-product.png", MIDden, prod_y, prod_w)
-s2_x = sub_x(prod_x, prod_w, p_e0)
-s2_w = (p_e1 - p_e0) * prod_w
-streep2 = streep(
-    s2,
-    Emu(int(s2_x - Inches(0.06))),
-    Emu(int(prod_y + h4 + Inches(0.04))),
-    Emu(int(s2_x + s2_w + Inches(0.06))),
-    Emu(int(prod_y - Inches(0.04))),
-    ROOD,
-)
-
-chip_prod = chip(s2, Emu(int(MIDden - Inches(1.6))), Inches(5.5), Inches(3.2), Inches(0.55), "Productregel!", ROOD, ROOD_LICHT, 18)
+chip_som = chip(s2, Emu(int(MIDden - Inches(1.2))), Inches(3.35), Inches(2.4), Inches(0.55), "Somregel!", GROEN, GROEN_LICHT, 18)
+kaart_som, form_som = regelkaart(s2, Inches(4.5), "assets/regel-som.png")
 
 voeg_animaties_toe(
     s2,
@@ -284,73 +282,125 @@ voeg_animaties_toe(
         [(marker, "out")],
         [(cirkel1, "in")],
         [(cirkel2, "in")],
-        [(pijl1, "in")],
-        [(opg3, "in"), (streep1, "in")],
-        [(pijl2, "in")],
-        [(opg4, "in"), (streep2, "in")],
-        [(chip_prod, "in")],
+        [(chip_som, "in")],
+        [(kaart_som, "in"), (form_som, "in")],
     ],
 )
 
-# ── Slide 3 · De productregel + stappenplan ────────────────────────────────
+# ── Slide 3 · De somregel ──────────────────────────────────────────────────
 s3 = prs.slides.add_slide(blanco)
 logo(s3)
 aaf(s3, "point")
+scene_titel(s3, [("De ", TEKST), ("somregel", GROEN)])
+regelkaart(s3, Inches(0.95), "assets/regel-som.png")
 
-titel3 = tekstvak(s3, Inches(2.5), Inches(0.25), Inches(7.0), Inches(0.7), [("De ", TEKST), ("productregel", ROOD)], 32, font=SERIF, vet=True)
-
-regelkaart = kaart(s3, Inches(1.5), Inches(1.05), Inches(9.0), Inches(0.95), GROEN_LICHT)
-regel_img, hr = afbeelding(s3, "assets/regel-product.png", MIDden, Inches(1.28), Inches(8.2))
-
-stap1 = chip(s3, Inches(1.5), Inches(2.25), Inches(2.8), Inches(0.5), "Stap 1 · kies g en h", GROEN, GROEN_LICHT)
-stap2 = chip(s3, Inches(4.6), Inches(2.25), Inches(2.8), Inches(0.5), "Stap 2 · bepaal de afgeleiden", GROEN, GROEN_LICHT, 13)
-stap3 = chip(s3, Inches(7.7), Inches(2.25), Inches(2.8), Inches(0.5), "Stap 3 · vul de formule in", GROEN, GROEN_LICHT, 13)
-
-mq_w = Inches(5.2)
-mq_x = Emu(int(MIDden - mq_w / 2))
-mq_y = Inches(2.95)
-mq_img, hmq = afbeelding(s3, "assets/opgave-product.png", MIDden, mq_y, mq_w)
-s3_x = sub_x(mq_x, mq_w, p_e0)
-s3_w = (p_e1 - p_e0) * mq_w
-streep3 = streep(
-    s3,
-    Emu(int(s3_x - Inches(0.05))),
-    Emu(int(mq_y + hmq + Inches(0.03))),
-    Emu(int(s3_x + s3_w + Inches(0.05))),
-    Emu(int(mq_y - Inches(0.03))),
-    ROOD,
+som_w = Inches(4.4)
+som_x = Emu(int(MIDden - som_w / 2))
+som_y = Inches(2.05)
+opg3, h3 = afbeelding(s3, "assets/opgave.png", MIDden, som_y, som_w)
+label_y = Emu(int(som_y + h3 + Inches(0.02)))
+lab_g = tekstvak(
+    s3, Emu(int(sub_x(som_x, som_w, r_e0) - Inches(0.5))), label_y, Inches(1.0), Inches(0.32),
+    [("g(q)", GROEN)], 15, font=SERIF, vet=True,
 )
-mq_caption = tekstvak(s3, Inches(2.5), Inches(3.5), Inches(7.0), Inches(0.32), [("zelfde regel — bij ons is de variabele q in plaats van x", GRIJS)], 13)
+lab_h = tekstvak(
+    s3, Emu(int(sub_x(som_x, som_w, r_r0) + Inches(0.35))), label_y, Inches(1.0), Inches(0.32),
+    [("h(q)", GROEN)], 15, font=SERIF, vet=True,
+)
 
-kaart_g = kaart(s3, Inches(2.0), Inches(3.95), Inches(3.4), Inches(1.62), RGBColor.from_string("FFFFFF"), GROEN)
-g_img, _hg = afbeelding(s3, "assets/g-def.png", Emu(int(Inches(3.7))), Inches(4.12), Inches(2.3))
-kaart_h = kaart(s3, Inches(6.2), Inches(3.95), Inches(3.4), Inches(1.62), RGBColor.from_string("FFFFFF"), GROEN)
-h_img, _hh = afbeelding(s3, "assets/h-def.png", Emu(int(Inches(7.9))), Inches(4.12), Inches(2.3))
+st1 = stap_label(s3, Inches(3.05), "Stap 1 · kies g en h")
+g_def, _ = afbeelding(s3, "assets/som-g-def.png", Inches(4.6), Inches(3.0), Inches(1.35))
+h_def, _ = afbeelding(s3, "assets/som-h-def.png", Inches(7.5), Inches(3.0), Inches(3.0))
 
-pijl_g = pijl_omlaag(s3, Emu(int(Inches(3.7))), Inches(4.55))
-ga_img, _ = afbeelding(s3, "assets/g-afgeleide.png", Emu(int(Inches(3.7))), Inches(5.05), Inches(1.6))
-pijl_h = pijl_omlaag(s3, Emu(int(Inches(7.9))), Inches(4.55))
-ha_img, _ = afbeelding(s3, "assets/h-afgeleide.png", Emu(int(Inches(7.9))), Inches(5.05), Inches(1.6))
+st2 = stap_label(s3, Inches(3.75), "Stap 2 · bereken g′ en h′")
+g_afg, _ = afbeelding(s3, "assets/som-g-afgeleide.png", Inches(4.7), Inches(3.7), Inches(1.55))
+g_reden = bijschrift(s3, Inches(3.78), "(er zit geen q in)", Inches(5.7), Inches(3.0))
 
-abstract_img, _ = afbeelding(s3, "assets/invullen-abstract.png", MIDden, Inches(5.82), Inches(5.4))
-concreet_img, _ = afbeelding(s3, "assets/invullen-concreet.png", MIDden, Inches(6.34), Inches(6.0))
-eind_img, _ = afbeelding(s3, "assets/eindantwoord.png", MIDden, Inches(6.9), Inches(4.0))
+h_kwad, _ = afbeelding(s3, "assets/som-h-kwadraat.png", Inches(6.3), Inches(4.4), Inches(3.0))
+pijl = pijl_omlaag(s3, Inches(6.3), Inches(4.95))
+h_prod, _ = afbeelding(s3, "assets/som-h-product.png", Inches(6.3), Inches(5.45), Inches(4.6))
+tip = bijschrift(s3, Inches(6.05), "handig: schrijf een kwadraat altijd op als de term keer zichzelf", Inches(3.4), Inches(5.8))
+
+chip_prod = chip(s3, Emu(int(MIDden - Inches(1.4))), Inches(6.55), Inches(2.8), Inches(0.5), "Productregel!", ROOD, ROOD_LICHT, 16)
 
 voeg_animaties_toe(
     s3,
     [
-        [(titel3, "in")],
-        [(regelkaart, "in"), (regel_img, "in")],
-        [(stap1, "in"), (stap2, "in"), (stap3, "in")],
-        [(mq_img, "in"), (streep3, "in"), (mq_caption, "in")],
-        [(kaart_g, "in"), (g_img, "in")],
-        [(kaart_h, "in"), (h_img, "in")],
-        [(pijl_g, "in"), (ga_img, "in"), (pijl_h, "in"), (ha_img, "in")],
-        [(abstract_img, "in")],
-        [(concreet_img, "in")],
-        [(eind_img, "in")],
+        [(st1, "in")],
+        [(lab_g, "in"), (lab_h, "in")],
+        [(g_def, "in"), (h_def, "in")],
+        [(st2, "in")],
+        [(g_afg, "in"), (g_reden, "in")],
+        [(h_kwad, "in")],
+        [(pijl, "in")],
+        [(h_prod, "in")],
+        [(tip, "in")],
+        [(chip_prod, "in")],
+    ],
+)
+
+# ── Slide 4 · De productregel ──────────────────────────────────────────────
+s4 = prs.slides.add_slide(blanco)
+logo(s4)
+aaf(s4, "point")
+scene_titel(s4, [("De ", TEKST), ("productregel", ROOD)])
+regelkaart(s4, Inches(0.95), "assets/regel-product.png", Inches(9.2))
+
+overname = bijschrift(s4, Inches(2.05), "de functie van de vorige pagina noemen we hier f", Inches(1.0), Inches(10.0), PP_ALIGN.CENTER)
+f_def, _ = afbeelding(s4, "assets/prod-f-def.png", MIDden, Inches(2.4), Inches(5.2))
+
+p_st1 = stap_label(s4, Inches(3.2), "Stap 1 · kies g en h")
+p_g, _ = afbeelding(s4, "assets/g-def.png", Inches(5.1), Inches(3.15), Inches(2.1))
+p_h, _ = afbeelding(s4, "assets/h-def.png", Inches(7.9), Inches(3.15), Inches(2.1))
+
+p_st2 = stap_label(s4, Inches(3.85), "Stap 2 · bereken g′ en h′")
+p_ga, _ = afbeelding(s4, "assets/g-afgeleide.png", Inches(5.1), Inches(3.8), Inches(1.6))
+p_ha, _ = afbeelding(s4, "assets/h-afgeleide.png", Inches(7.6), Inches(3.8), Inches(1.6))
+
+p_st3 = stap_label(s4, Inches(4.5), "Stap 3 · vul de formule in")
+r1, _ = afbeelding(s4, "assets/stap3-symbolisch.png", Inches(7.4), Inches(4.45), Inches(5.0))
+r2, _ = afbeelding(s4, "assets/stap3-ingevuld.png", Inches(7.4), Inches(5.05), Inches(5.6))
+r3, _ = afbeelding(s4, "assets/stap3-samen.png", Inches(7.4), Inches(5.65), Inches(3.4))
+r4, _ = afbeelding(s4, "assets/prod-antwoord.png", Inches(7.4), Inches(6.25), Inches(3.6))
+
+voeg_animaties_toe(
+    s4,
+    [
+        [(overname, "in")],
+        [(f_def, "in")],
+        [(p_st1, "in")],
+        [(p_g, "in"), (p_h, "in")],
+        [(p_st2, "in")],
+        [(p_ga, "in"), (p_ha, "in")],
+        [(p_st3, "in")],
+        [(r1, "in")],
+        [(r2, "in")],
+        [(r3, "in")],
+        [(r4, "in")],
+    ],
+)
+
+# ── Slide 5 · Voeg alles samen ─────────────────────────────────────────────
+s5 = prs.slides.add_slide(blanco)
+logo(s5)
+aaf(s5, "wave")
+scene_titel(s5, [("Voeg alles ", TEKST), ("samen", GROEN)], Inches(0.5))
+opg5, _ = afbeelding(s5, "assets/opgave.png", MIDden, Inches(1.45), Inches(4.4))
+sam_h, _ = afbeelding(s5, "assets/samen-h-afgeleide.png", MIDden, Inches(2.6), Inches(4.0))
+sam_sym, _ = afbeelding(s5, "assets/samen-symbolisch.png", MIDden, Inches(3.6), Inches(3.6))
+sam_inv, _ = afbeelding(s5, "assets/samen-ingevuld.png", MIDden, Inches(4.6), Inches(4.4))
+eind, _ = afbeelding(s5, "assets/eindantwoord.png", MIDden, Inches(5.7), Inches(5.2))
+
+voeg_animaties_toe(
+    s5,
+    [
+        [(opg5, "in")],
+        [(sam_h, "in")],
+        [(sam_sym, "in")],
+        [(sam_inv, "in")],
+        [(eind, "in")],
     ],
 )
 
 prs.save("Som29.pptx")
-print("Som29.pptx opgeslagen")
+print("Som29.pptx geschreven —", len(prs.slides.__iter__.__self__._sldIdLst), "slides")

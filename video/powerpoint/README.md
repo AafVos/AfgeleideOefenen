@@ -1,7 +1,19 @@
 # PowerPoint-versie van de uitlegvideo's (proof of concept)
 
-`Som29.pptx` is de som 29-video als PowerPoint: drie slides waarin elk
-element met een **klik verschijnt** (zelfde beats als de Remotion-video).
+`Som29.pptx` is de som 29-video als PowerPoint: **vijf slides**, één per scène,
+waarin elk element met een **klik verschijnt** (zelfde volgorde als de
+Remotion-video).
+
+| Slide | Scène |
+| --- | --- |
+| 1 | H2 · #29 — de opgave |
+| 2 | Stap 0 · Analyseer de buitenste schil |
+| 3 | De somregel (f, g, h) |
+| 4 | De productregel — begint bij zijn eigen f |
+| 5 | Voeg alles samen |
+
+Houd hem gelijk met `src/scenes-som29.tsx`: wijzigt de video, dan ook hier
+`genereer-assets.py` en `bouw-pptx.py` bijwerken.
 Formules zijn scherpe afbeeldingen; cirkels, strepen, pijlen en chips zijn
 gewone PowerPoint-vormen die je zelf kunt verplaatsen of aanpassen.
 
@@ -19,6 +31,16 @@ gewone PowerPoint-vormen die je zelf kunt verplaatsen of aanpassen.
 cd video/powerpoint
 python3 genereer-assets.py   # formule-PNG's (matplotlib) + zie aaf.html voor Aaf-poses
 python3 bouw-pptx.py         # bouwt Som29.pptx incl. klik-animaties
+```
+
+**Sluit `Som29.pptx` eerst in PowerPoint**, anders overschrijft jouw geopende
+versie het resultaat zodra je daar opslaat.
+
+Even nakijken zonder PowerPoint:
+
+```bash
+/Applications/LibreOffice.app/Contents/MacOS/soffice --headless \
+  --convert-to pdf --outdir preview Som29.pptx
 ```
 
 De klik-animaties zijn timing-XML die `bouw-pptx.py` injecteert (python-pptx

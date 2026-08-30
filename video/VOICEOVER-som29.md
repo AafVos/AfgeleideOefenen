@@ -6,31 +6,35 @@ draaien, fragmentduren checken en de scèneduren + beats bijstellen.
 
 ## Notatie-afspraken
 
-- **Somregel: u en v** — zowel in de regelkaart (`f(x) = u(x) + v(x) ⟹ f′(x) =
-  u′(x) + v′(x)`) als in de uitwerking. Zo botst het niet met de productregel.
-- **Productregel: g en h** — daar rekenen we `v′(q)` uit.
-- **In beeld altijd mét `(q)`** (`u(q) = 1`), terwijl de stem de letters kaal
-  uitspreekt ("u is één"). Stap 3 spiegelt exact de groene regelkaart.
+- **Overal `f`, `g` en `h`**, net als in het boek — voor élke regel. Zie
+  GUIDELINES.md.
+- **De opgave houdt zijn eigen naam**: `m(q)`, met `q` als variabele.
+- **Botsende letters:** de somregel-pagina blijft gewoon `f`, `g` en `h`. De
+  productregel-pagina begint bij zijn eigen `f`: "de functie van de vorige
+  pagina noemen we hier f". Geen extra letters, geen zin over verwarring.
+- **In beeld altijd mét `(q)`** (`g(q) = 1`), terwijl de stem de letters kaal
+  uitspreekt ("g is één").
 
 ## Opbouw (vijf scènes)
 
 **Scène 1 · H2 · #29** — hoofdstuk + somnummer en de opgave in beeld, Aaf zwaait.
 
-**Scène 2 · Stap 0: Analyseer de vorm** — q licht even op (marker, verdwijnt
-weer), dan groene cirkel om de 1 en rode om (3q²−2)²; het minteken splitst en
-blijft buiten de cirkels. Chip: "Somregel!", daarna de somregel-kaart.
+**Scène 2 · Stap 0: Analyseer de buitenste schil** — q licht even op (marker,
+verdwijnt weer), dan groene cirkel om de 1 en rode om (3q²−2)²; het minteken
+splitst en blijft buiten de cirkels. Chip: "Somregel!", daarna de regelkaart.
 
-**Scène 3 · De somregel** — stap 1: u(q) = 1 en v(q) = (3q²−2)² (labels onder
-de som). Stap 2: u′(q) = 0 (geen q in u); v herschrijven als
-(3q²−2)·(3q²−2) ("handig: schrijf een kwadraat altijd op als de term keer
-zichzelf"), pauze, dan chip "Productregel!".
+**Scène 3 · De somregel** — stap 1: g(q) = 1 en h(q) = (3q²−2)² (labels onder de
+som). Stap 2: g′(q) = 0 (geen q in g); dan h herschreven als (3q²−2)·(3q²−2).
+Chip: "Productregel!".
 
-**Scène 4 · De productregel** — kaart + v(q) staan klaar; stap 1 (g en h),
-stap 2 (afgeleiden), stap 3: eerst `v′(q) = g′(q)·h(q) + g(q)·h′(q)`, dan
-ingevuld, dan uitgerekend → v′(q) = 12q(3q²−2).
+**Scène 4 · De productregel** — de kaart, dan "de functie van de vorige pagina
+noemen we hier f" met `f(q) = (3q²−2)·(3q²−2)`; stap 1 (g en h), stap 2
+(afgeleiden), stap 3: eerst `f′(q) = g′(q)·h(q) + g(q)·h′(q)`, dan ingevuld,
+dan uitgerekend → f′(q) = 12q(3q²−2).
 
-**Scène 5 · Voeg alles samen** — m(q), m′(q) = u′(q) − v′(q),
-m′(q) = 0 − 12q(3q²−2), en de uitkomst groot in beeld.
+**Scène 5 · Voeg alles samen** — dat antwoord hoorde bij h, dus
+`h′(q) = 12q(3q²−2)`; dan m′(q) = g′(q) − h′(q), dan ingevuld, en de uitkomst
+groot in beeld.
 
 ## Zelf inspreken in plaats van Pauline?
 

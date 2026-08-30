@@ -12,7 +12,7 @@ export function RemotionRoot() {
       <Composition
         id="SomProduct"
         component={SomProductVideo}
-        durationInFrames={2940}
+        durationInFrames={2825}
         fps={30}
         width={1920}
         height={1080}
@@ -44,7 +44,7 @@ export function RemotionRoot() {
       <Composition
         id="SomOfProductregel"
         component={RegelsVideo}
-        durationInFrames={4220}
+        durationInFrames={4210}
         fps={30}
         width={1920}
         height={1080}

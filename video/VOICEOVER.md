@@ -4,7 +4,7 @@ Totale lengte: 98 seconden. Tijden hieronder horen bij de scènes in
 `src/SomProductVideo.tsx` — als je een scène langer/korter maakt, pas beide aan.
 
 **Huidige stand:** in `public/voiceover/scene-1.mp3` t/m `scene-6.mp3` staat een
-ElevenLabs-voice-over (stem "Jessica"). Opnieuw genereren — bijv. met een
+ElevenLabs-voice-over (stem "Pauline"). Opnieuw genereren, bijv. met een
 andere stem of aangepaste tekst — kan met `bash scripts/genereer-voiceover.sh`
 (API-key staat in `.env`, andere stem kiezen via `VOICE_ID=…`). Eigen opnames
 gebruiken kan ook: vervang de zes bestanden met **dezelfde bestandsnamen**.

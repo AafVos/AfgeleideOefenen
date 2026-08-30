@@ -85,6 +85,8 @@ export default async function UitlegVideosPage({ params, searchParams }: PagePro
         duration: v.duration,
         src: v.src,
         href: `/${locale}/uitleg-videos?video=${encodeURIComponent(v.slug)}`,
+        soort: v.soort,
+        chapter: v.chapter,
         hasPractice: v.clusterIds.length > 0,
       }))}
       activeSlug={activeVideo?.slug ?? null}
@@ -123,6 +125,9 @@ export default async function UitlegVideosPage({ params, searchParams }: PagePro
         askPhotoRemove: t('askPhotoRemove'),
         askPhotoBusy: t('askPhotoBusy'),
         askPhotoTooBig: t('askPhotoTooBig'),
+        groupGeneral: t('groupGeneral'),
+        groupWalkthrough: t('groupWalkthrough'),
+        chapterOther: t('chapterOther'),
         askNoAccount: t('askNoAccount'),
         askLogin: t('askLogin'),
         askRegister: t('askRegister'),
