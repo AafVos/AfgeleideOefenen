@@ -28,7 +28,7 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       slug: 'somregel-of-productregel',
       title: 'Somregel of productregel?',
       description:
-        'Wanneer gebruik je welke regel — en hoe de somregel binnen de productregel terugkomt.',
+        'Wanneer gebruik je welke regel, en hoe de somregel binnen de productregel terugkomt.',
       duration: '2:21',
       src: `${STORAGE_BASE}/somregel-of-productregel.mp4`,
       clusterIds: [
@@ -42,7 +42,7 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       slug: 'som-29',
       title: 'Uitleg bij #29 (H2)',
       description:
-        'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren — eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
+        'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
       duration: '2:09',
       src: `${STORAGE_BASE}/som-29.mp4`,
       clusterIds: [
@@ -54,12 +54,24 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
       slug: 'som-30',
       title: 'Uitleg bij #30 (H2)',
       description:
-        'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren — eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
+        'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
       duration: '2:35',
       src: `${STORAGE_BASE}/som-30.mp4`,
       clusterIds: [
         // Productregel: twee polynomen (het cluster van som 30)
         'faa995e4-1e45-4d93-8145-ee749232725d',
+      ],
+    },
+    {
+      slug: 'som-34',
+      title: 'Uitleg bij #34 (H2)',
+      description:
+        'Hoofdstuk 2, som 34: f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel. Op verzoek!',
+      duration: '1:20',
+      src: `${STORAGE_BASE}/som-34.mp4`,
+      clusterIds: [
+        // De quotiëntregel · Eenvoudige breuk (het cluster van som 34)
+        'a56f5e6f-4637-4087-98a4-6a60cec1deec',
       ],
     },
   ],

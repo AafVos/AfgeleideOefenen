@@ -9,6 +9,7 @@
     "still": "remotion still SomProduct",
     "render:som29": "remotion render Som29 out/som-29.mp4",
     "render:som30": "remotion render Som30 out/som-30.mp4",
+    "render:som34": "remotion render Som34 out/som-34.mp4",
     "presenter": "vite --open"
   },
   "dependencies": {
