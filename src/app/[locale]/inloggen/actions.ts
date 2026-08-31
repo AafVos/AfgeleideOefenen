@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
+import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 
 export type LoginState = { error: string | null; unconfirmedEmail?: string | null }
@@ -20,7 +21,7 @@ export async function loginAction(
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
     const isUnconfirmed = /email not confirmed/i.test(error.message)
@@ -28,6 +29,13 @@ export async function loginAction(
       error: translateAuthError(error.message),
       unconfirmedEmail: isUnconfirmed ? email : null,
     }
+  }
+
+  // Vangnet naast de webhook op e-mailbevestiging: wie daar tussendoor valt,
+  // krijgt de welkomstmail alsnog bij de eerste keer inloggen. De functie is
+  // idempotent, dus dubbel aanroepen levert geen tweede mail op.
+  if (data.user) {
+    await stuurWelkomstmail(data.user.id)
   }
 
   const locale = await getLocale()
