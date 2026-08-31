@@ -91,6 +91,20 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
         'a56f5e6f-4637-4087-98a4-6a60cec1deec',
       ],
     },
+    {
+      slug: 'quotientregel',
+      title: 'De quotiëntregel',
+      description:
+        'De quotiëntregel en het stappenplan dat je erbij volgt, meteen toegepast op #36 uit H2.',
+      soort: 'algemeen',
+      chapter: 'H2',
+      duration: '1:42',
+      src: `${STORAGE_BASE}/quotientregel.mp4`,
+      clusterIds: [
+        // De quotiëntregel · Eenvoudige breuk (het cluster van #36)
+        'a56f5e6f-4637-4087-98a4-6a60cec1deec',
+      ],
+    },
   ],
   integralen: [],
 }
