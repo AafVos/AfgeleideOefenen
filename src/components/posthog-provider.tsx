@@ -16,9 +16,14 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         capture_pageleave: true,
         autocapture: true,
         session_recording: {
+          // Invoervelden blijven zichtbaar in de opnames — dat is juist het
+          // punt: we willen zien waar leerlingen vastlopen in een som. Maar
+          // e-mailadressen horen daar niet bij, dus die maskeren we samen met
+          // de wachtwoorden.
           maskAllInputs: false,
           maskInputOptions: {
             password: true,
+            email: true,
           },
         },
       })

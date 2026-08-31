@@ -1,8 +1,11 @@
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
-import { loadChapters } from '@/lib/practice/chapter-overview'
-import { createClient } from '@/lib/supabase/server'
+import {
+  getChapters,
+  getCurrentProfile,
+  getCurrentUser,
+} from '@/lib/supabase/request-cache'
 import { THEORY_OVERVIEW } from '@/lib/theory'
 import { MobileNav } from './mobile-nav'
 import { NavDropdown } from './nav-dropdown'
@@ -63,28 +66,20 @@ function IconChart() {
 }
 
 export async function SiteHeader({ locale }: { locale: string }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
-  let username: string | null = null
-  let role: string | null = null
-  let tourSeen = true
-  if (user) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('username, role, tour_seen_at')
-      .eq('id', user.id)
-      .maybeSingle()
-    username = data?.username ?? null
-    role = data?.role ?? null
-    tourSeen = data ? data.tour_seen_at != null : true
-  }
+  // Profiel, hoofdstukken en vertalingen hangen niet van elkaar af, en de
+  // eerste twee zijn per request gedeeld met de pagina onder de header — die
+  // vroeg ze eerder nog een keer apart op.
+  const [profile, chapters, t] = await Promise.all([
+    user ? getCurrentProfile() : null,
+    user ? getChapters() : [],
+    getTranslations({ locale, namespace: 'Header' }),
+  ])
 
-  const chapters = user ? await loadChapters(supabase) : []
-
-  const t = await getTranslations({ locale, namespace: 'Header' })
+  const username = profile?.username ?? null
+  const role = profile?.role ?? null
+  const tourSeen = profile ? profile.tour_seen_at != null : true
 
   const oefenenItems = chapters.map((ch) => ({
     href: `/${locale}/oefenen?chapter=${encodeURIComponent(ch.slug)}`,

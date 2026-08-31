@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 
 import { stuurWelkomstmail } from '@/lib/email/welkom'
@@ -34,8 +35,15 @@ export async function loginAction(
   // Vangnet naast de webhook op e-mailbevestiging: wie daar tussendoor valt,
   // krijgt de welkomstmail alsnog bij de eerste keer inloggen. De functie is
   // idempotent, dus dubbel aanroepen levert geen tweede mail op.
+  //
+  // Via `after` in plaats van een `await`: de mail kost een admin-call en een
+  // Resend-call, en daar hoefde de leerling voorheen op te wachten voordat hij
+  // doorgestuurd werd — ook als de mail allang verstuurd was. `after` draait
+  // het werk ná de response, en blijft ook lopen als hieronder `redirect` wordt
+  // aangeroepen.
   if (data.user) {
-    await stuurWelkomstmail(data.user.id)
+    const userId = data.user.id
+    after(() => stuurWelkomstmail(userId))
   }
 
   const locale = await getLocale()
