@@ -3,17 +3,20 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { SOM29_CUES, type Cue } from '../src/cues'
+import { QUOTIENT_CUES } from '../src/cues-quotient'
 import { SOM30_CUES } from '../src/cues-som30'
 import { SOM34_CUES } from '../src/cues-som34'
 import { SOM29_DUUR, Som29Video } from '../src/Som29Video'
 import { SOM30_DUUR, Som30Video } from '../src/Som30Video'
 import { SOM34_DUUR, Som34Video } from '../src/Som34Video'
+import { QUOTIENT_DUUR, QuotientVideo } from '../src/QuotientVideo'
 
 /** Welke video de presenter toont: ?video=som34 in de URL, standaard som29. */
 const VIDEOS = {
   som29: { cues: SOM29_CUES, duur: SOM29_DUUR, component: Som29Video },
   som30: { cues: SOM30_CUES, duur: SOM30_DUUR, component: Som30Video },
   som34: { cues: SOM34_CUES, duur: SOM34_DUUR, component: Som34Video },
+  quotient: { cues: QUOTIENT_CUES, duur: QUOTIENT_DUUR, component: QuotientVideo },
 } as const
 
 const gekozen = new URLSearchParams(window.location.search).get('video')
