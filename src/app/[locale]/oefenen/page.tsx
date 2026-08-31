@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 
 import { SITE } from '@/config/site'
 import {
-  loadChapters,
   loadAllTopics,
   loadClustersForTopics,
   loadTilesForClusters,
@@ -11,6 +10,7 @@ import {
   type ClusterInfo,
   type TopicCategory,
 } from '@/lib/practice/chapter-overview'
+import { getChapters, getCurrentUser } from '@/lib/supabase/request-cache'
 import { createClient } from '@/lib/supabase/server'
 
 import { OefenenClient } from './oefenen-client'
@@ -60,9 +60,7 @@ type PageProps = {
 export default async function OefenenPage({ searchParams }: PageProps) {
   const supabase = await createClient()
   const locale = await getLocale()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect(`/${locale}/inloggen`)
 
   const params = (await searchParams) ?? {}
@@ -81,7 +79,7 @@ export default async function OefenenPage({ searchParams }: PageProps) {
 
   const [t, chapters, allTopicsRaw] = await Promise.all([
     getTranslations('FreeExercise'),
-    loadChapters(supabase),
+    getChapters(),
     loadAllTopics(supabase),
   ])
 
