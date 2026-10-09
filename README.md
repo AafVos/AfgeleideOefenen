@@ -107,12 +107,20 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build`   | Productie build                           |
 | `npm run start`   | Start productie build                     |
 | `npm run lint`    | ESLint                                    |
+| `npm run typecheck` | TypeScript-controle (`tsc --noEmit`)    |
 | `npm test`        | Vitest (unit tests, eenmalig)             |
 | `npm run test:watch` | Vitest in watch-modus                  |
 
 Tests staan naast de code die ze controleren (`src/**/*.test.ts`) en draaien
 zonder database en zonder AI — alleen pure rekenregels, zoals het nakijken van
 antwoorden in `src/lib/practice/engine.ts`.
+
+### Automatische controle
+
+Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`
+en `npm run typecheck`. Dat is nodig omdat `next build` sinds Next.js 16 zelf
+geen lint meer draait; zonder deze workflow zou een lintfout ongezien door de
+Vercel-build komen. De build zelf laten we aan Vercel over.
 
 ---
 
