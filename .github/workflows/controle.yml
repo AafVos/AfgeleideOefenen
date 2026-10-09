@@ -48,3 +48,41 @@ jobs:
 
       - name: Typecontrole
         run: npm run typecheck
+
+  # Loopt de weg van een leerling na in een echte browser: inloggen →
+  # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:
+  # een wegwerp-Supabase in Docker en een neppe AI-controle, zodat deze
+  # controle nooit aan de gedeelde database of aan Gemini komt.
+  e2e:
+    name: Weg van een leerling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # Zelfde reden als hierboven: npm 11 is nodig voor package-lock.json.
+          node-version: 24
+          cache: npm
+
+      - name: Pakketten installeren
+        run: npm ci
+
+      - name: Browser installeren
+        run: npx playwright install --with-deps chromium
+
+      - name: Lokale Supabase starten
+        run: npx supabase start
+
+      - name: Weg van een leerling nalopen
+        run: npm run test:e2e
+
+      - name: Uitslag bewaren
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: uitslag-e2e
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
