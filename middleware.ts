@@ -10,14 +10,6 @@ const NON_LOCALIZED_PREFIXES = ['admin', 'api', 'auth', 'uitloggen']
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // De site was ooit ook Engels. Oude /en-adressen blijven werken: ze gaan
-  // permanent naar dezelfde pagina onder /nl.
-  if (pathname === '/en' || pathname.startsWith('/en/')) {
-    const url = request.nextUrl.clone()
-    url.pathname = `/nl${pathname.slice('/en'.length)}`
-    return NextResponse.redirect(url, 308)
-  }
-
   const localeStripMatch = pathname.match(
     new RegExp(`^/(${routing.locales.join('|')})/(${NON_LOCALIZED_PREFIXES.join('|')})(/.*)?$`),
   )
