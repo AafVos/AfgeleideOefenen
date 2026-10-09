@@ -75,7 +75,7 @@ export async function signupAction(
   }
 
   revalidatePath('/', 'layout')
-  redirect(`/${locale}/onboarding`)
+  redirect(`/${locale}/oefenen`)
 }
 
 function authErrorKey(msg: string): SignupErrorKey {
