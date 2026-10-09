@@ -27,6 +27,9 @@ jobs:
   lint-en-typecontrole:
     name: Lint en typecontrole
     runs-on: ubuntu-latest
+    # Normaal is deze job in ruim een minuut klaar. Blijft er iets hangen, dan
+    # kappen we er na drie minuten mee in plaats van zes uur te wachten.
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v7
 
@@ -56,6 +59,10 @@ jobs:
   e2e:
     name: Weg van een leerling
     runs-on: ubuntu-latest
+    # Normaal duurt deze job twee à drie minuten. Hangt er een stap (dat
+    # gebeurde: het installeren van de browser bleef 17 minuten staan), dan
+    # stopt GitHub er na tien minuten mee in plaats van na zes uur.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
 
@@ -65,20 +72,109 @@ jobs:
           node-version: 24
           cache: npm
 
+      # Verandert er in een pull request alleen tekst (README, docs, bronnen
+      # voor de oefenstof), dan hoeft de browser er niet doorheen. De job
+      # blijft wel bestaan en eindigt groen: hij is verplicht op `main`, en
+      # een job die helemaal niet draait blijft daar op "in afwachting"
+      # staan.
+      - name: Kijken of de tests nodig zijn
+        id: nodig
+        env:
+          BASIS: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "Geen pull request: altijd nalopen."
+            echo "draaien=ja" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch --no-tags --depth=1 origin "$BASIS"
+          gewijzigd=$(git diff --name-only "$BASIS" HEAD)
+          echo "Gewijzigde bestanden:"
+          echo "$gewijzigd"
+
+          if [ -z "$gewijzigd" ]; then
+            echo "Geen lijst met wijzigingen: voor de zekerheid toch nalopen."
+            echo "draaien=ja" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Blijft er na de tekstbestanden iets over, dan moet de browser erdoor.
+          rest=$(printf '%s\n' "$gewijzigd" | grep -vE '(\.md$|^docs/|^content-bron/)' || true)
+          if [ -n "$rest" ]; then
+            echo "draaien=ja" >> "$GITHUB_OUTPUT"
+          else
+            echo "draaien=nee" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Overgeslagen
+        if: ${{ steps.nodig.outputs.draaien != 'ja' }}
+        run: echo "Alleen tekst gewijzigd — de weg van een leerling blijft hetzelfde."
+
       - name: Pakketten installeren
+        if: ${{ steps.nodig.outputs.draaien == 'ja' }}
         run: npm ci
 
-      - name: Browser installeren
-        run: npx playwright install --with-deps chromium
+      # De browser (± 100 MB) hoeft niet bij elke run opnieuw gedownload te
+      # worden. De sleutel is de Playwright-versie uit package-lock.json:
+      # bij elke nieuwe versie hoort een nieuwe browser.
+      - name: Playwright-versie opzoeken
+        if: ${{ steps.nodig.outputs.draaien == 'ja' }}
+        id: playwright
+        run: |
+          versie=$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")
+          echo "versie=$versie" >> "$GITHUB_OUTPUT"
 
+      - name: Bewaarde browser terughalen
+        if: ${{ steps.nodig.outputs.draaien == 'ja' }}
+        id: browser-opslag
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.versie }}
+
+      # Stond de browser er al, dan hoeven alleen de systeembibliotheken nog.
+      # Mislukt het of blijft het hangen, dan proberen we het één keer
+      # opnieuw: dat is meestal een hapering bij de download.
+      - name: Browser installeren
+        if: ${{ steps.nodig.outputs.draaien == 'ja' }}
+        timeout-minutes: 3
+        env:
+          UIT_OPSLAG: ${{ steps.browser-opslag.outputs.cache-hit }}
+        run: |
+          installeren() {
+            if [ "$UIT_OPSLAG" = "true" ]; then
+              timeout 80 npx playwright install-deps chromium
+            else
+              timeout 80 npx playwright install --with-deps chromium
+            fi
+          }
+          installeren || {
+            echo "::warning::Installeren van de browser mislukte of liep vast; nog één poging."
+            installeren
+          }
+
+      # Alleen wat de test nodig heeft: de database, inloggen (auth) en de
+      # data-API. De rest (studio, opslag, mail, realtime, edge-functies,
+      # statistieken) gebruikt de site niet in deze test. Het scriptje zet ze
+      # in de config uit; dat scheelt meer dan `start -x`, want uitgezette
+      # onderdelen worden ook niet gedownload. De config van je eigen computer
+      # blijft ongemoeid: dit draait alleen hier.
       - name: Lokale Supabase starten
-        run: npx supabase start
+        if: ${{ steps.nodig.outputs.draaien == 'ja' }}
+        timeout-minutes: 4
+        run: |
+          node scripts/ci-supabase-kaal.mjs
+          npx supabase start -x imgproxy,postgres-meta
 
       - name: Weg van een leerling nalopen
+        if: ${{ steps.nodig.outputs.draaien == 'ja' }}
+        timeout-minutes: 5
         run: npm run test:e2e
 
       - name: Uitslag bewaren
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.nodig.outputs.draaien == 'ja' }}
         uses: actions/upload-artifact@v4
         with:
           name: uitslag-e2e
