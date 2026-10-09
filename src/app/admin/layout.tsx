@@ -2,7 +2,13 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { SITE_CONFIG } from '@/config/site'
+import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
+
+// Het beheergedeelte staat buiten `src/app/[locale]`, dus de taalcode moet
+// er hier zelf bij. Zonder die code stuurt `src/proxy.ts` de bezoeker alsnog
+// door, maar dat is een extra sprong die niemand nodig heeft.
+const TAAL = routing.defaultLocale
 
 export const metadata = {
   title: `Admin · ${SITE_CONFIG.domain}`,
@@ -26,7 +32,7 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/inloggen')
+  if (!user) redirect(`/${TAAL}/inloggen`)
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -34,7 +40,7 @@ export default async function AdminLayout({
     .eq('id', user.id)
     .maybeSingle()
 
-  if (profile?.role !== 'admin') redirect('/')
+  if (profile?.role !== 'admin') redirect(`/${TAAL}`)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
