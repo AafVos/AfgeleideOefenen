@@ -32,8 +32,12 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # Next.js 16 vraagt minstens Node 20.9; 22 is de huidige LTS.
-          node-version: 22
+          # Node 24 (huidige LTS). Niet lager: package-lock.json is door npm 11
+          # geschreven en npm 10 (dat bij Node 22 zit) weigert hem met
+          # "Missing: @swc/helpers@0.5.23 from lock file". Dat komt doordat
+          # next@16.2.4 @swc/helpers zowel als afhankelijkheid 0.5.15 als als
+          # losse eis ">=0.5.17" opgeeft; alleen npm 11 lost dat op.
+          node-version: 24
           cache: npm
 
       - name: Pakketten installeren
