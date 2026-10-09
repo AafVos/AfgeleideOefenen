@@ -53,6 +53,32 @@ export function answersMatch(
 }
 
 // =====================================================================
+// Voortgangsregel bij een goed antwoord
+// =====================================================================
+export type ProgressAfterCorrect = {
+  correct_streak: number
+  status: ProgressStatus
+  mastered: boolean
+}
+
+/**
+ * Bij een goed antwoord gaat de reeks één omhoog; een cluster is beheerst
+ * zodra de reeks MASTERY_THRESHOLD haalt (drie goed achter elkaar). Een
+ * cluster dat al beheerst is, blijft dat.
+ */
+export function progressAfterCorrect(
+  currentStreak: number,
+): ProgressAfterCorrect {
+  const correct_streak = currentStreak + 1
+  const mastered = correct_streak >= MASTERY_THRESHOLD
+  return {
+    correct_streak,
+    status: mastered ? 'mastered' : 'in_progress',
+    mastered,
+  }
+}
+
+// =====================================================================
 // Leerlijn berekenen
 // =====================================================================
 export async function loadLearningPath(
