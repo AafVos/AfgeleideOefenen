@@ -157,14 +157,16 @@ jobs:
 
       # Alleen wat de test nodig heeft: de database, inloggen (auth) en de
       # data-API. De rest (studio, opslag, mail, realtime, edge-functies,
-      # statistieken) gebruikt de site niet in deze test en kost vooral tijd
-      # met het ophalen van containers.
+      # statistieken) gebruikt de site niet in deze test. Het scriptje zet ze
+      # in de config uit; dat scheelt meer dan `start -x`, want uitgezette
+      # onderdelen worden ook niet gedownload. De config van je eigen computer
+      # blijft ongemoeid: dit draait alleen hier.
       - name: Lokale Supabase starten
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
         timeout-minutes: 4
-        run: >
-          npx supabase start -x
-          studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor,realtime,storage-api,postgres-meta
+        run: |
+          node scripts/ci-supabase-kaal.mjs
+          npx supabase start -x imgproxy,postgres-meta
 
       - name: Weg van een leerling nalopen
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
