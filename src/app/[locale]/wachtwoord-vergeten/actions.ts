@@ -4,14 +4,17 @@ import { headers } from 'next/headers'
 
 import { createClient } from '@/lib/supabase/server'
 
-export type ForgotState = { sent: boolean; error: string | null }
+/** Sleutels uit de `ForgotPassword`-teksten; het formulier vertaalt ze. */
+export type ForgotErrorKey = 'errorMissingEmail' | 'errorGeneric'
+
+export type ForgotState = { sent: boolean; errorKey: ForgotErrorKey | null }
 
 export async function forgotPasswordAction(
   _prev: ForgotState,
   formData: FormData,
 ): Promise<ForgotState> {
   const email = (formData.get('email') ?? '').toString().trim()
-  if (!email) return { sent: false, error: 'Vul je e-mailadres in.' }
+  if (!email) return { sent: false, errorKey: 'errorMissingEmail' }
 
   // Use the actual request origin so we don't depend on NEXT_PUBLIC_SITE_URL.
   const headersList = await headers()
@@ -26,12 +29,15 @@ export async function forgotPasswordAction(
     redirectTo: `${origin}/auth/callback?next=/wachtwoord-opnieuw`,
   })
 
-  // Surface configuration errors (e.g. "Redirect URL not allowed") so they
-  // are visible in the UI. We deliberately hide "user not found" style errors
-  // to prevent email enumeration.
+  // Configuratiefouten ("Redirect URL not allowed") en rate limits moeten wél
+  // zichtbaar zijn, maar de Engelse tekst van Supabase hoort niet op het
+  // scherm: die gaat naar de serverlog, de leerling krijgt één nette zin.
+  // "User not found"-achtige fouten verbergen we bewust, zodat je niet kunt
+  // uitvissen welke e-mailadressen een account hebben.
   if (error && !/user/i.test(error.message)) {
-    return { sent: false, error: error.message }
+    console.error('[wachtwoord-vergeten] resetmail mislukt:', error.message)
+    return { sent: false, errorKey: 'errorGeneric' }
   }
 
-  return { sent: true, error: null }
+  return { sent: true, errorKey: null }
 }

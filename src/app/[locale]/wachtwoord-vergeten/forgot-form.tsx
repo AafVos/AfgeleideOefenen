@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import { forgotPasswordAction, type ForgotState } from './actions'
 
-const initial: ForgotState = { sent: false, error: null }
+const initial: ForgotState = { sent: false, errorKey: null }
 
 export function ForgotForm() {
   const t = useTranslations('ForgotPassword')
@@ -22,9 +22,9 @@ export function ForgotForm() {
 
   return (
     <form action={action} className="space-y-5">
-      {state.error && (
+      {state.errorKey && (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-          {state.error}
+          {t(state.errorKey)}
         </p>
       )}
       <label className="block">

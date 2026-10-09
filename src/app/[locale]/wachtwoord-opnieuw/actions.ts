@@ -5,7 +5,10 @@ import { getLocale } from 'next-intl/server'
 
 import { createClient } from '@/lib/supabase/server'
 
-export type NewPasswordState = { error: string | null }
+/** Sleutels uit de `NewPassword`-teksten; het formulier vertaalt ze. */
+export type NewPasswordErrorKey = 'errorPasswordTooShort' | 'errorGeneric'
+
+export type NewPasswordState = { errorKey: NewPasswordErrorKey | null }
 
 export async function newPasswordAction(
   _prev: NewPasswordState,
@@ -13,12 +16,17 @@ export async function newPasswordAction(
 ): Promise<NewPasswordState> {
   const password = (formData.get('password') ?? '').toString()
   if (!password || password.length < 8) {
-    return { error: 'Kies een wachtwoord van minstens 8 tekens.' }
+    return { errorKey: 'errorPasswordTooShort' }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.auth.updateUser({ password })
-  if (error) return { error: error.message }
+  if (error) {
+    // De Engelse tekst van Supabase gaat naar de serverlog, niet naar het
+    // scherm van de leerling.
+    console.error('[wachtwoord-opnieuw] wachtwoord opslaan mislukt:', error.message)
+    return { errorKey: 'errorGeneric' }
+  }
 
   const locale = await getLocale()
   redirect(`/${locale}/dashboard`)
