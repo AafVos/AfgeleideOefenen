@@ -150,6 +150,7 @@ export default async function ZelfToetsRunnerPage({
       </div>
 
       <TestRunnerCard
+        key={question.id}
         sessionId={sessionId}
         question={{
           id: question.id,

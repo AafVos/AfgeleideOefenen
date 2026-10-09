@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -55,15 +55,17 @@ const inputClass =
 export function UsernameForm({ initialUsername }: { initialUsername: string }) {
   const [state, formAction] = useActionState(updateUsernameAction, initialState)
   const t = useTranslations('Settings')
-  const [editing, setEditing] = useState(initialUsername === '')
-  const [savedName, setSavedName] = useState(initialUsername)
+  // De opgeslagen naam volgt rechtstreeks uit het resultaat van de actie.
+  const savedName = state.success && state.username ? state.username : initialUsername
 
-  useEffect(() => {
-    if (state.success && state.username) {
-      setSavedName(state.username)
-      setEditing(false)
-    }
-  }, [state])
+  // Hier staat bij welk resultaat het formulier geopend is (null = dicht).
+  // Komt er daarna een geslaagde opslag binnen, dan klapt het dicht; bij een
+  // foutmelding blijft het open zodat je je invoer kunt verbeteren.
+  const [openedAt, setOpenedAt] = useState<SettingsState | null>(
+    initialUsername === '' ? initialState : null,
+  )
+  const justSaved = Boolean(state.success && state.username)
+  const editing = openedAt !== null && !(justSaved && openedAt !== state)
 
   if (!editing) {
     return (
@@ -75,7 +77,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
           </span>
           <button
             type="button"
-            onClick={() => setEditing(true)}
+            onClick={() => setOpenedAt(state)}
             className="ml-3 font-medium text-accent hover:underline"
           >
             {t('change')}
@@ -108,7 +110,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
         {savedName && (
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={() => setOpenedAt(null)}
             className="text-sm font-medium text-text-muted hover:text-text"
           >
             {t('cancel')}

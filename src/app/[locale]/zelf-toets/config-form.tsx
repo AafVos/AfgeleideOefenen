@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
@@ -77,10 +77,9 @@ export function ConfigForm({
     new Set(config.chapters.map((c) => c.id)),
   )
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set())
-  const [countInput, setCountInput] = useState('10')
+  const [typedCount, setTypedCount] = useState('10')
   const [countTouched, setCountTouched] = useState(false)
-  const count = Math.max(0, parseInt(countInput, 10) || 0)
-  const [source, setSource] = useState<QuestionSource>('new')
+  const [chosenSource, setChosenSource] = useState<QuestionSource>('new')
   const [showAnswers, setShowAnswers] = useState<'immediate' | 'end'>('immediate')
   const [error, setError] = useState<string | null>(null)
 
@@ -117,20 +116,23 @@ export function ConfigForm({
     return counts
   }, [config.clusters, selectedClusters])
 
+  // Gekozen bron heeft geen vragen in deze selectie: val terug op 'alle vragen'
+  const source: QuestionSource =
+    chosenSource !== 'all' &&
+    selectedClusters.size > 0 &&
+    sourceCounts[chosenSource] === 0 &&
+    sourceCounts.all > 0
+      ? 'all'
+      : chosenSource
+
   const availableInScope = sourceCounts[source]
 
-  // Gekozen bron heeft geen vragen meer in deze selectie: val terug op 'alle vragen'
-  useEffect(() => {
-    if (selectedClusters.size === 0) return
-    if (source === 'all' || sourceCounts[source] > 0) return
-    if (sourceCounts.all > 0) setSource('all')
-  }, [selectedClusters, source, sourceCounts])
-
-  useEffect(() => {
-    if (countTouched) return
-    if (availableInScope <= 0) return
-    setCountInput(String(Math.min(10, availableInScope)))
-  }, [availableInScope, countTouched])
+  // Zolang je het aantal niet zelf hebt aangepast, stellen we er tien voor —
+  // of minder, als er minder vragen in je selectie zitten.
+  const countInput = countTouched
+    ? typedCount
+    : String(availableInScope > 0 ? Math.min(10, availableInScope) : 10)
+  const count = Math.max(0, parseInt(countInput, 10) || 0)
 
   function toggleCluster(id: string) {
     setSelectedClusters((prev) => {
@@ -399,7 +401,7 @@ export function ConfigForm({
                     name="source"
                     value={s}
                     checked={source === s}
-                    onChange={() => setSource(s)}
+                    onChange={() => setChosenSource(s)}
                     disabled={unavailable}
                     className="mt-1 accent-accent"
                   />
@@ -456,12 +458,12 @@ export function ConfigForm({
             max={Math.max(1, availableInScope)}
             value={countInput}
             onChange={(e) => {
-              setCountInput(e.target.value)
+              setTypedCount(e.target.value)
               setCountTouched(true)
             }}
             onBlur={() => {
               if (count <= 0) {
-                setCountInput(String(Math.min(10, Math.max(1, availableInScope))))
+                setTypedCount(String(Math.min(10, Math.max(1, availableInScope))))
               }
             }}
             className="w-32 rounded-md border border-border bg-surface px-3 py-2 text-sm"
