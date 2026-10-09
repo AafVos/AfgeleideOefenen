@@ -8,7 +8,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://www.${SITE_CONFIG.
 
 export type WelkomResultaat =
   | { verstuurd: true }
-  | { verstuurd: false; reden: 'al-verstuurd' | 'niet-bevestigd' | 'geen-adres' | 'fout' }
+  | {
+      verstuurd: false
+      reden: 'al-verstuurd' | 'niet-bevestigd' | 'geen-adres' | 'geen-sleutel' | 'fout'
+    }
 
 /**
  * Zelfde opmaak als de bevestigingsmail in supabase/email-templates/, zodat de
@@ -115,6 +118,14 @@ Groeten van Aaf`
  */
 export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat> {
   try {
+    // Vóór de vlag: zonder sleutel gaat er niets uit, en dan mag er ook niet
+    // "verstuurd" komen te staan.
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey) {
+      console.error('[welkomstmail] geen RESEND_API_KEY; mail overgeslagen')
+      return { verstuurd: false, reden: 'geen-sleutel' }
+    }
+
     const supabase = createServiceRoleClient()
     const { data, error } = await supabase.auth.admin.getUserById(userId)
     if (error || !data.user) return { verstuurd: false, reden: 'fout' }
@@ -131,20 +142,23 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
       user_metadata: { ...user.user_metadata, welcome_sent_at: nu },
     })
 
-    const videosUrl = `${SITE_URL}/nl/uitleg-videos`
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    const { error: mailError } = await resend.emails.send({
-      // Merknaam als afzender, geen persoonsnaam: dit is een no-reply-bericht.
-      from: `${SITE_CONFIG.brand} <${EMAIL_FROM}>`,
-      to: user.email,
-      subject: `Welkom bij ${SITE_CONFIG.brand}!`,
-      html: html(videosUrl),
-      text: tekst(videosUrl),
-    })
-
-    if (mailError) {
-      console.error('[welkomstmail]', mailError)
-      // Vlag terugdraaien, zodat een volgende poging het opnieuw probeert.
+    // Vanaf hier staat de vlag. Gaat het versturen op welke manier dan ook mis
+    // — een fout terug van Resend, of een fout die eruit vliegt — dan moet de
+    // vlag terug, anders slaat een volgende poging de mail over.
+    try {
+      const videosUrl = `${SITE_URL}/nl/uitleg-videos`
+      const resend = new Resend(apiKey)
+      const { error: mailError } = await resend.emails.send({
+        // Merknaam als afzender, geen persoonsnaam: dit is een no-reply-bericht.
+        from: `${SITE_CONFIG.brand} <${EMAIL_FROM}>`,
+        to: user.email,
+        subject: `Welkom bij ${SITE_CONFIG.brand}!`,
+        html: html(videosUrl),
+        text: tekst(videosUrl),
+      })
+      if (mailError) throw mailError
+    } catch (e) {
+      console.error('[welkomstmail]', e)
       await supabase.auth.admin.updateUserById(userId, {
         user_metadata: { ...user.user_metadata, welcome_sent_at: null },
       })
