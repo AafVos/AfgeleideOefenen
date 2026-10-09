@@ -6,17 +6,8 @@
  * niets hoeven aan te passen.
  */
 
-import type {
-  ClusterTheory,
-  OverviewChapter,
-} from './afgeleiden'
+import type { OverviewChapter } from './afgeleiden'
 
-export type { ClusterTheory, OverviewChapter }
-
-export const CLUSTER_THEORY: Record<string, ClusterTheory> = {}
-
-export const TOPIC_FORMULA: Record<string, string> = {}
-
-export const TOPIC_INTROS: Record<string, string> = {}
+export type { OverviewChapter }
 
 export const THEORY_OVERVIEW: OverviewChapter[] = []

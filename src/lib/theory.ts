@@ -13,15 +13,6 @@ import * as integralen from '@/content/theory/integralen'
 
 const SOURCE = SITE === 'integralen' ? integralen : afgeleiden
 
-export type {
-  ClusterTheory,
-  OverviewExample,
-  OverviewTable,
-  OverviewCard,
-  OverviewChapter,
-} from '@/content/theory/afgeleiden'
+export type { OverviewCard } from '@/content/theory/afgeleiden'
 
-export const CLUSTER_THEORY = SOURCE.CLUSTER_THEORY
-export const TOPIC_FORMULA = SOURCE.TOPIC_FORMULA
-export const TOPIC_INTROS = SOURCE.TOPIC_INTROS
 export const THEORY_OVERVIEW = SOURCE.THEORY_OVERVIEW

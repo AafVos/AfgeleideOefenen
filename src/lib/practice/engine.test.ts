@@ -2,12 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   answersMatch,
-  findActiveCluster,
   MASTERY_THRESHOLD,
   progressAfterCorrect,
   progressAfterIncorrect,
-  type ClusterWithStatusNew,
-  type TopicWithClustersNew,
 } from './engine'
 
 // =====================================================================
@@ -132,74 +129,5 @@ describe('progressAfterIncorrect', () => {
       correct_streak: 0,
       status: 'in_progress',
     })
-  })
-})
-
-// =====================================================================
-// Welke som is nu aan de beurt?
-// =====================================================================
-function cluster(
-  slug: string,
-  status: ClusterWithStatusNew['status'],
-): ClusterWithStatusNew {
-  return {
-    id: slug,
-    slug,
-    title: slug,
-    topic_id: 'topic',
-    order_index: 1,
-    status,
-    correct_streak: status === 'mastered' ? MASTERY_THRESHOLD : 0,
-  }
-}
-
-function topic(
-  slug: string,
-  clusters: ClusterWithStatusNew[],
-  isLocked = false,
-): TopicWithClustersNew {
-  return {
-    id: slug,
-    slug,
-    title: slug,
-    chapter_id: 'h2',
-    chapter_slug: 'h2',
-    chapter_title: 'Hoofdstuk 2',
-    order_index: 1,
-    clusters,
-    isLocked,
-    isMastered: clusters.every((c) => c.status === 'mastered'),
-  }
-}
-
-describe('findActiveCluster', () => {
-  it('kiest het eerste cluster dat nog niet beheerst is', () => {
-    const path = [
-      topic('basis', [
-        cluster('basis-1', 'mastered'),
-        cluster('basis-2', 'in_progress'),
-      ]),
-    ]
-    expect(findActiveCluster(path)?.cluster).toMatchObject({ slug: 'basis-2' })
-  })
-
-  it('slaat een volledig beheerst onderwerp over', () => {
-    const path = [
-      topic('basis', [cluster('basis-1', 'mastered')]),
-      topic('somregel', [cluster('somregel-1', 'locked')]),
-    ]
-    expect(findActiveCluster(path)?.cluster).toMatchObject({
-      slug: 'somregel-1',
-    })
-  })
-
-  it('geeft niets terug als het volgende onderwerp nog op slot zit', () => {
-    const path = [topic('somregel', [cluster('somregel-1', 'locked')], true)]
-    expect(findActiveCluster(path)).toBeNull()
-  })
-
-  it('geeft niets terug als alles beheerst is', () => {
-    const path = [topic('basis', [cluster('basis-1', 'mastered')])]
-    expect(findActiveCluster(path)).toBeNull()
   })
 })
