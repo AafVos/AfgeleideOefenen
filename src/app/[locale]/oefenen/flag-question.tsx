@@ -29,7 +29,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
 
   if (status === 'sent') {
     return (
-      <span className="text-xs text-text-muted">
+      <span className="py-2 text-xs text-text-muted">
         Bedankt — we kijken er naar.
       </span>
     )
@@ -40,7 +40,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-text-muted underline-offset-2 hover:text-accent-2 hover:underline"
+        className="min-h-11 px-2 py-2 text-xs text-text-muted underline-offset-2 hover:text-accent-2 hover:underline"
       >
         Klopt niet?
       </button>
@@ -57,7 +57,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         placeholder="Wat klopt er niet?"
-        className="min-w-48 flex-1 rounded-md border border-border bg-surface px-2 py-1 text-sm outline-none focus:border-accent-2 focus:ring-2 focus:ring-accent-2/20"
+        className="min-h-11 min-w-48 flex-1 rounded-md border border-border bg-surface px-2 py-2 text-sm outline-none focus:border-accent-2 focus:ring-2 focus:ring-accent-2/20"
         maxLength={500}
       />
       <div className="flex gap-2">
@@ -65,7 +65,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
           type="submit"
           disabled={pending}
           className={cn(
-            'rounded-md bg-accent-2 px-3 py-1 text-sm font-medium text-white hover:bg-accent-2/90 disabled:opacity-60',
+            'min-h-11 rounded-md bg-accent-2 px-3 py-2 text-sm font-medium text-white hover:bg-accent-2/90 disabled:opacity-60',
           )}
         >
           {pending ? 'Versturen…' : 'Versturen'}
@@ -77,7 +77,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
             setStatus('idle')
             setError(null)
           }}
-          className="rounded-md border border-border px-3 py-1 text-sm text-text-muted hover:text-text"
+          className="min-h-11 rounded-md border border-border px-3 py-2 text-sm text-text-muted hover:text-text"
         >
           Annuleer
         </button>

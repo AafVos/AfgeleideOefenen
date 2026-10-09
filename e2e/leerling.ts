@@ -1,3 +1,4 @@
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { expect, type Locator, type Page } from '@playwright/test'
 
 /**
@@ -8,6 +9,23 @@ export const TESTLEERLING = {
   id: 'e2e00000-0000-4000-8000-000000000001',
   email: 'leerling@test.local',
   wachtwoord: 'oefenen123',
+}
+
+/**
+ * Een verbinding met de lokale testdatabase, om te controleren wat er
+ * daadwerkelijk is opgeslagen. Alleen lokaal: de echte database is gedeeld
+ * met integraaloefenen.nl.
+ */
+export function testDatabase(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error('Start de tests met `npm run test:e2e`.')
+  }
+  if (!['localhost', '127.0.0.1', '::1'].includes(new URL(url).hostname)) {
+    throw new Error(`Niet lokaal: ${url}.`)
+  }
+  return createClient(url, serviceKey)
 }
 
 /** Het testhoofdstuk uit de seed. */
