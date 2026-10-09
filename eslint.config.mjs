@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Werkmap van de Paperclip-agents: staat niet in de repo (alleen in
+    // .git/info/exclude, dat ESLint niet leest) en is honderden MB's groot.
+    ".paperclip/**",
+    // Losse Remotion-werkplaats met een eigen package.json en tsconfig.json;
+    // de typecontrole van de site slaat hem ook al over (zie tsconfig.json).
+    "video/**",
   ]),
 ]);
 
