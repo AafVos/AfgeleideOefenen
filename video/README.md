@@ -16,6 +16,7 @@ DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
 | `npm run render:regels` | Rendert "Somregel of productregel?" naar `out/somregel-of-productregel.mp4`. |
 | `npm run render:som29` | Rendert "Uitleg bij som 29" naar `out/som-29.mp4`. |
 | `npm run render:som30` | Rendert "Uitleg bij som 30" naar `out/som-30.mp4`. |
+| `npm run render:herschrijven` | Rendert "Machten en wortels herschrijven" naar `out/machten-herschrijven.mp4`. |
 | `npm run still -- --frame=200 out/still.png` | Rendert één frame als afbeelding. |
 | `npm run presenter` | Opent de presenter: klik zelf per animatiestap door de video (voor eigen voice-over inspreken). Kies de video met `?video=som30` in de URL; zie `VOICEOVER-som29.md` / `VOICEOVER-som30.md`. |
 
@@ -28,6 +29,7 @@ DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
 - `scripts/genereer-voiceover*.sh` — voice-over genereren via ElevenLabs (API-key in `.env`).
 - `src/scenes-som29.tsx` + `src/Som29Video.tsx` — video "Uitleg bij som 29".
 - `src/scenes-som30.tsx` + `src/Som30Video.tsx` — video "Uitleg bij som 30".
+- `src/scenes-herschrijven.tsx` + `src/HerschrijvenVideo.tsx` — video "Machten en wortels herschrijven" (H6). Voice-over met tijdstempels per woord; `scripts/beats.py` zoekt op welk frame een woord valt (zie `VOICEOVER-herschrijven.md`).
 - `VOICEOVER.md` — het insprekscript van de som-productvideo met tijden.
 
 ## Nieuwe video maken
