@@ -5,6 +5,7 @@ import {
   findActiveCluster,
   MASTERY_THRESHOLD,
   progressAfterCorrect,
+  progressAfterIncorrect,
   type ClusterWithStatusNew,
   type TopicWithClustersNew,
 } from './engine'
@@ -93,6 +94,43 @@ describe('progressAfterCorrect', () => {
       correct_streak: 4,
       status: 'mastered',
       mastered: true,
+    })
+  })
+})
+
+describe('progressAfterIncorrect', () => {
+  it('zet de reeks terug op 0 bij een fout antwoord', () => {
+    expect(progressAfterIncorrect('in_progress', 2)).toEqual({
+      correct_streak: 0,
+      status: 'in_progress',
+    })
+  })
+
+  it('zet een reeks die nog op 0 staat niet verder omlaag', () => {
+    expect(progressAfterIncorrect('in_progress', 0)).toEqual({
+      correct_streak: 0,
+      status: 'in_progress',
+    })
+  })
+
+  it('laat een cluster dat al beheerst is beheerst', () => {
+    // Eén misser tijdens het herhalen mag "beheerst" niet afpakken; de reeks
+    // blijft staan, zodat een volgend goed antwoord niet terugvalt naar 1.
+    expect(progressAfterIncorrect('mastered', MASTERY_THRESHOLD)).toEqual({
+      correct_streak: MASTERY_THRESHOLD,
+      status: 'mastered',
+    })
+    expect(
+      progressAfterCorrect(
+        progressAfterIncorrect('mastered', MASTERY_THRESHOLD).correct_streak,
+      ),
+    ).toMatchObject({ status: 'mastered', mastered: true })
+  })
+
+  it('zet een cluster dat nog op slot stond op in_progress', () => {
+    expect(progressAfterIncorrect('locked', 0)).toEqual({
+      correct_streak: 0,
+      status: 'in_progress',
     })
   })
 })
