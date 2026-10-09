@@ -60,8 +60,8 @@ cp .env.local.example .env.local
 | `SUPABASE_SERVICE_ROLE_KEY`     | Supabase → Project Settings → API → `service_role` key (**niet** in de browser gebruiken!) |
 | `GEMINI_API_KEY`                | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) |
 | `NEXT_PUBLIC_SITE_URL`          | Basis-URL van de site (lokaal: `http://localhost:3000`, productie: eigen domein) |
-| `RESEND_API_KEY`                | [resend.com/api-keys](https://resend.com/api-keys) — zonder deze key gaat álle mail er stil niet uit |
-| `EMAIL_FROM`                    | Afzender van de mail; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
+| `RESEND_API_KEY`                | [resend.com/api-keys](https://resend.com/api-keys) — zonder deze key gaat de mail die de site zelf stuurt er stil niet uit. De mail van het inloggen gaat niet hierlangs, zie [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen) |
+| `EMAIL_FROM`                    | Afzender van de mail die de site zelf stuurt; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
 | `NOTIFY_EMAIL`                  | Adres waar het seintje "nieuwe gebruiker" heen gaat. Geen standaardwaarde |
 | `WEBHOOK_SECRET`                | Zelf te verzinnen; zelfde waarde als de header `x-webhook-secret` in Supabase → Database → Webhooks. Zonder match: 401 |
 | `NEXT_PUBLIC_SITE`              | `afgeleiden` of `integralen` — kiest de merknaam en het domein. Standaard: `afgeleiden` |
@@ -73,6 +73,40 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Mail gaat langs twee wegen
+
+Er zijn twee soorten mail, en ze worden door verschillende partijen verstuurd.
+Wie een mail niet ziet aankomen, moet dus eerst weten wélke mail het is.
+
+| Soort mail | Wie verstuurt | Waar instellen |
+|------------|---------------|----------------|
+| Welkomstmail, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY` en `EMAIL_FROM` in de omgevingsvariabelen |
+| Bevestig je e-mailadres, wachtwoord vergeten | **Supabase**, niet de site | Supabase → **Authentication → Emails → SMTP Settings** |
+
+De mail van het inloggen loopt via `supabase.auth.signUp()`, `supabase.auth.resend()`
+en `supabase.auth.resetPasswordForEmail()`. Die roepen de code van Resend niet
+aan: Supabase verstuurt ze zelf. `RESEND_API_KEY` doet daar dus niets.
+
+**Staat "Enable Custom SMTP" in Supabase uit, dan gebruikt Supabase zijn eigen
+testmailer, en die laat maar een paar mails per uur door.** Meldt een hele klas
+zich in hetzelfde lesuur aan, dan krijgen de meesten geen bevestigingsmail — en
+zonder die mail kunnen ze niet inloggen. Op het scherm van de leerling is daar
+niets van te zien.
+
+Voor productie hoort "Enable Custom SMTP" daarom **aan** te staan, met de
+SMTP-gegevens van Resend (host, poort en wachtwoord krijg je van Resend onder
+*SMTP*). Het afzenderadres moet op een domein staan dat bij Resend op
+*Verified* staat — `afgeleideoefenen.nl`. Staat het afzenderadres op een domein
+dat Resend níét kent, dan komt er helemáál geen mail meer aan in plaats van een
+paar per uur. Test na het omzetten dus meteen één aanmelding met een echt adres.
+
+De sjablonen van die mails staan in [`supabase/email-templates/`](./supabase/email-templates/)
+(`confirm-signup.html`, `reset-password-nl.html`, `reset-password-en.html`).
+Die staan níét automatisch in Supabase: je plakt ze er met de hand in onder
+**Authentication → Emails**.
 
 ---
 
@@ -152,9 +186,14 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
 6. **Supabase Auth redirect URLs** updaten: Supabase dashboard →
    **Authentication → URL Configuration** → zet `Site URL` op je productie-URL
    en voeg `https://<domein>/auth/callback` toe aan **Redirect URLs**.
-7. **Migraties draaien**: in de Supabase SQL Editor beide files draaien:
+7. **Eigen SMTP aanzetten in Supabase**: dashboard → **Authentication →
+   Emails → SMTP Settings** → "Enable Custom SMTP" aan, met de SMTP-gegevens
+   van Resend en een afzender op een bij Resend geverifieerd domein. Zonder
+   deze stap laat Supabase maar een paar bevestigingsmails per uur door — zie
+   [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen).
+8. **Migraties draaien**: in de Supabase SQL Editor beide files draaien:
    `0001_init.sql`, `0002_question_flags.sql` en daarna `seed.sql`.
-8. **Gemini API-key** onder Google AI Studio: zet een HTTP-referrer
+9. **Gemini API-key** onder Google AI Studio: zet een HTTP-referrer
    restriction op `https://afgeleideoefenen.nl/*` zodat hij niet misbruikt
    wordt als hij lekt.
 
