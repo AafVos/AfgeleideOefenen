@@ -53,13 +53,18 @@ Kopieer het voorbeeld en vul je eigen keys in:
 cp .env.local.example .env.local
 ```
 
-| Variabele                       | Waar te vinden in Supabase dashboard |
+| Variabele                       | Waar te vinden |
 |---------------------------------|--------------------------------------|
-| `NEXT_PUBLIC_SUPABASE_URL`      | Project Settings → API → Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Project Settings → API → `anon` public key |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Project Settings → API → `service_role` key (**niet** in de browser gebruiken!) |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase → Project Settings → API → Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → `anon` public key |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase → Project Settings → API → `service_role` key (**niet** in de browser gebruiken!) |
 | `GEMINI_API_KEY`                | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) |
 | `NEXT_PUBLIC_SITE_URL`          | Basis-URL van de site (lokaal: `http://localhost:3000`, productie: eigen domein) |
+| `RESEND_API_KEY`                | [resend.com/api-keys](https://resend.com/api-keys) — zonder deze key gaat álle mail er stil niet uit |
+| `EMAIL_FROM`                    | Afzender van de mail; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
+| `NOTIFY_EMAIL`                  | Adres waar het seintje "nieuwe gebruiker" heen gaat. Geen standaardwaarde |
+| `WEBHOOK_SECRET`                | Zelf te verzinnen; zelfde waarde als de header `x-webhook-secret` in Supabase → Database → Webhooks. Zonder match: 401 |
+| `NEXT_PUBLIC_SITE`              | `afgeleiden` of `integralen` — kiest de merknaam en het domein. Standaard: `afgeleiden` |
 
 ### 4. Start de dev server
 
