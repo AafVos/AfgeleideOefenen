@@ -1,0 +1,46 @@
+# Automatische controle bij elke pull request.
+#
+# Waarom dit bestand bestaat: sinds Next.js 16 kijkt `next build` de lint niet
+# meer na (zie node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md:
+# "The `next lint` command has been removed. ... `next build` no longer runs
+# linting."). De Vercel-build blijft dus groen bij lintfouten. Deze workflow
+# vult dat gat.
+#
+# Bouwen doet Vercel al bij elke pull request; dat herhalen we hier niet.
+name: Controle
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Eén tak hoeft maar één keer tegelijk gecontroleerd te worden: duw je snel
+# achter elkaar, dan stopt de oude run.
+concurrency:
+  group: controle-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-en-typecontrole:
+    name: Lint en typecontrole
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # Next.js 16 vraagt minstens Node 20.9; 22 is de huidige LTS.
+          node-version: 22
+          cache: npm
+
+      - name: Pakketten installeren
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecontrole
+        run: npm run typecheck
