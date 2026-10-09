@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test'
 
-import { dashboardRegel, geefAntwoord, kiesOpgave, logIn } from './leerling'
+import {
+  TESTLEERLING,
+  dashboardRegel,
+  geefAntwoord,
+  kiesOpgave,
+  logIn,
+  testDatabase,
+} from './leerling'
 
 /**
  * De weg van een leerling, van begin tot eind nagelopen in een echte browser:
@@ -95,4 +102,29 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
   const regel = await dashboardRegel(page, 'Beheersen (e2e)')
   await expect(regel).toContainText('1/1')
   await expect(regel).toContainText('100%')
+})
+
+test('een leerling kan een opgave melden die niet klopt @telefoon', async ({
+  page,
+}) => {
+  await kiesOpgave(page, {
+    onderwerp: 'Nakijken (e2e)',
+    soortSom: 'Fout antwoord (e2e)',
+    nummer: 2,
+  })
+
+  await page.getByRole('button', { name: 'Klopt niet?' }).click()
+  await page.getByPlaceholder('Wat klopt er niet?').fill('Hier klopt iets niet (e2e)')
+  await page.getByRole('button', { name: 'Versturen' }).click()
+
+  await expect(page.getByText('Bedankt — we kijken er naar.')).toBeVisible()
+
+  // En de melding komt echt in de database terecht, want daar leest
+  // /admin/flags uit (zie AFG-8).
+  const { data, error } = await testDatabase()
+    .from('question_flags_new')
+    .select('reason')
+    .eq('user_id', TESTLEERLING.id)
+  expect(error).toBeNull()
+  expect(data?.map((r) => r.reason)).toContain('Hier klopt iets niet (e2e)')
 })

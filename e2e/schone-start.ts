@@ -54,6 +54,9 @@ export default async function schoneStart() {
   // Voortgang van de testleerling weg (sessies nemen hun antwoorden mee).
   await db.from('user_sessions_new').delete().eq('user_id', TESTLEERLING.id)
   await db.from('user_progress_new').delete().eq('user_id', TESTLEERLING.id)
+  // Ook de gemelde opgaven: een leerling mag dezelfde opgave maar één keer
+  // melden, dus anders meldt de volgende run niets meer.
+  await db.from('question_flags_new').delete().eq('user_id', TESTLEERLING.id)
 
   // Wat de AI-controle eerder opsloeg, hoort niet in een volgende run mee te
   // tellen: dan zou "goed antwoord in andere notatie" al vanuit de database
