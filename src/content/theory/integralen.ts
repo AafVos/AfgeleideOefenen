@@ -15,12 +15,8 @@ export type { ClusterTheory, OverviewChapter }
 
 export const CLUSTER_THEORY: Record<string, ClusterTheory> = {}
 
-export const CLUSTER_THEORY_EN: Record<string, ClusterTheory> = {}
-
 export const TOPIC_FORMULA: Record<string, string> = {}
 
 export const TOPIC_INTROS: Record<string, string> = {}
-
-export const TOPIC_INTROS_EN: Record<string, string> = {}
 
 export const THEORY_OVERVIEW: OverviewChapter[] = []
