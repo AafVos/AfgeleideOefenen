@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
@@ -53,11 +53,8 @@ export function TestRunnerCard({
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  useEffect(() => {
-    setState({ phase: 'input', error: null })
-    setAnswer('')
-    setSubmitting(false)
-  }, [question.id])
+  // Bij een nieuwe vraag begint deze kaart leeg: de pagina geeft hem een key
+  // met de vraag-id mee, dus React zet alle invoer hierboven zelf terug.
 
   function next() {
     startTransition(() => {
