@@ -2,7 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
-import { domainForLocale } from '@/config/site'
+import { SITE_CONFIG } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 import { HomeDemo } from './home-demo'
@@ -20,7 +20,7 @@ export default async function HomePage() {
 
   const t = await getTranslations('Home')
 
-  const domain = domainForLocale(locale)
+  const domain = SITE_CONFIG.domain
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`
 
   const FAQ_ITEMS = [

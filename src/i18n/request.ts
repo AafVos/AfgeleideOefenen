@@ -1,7 +1,6 @@
 import { getRequestConfig } from 'next-intl/server'
-import { hasLocale } from 'next-intl'
 
-import { SITE, brandForLocale, domainForLocale } from '@/config/site'
+import { SITE, SITE_CONFIG } from '@/config/site'
 
 import { routing } from './routing'
 
@@ -44,33 +43,31 @@ function substituteSiteVars(value: unknown, brand: string, domain: string): unkn
   return value
 }
 
-async function loadOverrides(locale: string): Promise<Msg> {
+async function loadOverrides(): Promise<Msg> {
   // Only the integralen site has overrides; afgeleiden uses the base as-is.
   if (SITE !== 'integralen') return {}
   try {
-    const mod = await import(`../../messages/overrides/integralen.${locale}.json`)
+    const mod = await import('../../messages/overrides/integralen.nl.json')
     return mod.default as Msg
   } catch {
     return {}
   }
 }
 
-export default getRequestConfig(async ({ requestLocale }) => {
-  const requested = await requestLocale
-  const locale = hasLocale(routing.locales, requested)
-    ? requested
-    : routing.defaultLocale
+export default getRequestConfig(async () => {
+  // Er is maar één taal: Nederlands.
+  const locale = routing.defaultLocale
 
-  const base = (await import(`../../messages/${locale}.json`)).default as Msg
-  const overrides = await loadOverrides(locale)
+  const base = (await import('../../messages/nl.json')).default as Msg
+  const overrides = await loadOverrides()
   const merged = deepMerge(base, overrides)
 
   return {
     locale,
     messages: substituteSiteVars(
       merged,
-      brandForLocale(locale),
-      domainForLocale(locale),
+      SITE_CONFIG.brand,
+      SITE_CONFIG.domain,
     ) as Msg,
   }
 })
