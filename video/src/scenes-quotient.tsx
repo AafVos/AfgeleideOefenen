@@ -39,7 +39,7 @@ export const TEMPO = 1
 export const t = (n: number) => Math.round(n * TEMPO)
 
 /** Effen groen stap-label voor het stappenplan. */
-function StapLabel({ children }: { children: ReactNode }) {
+export function StapLabel({ children }: { children: ReactNode }) {
   return (
     <span
       style={{
@@ -59,7 +59,7 @@ function StapLabel({ children }: { children: ReactNode }) {
   )
 }
 
-const rijStijl: CSSProperties = { display: 'flex', alignItems: 'center', gap: 36, width: 1180 }
+export const rijStijl: CSSProperties = { display: 'flex', alignItems: 'center', gap: 36, width: 1180 }
 
 /** De quotiëntregel-kaart, precies zoals hij in stap 3 wordt overgeschreven. */
 function QuotientKaart({ fontSize = 34 }: { fontSize?: number }) {

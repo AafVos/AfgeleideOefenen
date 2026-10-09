@@ -105,6 +105,24 @@ const VIDEOS: Record<SiteId, UitlegVideo[]> = {
         'a56f5e6f-4637-4087-98a4-6a60cec1deec',
       ],
     },
+    {
+      slug: 'machten-herschrijven',
+      title: 'Machten en wortels herschrijven',
+      description:
+        'Een macht in de noemer of een wortel van x? Eerst herschrijven als macht van x, dan de machtsregel, en het antwoord terugschrijven.',
+      soort: 'algemeen',
+      chapter: 'H6',
+      duration: '2:59',
+      src: `${STORAGE_BASE}/machten-herschrijven.mp4`,
+      clusterIds: [
+        // Machten en wortels herschrijven · Negatieve machten (voorbeeld 6/x³)
+        'fa5bef5c-3c41-46d2-a009-6bec675b78b5',
+        // Machten en wortels herschrijven · Wortels als macht
+        'c819dec0-62a4-4895-a693-bffcb4c037c1',
+        // Machten en wortels herschrijven · Gemengde machten en wortels (voorbeeld x·√x)
+        '0dd866d6-3ec7-4c2f-88ba-47c10299048d',
+      ],
+    },
   ],
   integralen: [],
 }

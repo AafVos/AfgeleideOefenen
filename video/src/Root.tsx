@@ -1,5 +1,6 @@
 import { Composition } from 'remotion'
 
+import { HERSCHRIJVEN_DUUR, HerschrijvenVideo } from './HerschrijvenVideo'
 import { QUOTIENT_DUUR, QuotientVideo } from './QuotientVideo'
 import { RegelsVideo } from './RegelsVideo'
 import { SOM29_DUUR, Som29Video } from './Som29Video'
@@ -46,6 +47,14 @@ export function RemotionRoot() {
         id="Quotientregel"
         component={QuotientVideo}
         durationInFrames={QUOTIENT_DUUR}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="Herschrijven"
+        component={HerschrijvenVideo}
+        durationInFrames={HERSCHRIJVEN_DUUR}
         fps={30}
         width={1920}
         height={1080}
