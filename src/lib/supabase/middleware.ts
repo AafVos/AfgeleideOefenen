@@ -1,7 +1,33 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { routing } from '@/i18n/routing'
+
 import type { Database } from './types'
+
+const TAAL = routing.defaultLocale
+
+// Pagina's waar je ingelogd voor moet zijn. Schrijf ze hier zonder taalcode
+// op: `zonderTaalcode` hieronder haalt de `/nl` er eerst af.
+//
+// Deze lijst hoort gelijk te lopen met de pagina's die zelf `if (!user)
+// redirect(...)` bovenaan hebben staan. Die controle blijft staan: dit poortje
+// scheelt de leerling alleen het laadscherm dat anders eerst in beeld komt.
+const ALLEEN_INGELOGD = [
+  '/dashboard',
+  '/feedback',
+  '/instellingen',
+  '/oefenen',
+  '/zelf-toets',
+]
+
+// `/nl/oefenen` wordt `/oefenen`, en `/nl` wordt `/`. De adressen van de site
+// beginnen met een taalcode, de lijst hierboven niet.
+function zonderTaalcode(pad: string) {
+  if (pad === `/${TAAL}`) return '/'
+  if (pad.startsWith(`/${TAAL}/`)) return pad.slice(`/${TAAL}`.length)
+  return pad
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -41,14 +67,21 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const path = request.nextUrl.pathname
+  // Het beheergedeelte staat buiten `src/app/[locale]`, dus daar zit geen
+  // taalcode in het pad. De leerlingpagina's wel; die halen we eraf.
+  const pad = request.nextUrl.pathname
+  const padZonderTaal = zonderTaalcode(pad)
 
-  if (path.startsWith('/admin')) {
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/inloggen'
-      return NextResponse.redirect(url)
-    }
+  const naarInloggen = () => {
+    const url = request.nextUrl.clone()
+    url.pathname = `/${TAAL}/inloggen`
+    // De zoekwoorden van de oefenpagina horen niet op het inlogscherm thuis.
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
+
+  if (pad.startsWith('/admin')) {
+    if (!user) return naarInloggen()
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -58,16 +91,13 @@ export async function updateSession(request: NextRequest) {
 
     if (profile?.role !== 'admin') {
       const url = request.nextUrl.clone()
-      url.pathname = '/'
+      url.pathname = `/${TAAL}`
       return NextResponse.redirect(url)
     }
   }
 
-  const protectedPaths = ['/oefenen', '/dashboard']
-  if (!user && protectedPaths.some((p) => path.startsWith(p))) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/inloggen'
-    return NextResponse.redirect(url)
+  if (!user && ALLEEN_INGELOGD.some((p) => padZonderTaal.startsWith(p))) {
+    return naarInloggen()
   }
 
   return supabaseResponse

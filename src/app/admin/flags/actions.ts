@@ -2,23 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { createClient } from '@/lib/supabase/server'
-
-async function assertAdmin() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error('Niet ingelogd.')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (profile?.role !== 'admin') throw new Error('Geen toegang.')
-  return { supabase, userId: user.id }
-}
+import { assertAdmin } from '@/lib/supabase/admin'
 
 export async function resolveFlagAction(
   flagId: string,
