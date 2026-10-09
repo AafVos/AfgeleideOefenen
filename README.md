@@ -173,3 +173,4 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
 ## Licentie
 
 Privéproject — nog geen open-source licentie toegevoegd.
+
