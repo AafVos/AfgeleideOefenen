@@ -7,21 +7,21 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { signupAction, type SignupState } from './actions'
 
-const initialState: SignupState = { error: null, notice: null }
+const initialState: SignupState = { errorKey: null, noticeKey: null }
 
 export function SignupForm() {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
   const [showPassword, setShowPassword] = useState(false)
 
-  if (state.notice) {
+  if (state.noticeKey) {
     return (
       <div className="space-y-4">
         <p
           role="status"
           className="rounded-md border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent"
         >
-          {state.notice}
+          {t(state.noticeKey)}
         </p>
         <Link
           href="/inloggen"
@@ -70,12 +70,12 @@ export function SignupForm() {
         toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
       />
 
-      {state.error && (
+      {state.errorKey && (
         <p
           role="alert"
           className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
         >
-          {state.error}
+          {t(state.errorKey)}
         </p>
       )}
 

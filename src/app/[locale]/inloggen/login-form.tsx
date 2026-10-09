@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import { loginAction, resendConfirmationAction, type LoginState } from './actions'
 
-const initialState: LoginState = { error: null }
+const initialState: LoginState = { errorKey: null }
 
 export function LoginForm({ callbackError }: { callbackError?: string | null }) {
   const [state, formAction] = useActionState(loginAction, initialState)
@@ -21,8 +21,8 @@ export function LoginForm({ callbackError }: { callbackError?: string | null }) 
       // Supabase weigert de mail bijvoorbeeld als er te snel achter elkaar om
       // gevraagd wordt. Alleen "verstuurd" tonen als er écht niets misging; de
       // Engelse tekst van Supabase zelf hoort niet op het scherm.
-      const { error } = await resendConfirmationAction(state.unconfirmedEmail!)
-      setResendResult(error ? 'mislukt' : 'gelukt')
+      const { ok } = await resendConfirmationAction(state.unconfirmedEmail!)
+      setResendResult(ok ? 'gelukt' : 'mislukt')
     })
   }
 
@@ -39,12 +39,12 @@ export function LoginForm({ callbackError }: { callbackError?: string | null }) 
         toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
       />
 
-      {(callbackError || state.error) && (
+      {(callbackError || state.errorKey) && (
         <p
           role="alert"
           className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
         >
-          {callbackError ?? state.error}
+          {callbackError ?? t(state.errorKey!)}
         </p>
       )}
 

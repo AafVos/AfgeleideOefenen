@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import { newPasswordAction, type NewPasswordState } from './actions'
 
-const initial: NewPasswordState = { error: null }
+const initial: NewPasswordState = { errorKey: null }
 
 export function NewPasswordForm() {
   const t = useTranslations('NewPassword')
@@ -15,9 +15,9 @@ export function NewPasswordForm() {
 
   return (
     <form action={action} className="space-y-5">
-      {state.error && (
+      {state.errorKey && (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-          {state.error}
+          {t(state.errorKey)}
         </p>
       )}
       <label className="block">

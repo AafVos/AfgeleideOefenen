@@ -11,7 +11,7 @@ import { completeOnboardingAction, type OnboardingState } from './actions'
 
 type StartPath = 'leerpad' | 'free'
 
-const initialState: OnboardingState = { error: null }
+const initialState: OnboardingState = { errorKey: null }
 
 export function OnboardingWizard({ defaultName }: { defaultName: string }) {
   const t = useTranslations('Onboarding')
@@ -226,9 +226,9 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
         )}
       </div>
 
-      {state.error && (
+      {state.errorKey && (
         <div className="mt-6">
-          <ErrorBanner>{state.error}</ErrorBanner>
+          <ErrorBanner>{t(state.errorKey)}</ErrorBanner>
         </div>
       )}
 

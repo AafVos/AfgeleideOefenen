@@ -8,7 +8,17 @@ import { getLocale } from 'next-intl/server'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 
-export type LoginState = { error: string | null; unconfirmedEmail?: string | null }
+/** Sleutels uit de `Login`-teksten; het formulier vertaalt ze. */
+export type LoginErrorKey =
+  | 'errorMissingFields'
+  | 'errorInvalidCredentials'
+  | 'errorUnconfirmed'
+  | 'errorGeneric'
+
+export type LoginState = {
+  errorKey: LoginErrorKey | null
+  unconfirmedEmail?: string | null
+}
 
 export async function loginAction(
   _prev: LoginState,
@@ -18,7 +28,7 @@ export async function loginAction(
   const password = (formData.get('password') ?? '').toString()
 
   if (!email || !password) {
-    return { error: 'Vul je e-mailadres en wachtwoord in.' }
+    return { errorKey: 'errorMissingFields' }
   }
 
   const supabase = await createClient()
@@ -27,7 +37,7 @@ export async function loginAction(
   if (error) {
     const isUnconfirmed = /email not confirmed/i.test(error.message)
     return {
-      error: translateAuthError(error.message),
+      errorKey: authErrorKey(error.message),
       unconfirmedEmail: isUnconfirmed ? email : null,
     }
   }
@@ -51,21 +61,27 @@ export async function loginAction(
   redirect(`/${locale}/dashboard`)
 }
 
-function translateAuthError(msg: string): string {
+function authErrorKey(msg: string): LoginErrorKey {
   if (/invalid login credentials/i.test(msg)) {
-    return 'Onjuiste combinatie van e-mail en wachtwoord.'
+    return 'errorInvalidCredentials'
   }
   if (/email not confirmed/i.test(msg)) {
-    return 'Je hebt je e-mailadres nog niet bevestigd. Check je inbox.'
+    return 'errorUnconfirmed'
   }
-  return msg
+  // Alles wat we niet kennen is Engelse systeemtaal van Supabase. Die hoort
+  // niet op het scherm van een leerling; wel in de serverlog.
+  console.error('[inloggen] onbekende foutmelding van Supabase:', msg)
+  return 'errorGeneric'
 }
 
 export async function resendConfirmationAction(
   email: string,
-): Promise<{ error: string | null }> {
+): Promise<{ ok: boolean }> {
   const supabase = await createClient()
   const { error } = await supabase.auth.resend({ type: 'signup', email })
-  if (error) return { error: error.message }
-  return { error: null }
+  if (error) {
+    console.error('[inloggen] bevestigingsmail opnieuw sturen mislukt:', error.message)
+    return { ok: false }
+  }
+  return { ok: true }
 }

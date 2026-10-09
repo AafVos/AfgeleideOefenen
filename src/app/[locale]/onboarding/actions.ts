@@ -20,7 +20,14 @@ const VALID_MODES: LearningMode[] = [
   'free',
 ]
 
-export type OnboardingState = { error: string | null }
+/** Sleutels uit de `Onboarding`-teksten; de wizard vertaalt ze. */
+export type OnboardingErrorKey =
+  | 'errorNoGrade'
+  | 'errorNoName'
+  | 'errorNoMode'
+  | 'errorGeneric'
+
+export type OnboardingState = { errorKey: OnboardingErrorKey | null }
 
 export async function completeOnboardingAction(
   _prev: OnboardingState,
@@ -31,13 +38,13 @@ export async function completeOnboardingAction(
   const mode = formData.get('learning_mode')
 
   if (typeof grade !== 'string' || !VALID_GRADES.includes(grade as Grade)) {
-    return { error: 'Kies eerst je klas.' }
+    return { errorKey: 'errorNoGrade' }
   }
   if (typeof displayName !== 'string' || displayName.trim().length === 0) {
-    return { error: 'Vul je voornaam in.' }
+    return { errorKey: 'errorNoName' }
   }
   if (typeof mode !== 'string' || !VALID_MODES.includes(mode as LearningMode)) {
-    return { error: 'Kies hoe je wilt beginnen.' }
+    return { errorKey: 'errorNoMode' }
   }
 
   const supabase = await createClient()
@@ -58,7 +65,9 @@ export async function completeOnboardingAction(
     .eq('id', user.id)
 
   if (error) {
-    return { error: 'Er ging iets mis: ' + error.message }
+    // De technische tekst gaat naar de serverlog, niet naar de leerling.
+    console.error('[onboarding] profiel opslaan mislukt:', error.message)
+    return { errorKey: 'errorGeneric' }
   }
 
   redirect(`/${locale}/oefenen`)

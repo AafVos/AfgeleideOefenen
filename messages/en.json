@@ -153,7 +153,11 @@
     "resendPending": "Sending…",
     "resendSuccess": "Email sent. Check your inbox (and spam folder).",
     "resendError": "That didn't work. Please try again in a minute.",
-    "confirmedNotice": "Your account is confirmed! You can now log in."
+    "confirmedNotice": "Your account is confirmed! You can now log in.",
+    "errorMissingFields": "Enter your email address and password.",
+    "errorInvalidCredentials": "That email address and password don't go together.",
+    "errorUnconfirmed": "You haven't confirmed your email address yet. Check your inbox.",
+    "errorGeneric": "Something went wrong while logging in. Please try again."
   },
   "Register": {
     "title": "Sign up · __DOMAIN__",
@@ -171,7 +175,14 @@
     "toLoginLabel": "Go to login page",
     "forgotPassword": "Forgot your password?",
     "showPassword": "Show",
-    "hidePassword": "Hide"
+    "hidePassword": "Hide",
+    "errorMissingFields": "Enter an email address and a password.",
+    "errorPasswordTooShort": "Your password needs to be at least 8 characters long.",
+    "errorPasswordMismatch": "The two passwords aren't the same.",
+    "errorEmailInUse": "There's already an account with this email address.",
+    "errorWeakPassword": "Pick a stronger password (at least 8 characters).",
+    "errorGeneric": "Something went wrong while creating your account. Please try again.",
+    "noticeConfirmEmail": "Account created. Click the link in the confirmation email to log in."
   },
   "ForgotPassword": {
     "title": "Forgot password · __DOMAIN__",
@@ -181,7 +192,9 @@
     "submitLabel": "Send reset link",
     "submitPending": "Sending…",
     "sentMessage": "If this email belongs to an account, you'll receive a reset link shortly. Check your spam folder too.",
-    "backToLogin": "← Back to login"
+    "backToLogin": "← Back to login",
+    "errorMissingEmail": "Enter your email address.",
+    "errorGeneric": "Something went wrong while sending. Please try again."
   },
   "NewPassword": {
     "title": "New password · __DOMAIN__",
@@ -191,7 +204,9 @@
     "showPassword": "Show",
     "hidePassword": "Hide",
     "submitLabel": "Save password",
-    "submitPending": "Saving…"
+    "submitPending": "Saving…",
+    "errorPasswordTooShort": "Pick a password of at least 8 characters.",
+    "errorGeneric": "Something went wrong while saving your password. Please try again."
   },
   "Onboarding": {
     "title": "Welcome · __DOMAIN__",
@@ -236,7 +251,11 @@
     "next": "Next →",
     "goFree": "Go to free practice",
     "start": "Let's get started",
-    "pending": "Loading…"
+    "pending": "Loading…",
+    "errorNoGrade": "Pick your year first.",
+    "errorNoName": "Enter your first name.",
+    "errorNoMode": "Pick how you want to start.",
+    "errorGeneric": "Something went wrong while saving. Please try again."
   },
   "OnboardingPad": {
     "title": "Build learning path · __DOMAIN__",

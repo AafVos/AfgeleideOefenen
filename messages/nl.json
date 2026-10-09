@@ -153,7 +153,11 @@
     "resendPending": "Bezig met versturen…",
     "resendSuccess": "Mail verstuurd. Check je inbox (en je spammap).",
     "resendError": "Dat lukte niet. Probeer het over een minuut nog eens.",
-    "confirmedNotice": "Je account is bevestigd! Je kunt nu inloggen."
+    "confirmedNotice": "Je account is bevestigd! Je kunt nu inloggen.",
+    "errorMissingFields": "Vul je e-mailadres en wachtwoord in.",
+    "errorInvalidCredentials": "Onjuiste combinatie van e-mail en wachtwoord.",
+    "errorUnconfirmed": "Je hebt je e-mailadres nog niet bevestigd. Check je inbox.",
+    "errorGeneric": "Er ging iets mis bij het inloggen. Probeer het opnieuw."
   },
   "Register": {
     "title": "Registreren · __DOMAIN__",
@@ -171,7 +175,14 @@
     "toLoginLabel": "Naar inlogpagina",
     "forgotPassword": "Wachtwoord vergeten?",
     "showPassword": "Toon",
-    "hidePassword": "Verberg"
+    "hidePassword": "Verberg",
+    "errorMissingFields": "Vul een e-mailadres en wachtwoord in.",
+    "errorPasswordTooShort": "Je wachtwoord moet minstens 8 tekens lang zijn.",
+    "errorPasswordMismatch": "De wachtwoorden komen niet overeen.",
+    "errorEmailInUse": "Er bestaat al een account met dit e-mailadres.",
+    "errorWeakPassword": "Kies een sterker wachtwoord (minstens 8 tekens).",
+    "errorGeneric": "Er ging iets mis bij het aanmaken van je account. Probeer het opnieuw.",
+    "noticeConfirmEmail": "Account aangemaakt. Klik op de link in de bevestigingsmail om in te loggen."
   },
   "ForgotPassword": {
     "title": "Wachtwoord vergeten · __DOMAIN__",
@@ -181,7 +192,9 @@
     "submitLabel": "Stuur reset-link",
     "submitPending": "Bezig…",
     "sentMessage": "Als dit e-mailadres bij een account hoort, ontvang je zo een resetlink. Check ook je spammap.",
-    "backToLogin": "← Terug naar inloggen"
+    "backToLogin": "← Terug naar inloggen",
+    "errorMissingEmail": "Vul je e-mailadres in.",
+    "errorGeneric": "Er ging iets mis bij het versturen. Probeer het opnieuw."
   },
   "NewPassword": {
     "title": "Nieuw wachtwoord · __DOMAIN__",
@@ -191,7 +204,9 @@
     "showPassword": "Toon",
     "hidePassword": "Verberg",
     "submitLabel": "Wachtwoord opslaan",
-    "submitPending": "Bezig…"
+    "submitPending": "Bezig…",
+    "errorPasswordTooShort": "Kies een wachtwoord van minstens 8 tekens.",
+    "errorGeneric": "Er ging iets mis bij het opslaan van je wachtwoord. Probeer het opnieuw."
   },
   "Onboarding": {
     "title": "Welkom · __DOMAIN__",
@@ -236,7 +251,11 @@
     "next": "Volgende →",
     "goFree": "Naar vrij oefenen",
     "start": "Laten we beginnen",
-    "pending": "Bezig…"
+    "pending": "Bezig…",
+    "errorNoGrade": "Kies eerst je klas.",
+    "errorNoName": "Vul je voornaam in.",
+    "errorNoMode": "Kies hoe je wilt beginnen.",
+    "errorGeneric": "Er ging iets mis bij het opslaan. Probeer het opnieuw."
   },
   "OnboardingPad": {
     "title": "Leerpad samenstellen · __DOMAIN__",
