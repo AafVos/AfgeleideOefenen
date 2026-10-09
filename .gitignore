@@ -24,6 +24,12 @@
 .DS_Store
 *.pem
 
+# azurite (lokaal testhulpje, hoort niet in de repo)
+__azurite_db*.json
+
+# claude code (lokale instellingen met paden van deze computer)
+.claude/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
