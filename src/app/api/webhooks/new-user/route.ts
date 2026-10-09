@@ -12,6 +12,14 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
 }
 
+/**
+ * De metagegevens van een auth-rij zijn vrije JSON: daar kan alles in staan.
+ * Alleen een niet-lege tekst is bruikbaar als gebruikersnaam.
+ */
+function alsTekst(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null
+}
+
 export async function POST(req: Request) {
   // Verify webhook secret
   const secret = req.headers.get('x-webhook-secret')
@@ -31,10 +39,17 @@ export async function POST(req: Request) {
       timeZone: 'Europe/Amsterdam',
     })
 
-    // De record uit de profiles-trigger bevat het id, maar niet altijd het
-    // e-mailadres. Haal e-mail en gebruikersnaam op via de service-role.
+    // De webhook hangt aan `auth.users` bij INSERT. Op dat moment bestaat de
+    // rij in `profiles` wel (een trigger maakt hem aan), maar staat de
+    // gebruikersnaam er nog niet in: die zet de site er pas na het aanmelden
+    // bij. De naam zit op dat moment al wel in de metagegevens van de
+    // auth-rij, omdat het registratieformulier hem aan Supabase meegeeft.
+    // We proberen daarom op volgorde: wat er in het seintje zelf zit, dan
+    // `profiles`, dan de metagegevens. Het e-mailadres staat niet in elke
+    // soort record, dus dat halen we op via de service-role.
     let email: string | null = record.email ?? null
-    let username: string | null = record.username ?? null
+    let username: string | null =
+      alsTekst(record.username) ?? alsTekst(record.raw_user_meta_data?.username)
     try {
       const supabase = createServiceRoleClient()
       const { data } = await supabase.auth.admin.getUserById(record.id)
@@ -45,7 +60,9 @@ export async function POST(req: Request) {
           .select('username')
           .eq('id', record.id)
           .maybeSingle()
-        username = profile?.username ?? null
+        username =
+          alsTekst(profile?.username) ??
+          alsTekst(data.user?.user_metadata?.username)
       }
     } catch (lookupErr) {
       console.error('Kon gebruikersgegevens niet ophalen:', lookupErr)
