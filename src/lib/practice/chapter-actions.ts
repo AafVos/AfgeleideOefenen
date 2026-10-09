@@ -3,7 +3,11 @@
 import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 
-import { answersMatch, progressAfterCorrect } from './engine'
+import {
+  answersMatch,
+  progressAfterCorrect,
+  progressAfterIncorrect,
+} from './engine'
 
 type DB = Awaited<ReturnType<typeof createClient>>
 
@@ -119,7 +123,7 @@ export async function submitStudyAnswerAction(
   }
 
   // Echt fout: nu pas de opgave meetellen en de reeks terugzetten.
-  await bumpTotalsOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
+  await bumpProgressOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
 
   return {
     kind: 'incorrect',
@@ -281,15 +285,20 @@ async function bumpProgressOnCorrect(
   return data
 }
 
-async function bumpTotalsOnIncorrect(
+async function bumpProgressOnIncorrect(
   db: DB,
   userId: string,
   topicId: string,
   clusterId: string,
 ) {
   const p = await getOrCreateProgress(db, userId, topicId, clusterId)
+  const next = progressAfterIncorrect(p.status, p.correct_streak)
   await db
     .from('user_progress_new')
-    .update({ total_answered: p.total_answered + 1, correct_streak: 0 })
+    .update({
+      total_answered: p.total_answered + 1,
+      correct_streak: next.correct_streak,
+      status: next.status,
+    })
     .eq('id', p.id)
 }

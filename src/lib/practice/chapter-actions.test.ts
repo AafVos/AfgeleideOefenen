@@ -163,7 +163,21 @@ describe('submitStudyAnswerAction', () => {
 
     expect(result).toMatchObject({ kind: 'incorrect', correctAnswer: '6x' })
     expect(progress.correct_streak).toBe(0)
+    expect(progress.status).toBe('in_progress')
     expect(progress.total_answered).toBe(3)
     expect(progress.total_correct).toBe(2)
+  })
+
+  it('laat "beheerst" staan bij een misser tijdens het herhalen', async () => {
+    progress = { ...freshProgress(3, 3), status: 'mastered', mastered_at: '2026-01-01' }
+
+    const result = await submitStudyAnswerAction('q1', '3x')
+
+    expect(result).toMatchObject({ kind: 'incorrect' })
+    expect(progress.status).toBe('mastered')
+    expect(progress.correct_streak).toBe(3)
+    // De opgave telt wel mee.
+    expect(progress.total_answered).toBe(4)
+    expect(progress.total_correct).toBe(3)
   })
 })

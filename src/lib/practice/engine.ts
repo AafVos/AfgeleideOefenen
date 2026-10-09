@@ -79,6 +79,34 @@ export function progressAfterCorrect(
 }
 
 // =====================================================================
+// Voortgangsregel bij een fout antwoord
+// =====================================================================
+export type ProgressAfterIncorrect = {
+  correct_streak: number
+  status: ProgressStatus
+}
+
+/**
+ * Bij een fout antwoord gaat de reeks meteen terug naar 0: de leerling moet
+ * opnieuw MASTERY_THRESHOLD keer goed achter elkaar halen. Een cluster dat al
+ * beheerst is, houdt zijn reeks én zijn status — één misser tijdens het
+ * herhalen mag "beheerst" niet afpakken.
+ *
+ * "Meteen" betekent: op het moment dat het antwoord echt fout blijkt, dus ná
+ * de AI-controle en los van de vraag of de leerling de stapkiezer of het
+ * slordigheidsfoutje nog aanraakt.
+ */
+export function progressAfterIncorrect(
+  currentStatus: ProgressStatus,
+  currentStreak: number,
+): ProgressAfterIncorrect {
+  if (currentStatus === 'mastered') {
+    return { correct_streak: currentStreak, status: 'mastered' }
+  }
+  return { correct_streak: 0, status: 'in_progress' }
+}
+
+// =====================================================================
 // Leerlijn berekenen
 // =====================================================================
 export async function loadLearningPath(
