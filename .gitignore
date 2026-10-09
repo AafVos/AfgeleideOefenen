@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# macOS-kopieën ("Beide bewaren" maakt "naam 2.tsx") — geen enkel echt bestand
+# in deze repo heeft een spatie in de naam, dus dit raakt alleen die kopieën
+* 2.*
+
 # azurite (lokaal testhulpje, hoort niet in de repo)
 __azurite_db*.json
 
