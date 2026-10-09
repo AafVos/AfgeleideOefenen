@@ -14,7 +14,7 @@ import {
 } from '@/lib/practice/chapter-actions'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
-import { FlagQuestionButton } from './flag-question'
+import { FlagQuestionButton } from '../oefenen/flag-question'
 import { MathKeyboard } from '@/components/math-keyboard'
 
 type Step = { id: string; step_order: number; step_description: string }

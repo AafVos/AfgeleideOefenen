@@ -18,6 +18,8 @@ import type { UitlegVideo } from '@/lib/videos'
 
 import { MathKeyboard } from '@/components/math-keyboard'
 
+import { FlagQuestionButton } from './flag-question'
+
 const MASTERY_THRESHOLD = 3
 
 /**
@@ -367,6 +369,10 @@ export function StudyCard({
           />
         </div>
       )}
+
+      <div className="mt-6 flex justify-end border-t border-border pt-3">
+        <FlagQuestionButton questionId={question.id} />
+      </div>
     </div>
   )
 }
