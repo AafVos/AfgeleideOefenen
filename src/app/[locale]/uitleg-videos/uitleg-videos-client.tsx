@@ -413,9 +413,12 @@ function OefenKaart({
     setAnswers((prev) => ({ ...prev, [vraag.id]: value }))
   }
 
-  useEffect(() => {
+  // Een foutmelding hoort bij de vraag waar je op dat moment staat, dus hij
+  // gaat weg zodra je naar een andere vraag springt.
+  function gaNaarVraag(nieuweIndex: number) {
+    setIndex(nieuweIndex)
     setError(null)
-  }, [index])
+  }
 
   function handleInsert(text: string) {
     const el = inputRef.current
@@ -474,11 +477,11 @@ function OefenKaart({
 
   const navigatie = (
     <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-      <Button onClick={() => setIndex((i) => i - 1)} disabled={index === 0}>
+      <Button onClick={() => gaNaarVraag(index - 1)} disabled={index === 0}>
         ← {labels.previousQuestion}
       </Button>
       <Button
-        onClick={() => setIndex((i) => i + 1)}
+        onClick={() => gaNaarVraag(index + 1)}
         disabled={index === vragen.length - 1}
       >
         {labels.nextQuestion} →
@@ -497,7 +500,7 @@ function OefenKaart({
             <button
               key={v.id}
               type="button"
-              onClick={() => setIndex(i)}
+              onClick={() => gaNaarVraag(i)}
               aria-current={isActive ? 'true' : undefined}
               className={`rounded-xl border p-3 text-left transition ${
                 isActive

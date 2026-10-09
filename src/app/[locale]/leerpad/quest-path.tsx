@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 
 import { Link } from '@/i18n/navigation'
@@ -37,12 +37,14 @@ export function QuestPath({
   const params = useSearchParams()
   const topicParam = params.get('topic')
   const clusterParam = params.get('cluster')
-  const [loadingId, setLoadingId] = useState<string | null>(null)
+  // Bij het aanklikken onthouden we vanaf welke ?cluster= we vertrokken; zodra
+  // de URL verandert is de volgende oefening er en stopt het laadrondje.
+  const [loading, setLoading] = useState<{
+    clusterId: string
+    startedFrom: string | null
+  } | null>(null)
+  const loadingId = loading && loading.startedFrom === clusterParam ? loading.clusterId : null
   const [drawerOpen, setDrawerOpen] = useState(false)
-
-  useEffect(() => {
-    setLoadingId(null)
-  }, [clusterParam])
 
   const nodes = useMemo(() => {
     const out: Array<{
@@ -106,7 +108,7 @@ export function QuestPath({
         isActive={node.cluster.id === computedActiveId}
         isLoading={loadingId === node.cluster.id}
         onLoadStart={() => {
-          setLoadingId(node.cluster.id)
+          setLoading({ clusterId: node.cluster.id, startedFrom: clusterParam })
           onSelect?.()
         }}
         tint={TOPIC_TINTS[node.chapterIdx % TOPIC_TINTS.length]}
