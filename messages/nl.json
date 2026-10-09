@@ -152,6 +152,7 @@
     "resendButton": "Stuur bevestigingsmail opnieuw",
     "resendPending": "Bezig met versturen…",
     "resendSuccess": "Mail verstuurd. Check je inbox (en je spammap).",
+    "resendError": "Dat lukte niet. Probeer het over een minuut nog eens.",
     "confirmedNotice": "Je account is bevestigd! Je kunt nu inloggen."
   },
   "Register": {

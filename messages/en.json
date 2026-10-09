@@ -152,6 +152,7 @@
     "resendButton": "Resend confirmation email",
     "resendPending": "Sending…",
     "resendSuccess": "Email sent. Check your inbox (and spam folder).",
+    "resendError": "That didn't work. Please try again in a minute.",
     "confirmedNotice": "Your account is confirmed! You can now log in."
   },
   "Register": {
