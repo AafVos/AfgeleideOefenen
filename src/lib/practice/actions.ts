@@ -6,7 +6,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import {
   answersMatch,
   getOrCreateSession,
-  MASTERY_THRESHOLD,
+  progressAfterCorrect,
 } from './engine'
 
 export type SubmitResult =
@@ -251,16 +251,18 @@ async function bumpProgressOnCorrect(
   clusterId: string,
 ) {
   const p = await getOrCreateProgress(db, userId, topicId, clusterId)
-  const newStreak = p.correct_streak + 1
-  const mastered = newStreak >= MASTERY_THRESHOLD
+  const next = progressAfterCorrect(p.correct_streak)
   const { data, error } = await db
     .from('user_progress')
     .update({
-      correct_streak: newStreak,
+      correct_streak: next.correct_streak,
       total_answered: p.total_answered + 1,
       total_correct: p.total_correct + 1,
-      status: mastered ? 'mastered' : 'in_progress',
-      mastered_at: mastered && !p.mastered_at ? new Date().toISOString() : p.mastered_at,
+      status: next.status,
+      mastered_at:
+        next.mastered && !p.mastered_at
+          ? new Date().toISOString()
+          : p.mastered_at,
     })
     .eq('id', p.id)
     .select('*')
