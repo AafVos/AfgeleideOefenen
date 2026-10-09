@@ -3,8 +3,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import { normalizeAnswer } from '@/lib/practice/engine'
 
-import { generateJson } from './gemini'
+import { generateJson, type GeminiJsonResponse } from './gemini'
 import { buildCheckAnswerPromptNew } from './prompts'
+import { aiCheckIsStubbed, stubCheckAnswerJson } from './stub'
 
 type DB = SupabaseClient<Database>
 
@@ -102,17 +103,24 @@ export async function checkWrongAnswerNew(
     .limit(1)
   const stepsAlreadyExist = (stepsCheck.data?.length ?? 0) > 0
 
-  // 5. Prompt → Gemini
-  const prompt = buildCheckAnswerPromptNew({
-    questionBody: question.latex_body ?? '',
-    correctAnswer: question.answer,
-    studentAnswer,
-    topicTitle: topic?.title ?? '',
-    clusterTitle: cluster?.title ?? '',
-    stepsAlreadyExist,
-  })
-
-  const ai = await generateJson<AiAnswerJson>(prompt)
+  // 5. Prompt → Gemini. In tests (AI_CHECK_MODE=stub) gaat er niets naar
+  //    buiten en geeft de stub een vaste uitkomst; zie ./stub.ts.
+  const ai: GeminiJsonResponse<AiAnswerJson> = aiCheckIsStubbed()
+    ? {
+        ok: true,
+        data: stubCheckAnswerJson(question.answer, studentAnswer),
+        raw: 'stub',
+      }
+    : await generateJson<AiAnswerJson>(
+        buildCheckAnswerPromptNew({
+          questionBody: question.latex_body ?? '',
+          correctAnswer: question.answer,
+          studentAnswer,
+          topicTitle: topic?.title ?? '',
+          clusterTitle: cluster?.title ?? '',
+          stepsAlreadyExist,
+        }),
+      )
   if (!ai.ok) return { error: ai.error }
 
   const isMathematicallyCorrect = ai.data.is_mathematically_correct === true
