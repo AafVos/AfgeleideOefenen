@@ -57,7 +57,7 @@ export default async function ZelfToetsPage() {
               const isDone = test.ended_at !== null
               const displayName = test.name ?? `Zelf-toets`
               const dateStr = new Date(test.started_at).toLocaleDateString(
-                locale === 'nl' ? 'nl-NL' : 'en-GB',
+                'nl-NL',
                 { day: 'numeric', month: 'short', year: 'numeric' },
               )
               return (
