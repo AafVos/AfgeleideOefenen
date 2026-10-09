@@ -79,9 +79,10 @@ export async function submitStudyAnswerAction(
     }
   }
 
-  await bumpTotalsOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
-
-  // AI-uitleg ophalen (cache-first; schrijfacties gaan via service role)
+  // Nog niet goed volgens de database. Eerst de AI-controle en de uitleg
+  // ophalen (cache-first; schrijfacties gaan via service role), pas daarna de
+  // voortgang bijwerken: een goed antwoord in een andere notatie mag niet
+  // eerst als fout geteld worden en daarna nog eens als goed.
   let errorExplanation: string | null = null
   let aiSaysCorrect = false
   try {
@@ -116,6 +117,9 @@ export async function submitStudyAnswerAction(
       mastered: progress.status === 'mastered',
     }
   }
+
+  // Echt fout: nu pas de opgave meetellen en de reeks terugzetten.
+  await bumpTotalsOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
 
   return {
     kind: 'incorrect',
