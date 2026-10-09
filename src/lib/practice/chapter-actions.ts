@@ -3,9 +3,7 @@
 import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 
-import { answersMatch } from './engine'
-
-const MASTERY_THRESHOLD = 3
+import { answersMatch, progressAfterCorrect } from './engine'
 
 type DB = Awaited<ReturnType<typeof createClient>>
 
@@ -259,17 +257,18 @@ async function bumpProgressOnCorrect(
   clusterId: string,
 ) {
   const p = await getOrCreateProgress(db, userId, topicId, clusterId)
-  const newStreak = p.correct_streak + 1
-  const mastered = newStreak >= MASTERY_THRESHOLD
+  const next = progressAfterCorrect(p.correct_streak)
   const { data, error } = await db
     .from('user_progress_new')
     .update({
-      correct_streak: newStreak,
+      correct_streak: next.correct_streak,
       total_answered: p.total_answered + 1,
       total_correct: p.total_correct + 1,
-      status: mastered ? 'mastered' : 'in_progress',
+      status: next.status,
       mastered_at:
-        mastered && !p.mastered_at ? new Date().toISOString() : p.mastered_at,
+        next.mastered && !p.mastered_at
+          ? new Date().toISOString()
+          : p.mastered_at,
     })
     .eq('id', p.id)
     .select('*')
