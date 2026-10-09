@@ -7,9 +7,18 @@ import { getLocale } from 'next-intl/server'
 
 import { createClient } from '@/lib/supabase/server'
 
+/** Sleutels uit de `Register`-teksten; het formulier vertaalt ze. */
+export type SignupErrorKey =
+  | 'errorMissingFields'
+  | 'errorPasswordTooShort'
+  | 'errorPasswordMismatch'
+  | 'errorEmailInUse'
+  | 'errorWeakPassword'
+  | 'errorGeneric'
+
 export type SignupState = {
-  error: string | null
-  notice: string | null
+  errorKey: SignupErrorKey | null
+  noticeKey: 'noticeConfirmEmail' | null
   /** Ingevulde velden terugzetten na een foutmelding */
   values?: { username: string; email: string }
 }
@@ -25,28 +34,16 @@ export async function signupAction(
   const values = { username: username ?? '', email }
 
   if (!email || !password) {
-    return {
-      error: 'Vul een e-mailadres en wachtwoord in.',
-      notice: null,
-      values,
-    }
+    return { errorKey: 'errorMissingFields', noticeKey: null, values }
   }
 
   if (password.length < 8) {
-    return {
-      error: 'Je wachtwoord moet minstens 8 tekens lang zijn.',
-      notice: null,
-      values,
-    }
+    return { errorKey: 'errorPasswordTooShort', noticeKey: null, values }
   }
 
   const passwordConfirm = (formData.get('passwordConfirm') ?? '').toString()
   if (password !== passwordConfirm) {
-    return {
-      error: 'De wachtwoorden komen niet overeen.',
-      notice: null,
-      values,
-    }
+    return { errorKey: 'errorPasswordMismatch', noticeKey: null, values }
   }
 
   const supabase = await createClient()
@@ -64,16 +61,12 @@ export async function signupAction(
   })
 
   if (error) {
-    return { error: translateAuthError(error.message), notice: null, values }
+    return { errorKey: authErrorKey(error.message), noticeKey: null, values }
   }
 
   // If email confirmation is enabled, the user isn't logged in yet.
   if (!data.session) {
-    return {
-      error: null,
-      notice:
-        'Account aangemaakt. Klik op de link in de bevestigingsmail om in te loggen.',
-    }
+    return { errorKey: null, noticeKey: 'noticeConfirmEmail' }
   }
 
   // Persist username on the auto-created profile row.
@@ -85,12 +78,15 @@ export async function signupAction(
   redirect(`/${locale}/onboarding`)
 }
 
-function translateAuthError(msg: string): string {
+function authErrorKey(msg: string): SignupErrorKey {
   if (/already registered|already exists|already in use/i.test(msg)) {
-    return 'Er bestaat al een account met dit e-mailadres.'
+    return 'errorEmailInUse'
   }
   if (/password should be|weak password/i.test(msg)) {
-    return 'Kies een sterker wachtwoord (minstens 8 tekens).'
+    return 'errorWeakPassword'
   }
-  return msg
+  // Alles wat we niet kennen is Engelse systeemtaal van Supabase. Die hoort
+  // niet op het scherm van een leerling; wel in de serverlog.
+  console.error('[registreren] onbekende foutmelding van Supabase:', msg)
+  return 'errorGeneric'
 }
