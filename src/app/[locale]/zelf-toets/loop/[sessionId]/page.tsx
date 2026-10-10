@@ -1,4 +1,4 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 

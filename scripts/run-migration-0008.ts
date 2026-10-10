@@ -3,8 +3,6 @@
  * Run with: npx tsx scripts/run-migration-0008.ts
  */
 import { createClient } from '@supabase/supabase-js'
-import * as fs from 'fs'
-import * as path from 'path'
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
