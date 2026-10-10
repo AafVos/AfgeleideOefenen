@@ -28,13 +28,13 @@ async function main() {
   }
 
   const { data: sessions, error: sErr } = await sb
-    .from('user_sessions')
+    .from('user_sessions_new')
     .select('id, user_id, started_at')
     .gte('started_at', SINCE)
   if (sErr) throw sErr
 
   const { data: answers, error: aErr } = await sb
-    .from('session_answers')
+    .from('session_answers_new')
     .select('id, session_id, answered_at')
     .gte('answered_at', SINCE)
   if (aErr) throw aErr
