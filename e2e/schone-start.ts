@@ -1,6 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-import { TESTLEERLING } from './leerling'
+import { TESTLEERLING, WEGWERP_ADRES_BEGIN } from './leerling'
+import { leegPostbus } from './postbus'
 
 /**
  * Draait één keer vóór alle e2e-tests.
@@ -10,6 +11,7 @@ import { TESTLEERLING } from './leerling'
  * 2. Veegt de voortgang van de testleerling schoon en zet de oefenstof van
  *    het testhoofdstuk terug in de begintoestand, zodat elke run hetzelfde
  *    begint — ook als je de tests twee keer achter elkaar draait.
+ * 3. Ruimt de wegwerpaccounts en de mail van een vorige run op.
  */
 export default async function schoneStart() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -29,6 +31,11 @@ export default async function schoneStart() {
   }
 
   const db = createClient(url, serviceKey)
+
+  await ruimWegwerpAccountsOp(db)
+  // Mail van een vorige run weg, anders ziet een test die op een
+  // bevestigingsmail wacht misschien een oude aan voor een verse.
+  await leegPostbus()
 
   // Welke vragen horen bij het testhoofdstuk?
   const ONDERWERPEN = ['e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking']
@@ -89,5 +96,28 @@ export default async function schoneStart() {
       .from('question_steps_new')
       .delete()
       .in('question_id', vraagIdsMetAiStappen)
+  }
+}
+
+/**
+ * De tests die registreren maken elke run een paar nieuwe accounts aan. Die
+ * horen niet te blijven staan: anders groeit de lokale database bij elke run
+ * en wordt het zoeken naar een echte fout lastiger.
+ */
+async function ruimWegwerpAccountsOp(db: SupabaseClient) {
+  // `listUsers` geeft per keer maximaal honderd rijen; meer dan één pagina
+  // aan wegwerpaccounts hoort er niet te zijn, maar we lopen ze netjes af.
+  for (let pagina = 1; pagina <= 20; pagina += 1) {
+    const { data, error } = await db.auth.admin.listUsers({ page: pagina, perPage: 100 })
+    if (error) throw new Error(error.message)
+
+    const wegwerp = (data.users ?? []).filter((u) =>
+      u.email?.startsWith(WEGWERP_ADRES_BEGIN),
+    )
+    for (const gebruiker of wegwerp) {
+      await db.auth.admin.deleteUser(gebruiker.id)
+    }
+
+    if ((data.users ?? []).length < 100) return
   }
 }
