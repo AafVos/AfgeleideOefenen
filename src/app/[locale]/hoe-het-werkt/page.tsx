@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { Card } from '@/components/ui'
+import { canoniek } from '@/lib/seo'
 
 export async function generateMetadata({
   params,
@@ -13,6 +14,7 @@ export async function generateMetadata({
   return {
     title: t('title'),
     description: t('description'),
+    alternates: canoniek(locale, '/hoe-het-werkt'),
   }
 }
 

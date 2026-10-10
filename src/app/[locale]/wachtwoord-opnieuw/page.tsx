@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
+import { canoniek } from '@/lib/seo'
+
 import { NewPasswordForm } from './new-password-form'
 
 export async function generateMetadata({
@@ -9,7 +11,10 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'NewPassword' })
-  return { title: t('title') }
+  return {
+    title: t('title'),
+    alternates: canoniek(locale, '/wachtwoord-opnieuw'),
+  }
 }
 
 export default async function WachtwoordOpnieuwPage() {

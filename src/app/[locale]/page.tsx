@@ -3,9 +3,19 @@ import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
 import { SITE_CONFIG } from '@/config/site'
+import { canoniek, SITE_URL } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
 import { HomeDemo } from './home-demo'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  return { alternates: canoniek(locale) }
+}
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -21,7 +31,6 @@ export default async function HomePage() {
   const t = await getTranslations('Home')
 
   const domain = SITE_CONFIG.domain
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`
 
   const FAQ_ITEMS = [
     { question: t('faq1Q'), answer: t('faq1A') },

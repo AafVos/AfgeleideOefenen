@@ -1,10 +1,7 @@
 import type { MetadataRoute } from 'next'
 
-import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? `https://${SITE_CONFIG.domain}`
+import { SITE_URL } from '@/lib/seo'
 
 // Deze pagina's staan in `src/app/[locale]`, dus hun echte adres begint met
 // een taalcode: /nl/dashboard, /nl/oefenen, enzovoort.

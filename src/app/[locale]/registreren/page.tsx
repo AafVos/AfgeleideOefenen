@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
 import { SignupForm } from './signup-form'
@@ -13,7 +14,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Register' })
-  return { title: t('title') }
+  return { title: t('title'), alternates: canoniek(locale, '/registreren') }
 }
 
 export default async function SignupPage() {
