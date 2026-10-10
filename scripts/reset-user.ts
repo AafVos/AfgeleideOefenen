@@ -30,23 +30,23 @@ async function main() {
   console.log('User id:', uid)
 
   // Verwijder voortgang
-  const { data: sessions } = await sb.from('user_sessions').select('id').eq('user_id', uid)
+  const { data: sessions } = await sb.from('user_sessions_new').select('id').eq('user_id', uid)
   const sessionIds = (sessions ?? []).map(s => s.id)
   if (sessionIds.length > 0) {
-    const { count: sa } = await sb.from('session_answers')
+    const { count: sa } = await sb.from('session_answers_new')
       .delete({ count: 'exact' }).in('session_id', sessionIds)
-    console.log('session_answers verwijderd:', sa)
+    console.log('session_answers_new verwijderd:', sa)
   } else {
-    console.log('session_answers verwijderd: 0')
+    console.log('session_answers_new verwijderd: 0')
   }
 
-  const { count: us } = await sb.from('user_sessions')
+  const { count: us } = await sb.from('user_sessions_new')
     .delete({ count: 'exact' }).eq('user_id', uid)
-  console.log('user_sessions verwijderd:', us)
+  console.log('user_sessions_new verwijderd:', us)
 
-  const { count: up } = await sb.from('user_progress')
+  const { count: up } = await sb.from('user_progress_new')
     .delete({ count: 'exact' }).eq('user_id', uid)
-  console.log('user_progress verwijderd:', up)
+  console.log('user_progress_new verwijderd:', up)
 
   // Reset onboarding in profiel (onboarded_at = null forceert onboarding-flow)
   await sb.from('profiles')
