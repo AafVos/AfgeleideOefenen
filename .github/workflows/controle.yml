@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   lint-en-typecontrole:
-    name: Lint en typecontrole
+    name: Lint, typecontrole en rekenregels
     runs-on: ubuntu-latest
     # Normaal is deze job in ruim een minuut klaar. Blijft er iets hangen, dan
     # kappen we er na drie minuten mee in plaats van zes uur te wachten.
@@ -52,6 +52,13 @@ jobs:
 
       - name: Typecontrole
         run: npm run typecheck
+
+      # De rekenregels: pure functies, geen browser, geen database en geen
+      # Gemini. Er zijn dus geen sleutels voor nodig en het kost een seconde
+      # of twee. Zonder deze stap komt een pull request die het nakijken van
+      # antwoorden stukmaakt gewoon groen door de controle.
+      - name: Rekenregels
+        run: npm test
 
   # Loopt de weg van een leerling na in een echte browser: inloggen →
   # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:
