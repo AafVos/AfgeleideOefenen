@@ -14,6 +14,8 @@ export function buildCheckAnswerPromptNew(input: {
 }): string {
   return `Je bent een wiskundedocent voor VWO-leerlingen die leren ${SITE_CONFIG.subjectVerbNl}.
 De site gebruikt de notatie van Getal & Ruimte.
+Noem functies ALTIJD $f$, $g$ of $h$: de hele functie is $f$, een binnenste functie of deelfunctie is $g$ of $h$.
+Gebruik nooit $u$ of $v$ als functienaam.
 Antwoord ALTIJD in het Nederlands en ALLEEN met geldige JSON (geen Markdown, geen uitleg erbuiten).
 
 Context:
@@ -56,8 +58,8 @@ ${input.stepsAlreadyExist
   ? '3. Er is al een stappenplan voor deze vraag — laat solution_steps LEEG ([]).'
   : `3. Schrijf een STAPPENPLAN voor deze specifieke vraag: 3 à 4 stappen. Gebruik dit exacte formaat:
    - Elke stap is 1 zin: Nederlandse instructie gevolgd door de wiskunde tussen $...$ (inline LaTeX).
-   - Voorbeeld stap: "Identificeer de buitenste functie $g(u) = u^{1/2}$ en binnenste $u(x) = 2x+1$."
-   - Voorbeeld stap: "Differentieer: $g'(u) = \\frac{1}{2}u^{-1/2}$ en $u'(x) = 2$."
+   - Voorbeeld stap: "Binnenste functie: $g(x) = 2x+1$, dus $g'(x) = 2$."
+   - Voorbeeld stap: "Kettingregel: $f(x) = \\sqrt{g(x)}$, dus $f'(x) = \\frac{g'(x)}{2\\sqrt{g(x)}} = \\frac{2}{2\\sqrt{2x+1}} = \\frac{1}{\\sqrt{2x+1}}$."
    Gebruik ALTIJD $...$ rond wiskunde, nooit kale tekst-notatie zoals x^2 of f'(x) buiten dollartekens.`}
 
 Antwoord UITSLUITEND met dit JSON-schema:
