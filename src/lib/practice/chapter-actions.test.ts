@@ -16,7 +16,12 @@ type ProgressRow = {
   mastered_at: string | null
 }
 
-type AnswerRow = { id: string; user_answer: string; is_correct: boolean }
+type AnswerRow = {
+  id: string
+  user_answer: string | null
+  is_correct: boolean | null
+  hints_used: number
+}
 
 type QueryResult = { data: unknown; error: null }
 
@@ -61,8 +66,9 @@ function from(table: string) {
       if (op === 'insert') {
         const row: AnswerRow = {
           id: `a${answers.length + 1}`,
-          user_answer: String(values.user_answer),
-          is_correct: values.is_correct === true,
+          user_answer: (values.user_answer ?? null) as string | null,
+          is_correct: (values.is_correct ?? null) as boolean | null,
+          hints_used: (values.hints_used ?? 0) as number,
         }
         answers.push(row)
         return { data: { id: row.id }, error: null }
@@ -124,7 +130,9 @@ vi.mock('@/lib/ai/check-answer-new', () => ({
   }),
 }))
 
-const { submitStudyAnswerAction } = await import('./chapter-actions')
+const { skipStudyQuestionAction, submitStudyAnswerAction } = await import(
+  './chapter-actions'
+)
 
 describe('submitStudyAnswerAction', () => {
   beforeEach(() => {
@@ -179,5 +187,45 @@ describe('submitStudyAnswerAction', () => {
     // De opgave telt wel mee.
     expect(progress.total_answered).toBe(4)
     expect(progress.total_correct).toBe(3)
+  })
+})
+
+describe('skipStudyQuestionAction', () => {
+  beforeEach(() => {
+    progress = freshProgress(2, 2)
+    answers = []
+    aiSaysCorrect = false
+  })
+
+  it('geeft het goede antwoord terug zonder iets fout te rekenen', async () => {
+    const result = await skipStudyQuestionAction('q1')
+
+    expect(result).toMatchObject({ kind: 'skipped', correctAnswer: '6x' })
+    // Apart opgeslagen: geen antwoord, geen goed/fout, hulp opgevraagd.
+    expect(answers).toHaveLength(1)
+    expect(answers[0]).toMatchObject({
+      user_answer: null,
+      is_correct: null,
+      hints_used: 1,
+    })
+  })
+
+  it('laat het percentage goed met rust en zet de reeks terug op 0', async () => {
+    await skipStudyQuestionAction('q1')
+
+    expect(progress.total_answered).toBe(2)
+    expect(progress.total_correct).toBe(2)
+    expect(progress.correct_streak).toBe(0)
+    expect(progress.status).toBe('in_progress')
+  })
+
+  it('laat "beheerst" staan als de leerling tijdens het herhalen vastloopt', async () => {
+    progress = { ...freshProgress(3, 3), status: 'mastered', mastered_at: '2026-01-01' }
+
+    await skipStudyQuestionAction('q1')
+
+    expect(progress.status).toBe('mastered')
+    expect(progress.correct_streak).toBe(3)
+    expect(progress.total_answered).toBe(3)
   })
 })

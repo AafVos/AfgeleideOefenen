@@ -7,9 +7,11 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Button, cn, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner } from '@/components/ui'
 import {
+  skipStudyQuestionAction,
   submitStudyAnswerAction,
+  type SkipResult,
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
@@ -56,6 +58,12 @@ type State =
       correctAnswer: string
       latexCorrectAnswer: string | null
       errorExplanation: string | null
+    }
+  /** De leerling wist het niet en vroeg de uitwerking op (zie AFG-102). */
+  | {
+      phase: 'skipped'
+      correctAnswer: string
+      latexCorrectAnswer: string | null
     }
 
 export function StudyCard({
@@ -176,6 +184,30 @@ export function StudyCard({
     })
   }
 
+  /**
+   * "Ik weet het niet": meteen het goede antwoord en het stappenplan, zonder
+   * dat de leerling eerst iets moet verzinnen om fout te laten rekenen.
+   */
+  function skip() {
+    if (state.phase !== 'input' || submitting) return
+
+    setSubmitting(true)
+    startTransition(async () => {
+      const result: SkipResult = await skipStudyQuestionAction(question.id)
+      setSubmitting(false)
+      if (result.kind === 'error') {
+        setState({ phase: 'input', error: result.message })
+        return
+      }
+      setRevealed(true)
+      setState({
+        phase: 'skipped',
+        correctAnswer: result.correctAnswer,
+        latexCorrectAnswer: result.latexCorrectAnswer,
+      })
+    })
+  }
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-2">
@@ -216,9 +248,9 @@ export function StudyCard({
             />
           </div>
         )}
-        {state.phase === 'wrong' && (
+        {(state.phase === 'wrong' || state.phase === 'skipped') && (
           <div className="mt-4 flex flex-wrap items-stretch justify-center gap-3">
-            {state.userAnswer.trim() && (
+            {state.phase === 'wrong' && state.userAnswer.trim() && (
               <div className="w-fit rounded-xl border border-accent-2/40 bg-accent-2-light px-5 py-3 text-center">
                 <p className="text-xs font-medium uppercase tracking-wide text-accent-2/80">
                   {t('yourAnswer')}
@@ -296,12 +328,26 @@ export function StudyCard({
 
               <ErrorBanner>{state.error}</ErrorBanner>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <Button
                   type="submit"
+                  className="min-h-11 px-5"
                   disabled={(pending && submitting) || !answer.trim()}
                 >
                   {t('submit')}
+                </Button>
+                {/*
+                  Zonder deze knop is de enige weg naar de uitwerking: iets
+                  fout intypen. Dat deden leerlingen dan ook (zie AFG-102).
+                */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-11 px-5"
+                  onClick={skip}
+                  disabled={pending && submitting}
+                >
+                  {t('dontKnow')}
                 </Button>
               </div>
             </form>
@@ -369,9 +415,77 @@ export function StudyCard({
         </div>
       )}
 
+      {state.phase === 'skipped' && (
+        <div ref={feedbackRef} className="space-y-4">
+          <p className="text-center text-sm text-text-muted">{t('skippedBody')}</p>
+          <StepsList steps={steps} />
+          <AfterAnswerButtons onNext={next} onRetry={retry} pending={pending} />
+        </div>
+      )}
+
       <div className="mt-6 flex justify-end border-t border-border pt-3">
         <FlagQuestionButton questionId={question.id} />
       </div>
+    </div>
+  )
+}
+
+/** Het stappenplan onder een opgave waarvan het antwoord nu zichtbaar is. */
+function StepsList({ steps }: { steps: Step[] }) {
+  const t = useTranslations('PracticeCard')
+  const orderedSteps = [...steps].sort((a, b) => a.step_order - b.step_order)
+
+  if (orderedSteps.length === 0) {
+    return <p className="text-center text-xs text-text-muted">{t('noSteps')}</p>
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-white/90 shadow-sm">
+      <div className="px-4 py-3">
+        <p className="text-sm font-semibold text-text">{t('stepsTitle')}</p>
+      </div>
+      <ol className="list-none space-y-1 border-t border-border px-3 py-3 text-sm text-text">
+        {orderedSteps.map((s) => (
+          <li key={s.id}>
+            <div className="flex items-start gap-3 rounded-md px-3 py-2 leading-relaxed">
+              <span className="min-w-[1.25rem] shrink-0 font-semibold tabular-nums text-accent">
+                {s.step_order}.
+              </span>
+              <span>
+                <RichMath source={s.step_description} />
+              </span>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/** Doorgaan of deze opgave nog een keer proberen. */
+function AfterAnswerButtons({
+  onNext,
+  onRetry,
+  pending,
+}: {
+  onNext: () => void
+  onRetry: () => void
+  pending: boolean
+}) {
+  const t = useTranslations('PracticeCard')
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      <Button onClick={onNext} disabled={pending} className="min-h-11 px-5">
+        {pending ? t('navigating') : t('nextPlus')}
+      </Button>
+      <Button
+        variant="secondary"
+        onClick={onRetry}
+        disabled={pending}
+        className="min-h-11 px-5"
+      >
+        {t('retryButton')}
+      </Button>
     </div>
   )
 }
@@ -392,67 +506,29 @@ function WrongFeedback({
   pending: boolean
 }) {
   const t = useTranslations('PracticeCard')
-  const orderedSteps = [...steps].sort((a, b) => a.step_order - b.step_order)
 
   if (!revealed) {
     return (
-      <div className="flex items-center justify-center gap-2">
-        <Button onClick={onRetry} disabled={pending}>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button onClick={onRetry} disabled={pending} className="min-h-11 px-5">
           {t('retryButton')}
         </Button>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={onReveal}
           disabled={pending}
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-text transition hover:bg-surface-2 disabled:opacity-60"
+          className="min-h-11 px-5"
         >
           {t('showAnswer')}
-        </button>
+        </Button>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {orderedSteps.length > 0 && (
-        <div className="rounded-lg border border-border bg-white/90 shadow-sm">
-          <div className="px-4 py-3">
-            <p className="text-sm font-semibold text-text">{t('stepsTitle')}</p>
-          </div>
-          <ol className="list-none space-y-1 border-t border-border px-3 py-3 text-sm text-text">
-            {orderedSteps.map((s) => (
-              <li key={s.id}>
-                <div
-                  className={cn(
-                    'flex items-start gap-3 rounded-md border border-transparent px-3 py-2 leading-relaxed',
-                  )}
-                >
-                  <span className="min-w-[1.25rem] shrink-0 font-semibold tabular-nums text-accent">
-                    {s.step_order}.
-                  </span>
-                  <span>
-                    <RichMath source={s.step_description} />
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
-
-      <div className="flex items-center justify-center gap-2">
-        <Button onClick={onNext} disabled={pending}>
-          {pending ? t('navigating') : t('nextPlus')}
-        </Button>
-        <button
-          type="button"
-          onClick={onRetry}
-          disabled={pending}
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-text transition hover:bg-surface-2 disabled:opacity-60"
-        >
-          {t('retryButton')}
-        </button>
-      </div>
+      <StepsList steps={steps} />
+      <AfterAnswerButtons onNext={onNext} onRetry={onRetry} pending={pending} />
     </div>
   )
 }

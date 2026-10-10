@@ -94,6 +94,10 @@ export default async function DashboardPage() {
   let totalCorrect = 0
 
   for (const row of answersRows ?? []) {
+    // "Ik weet het niet" staat met een lege is_correct in de database: de
+    // leerling heeft de opgave niet beantwoord, dus hij telt hier niet mee
+    // en trekt het percentage goed niet omlaag (zie AFG-102).
+    if (row.is_correct !== true && row.is_correct !== false) continue
     const k = dayKey(new Date(row.answered_at))
     if (bucket.has(k)) bucket.set(k, (bucket.get(k) ?? 0) + 1)
     totalAnswered++

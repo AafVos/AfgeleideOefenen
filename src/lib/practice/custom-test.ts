@@ -92,6 +92,9 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
       .select('question_id, is_correct')
       .in('session_id', sessionIds)
     for (const a of answers ?? []) {
+      // Een opgevraagde uitwerking heeft een lege is_correct: de leerling
+      // heeft de opgave niet gemaakt, dus hij blijft "nieuw" (zie AFG-102).
+      if (a.is_correct !== true && a.is_correct !== false) continue
       answeredIds.add(a.question_id)
       if (a.is_correct === false) wrongIds.add(a.question_id)
     }
@@ -162,6 +165,8 @@ export async function pickQuestionsForTest(
         .select('question_id, is_correct')
         .in('session_id', sessionIds)
       for (const a of answers ?? []) {
+        // Zie hierboven: een opgevraagde uitwerking telt niet als gemaakt.
+        if (a.is_correct !== true && a.is_correct !== false) continue
         answeredIds.add(a.question_id)
         if (a.is_correct === false) wrongIds.add(a.question_id)
       }
