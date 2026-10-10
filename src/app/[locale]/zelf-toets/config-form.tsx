@@ -7,7 +7,9 @@ import { useRouter } from '@/i18n/navigation'
 
 import { Button, ErrorBanner } from '@/components/ui'
 import type {
+  ConfigCluster,
   ConfigData,
+  ConfigTopic,
   QuestionSource,
 } from '@/lib/practice/custom-test'
 
@@ -85,7 +87,7 @@ export function ConfigForm({
 
   // Build lookups
   const clustersByTopic = useMemo(() => {
-    const m = new Map<string, typeof config.clusters>()
+    const m = new Map<string, ConfigCluster[]>()
     for (const cl of config.clusters) {
       const arr = m.get(cl.topic_id) ?? []
       arr.push(cl)
@@ -95,7 +97,7 @@ export function ConfigForm({
   }, [config.clusters])
 
   const topicsByChapter = useMemo(() => {
-    const m = new Map<string, typeof config.topics>()
+    const m = new Map<string, ConfigTopic[]>()
     for (const tp of config.topics) {
       const arr = m.get(tp.chapter_id) ?? []
       arr.push(tp)
