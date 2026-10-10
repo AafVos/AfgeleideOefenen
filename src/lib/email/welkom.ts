@@ -1,10 +1,10 @@
 import { Resend } from 'resend'
 
 import { SITE_CONFIG } from '@/config/site'
+import { SITE_URL } from '@/lib/seo'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 const EMAIL_FROM = process.env.EMAIL_FROM ?? `no-reply@${SITE_CONFIG.domain}`
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://www.${SITE_CONFIG.domain}`
 
 export type WelkomResultaat =
   | { verstuurd: true }

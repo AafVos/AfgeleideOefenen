@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
+import { canoniek } from '@/lib/seo'
 
 import { TheorieClient, type TheorieChapter } from './theorie-client'
 
@@ -11,7 +12,11 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Theorie' })
-  return { title: t('title'), description: t('description') }
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: canoniek(locale, '/theorie'),
+  }
 }
 
 /** "H2 — De afgeleide functie" → "De afgeleide functie" */
