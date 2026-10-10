@@ -2,13 +2,16 @@
 // Dagen tellen voor het dashboard: de balkjes van "Afgelopen 14 dagen"
 // en het getal "Dagen op rij".
 //
-// Twee dingen zijn hier belangrijk:
+// Drie dingen zijn hier belangrijk:
 //
 // 1. Een dag loopt van middernacht tot middernacht in Nederlandse tijd,
 //    niet in UTC. Wie om 00:30 oefent, hoort dat op die dag te zien en
 //    niet op de dag ervoor.
 // 2. De reeks breekt pas als je een hele dag overslaat. Vandaag mag dus
 //    nog leeg zijn: dan telt de reeks vanaf gisteren.
+// 3. De reeks kijkt verder terug dan de balkjes. Wie dertig dagen op rij
+//    oefent, hoort 30 te zien en niet 14. Daarom halen we de antwoorden
+//    van nieuw naar oud op en stoppen we pas als de reeks vaststaat.
 // =====================================================================
 
 const NEDERLAND = 'Europe/Amsterdam'
@@ -114,4 +117,71 @@ export function berekenReeks(
     dag = vorigeDag(dag)
   }
   return reeks
+}
+
+/**
+ * Staat de reeks al vast, of kunnen oudere antwoorden hem nog verlengen?
+ *
+ * `oudsteGezien` is de oudste dag waarvan we de antwoorden al binnen
+ * hebben. Breekt de reeks op een dag die daar nog ná ligt, dan weten we
+ * zeker dat die dag leeg is en hoeven we niet verder terug te kijken.
+ */
+export function reeksStaatVast(
+  dagenMetAntwoord: ReadonlySet<string>,
+  vandaag: string,
+  oudsteGezien: string,
+): boolean {
+  let dag = dagenMetAntwoord.has(vandaag) ? vandaag : vorigeDag(vandaag)
+  while (dagenMetAntwoord.has(dag)) dag = vorigeDag(dag)
+  return dag > oudsteGezien
+}
+
+/** Hoeveel antwoorden we per keer ophalen bij het terugkijken. */
+export const ANTWOORDEN_PER_KEER = 500
+
+/** Noodrem: zoveel pagina's zijn genoeg, ook als er iets misgaat. */
+const MAX_PAGINAS = 100
+
+type AntwoordRij = { answered_at: string }
+type Pagina = { data: AntwoordRij[] | null }
+
+/**
+ * Telt per dag hoeveel antwoorden er zijn, van nieuw naar oud.
+ *
+ * `haalPagina` geeft de antwoorden van één pagina terug, met het nieuwste
+ * antwoord vooraan. We stoppen zodra er genoeg bekend is: de balkjes tot
+ * en met `oudsteBalkje` zijn gevuld én de reeks staat vast. Een leerling
+ * met duizenden antwoorden haalt zo meestal maar één pagina op.
+ */
+export async function telOefendagen(
+  haalPagina: (van: number, tot: number) => PromiseLike<Pagina>,
+  vandaag: string,
+  oudsteBalkje: string,
+  perKeer: number = ANTWOORDEN_PER_KEER,
+): Promise<Map<string, number>> {
+  const perDag = new Map<string, number>()
+  for (let pagina = 0; pagina < MAX_PAGINAS; pagina++) {
+    const van = pagina * perKeer
+    const { data } = await haalPagina(van, van + perKeer - 1)
+    if (!data || data.length === 0) break
+
+    let oudsteGezien = ''
+    for (const rij of data) {
+      const dag = dagSleutel(new Date(rij.answered_at))
+      perDag.set(dag, (perDag.get(dag) ?? 0) + 1)
+      if (!oudsteGezien || dag < oudsteGezien) oudsteGezien = dag
+    }
+
+    // Een niet-volle pagina betekent: dit was de laatste.
+    if (data.length < perKeer) break
+
+    const dagen = new Set(perDag.keys())
+    if (
+      oudsteGezien < oudsteBalkje &&
+      reeksStaatVast(dagen, vandaag, oudsteGezien)
+    ) {
+      break
+    }
+  }
+  return perDag
 }
