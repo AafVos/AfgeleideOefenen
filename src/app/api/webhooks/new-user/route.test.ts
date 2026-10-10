@@ -119,6 +119,16 @@ describe('seintje bij een nieuwe gebruiker', () => {
     log.mockRestore()
   })
 
+  it('stuurt stil niets zonder ontvanger, in plaats van een mail aan "undefined"', async () => {
+    vi.stubEnv('NOTIFY_EMAIL', '')
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    expect((await POST(seintje(AUTH_RIJ))).status).toBe(200)
+    expect(send).not.toHaveBeenCalled()
+
+    log.mockRestore()
+  })
+
   it('negeert een gebruikersnaam die geen bruikbare tekst is', async () => {
     await POST(seintje({ ...AUTH_RIJ, raw_user_meta_data: { username: 42 } }))
 
