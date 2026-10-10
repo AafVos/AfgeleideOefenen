@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 
 import {
   WEGWERP_WACHTWOORD,
@@ -34,6 +34,23 @@ const ONDERWERP_RESET = 'Nieuw wachtwoord'
 /** Waar de link in een mail van Supabase altijd langs gaat. */
 const VERIFY_PAD = '/auth/v1/verify'
 
+/**
+ * Het blokje met de melding boven of onder het formulier.
+ *
+ * Met opzet niet `getByRole('alert')`: Next.js zet zelf een leeg
+ * `<div role="alert">` in elke pagina om schermlezers te vertellen welke
+ * pagina je opent. Dat blokje staat er altijd, en dan weet Playwright niet
+ * welke van de twee je bedoelt.
+ */
+function melding(page: Page): Locator {
+  return page.locator('p[role="alert"], p[role="status"]')
+}
+
+/** Alleen de foutmelding; voor "en er staat geen rode melding op het scherm". */
+function foutmelding(page: Page): Locator {
+  return page.locator('p[role="alert"]')
+}
+
 /** Het registratieformulier invullen en versturen, zoals een leerling het doet. */
 async function vulRegistratieIn(
   page: Page,
@@ -62,7 +79,7 @@ function isNederlands(mail: Mail) {
 async function registreerEnBevestig(page: Page): Promise<string> {
   const email = uniekAdres()
   await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(melding(page)).toBeVisible()
 
   const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
   await page.goto(linkUitMail(mail, VERIFY_PAD))
@@ -105,7 +122,7 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   await page.goto(linkUitMail(mail, VERIFY_PAD))
   await expect(page).toHaveURL(/\/nl\/inloggen/)
   await expect(page.getByText('Je account is bevestigd!')).toBeVisible()
-  await expect(page.getByRole('alert')).toBeHidden()
+  await expect(foutmelding(page)).toHaveCount(0)
 
   // 5. Inloggen met het verse account. Dit is ook het pad waarop de site de
   //    welkomstmail probeert te sturen; zonder Resend-sleutel hoort dat
@@ -173,17 +190,13 @@ test('registreren met een adres dat al bestaat maakt geen tweede account', async
 
   await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
 
-  // Wat de leerling te zien krijgt is Nederlands en geen Engelse systeemtaal
-  // van Supabase: óf "dit adres heeft al een account", óf dezelfde melding
-  // over de bevestigingsmail. Supabase verraadt met opzet niet welke van de
-  // twee het is, zodat je niet kunt uitvissen wie hier een account heeft.
-  await expect(page.getByRole('status').or(page.getByRole('alert'))).toContainText(
-    /Er bestaat al een account met dit e-mailadres\.|Klik op de link in de bevestigingsmail/,
+  // Eén nette Nederlandse zin, geen Engelse systeemtaal van Supabase, en
+  // geen "we hebben je een mail gestuurd" terwijl er niets komt.
+  await expect(melding(page)).toContainText(
+    'Er bestaat al een account met dit e-mailadres.',
   )
 
-  // Wat er in elk geval niet mag gebeuren: een tweede account op hetzelfde
-  // adres, of het wachtwoord van het bestaande account dat stilletjes
-  // overschreven wordt.
+  // En er komt geen tweede account op hetzelfde adres bij.
   const { data } = await testDatabase().auth.admin.listUsers({ perPage: 100 })
   expect(data.users.filter((u) => u.email === email)).toHaveLength(1)
 })
@@ -193,7 +206,7 @@ test('inloggen vóór het bevestigen geeft een duidelijke melding', async ({
 }) => {
   const email = uniekAdres()
   await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(melding(page)).toBeVisible()
   const eerste = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
 
   // Niet op de link geklikt, wel proberen in te loggen.
@@ -202,7 +215,7 @@ test('inloggen vóór het bevestigen geeft een duidelijke melding', async ({
   await page.locator('input[name="password"]').fill(WEGWERP_WACHTWOORD)
   await page.getByRole('button', { name: 'Inloggen' }).click()
 
-  await expect(page.getByRole('alert')).toContainText(
+  await expect(foutmelding(page)).toContainText(
     'Je hebt je e-mailadres nog niet bevestigd.',
   )
   await expect(page).toHaveURL(/\/nl\/inloggen/)
@@ -258,7 +271,7 @@ test('wachtwoord vergeten: mail, link, nieuw wachtwoord, inloggen', async ({
   await page.locator('input[name="email"]').fill(email)
   await page.locator('input[name="password"]').fill(WEGWERP_WACHTWOORD)
   await page.getByRole('button', { name: 'Inloggen' }).click()
-  await expect(page.getByRole('alert')).toContainText(
+  await expect(foutmelding(page)).toContainText(
     'Onjuiste combinatie van e-mail en wachtwoord.',
   )
 })
