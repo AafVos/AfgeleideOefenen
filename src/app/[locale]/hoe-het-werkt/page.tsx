@@ -63,30 +63,24 @@ export default async function HoeHetWerktPage() {
         <h2 className="font-serif text-2xl text-text">{t('firstTimeH2')}</h2>
         <p className="mt-3 text-text-muted">
           {t.rich('firstTimeBody', {
-            leerpad: (chunks) => (
+            oefenen: (chunks) => (
               <strong className="font-medium text-text">{chunks}</strong>
             ),
-            vrijOefenen: (chunks) => (
+            zelfToets: (chunks) => (
               <strong className="font-medium text-text">{chunks}</strong>
             ),
           })}
         </p>
-        <ul className="mt-6 space-y-4 border-l-2 border-border pl-5 text-sm text-text-muted">
+        <ol className="mt-6 list-decimal space-y-4 border-l-2 border-border pl-9 text-sm text-text-muted marker:font-medium marker:text-text">
           {(['1', '2', '3', '4'] as const).map((n) => (
             <li key={n}>
               <strong className="text-text">
                 {t(`option${n}Title` as 'option1Title')}
               </strong>{' '}
-              {n === '4'
-                ? t.rich('option4Body', {
-                    vrijOefenen: (chunks) => (
-                      <strong className="text-text">{chunks}</strong>
-                    ),
-                  })
-                : t(`option${n}Body` as 'option1Body')}
+              {t(`option${n}Body` as 'option1Body')}
             </li>
           ))}
-        </ul>
+        </ol>
       </section>
 
       <section className="mt-14 rounded-2xl border border-border bg-surface p-6 sm:p-8">
@@ -94,17 +88,17 @@ export default async function HoeHetWerktPage() {
         <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-text-muted">
           <li>
             {t.rich('summary1', {
-              leerpad: (chunks) => (
+              oefenen: (chunks) => (
                 <strong className="text-text">{chunks}</strong>
               ),
-              adapts: (chunks) => (
+              streak: (chunks) => (
                 <strong className="text-text">{chunks}</strong>
               ),
             })}
           </li>
           <li>
             {t.rich('summary2', {
-              free: (chunks) => (
+              zelfToets: (chunks) => (
                 <strong className="text-text">{chunks}</strong>
               ),
             })}

@@ -75,10 +75,10 @@ export default async function HomePage() {
           </p>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
             {t.rich('subLead', {
-              leerpad: (chunks) => (
+              oefenen: (chunks) => (
                 <span className="text-text">{chunks}</span>
               ),
-              vrijOefenen: (chunks) => (
+              zelfToets: (chunks) => (
                 <span className="text-text">{chunks}</span>
               ),
               howItWorks: () => (
