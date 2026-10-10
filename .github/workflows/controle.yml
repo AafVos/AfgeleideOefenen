@@ -25,7 +25,11 @@ permissions:
 
 jobs:
   lint-en-typecontrole:
-    name: Lint, typecontrole en rekenregels
+    # Deze naam niet veranderen: de ruleset "main beschermen" eist een
+    # geslaagde check met precies deze naam. Hernoem je de job, dan blijft die
+    # check eeuwig op "in afwachting" staan en kan geen pull request meer
+    # gemergd worden. De job doet meer dan de naam zegt: zie de stappen.
+    name: Lint en typecontrole
     runs-on: ubuntu-latest
     # Normaal is deze job in ruim een minuut klaar. Blijft er iets hangen, dan
     # kappen we er na drie minuten mee in plaats van zes uur te wachten.
