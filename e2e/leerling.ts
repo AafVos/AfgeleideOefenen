@@ -12,6 +12,17 @@ export const TESTLEERLING = {
 }
 
 /**
+ * De tweede testleerling uit `supabase/seed.sql`: net aangemeld, heeft de
+ * rondleiding nog nooit gezien. Apart account, zodat de rondleiding niet
+ * over de knoppen van de andere tests heen valt.
+ */
+export const NIEUWE_LEERLING = {
+  id: 'e2e00000-0000-4000-8000-000000000003',
+  email: 'nieuw@test.local',
+  wachtwoord: 'oefenen123',
+}
+
+/**
  * Een verbinding met de lokale testdatabase, om te controleren wat er
  * daadwerkelijk is opgeslagen. Alleen lokaal: de echte database is gedeeld
  * met integraaloefenen.nl.
@@ -55,10 +66,13 @@ async function klikTot(knop: Locator, verwacht: Locator) {
 }
 
 /** Inloggen zoals een leerling dat doet: formulier invullen en versturen. */
-export async function logIn(page: Page) {
+export async function logIn(
+  page: Page,
+  leerling: { email: string; wachtwoord: string } = TESTLEERLING,
+) {
   await page.goto('/nl/inloggen')
-  await page.locator('input[name="email"]').fill(TESTLEERLING.email)
-  await page.locator('input[name="password"]').fill(TESTLEERLING.wachtwoord)
+  await page.locator('input[name="email"]').fill(leerling.email)
+  await page.locator('input[name="password"]').fill(leerling.wachtwoord)
   await page.getByRole('button', { name: 'Inloggen' }).click()
   await expect(page).toHaveURL(/\/nl\/dashboard/)
 }

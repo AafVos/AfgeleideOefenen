@@ -58,6 +58,12 @@ export default async function schoneStart() {
   // melden, dus anders meldt de volgende run niets meer.
   await db.from('question_flags_new').delete().eq('user_id', TESTLEERLING.id)
 
+  // De rondleiding heeft deze leerling gezien; anders dekt hij knoppen af.
+  await db
+    .from('profiles')
+    .update({ tour_seen_at: new Date().toISOString() })
+    .eq('id', TESTLEERLING.id)
+
   // Wat de AI-controle eerder opsloeg, hoort niet in een volgende run mee te
   // tellen: dan zou "goed antwoord in andere notatie" al vanuit de database
   // goedgekeurd worden en test je het AI-pad niet meer.
