@@ -263,7 +263,7 @@
     "streakCurrent": "Huidige streak: {n}",
     "correctMastered": "Geweldig, onderdeel afgerond!",
     "correct": "Goed!",
-    "masteredBody": "Je hebt 3 keer correct op rij. Het volgende onderdeel wordt nu ontgrendeld.",
+    "masteredBody": "Je hebt 3 keer goed op rij. Dit onderdeel staat nu als afgerond op je voortgangspagina.",
     "streakBody": "Streak: {streak}/3. Nog {remaining} goed op rij.",
     "nextCluster": "Volgend onderdeel",
     "nextQuestion": "Volgende",
