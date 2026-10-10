@@ -44,7 +44,13 @@ export async function fetchAllRows<T>(
   return rows
 }
 
-type AuthUser = { id: string; email?: string | null }
+type AuthUser = {
+  id: string
+  email?: string | null
+  created_at?: string | null
+  last_sign_in_at?: string | null
+  email_confirmed_at?: string | null
+}
 type AuthPage = {
   data: { users: AuthUser[] } | null
   error: { message: string } | null
@@ -137,11 +143,26 @@ export type UserOverview = {
   correct: number
   percentCorrect: number | null
   lastAnsweredAt: string | null
+  lastSignInAt: string | null
+  createdAt: string | null
+  emailConfirmed: boolean
+}
+
+/**
+ * Nieuwste account bovenaan. Accounts zonder aanmeldmoment (bijvoorbeeld
+ * een profiel zonder bijbehorend inlogaccount) komen onderaan.
+ */
+function nieuwsteEerst(a: UserOverview, b: UserOverview): number {
+  if (a.createdAt === b.createdAt) return 0
+  if (!a.createdAt) return 1
+  if (!b.createdAt) return -1
+  return a.createdAt < b.createdAt ? 1 : -1
 }
 
 /**
  * Alle gegevens voor de tabel op /admin/users: één regel per account, met
- * het aantal antwoorden, het percentage goed en de laatste activiteit.
+ * het aantal antwoorden, het percentage goed, wanneer iemand zich aanmeldde,
+ * voor het laatst inlogde en voor het laatst een vraag beantwoordde.
  */
 export async function loadUserOverview(
   admin: AdminClient,
@@ -177,25 +198,33 @@ export async function loadUserOverview(
     ),
   ])
 
-  const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? '—']))
+  const authById = new Map(authUsers.map((u) => [u.id, u]))
   const masteredByUser = countMasteredPerUser(progressRows)
   const answersByUser = countAnswersPerUser(answerRows)
 
-  return profiles.map((profile) => {
-    const stats = answersByUser.get(profile.id)
-    return {
-      id: profile.id,
-      username: profile.username,
-      role: profile.role,
-      email: emailById.get(profile.id) ?? '—',
-      mastered: masteredByUser.get(profile.id) ?? 0,
-      total: stats?.total ?? 0,
-      correct: stats?.correct ?? 0,
-      percentCorrect:
-        stats && stats.total > 0
-          ? Math.round((stats.correct / stats.total) * 100)
-          : null,
-      lastAnsweredAt: stats?.lastAnsweredAt ?? null,
-    }
-  })
+  return profiles
+    .map((profile) => {
+      const stats = answersByUser.get(profile.id)
+      const account = authById.get(profile.id)
+      return {
+        id: profile.id,
+        username: profile.username,
+        role: profile.role,
+        email: account?.email ?? '—',
+        mastered: masteredByUser.get(profile.id) ?? 0,
+        total: stats?.total ?? 0,
+        correct: stats?.correct ?? 0,
+        percentCorrect:
+          stats && stats.total > 0
+            ? Math.round((stats.correct / stats.total) * 100)
+            : null,
+        lastAnsweredAt: stats?.lastAnsweredAt ?? null,
+        lastSignInAt: account?.last_sign_in_at ?? null,
+        // Het inlogaccount is de bron; staat daar niets, dan valt het terug
+        // op het profiel, dat bij de aanmelding wordt aangemaakt.
+        createdAt: account?.created_at ?? profile.created_at ?? null,
+        emailConfirmed: Boolean(account?.email_confirmed_at),
+      }
+    })
+    .sort(nieuwsteEerst)
 }

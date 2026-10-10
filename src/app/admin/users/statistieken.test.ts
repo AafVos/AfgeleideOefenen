@@ -159,7 +159,15 @@ type Tabellen = {
   session_answers_new: AnswerRow[]
 }
 
-function nepClient(tabellen: Tabellen, authUsers: Array<{ id: string; email: string }>) {
+type NepAuthUser = {
+  id: string
+  email: string
+  created_at?: string
+  last_sign_in_at?: string | null
+  email_confirmed_at?: string | null
+}
+
+function nepClient(tabellen: Tabellen, authUsers: NepAuthUser[]) {
   const bouwer = (rijen: unknown[]) => {
     const api = {
       select: () => api,
@@ -231,5 +239,84 @@ describe('loadUserOverview', () => {
     expect(oud.total).toBe(1000)
     // Geen account in de inloglijst gevonden: streepje in plaats van leeg.
     expect(oud.email).toBe('—')
+  })
+
+  it('toont een inlogmoment ook als er nog geen antwoord is', async () => {
+    const overzicht = await loadUserOverview(
+      nepClient(
+        {
+          profiles: [
+            {
+              id: 'vers',
+              username: 'vers',
+              role: 'student',
+              created_at: '2026-03-01T08:00:00.000Z',
+            },
+          ],
+          user_progress_new: [],
+          session_answers_new: [],
+        },
+        [
+          {
+            id: 'vers',
+            email: 'vers@voorbeeld.test',
+            created_at: '2026-03-01T08:00:00.000Z',
+            last_sign_in_at: '2026-03-02T19:30:00.000Z',
+            email_confirmed_at: '2026-03-01T08:05:00.000Z',
+          },
+        ],
+      ),
+    )
+
+    // Hier was het om begonnen: wel ingelogd, nog niets beantwoord.
+    expect(overzicht[0].lastSignInAt).toBe('2026-03-02T19:30:00.000Z')
+    expect(overzicht[0].lastAnsweredAt).toBeNull()
+    expect(overzicht[0].createdAt).toBe('2026-03-01T08:00:00.000Z')
+    expect(overzicht[0].emailConfirmed).toBe(true)
+  })
+
+  it('zet het nieuwste account bovenaan en laat niet-bevestigd zien', async () => {
+    const overzicht = await loadUserOverview(
+      nepClient(
+        {
+          profiles: [
+            {
+              id: 'oud',
+              username: 'oud',
+              role: 'student',
+              created_at: '2026-01-01T08:00:00.000Z',
+            },
+            {
+              id: 'nieuw',
+              username: 'nieuw',
+              role: 'student',
+              created_at: '2026-05-01T08:00:00.000Z',
+            },
+          ],
+          user_progress_new: [],
+          session_answers_new: [],
+        },
+        [
+          {
+            id: 'oud',
+            email: 'oud@voorbeeld.test',
+            created_at: '2026-01-01T08:00:00.000Z',
+            email_confirmed_at: '2026-01-01T08:10:00.000Z',
+          },
+          {
+            id: 'nieuw',
+            email: 'nieuw@voorbeeld.test',
+            created_at: '2026-05-01T08:00:00.000Z',
+            last_sign_in_at: null,
+            email_confirmed_at: null,
+          },
+        ],
+      ),
+    )
+
+    expect(overzicht.map((u) => u.id)).toEqual(['nieuw', 'oud'])
+    expect(overzicht[0].emailConfirmed).toBe(false)
+    expect(overzicht[0].lastSignInAt).toBeNull()
+    expect(overzicht[1].emailConfirmed).toBe(true)
   })
 })
