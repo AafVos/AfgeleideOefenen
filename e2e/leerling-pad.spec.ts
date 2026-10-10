@@ -111,6 +111,66 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
   await expect(regel).toContainText('100%')
 })
 
+test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon', async ({
+  page,
+}) => {
+  // f(x) = x^5  →  f'(x) = 5x^4. De leerling weet het niet en typt niets.
+  await kiesOpgave(page, { soortSom: 'Ik weet het niet (e2e)', nummer: 7 })
+
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeDisabled()
+
+  // `exact`: in de zijbalk staat ook "Ik weet het niet (e2e)".
+  const nietWeten = page.getByRole('button', {
+    name: 'Ik weet het niet',
+    exact: true,
+  })
+  // Met een duim te raken.
+  const vak = await nietWeten.boundingBox()
+  expect(vak?.height ?? 0).toBeGreaterThanOrEqual(44)
+  await nietWeten.click()
+
+  // Het goede antwoord én het stappenplan staan er.
+  await expect(page.getByText('Juiste antwoord')).toBeVisible()
+  await expect(page.getByText('Stappenplan')).toBeVisible()
+  await expect(page.getByText('Gebruik de machtsregel')).toBeVisible()
+
+  // Deze opgave is niet als fout nagekeken.
+  await expect(page.getByText('Jouw antwoord')).toBeHidden()
+
+  // En je kunt door naar de volgende of het zelf nog eens proberen.
+  await expect(page.getByRole('button', { name: 'Opnieuw proberen' })).toBeVisible()
+  await page.getByRole('button', { name: 'Volgende' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible()
+
+  // In de database staat het anders dan een fout antwoord: geen antwoord,
+  // geen goed/fout, en hulp opgevraagd (zie AFG-102).
+  const { data, error } = await testDatabase()
+    .from('session_answers_new')
+    .select('user_answer, is_correct, hints_used, user_sessions_new!inner(user_id)')
+    .eq('user_sessions_new.user_id', TESTLEERLING.id)
+    .is('is_correct', null)
+  expect(error).toBeNull()
+  expect(data?.length ?? 0).toBeGreaterThan(0)
+  expect(data?.[0]).toMatchObject({
+    user_answer: null,
+    is_correct: null,
+    hints_used: 1,
+  })
+
+  // En het telt niet mee als poging: de teller van dit onderdeel blijft 0,
+  // dus het percentage goed verandert er niet van.
+  const { data: voortgang } = await testDatabase()
+    .from('user_progress_new')
+    .select('total_answered, total_correct, topic_clusters_new!inner(slug)')
+    .eq('user_id', TESTLEERLING.id)
+    .eq('topic_clusters_new.slug', 'e2e_niet_weten')
+  expect(voortgang?.[0]).toMatchObject({ total_answered: 0, total_correct: 0 })
+})
+
 test('een leerling kan een opgave melden die niet klopt @telefoon', async ({
   page,
 }) => {

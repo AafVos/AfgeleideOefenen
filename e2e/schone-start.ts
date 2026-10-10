@@ -31,25 +31,35 @@ export default async function schoneStart() {
   const db = createClient(url, serviceKey)
 
   // Welke vragen horen bij het testhoofdstuk?
+  const ONDERWERPEN = ['e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking']
   const { data: topics, error: topicError } = await db
     .from('topics_new')
-    .select('id')
-    .in('slug', ['e2e_nakijken', 'e2e_beheersen'])
+    .select('id, slug')
+    .in('slug', ONDERWERPEN)
   if (topicError) throw new Error(topicError.message)
 
   const topicIds = (topics ?? []).map((t) => t.id)
-  if (topicIds.length !== 2) {
+  if (topicIds.length !== ONDERWERPEN.length) {
     throw new Error(
       'De oefenstof voor de e2e-tests staat niet in de database. Draai eerst `npx supabase db reset`.',
     )
   }
 
+  // Het onderwerp "Uitwerking (e2e)" heeft een vast stappenplan uit de seed;
+  // dat moet blijven staan, want de knop "Ik weet het niet" laat het zien.
+  const uitwerkingTopicId = (topics ?? []).find(
+    (t) => t.slug === 'e2e_uitwerking',
+  )?.id
+
   const { data: vragen, error: vraagError } = await db
     .from('questions_new')
-    .select('id')
+    .select('id, topic_id')
     .in('topic_id', topicIds)
   if (vraagError) throw new Error(vraagError.message)
   const vraagIds = (vragen ?? []).map((q) => q.id)
+  const vraagIdsMetAiStappen = (vragen ?? [])
+    .filter((q) => q.topic_id !== uitwerkingTopicId)
+    .map((q) => q.id)
 
   // Voortgang van de testleerling weg (sessies nemen hun antwoorden mee).
   await db.from('user_sessions_new').delete().eq('user_id', TESTLEERLING.id)
@@ -73,6 +83,11 @@ export default async function schoneStart() {
       .update({ answer_alternatives: [] })
       .in('id', vraagIds)
     await db.from('known_wrong_answers_new').delete().in('question_id', vraagIds)
-    await db.from('question_steps_new').delete().in('question_id', vraagIds)
+  }
+  if (vraagIdsMetAiStappen.length > 0) {
+    await db
+      .from('question_steps_new')
+      .delete()
+      .in('question_id', vraagIdsMetAiStappen)
   }
 }

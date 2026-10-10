@@ -1953,7 +1953,10 @@ values
   ('e2e_nakijken',  'Nakijken (e2e)',
    (select id from public.chapters where slug = 'e2e'), 1, true, 'afgeleiden'),
   ('e2e_beheersen', 'Beheersen (e2e)',
-   (select id from public.chapters where slug = 'e2e'), 2, true, 'afgeleiden')
+   (select id from public.chapters where slug = 'e2e'), 2, true, 'afgeleiden'),
+  -- Achteraan, zodat de opgavenummers van de bestaande tests niet opschuiven.
+  ('e2e_uitwerking', 'Uitwerking (e2e)',
+   (select id from public.chapters where slug = 'e2e'), 3, true, 'afgeleiden')
 on conflict (slug) do update
   set title       = excluded.title,
       chapter_id  = excluded.chapter_id,
@@ -1969,7 +1972,9 @@ values
   ((select id from public.topics_new where slug = 'e2e_nakijken'),
    'e2e_notatie', 'Andere notatie (e2e)',   3, 'afgeleiden'),
   ((select id from public.topics_new where slug = 'e2e_beheersen'),
-   'e2e_rij',     'Drie goed op rij (e2e)', 1, 'afgeleiden')
+   'e2e_rij',     'Drie goed op rij (e2e)', 1, 'afgeleiden'),
+  ((select id from public.topics_new where slug = 'e2e_uitwerking'),
+   'e2e_niet_weten', 'Ik weet het niet (e2e)', 1, 'afgeleiden')
 on conflict (topic_id, slug) do update
   set title       = excluded.title,
       order_index = excluded.order_index,
@@ -1979,7 +1984,7 @@ on conflict (topic_id, slug) do update
 delete from public.questions_new
  where topic_id in (
    select id from public.topics_new
-    where slug in ('e2e_nakijken', 'e2e_beheersen')
+    where slug in ('e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking')
  );
 
 insert into public.questions_new
@@ -1997,6 +2002,28 @@ from (values
   -- Drie op rij: x^2 → 2x, x^3 → 3x^2, x^4 → 4x^3
   ('e2e_rij',     'f(x) = x^{2}',           '2x',    '2x',      1),
   ('e2e_rij',     'f(x) = x^{3}',           '3x^2',  '3x^{2}',  2),
-  ('e2e_rij',     'f(x) = x^{4}',           '4x^3',  '4x^{3}',  3)
+  ('e2e_rij',     'f(x) = x^{4}',           '4x^3',  '4x^{3}',  3),
+  -- "Ik weet het niet": f(x) = x^5  →  f'(x) = 5x^4. De tweede opgave staat
+  -- er zodat "Volgende" echt naar een andere opgave gaat.
+  ('e2e_niet_weten', 'f(x) = x^{5}',        '5x^4',  '5x^{4}',  1),
+  ('e2e_niet_weten', 'f(x) = x^{6}',        '6x^5',  '6x^{5}',  2)
 ) as q(cluster_slug, latex_body, answer, latex_answer, order_index)
 join public.topic_clusters_new tc on tc.slug = q.cluster_slug;
+
+-- Bij de eerste van die twee opgaven hoort een vast stappenplan: de knop
+-- "Ik weet het niet" hoort de uitwerking te laten zien, en die komt normaal
+-- pas van de AI-controle ná een fout antwoord. Zie `e2e/schone-start.ts`:
+-- dit stappenplan blijft tussen twee testruns door staan.
+insert into public.question_steps_new (question_id, step_order, step_description)
+select q.id, s.step_order, s.step_description
+from public.questions_new q
+join public.topic_clusters_new tc
+  on tc.id = q.cluster_id and tc.slug = 'e2e_niet_weten'
+cross join (values
+  (1, 'Schrijf de functie op: $f(x) = x^{5}$.'),
+  (2, 'Gebruik de machtsregel: de macht komt ervoor en de exponent gaat er één af.'),
+  (3, 'Dus $f''(x) = 5x^{4}$.')
+) as s(step_order, step_description)
+where q.order_index = 1
+on conflict (question_id, step_order) do update
+  set step_description = excluded.step_description;

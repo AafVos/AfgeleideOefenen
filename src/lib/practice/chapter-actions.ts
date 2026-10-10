@@ -22,6 +22,14 @@ export type StudyResult =
     }
   | { kind: 'error'; message: string }
 
+export type SkipResult =
+  | {
+      kind: 'skipped'
+      correctAnswer: string
+      latexCorrectAnswer: string | null
+    }
+  | { kind: 'error'; message: string }
+
 export async function submitStudyAnswerAction(
   questionId: string,
   userAnswer: string,
@@ -131,6 +139,70 @@ export async function submitStudyAnswerAction(
     correctAnswer: question.answer,
     latexCorrectAnswer: question.latex_answer ?? null,
     errorExplanation,
+  }
+}
+
+// =====================================================================
+// "Ik weet het niet": de uitwerking opvragen zonder te gokken
+// =====================================================================
+
+/**
+ * De leerling weet de opgave niet en vraagt het goede antwoord op.
+ *
+ * De poging komt apart in de database: géén antwoord, `is_correct` leeg en
+ * `hints_used` op 1. Daardoor telt hij niet mee als fout antwoord in het
+ * percentage goed, blijft de tegel in het overzicht grijs en staat er in
+ * `session_answers_new` geen onzin-invoer meer (zie AFG-102).
+ *
+ * De reeks "goed op rij" gaat wél terug naar 0: drie goed op rij hoort niet
+ * te lukken door drie keer het antwoord op te vragen. Een cluster dat al
+ * beheerst is, houdt zijn reeks én zijn status, net als bij een fout antwoord.
+ */
+export async function skipStudyQuestionAction(
+  questionId: string,
+  timeSpentSec?: number,
+): Promise<SkipResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { kind: 'error', message: 'Niet ingelogd.' }
+
+  const { data: question } = await supabase
+    .from('questions_new')
+    .select('id, topic_id, cluster_id, answer, latex_answer')
+    .eq('id', questionId)
+    .maybeSingle()
+  if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
+
+  const sessionId = await getOrCreateSession(
+    supabase,
+    user.id,
+    question.topic_id,
+    question.cluster_id,
+  )
+
+  const { error: answerError } = await supabase
+    .from('session_answers_new')
+    .insert({
+      session_id: sessionId,
+      question_id: question.id,
+      user_answer: null,
+      is_correct: null,
+      hints_used: 1,
+      time_spent_sec: timeSpentSec ?? null,
+    })
+
+  if (answerError) {
+    return { kind: 'error', message: answerError.message }
+  }
+
+  await bumpProgressOnSkip(supabase, user.id, question.topic_id, question.cluster_id)
+
+  return {
+    kind: 'skipped',
+    correctAnswer: question.answer,
+    latexCorrectAnswer: question.latex_answer ?? null,
   }
 }
 
@@ -297,6 +369,28 @@ async function bumpProgressOnIncorrect(
     .from('user_progress_new')
     .update({
       total_answered: p.total_answered + 1,
+      correct_streak: next.correct_streak,
+      status: next.status,
+    })
+    .eq('id', p.id)
+}
+
+/**
+ * Voortgang na "Ik weet het niet". Dezelfde reeks-regel als bij een fout
+ * antwoord, maar `total_answered` en `total_correct` blijven staan: het was
+ * geen poging, dus het percentage goed verandert er niet van.
+ */
+async function bumpProgressOnSkip(
+  db: DB,
+  userId: string,
+  topicId: string,
+  clusterId: string,
+) {
+  const p = await getOrCreateProgress(db, userId, topicId, clusterId)
+  const next = progressAfterIncorrect(p.status, p.correct_streak)
+  await db
+    .from('user_progress_new')
+    .update({
       correct_streak: next.correct_streak,
       status: next.status,
     })

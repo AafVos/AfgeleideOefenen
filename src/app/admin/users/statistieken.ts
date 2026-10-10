@@ -92,6 +92,10 @@ export function countAnswersPerUser(
 ): Map<string, AnswerStats> {
   const perUser = new Map<string, AnswerStats>()
   for (const row of rows) {
+    // Een opgevraagde uitwerking ("Ik weet het niet") staat met een lege
+    // is_correct in de database. Dat is geen antwoord, dus hij telt hier niet
+    // mee — anders zakt het percentage goed van die leerling (zie AFG-102).
+    if (row.is_correct !== true && row.is_correct !== false) continue
     const userId = userIdOf(row)
     if (!userId) continue
     const stats = perUser.get(userId) ?? {
