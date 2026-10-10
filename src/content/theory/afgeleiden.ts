@@ -18,7 +18,12 @@ export type OverviewTable = {
 export type OverviewCard = {
   id: string
   title: string
-  formula?: string // hoofdformule (LaTeX, display mode)
+  /**
+   * Hoofdformule (LaTeX). Hoort er meer dan één regel bij, zet ze dan als
+   * losse strings in een lijst in plaats van in één `\begin{gathered}`: een
+   * losse regel kan op een telefoon wél afbreken, een gathered-blok niet.
+   */
+  formula?: string | string[]
   examples?: OverviewExample[] // problem → answer
   table?: OverviewTable
   notes?: string[] // kleine bullets onderaan; mogen `$...$` bevatten
@@ -120,7 +125,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'gonio_basis',
         title: 'Basisformules goniometrie',
-        formula: "\\begin{gathered} f(x) = \\sin(x) \\implies f'(x) = \\cos(x) \\\\ f(x) = \\cos(x) \\implies f'(x) = -\\sin(x) \\\\ f(x) = \\tan(x) \\implies f'(x) = \\dfrac{1}{\\cos^2(x)} \\end{gathered}",
+        formula: [
+          "f(x) = \\sin(x) \\implies f'(x) = \\cos(x)",
+          "f(x) = \\cos(x) \\implies f'(x) = -\\sin(x)",
+          "f(x) = \\tan(x) \\implies f'(x) = \\dfrac{1}{\\cos^2(x)}",
+        ],
         examples: [
           {
             problem: 'f(x) = 3\\sin(x) - 2\\cos(x)',
@@ -136,7 +145,10 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'gonio_kettingregel',
         title: 'Kettingregel met goniometrie',
-        formula: "\\begin{gathered} f(x) = \\cos\\bigl(u(x)\\bigr) \\implies f'(x) = -u'(x) \\cdot \\sin\\bigl(u(x)\\bigr) \\\\ f(x) = \\sin\\bigl(u(x)\\bigr) \\implies f'(x) = u'(x) \\cdot \\cos\\bigl(u(x)\\bigr) \\end{gathered}",
+        formula: [
+          "f(x) = \\cos\\bigl(u(x)\\bigr) \\implies f'(x) = -u'(x) \\cdot \\sin\\bigl(u(x)\\bigr)",
+          "f(x) = \\sin\\bigl(u(x)\\bigr) \\implies f'(x) = u'(x) \\cdot \\cos\\bigl(u(x)\\bigr)",
+        ],
         examples: [
           {
             problem: 'f(x) = \\sin(3x^2)',
@@ -157,7 +169,10 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'e_machten',
         title: 'E-machten',
-        formula: "\\begin{gathered} f(x) = e^x \\implies f'(x) = e^x \\\\ f(x) = g^x \\implies f'(x) = g^x \\cdot \\ln(g) \\end{gathered}",
+        formula: [
+          "f(x) = e^x \\implies f'(x) = e^x",
+          "f(x) = g^x \\implies f'(x) = g^x \\cdot \\ln(g)",
+        ],
         examples: [
           { problem: 'f(x) = e^{g(x)}', answer: "f'(x) = g'(x) \\cdot e^{g(x)}", steps: ['Kettingregel: buitenste $e^{\\ldots}$ blijft staan', "Vermenigvuldig met de afgeleide van de exponent: $g'(x)$"] },
           { problem: 'f(x) = e^{2x+3}', answer: "f'(x) = 2e^{2x+3}", steps: ["$g(x) = 2x+3,\\ g'(x) = 2$", "$f'(x) = 2 \\cdot e^{2x+3}$"] },

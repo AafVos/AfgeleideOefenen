@@ -237,10 +237,13 @@ function TheoryCard({
 }) {
   const expandable = (card.examples?.length ?? 0) > 0 || (card.notes?.length ?? 0) > 0
 
+  // `min-w-0` op de kaart: zonder dat rekt een brede formule het rastervakje
+  // op tot buiten het scherm, want een vakje is standaard minstens zo breed
+  // als zijn inhoud.
   return (
     <article
       id={`kaart-${chapterSlug}-${card.id}`}
-      className="flex scroll-mt-4 flex-col rounded-xl border border-border bg-surface"
+      className="flex min-w-0 scroll-mt-4 flex-col rounded-xl border border-border bg-surface"
     >
       {expandable ? (
         <button
@@ -274,8 +277,10 @@ function TheoryCard({
 
       <div className="flex flex-1 flex-col gap-3 px-5 pb-5">
         {card.formula && (
-          <div className="flex flex-1 items-center justify-center overflow-x-auto rounded-lg bg-accent-light/60 px-4 py-4 text-[0.9em]">
-            <TeX tex={card.formula} displayMode />
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 overflow-x-auto rounded-lg bg-accent-light/60 px-4 py-4 text-center text-[0.9em] leading-loose">
+            {(Array.isArray(card.formula) ? card.formula : [card.formula]).map((regel, i) => (
+              <TeX key={i} tex={regel} wrap />
+            ))}
           </div>
         )}
 

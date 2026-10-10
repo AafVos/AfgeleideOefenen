@@ -6,14 +6,24 @@ import { cn } from '@/components/ui'
 export function Math({
   tex,
   displayMode = false,
+  wrap = false,
   className,
 }: {
   tex: string
   displayMode?: boolean
+  /**
+   * Grote weergave (zoals `displayMode`), maar de formule mag op een smal
+   * scherm over meerdere regels afbreken. KaTeX breekt alleen af in
+   * inline-modus, dus die zetten we aan en we halen de grootte terug met
+   * `\displaystyle`. Zonder dit loopt bijvoorbeeld de machtsregel op een
+   * telefoon buiten beeld.
+   */
+  wrap?: boolean
   className?: string
 }) {
-  const html = katex.renderToString(tex, {
-    displayMode,
+  const block = displayMode && !wrap
+  const html = katex.renderToString(wrap ? `\\displaystyle ${tex}` : tex, {
+    displayMode: block,
     throwOnError: false,
     strict: 'ignore',
     output: 'html',
@@ -21,7 +31,7 @@ export function Math({
 
   return (
     <span
-      className={cn(displayMode && 'block my-2', className)}
+      className={cn(block && 'block my-2', className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
