@@ -13,6 +13,8 @@ const PERSOONLIJK_MET_TAALCODE = [
   'feedback',
   'inloggen',
   'registreren',
+  'wachtwoord-vergeten',
+  'wachtwoord-opnieuw',
 ]
 
 // Deze adressen staan in `src/app` zelf en hebben dus geen taalcode — zie
