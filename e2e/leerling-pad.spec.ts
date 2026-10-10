@@ -94,6 +94,13 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
       await expect(page.getByText(`Streak: ${i + 1}/3`)).toBeVisible()
     } else {
       await expect(page.getByText('Geweldig, onderdeel afgerond!')).toBeVisible()
+      // En de kaart belooft niets wat de site niet doet: er wordt niets
+      // ontgrendeld, het onderdeel staat gewoon als afgerond (zie AFG-85).
+      await expect(
+        page.getByText(
+          'Dit onderdeel staat nu als afgerond op je voortgangspagina.',
+        ),
+      ).toBeVisible()
     }
   }
 
