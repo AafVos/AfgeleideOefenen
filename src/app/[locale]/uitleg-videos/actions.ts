@@ -4,10 +4,9 @@ import { Resend } from 'resend'
 
 import { SITE_CONFIG } from '@/config/site'
 import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
+import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
 import { answersMatch } from '@/lib/practice/engine'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
-
-const EMAIL_FROM = process.env.EMAIL_FROM ?? `no-reply@${SITE_CONFIG.domain}`
 
 function escapeHtml(s: string): string {
   return s
@@ -108,11 +107,17 @@ export async function vraagVideoAction(
   const fotos = await leesFotos(formData)
   if ('error' in fotos) return { error: fotos.error, sent: false }
 
+  const naar = meldAdres()
+  if (!naar) {
+    console.error('[vraag-video] geen NOTIFY_EMAIL ingesteld; vraag niet verstuurd')
+    return { error: 'Versturen mislukt. Probeer het later opnieuw.', sent: false }
+  }
+
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
-      to: 'alhvos@gmail.com',
+      to: naar,
       replyTo: user.email ?? undefined,
       subject: `Video-verzoek via ${SITE_CONFIG.domain}`,
       attachments: fotos.bijlagen.length > 0 ? fotos.bijlagen : undefined,
