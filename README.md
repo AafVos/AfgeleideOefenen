@@ -176,10 +176,11 @@ antwoorden in `src/lib/practice/engine.ts`.
 
 ### Automatische controle
 
-Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`
-en `npm run typecheck`. Dat is nodig omdat `next build` sinds Next.js 16 zelf
-geen lint meer draait; zonder deze workflow zou een lintfout ongezien door de
-Vercel-build komen. De build zelf laten we aan Vercel over.
+Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`,
+`npm run typecheck` en `npm test`. Dat is nodig omdat `next build` sinds
+Next.js 16 zelf geen lint meer draait; zonder deze workflow zou een lintfout of
+een kapotte rekenregel ongezien door de Vercel-build komen. De build zelf laten
+we aan Vercel over.
 
 ---
 

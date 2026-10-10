@@ -13,8 +13,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | Rekenregels (snel)  | `npm test`          | als je aan nakijken/voortgang zit |
 | Weg van een leerling| `npm run test:e2e`  | als je aan inloggen, oefenen, nakijken of het dashboard zit |
 
-Lint, typecontrole en de e2e-tests draaien ook automatisch bij elke pull
-request (`.github/workflows/controle.yml`). Daar start Supabase bewust kaal
+Lint, typecontrole, de rekenregels en de e2e-tests draaien ook automatisch
+bij elke pull request (`.github/workflows/controle.yml`). Daar start Supabase bewust kaal
 (alleen database, inloggen en de data-API) en wordt de e2e-controle
 overgeslagen als een pull request alleen tekst verandert. Lokaal start
 `npx supabase start` gewoon alles, inclusief Studio.
