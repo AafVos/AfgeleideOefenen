@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 
 import { Card } from '@/components/ui'
 import { loadTestResults, loadTestSessionState } from '@/lib/practice/custom-test'
+import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
 import { TestRunnerCard } from './runner-card'
@@ -25,10 +26,7 @@ export default async function ZelfToetsRunnerPage({
 }) {
   const { sessionId, locale } = await params
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect(`/${locale}/inloggen`)
+  const user = await requireUser()
 
   const t = await getTranslations('ZelfToets')
 
