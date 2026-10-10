@@ -173,7 +173,7 @@ export function TestRunnerCard({
               <label className="block">
                 <div className="mb-2 flex min-h-8 items-center gap-2">
                   <span className="text-xs uppercase tracking-wide text-text-muted">
-                    {t('preview')}
+                    {t('yourAnswer')}
                   </span>
                   {answer.trim() ? (
                     <span className="font-serif text-lg text-text">
