@@ -87,7 +87,7 @@ cp .env.local.example .env.local
 | `NEXT_PUBLIC_SITE_URL`          | Basis-URL van de site (lokaal: `http://localhost:3000`, productie: eigen domein) |
 | `RESEND_API_KEY`                | [resend.com/api-keys](https://resend.com/api-keys) — zonder deze key gaat de mail die de site zelf stuurt er stil niet uit. De mail van het inloggen gaat niet hierlangs, zie [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen) |
 | `EMAIL_FROM`                    | Afzender van de mail die de site zelf stuurt; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
-| `NOTIFY_EMAIL`                  | Adres waar het seintje "nieuwe gebruiker" heen gaat. Geen standaardwaarde |
+| `NOTIFY_EMAIL`                  | Adres waar alle post van de site heen gaat: het seintje "nieuwe gebruiker", feedback, een vraag via Aaf en een video-verzoek. Geen standaardwaarde: zonder deze regel gaan die berichten niet weg en ziet de leerling "Versturen is niet gelukt" |
 | `WEBHOOK_SECRET`                | Zelf te verzinnen; zelfde waarde als de header `x-webhook-secret` in Supabase → Database → Webhooks. Zonder match: 401 |
 
 ### 4. Start de dev server
@@ -107,7 +107,7 @@ Wie een mail niet ziet aankomen, moet dus eerst weten wélke mail het is.
 
 | Soort mail | Wie verstuurt | Waar instellen |
 |------------|---------------|----------------|
-| Welkomstmail, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY` en `EMAIL_FROM` in de omgevingsvariabelen |
+| Welkomstmail, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY`, `EMAIL_FROM` en `NOTIFY_EMAIL` in de omgevingsvariabelen |
 | Bevestig je e-mailadres, wachtwoord vergeten | **Supabase**, niet de site | Supabase → **Authentication → Emails → SMTP Settings** |
 
 De mail van het inloggen loopt via `supabase.auth.signUp()`, `supabase.auth.resend()`
