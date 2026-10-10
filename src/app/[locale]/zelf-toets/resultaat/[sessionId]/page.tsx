@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { redirect } from 'next/navigation'
 
 import { Math as TeX, RichMath } from '@/components/math'
 import { Card, cn } from '@/components/ui'
 import { loadTestResults } from '@/lib/practice/custom-test'
+import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
 export async function generateMetadata({
@@ -28,12 +28,9 @@ export default async function ZelfToetsResultaatPage({
 }: {
   params: Promise<{ locale: string; sessionId: string }>
 }) {
-  const { sessionId, locale } = await params
+  const { sessionId } = await params
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect(`/${locale}/inloggen`)
+  const user = await requireUser()
 
   const t = await getTranslations('ZelfToets')
 
