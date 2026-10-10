@@ -5,6 +5,7 @@ import { canoniek } from '@/lib/seo'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
+import { beginVanDag, berekenReeks, dagSleutel, laatsteDagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
 import type { ChapterData, TopicData } from './topic-block'
 
@@ -61,10 +62,11 @@ export default async function DashboardPage() {
     (progressRows ?? []).map((p) => [p.cluster_id, p]),
   )
 
-  // Activity: last 14 days via user_sessions_new + session_answers_new
-  const since14 = new Date()
-  since14.setDate(since14.getDate() - 13)
-  since14.setHours(0, 0, 0, 0)
+  // Activity: last 14 days via user_sessions_new + session_answers_new.
+  // De dagen lopen van middernacht tot middernacht in Nederlandse tijd.
+  const vandaag = dagSleutel(new Date())
+  const veertienDagen = laatsteDagen(vandaag, 14)
+  const since14 = beginVanDag(veertienDagen[0])
 
   const { data: recentSessions } = await supabase
     .from('user_sessions_new')
@@ -82,13 +84,7 @@ export default async function DashboardPage() {
         .gte('answered_at', since14.toISOString())
     : { data: [] }
 
-  const dayKey = (d: Date) => d.toISOString().slice(0, 10)
-  const bucket = new Map<string, number>()
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(since14)
-    d.setDate(since14.getDate() + i)
-    bucket.set(dayKey(d), 0)
-  }
+  const bucket = new Map<string, number>(veertienDagen.map((d) => [d, 0]))
 
   let totalAnswered = 0
   let totalCorrect = 0
@@ -98,7 +94,7 @@ export default async function DashboardPage() {
     // leerling heeft de opgave niet beantwoord, dus hij telt hier niet mee
     // en trekt het percentage goed niet omlaag (zie AFG-102).
     if (row.is_correct !== true && row.is_correct !== false) continue
-    const k = dayKey(new Date(row.answered_at))
+    const k = dagSleutel(new Date(row.answered_at))
     if (bucket.has(k)) bucket.set(k, (bucket.get(k) ?? 0) + 1)
     totalAnswered++
     if (row.is_correct) totalCorrect++
@@ -106,13 +102,10 @@ export default async function DashboardPage() {
 
   const activity = Array.from(bucket.entries()).map(([date, count]) => ({ date, count }))
 
-  let streakDays = 0
-  const todayKey = dayKey(new Date())
-  for (const k of Array.from(bucket.keys()).sort().reverse()) {
-    if (k > todayKey) continue
-    if ((bucket.get(k) ?? 0) > 0) streakDays++
-    else break
-  }
+  const dagenMetAntwoord = new Set(
+    activity.filter((d) => d.count > 0).map((d) => d.date),
+  )
+  const streakDays = berekenReeks(dagenMetAntwoord, vandaag)
 
   // Build chapter → meta map
   const chapterById = new Map((chapters ?? []).map((c) => [c.id, c]))
