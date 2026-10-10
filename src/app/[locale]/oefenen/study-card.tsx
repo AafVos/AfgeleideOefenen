@@ -6,7 +6,6 @@ import { Link } from '@/i18n/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { SITE } from '@/config/site'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Button, cn, ErrorBanner } from '@/components/ui'
 import {
@@ -24,11 +23,11 @@ const MASTERY_THRESHOLD = 3
 
 /**
  * Notatie voor de antwoordregel onder de opgave, afgeleid van de functieletter
- * in de vraag: "k(x) = …" → "k'(x) =" (afgeleiden) of "K(x) =" (integralen).
+ * in de vraag: "k(x) = …" → "k'(x) =".
  */
 function answerPrefix(latexBody: string | null): string {
   const letter = latexBody?.match(/([a-zA-Z])\s*\(\s*x\s*\)\s*=/)?.[1] ?? 'f'
-  return SITE === 'integralen' ? `${letter.toUpperCase()}(x) =` : `${letter}'(x) =`
+  return `${letter}'(x) =`
 }
 
 type Step = { id: string; step_order: number; step_description: string }

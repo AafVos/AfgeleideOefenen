@@ -16,8 +16,6 @@ export async function generateMetadata({
   const domain = SITE_CONFIG.domain
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`
 
-  // TODO: subject-specific marketing copy. Move to per-site messages files
-  // when integralen-content is authored.
   const SITE_DESCRIPTION =
     'Differentiëren oefenen voor wiskunde B VWO — gratis en adaptief. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen.'
 

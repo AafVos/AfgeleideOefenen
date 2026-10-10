@@ -1,5 +1,3 @@
-import { SITE, type SiteId } from '@/config/site'
-
 /**
  * `algemeen` legt een onderwerp of regelkeuze uit; `vraaguitwerking` werkt één
  * opgave uit, meestal op verzoek van een leerling.
@@ -31,110 +29,107 @@ export type UitlegVideo = {
  */
 const STORAGE_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/videos`
 
-const VIDEOS: Record<SiteId, UitlegVideo[]> = {
-  afgeleiden: [
-    {
-      slug: 'somregel-of-productregel',
-      title: 'Somregel of productregel?',
-      description:
-        'Wanneer gebruik je welke regel, en hoe de somregel binnen de productregel terugkomt.',
-      soort: 'algemeen',
-      chapter: 'H2',
-      duration: '2:20',
-      src: `${STORAGE_BASE}/somregel-of-productregel.mp4`,
-      clusterIds: [
-        // Termsgewijs differentiëren · Polynoom differentiëren (somregel)
-        '606ef177-ecdb-4291-a8d0-ce667cc9d65c',
-        // De productregel · Twee polynomen
-        'faa995e4-1e45-4d93-8145-ee749232725d',
-      ],
-    },
-    {
-      slug: 'som-29',
-      title: 'Uitleg bij #29 (H2)',
-      description:
-        'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
-      soort: 'vraaguitwerking',
-      chapter: 'H2',
-      duration: '2:14',
-      src: `${STORAGE_BASE}/som-29.mp4`,
-      clusterIds: [
-        // De productregel · Kwadraat van een polynoom (het cluster van som 29)
-        'd622e23a-4112-4eca-81fa-69187f8d48a1',
-      ],
-    },
-    {
-      slug: 'som-30',
-      title: 'Uitleg bij #30 (H2)',
-      description:
-        'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
-      soort: 'vraaguitwerking',
-      chapter: 'H2',
-      duration: '2:35',
-      src: `${STORAGE_BASE}/som-30.mp4`,
-      clusterIds: [
-        // Productregel: twee polynomen (het cluster van som 30)
-        'faa995e4-1e45-4d93-8145-ee749232725d',
-      ],
-    },
-    {
-      slug: 'som-34',
-      title: 'Uitleg bij #34 (H2)',
-      description:
-        'Hoofdstuk 2, som 34: f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel. Op verzoek!',
-      soort: 'vraaguitwerking',
-      chapter: 'H2',
-      duration: '1:20',
-      src: `${STORAGE_BASE}/som-34.mp4`,
-      clusterIds: [
-        // De quotiëntregel · Eenvoudige breuk (het cluster van som 34)
-        'a56f5e6f-4637-4087-98a4-6a60cec1deec',
-      ],
-    },
-    {
-      slug: 'quotientregel',
-      title: 'De quotiëntregel',
-      description:
-        'De quotiëntregel en het stappenplan dat je erbij volgt, meteen toegepast op #36 uit H2.',
-      soort: 'algemeen',
-      chapter: 'H2',
-      duration: '1:42',
-      src: `${STORAGE_BASE}/quotientregel.mp4`,
-      clusterIds: [
-        // De quotiëntregel · Eenvoudige breuk (het cluster van #36)
-        'a56f5e6f-4637-4087-98a4-6a60cec1deec',
-      ],
-    },
-    {
-      slug: 'machten-herschrijven',
-      title: 'Machten en wortels herschrijven',
-      description:
-        'Een macht in de noemer of een wortel van x? Eerst herschrijven als macht van x, dan de machtsregel, en het antwoord terugschrijven.',
-      soort: 'algemeen',
-      chapter: 'H6',
-      duration: '2:59',
-      src: `${STORAGE_BASE}/machten-herschrijven.mp4`,
-      clusterIds: [
-        // Machten en wortels herschrijven · Negatieve machten (voorbeeld 6/x³)
-        'fa5bef5c-3c41-46d2-a009-6bec675b78b5',
-        // Machten en wortels herschrijven · Wortels als macht
-        'c819dec0-62a4-4895-a693-bffcb4c037c1',
-        // Machten en wortels herschrijven · Gemengde machten en wortels (voorbeeld x·√x)
-        '0dd866d6-3ec7-4c2f-88ba-47c10299048d',
-      ],
-    },
-  ],
-  integralen: [],
-}
+const VIDEOS: UitlegVideo[] = [
+  {
+    slug: 'somregel-of-productregel',
+    title: 'Somregel of productregel?',
+    description:
+      'Wanneer gebruik je welke regel, en hoe de somregel binnen de productregel terugkomt.',
+    soort: 'algemeen',
+    chapter: 'H2',
+    duration: '2:20',
+    src: `${STORAGE_BASE}/somregel-of-productregel.mp4`,
+    clusterIds: [
+      // Termsgewijs differentiëren · Polynoom differentiëren (somregel)
+      '606ef177-ecdb-4291-a8d0-ce667cc9d65c',
+      // De productregel · Twee polynomen
+      'faa995e4-1e45-4d93-8145-ee749232725d',
+    ],
+  },
+  {
+    slug: 'som-29',
+    title: 'Uitleg bij #29 (H2)',
+    description:
+      'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
+    soort: 'vraaguitwerking',
+    chapter: 'H2',
+    duration: '2:14',
+    src: `${STORAGE_BASE}/som-29.mp4`,
+    clusterIds: [
+      // De productregel · Kwadraat van een polynoom (het cluster van som 29)
+      'd622e23a-4112-4eca-81fa-69187f8d48a1',
+    ],
+  },
+  {
+    slug: 'som-30',
+    title: 'Uitleg bij #30 (H2)',
+    description:
+      'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
+    soort: 'vraaguitwerking',
+    chapter: 'H2',
+    duration: '2:35',
+    src: `${STORAGE_BASE}/som-30.mp4`,
+    clusterIds: [
+      // Productregel: twee polynomen (het cluster van som 30)
+      'faa995e4-1e45-4d93-8145-ee749232725d',
+    ],
+  },
+  {
+    slug: 'som-34',
+    title: 'Uitleg bij #34 (H2)',
+    description:
+      'Hoofdstuk 2, som 34: f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel. Op verzoek!',
+    soort: 'vraaguitwerking',
+    chapter: 'H2',
+    duration: '1:20',
+    src: `${STORAGE_BASE}/som-34.mp4`,
+    clusterIds: [
+      // De quotiëntregel · Eenvoudige breuk (het cluster van som 34)
+      'a56f5e6f-4637-4087-98a4-6a60cec1deec',
+    ],
+  },
+  {
+    slug: 'quotientregel',
+    title: 'De quotiëntregel',
+    description:
+      'De quotiëntregel en het stappenplan dat je erbij volgt, meteen toegepast op #36 uit H2.',
+    soort: 'algemeen',
+    chapter: 'H2',
+    duration: '1:42',
+    src: `${STORAGE_BASE}/quotientregel.mp4`,
+    clusterIds: [
+      // De quotiëntregel · Eenvoudige breuk (het cluster van #36)
+      'a56f5e6f-4637-4087-98a4-6a60cec1deec',
+    ],
+  },
+  {
+    slug: 'machten-herschrijven',
+    title: 'Machten en wortels herschrijven',
+    description:
+      'Een macht in de noemer of een wortel van x? Eerst herschrijven als macht van x, dan de machtsregel, en het antwoord terugschrijven.',
+    soort: 'algemeen',
+    chapter: 'H6',
+    duration: '2:59',
+    src: `${STORAGE_BASE}/machten-herschrijven.mp4`,
+    clusterIds: [
+      // Machten en wortels herschrijven · Negatieve machten (voorbeeld 6/x³)
+      'fa5bef5c-3c41-46d2-a009-6bec675b78b5',
+      // Machten en wortels herschrijven · Wortels als macht
+      'c819dec0-62a4-4895-a693-bffcb4c037c1',
+      // Machten en wortels herschrijven · Gemengde machten en wortels (voorbeeld x·√x)
+      '0dd866d6-3ec7-4c2f-88ba-47c10299048d',
+    ],
+  },
+]
 
 export function getUitlegVideos(): UitlegVideo[] {
-  return VIDEOS[SITE]
+  return VIDEOS
 }
 
 /** De hoofdstukken waar video's bij horen, in de volgorde H2, H6, H7, H9. */
 export function getVideoChapters(): string[] {
   const uniek = new Set(
-    VIDEOS[SITE].map((v) => v.chapter).filter((c): c is string => c !== null),
+    VIDEOS.map((v) => v.chapter).filter((c): c is string => c !== null),
   )
   return [...uniek].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
 }
@@ -146,9 +141,8 @@ export function getVideoChapters(): string[] {
  */
 export function getVideoForCluster(clusterId: string | null): UitlegVideo | null {
   if (!clusterId) return null
-  const videos = VIDEOS[SITE]
-  for (let i = videos.length - 1; i >= 0; i--) {
-    if (videos[i].clusterIds.includes(clusterId)) return videos[i]
+  for (let i = VIDEOS.length - 1; i >= 0; i--) {
+    if (VIDEOS[i].clusterIds.includes(clusterId)) return VIDEOS[i]
   }
   return null
 }
