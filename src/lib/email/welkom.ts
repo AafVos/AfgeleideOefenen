@@ -1,6 +1,5 @@
-import { Resend } from 'resend'
-
 import { SITE_CONFIG } from '@/config/site'
+import { maakMailer } from '@/lib/email/mailer'
 import { SITE_URL } from '@/lib/seo'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -120,8 +119,8 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
   try {
     // Vóór de vlag: zonder sleutel gaat er niets uit, en dan mag er ook niet
     // "verstuurd" komen te staan.
-    const apiKey = process.env.RESEND_API_KEY
-    if (!apiKey) {
+    const resend = maakMailer()
+    if (!resend) {
       console.error('[welkomstmail] geen RESEND_API_KEY; mail overgeslagen')
       return { verstuurd: false, reden: 'geen-sleutel' }
     }
@@ -147,7 +146,6 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
     // vlag terug, anders slaat een volgende poging de mail over.
     try {
       const videosUrl = `${SITE_URL}/nl/uitleg-videos`
-      const resend = new Resend(apiKey)
       const { error: mailError } = await resend.emails.send({
         // Merknaam als afzender, geen persoonsnaam: dit is een no-reply-bericht.
         from: `${SITE_CONFIG.brand} <${EMAIL_FROM}>`,

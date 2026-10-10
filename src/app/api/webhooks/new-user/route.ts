@@ -1,9 +1,6 @@
-import { Resend } from 'resend'
-
 import { SITE_CONFIG } from '@/config/site'
+import { maakMailer } from '@/lib/email/mailer'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 function escapeHtml(value: string): string {
   return value
@@ -32,6 +29,15 @@ export async function POST(req: Request) {
 
     if (payload.type !== 'INSERT') {
       return Response.json({ ok: true })
+    }
+
+    // Zonder mailsleutel gaat dit seintje er stil niet uit. Toch een 200
+    // terug: het bericht is voor onszelf, en bij een foutcode blijft Supabase
+    // het onnodig opnieuw proberen.
+    const resend = maakMailer()
+    if (!resend) {
+      console.error('[nieuwe-gebruiker] geen RESEND_API_KEY; seintje niet verstuurd')
+      return Response.json({ ok: true, mail: 'overgeslagen' })
     }
 
     const record = payload.record
