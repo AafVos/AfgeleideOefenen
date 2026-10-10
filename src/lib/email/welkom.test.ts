@@ -1,8 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+/** De velden van de mail die we aan Resend meegeven. */
+type Mail = {
+  from: string
+  to: string
+  subject: string
+  html: string
+  text: string
+}
+
 // Geen echte mail en geen echte database: allebei vervangen door een nepje.
 const { send, getUserById, updateUserById } = vi.hoisted(() => ({
-  send: vi.fn<() => Promise<{ error: unknown }>>(),
+  send: vi.fn<(mail: Mail) => Promise<{ error: unknown }>>(),
   getUserById: vi.fn(),
   updateUserById: vi.fn(),
 }))
@@ -97,6 +106,29 @@ describe('welkomstmail', () => {
     await stuurWelkomstmail(USER_ID)
 
     expect(updateUserById.mock.calls.at(-1)?.[1]?.user_metadata?.username).toBe('Sanne')
+  })
+
+  // De welkomstmail gaat via Resend en niet via Supabase, dus hij komt in de
+  // e2e-tests nooit in de testpostbus terecht. Wat erin staat, controleren we
+  // daarom hier: Nederlands, de merknaam van deze site, en de link waar de
+  // leerling op moet klikken.
+  it('stuurt een Nederlandse mail van AfgeleideOefenen', async () => {
+    await stuurWelkomstmail(USER_ID)
+
+    const mail = send.mock.calls[0][0]
+
+    expect(mail.to).toBe('leerling@example.test')
+    expect(mail.subject).toBe('Welkom bij AfgeleideOefenen!')
+    expect(mail.from).toContain('AfgeleideOefenen')
+    expect(mail.from).toContain('afgeleideoefenen.nl')
+
+    // Dezelfde boodschap in beide versies, zodat een mailprogramma dat geen
+    // opmaak laat zien er ook iets van maakt.
+    for (const versie of [mail.html, mail.text]) {
+      expect(versie).toContain('Je account is klaar.')
+      expect(versie).toContain('Groeten van Aaf')
+      expect(versie).toContain('/nl/uitleg-videos')
+    }
   })
 
   it('stuurt niets als er al een welkomstmail uit is', async () => {

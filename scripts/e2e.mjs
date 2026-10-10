@@ -51,8 +51,15 @@ if (!['localhost', '127.0.0.1', '::1'].includes(host)) {
   process.exit(1)
 }
 
+// De testpostbus (Mailpit). Oudere CLI's noemen hem INBUCKET_URL; draait hij
+// niet, dan valt dit terug op de standaardpoort en zegt de test zelf dat er
+// geen postbus is.
+const postbus =
+  supabase.MAILPIT_URL ?? supabase.INBUCKET_URL ?? 'http://127.0.0.1:54324'
+
 const env = {
   ...process.env,
+  E2E_POSTBUS_URL: postbus,
   NEXT_PUBLIC_SUPABASE_URL: supabase.API_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: supabase.ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: supabase.SERVICE_ROLE_KEY,
