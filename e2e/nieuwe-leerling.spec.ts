@@ -129,6 +129,14 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   //    niemand op te houden.
   await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
 
+  // De naam die hij bij het registreren koos staat in de bovenbalk, niet zijn
+  // e-mailadres. Op telefoonformaat zit die naam in het menu.
+  if ((page.viewportSize()?.width ?? 0) >= 768) {
+    await expect(
+      page.getByRole('button', { name: GEBRUIKERSNAAM, exact: true }),
+    ).toBeVisible()
+  }
+
   // 6. De eerste stappen: Aaf stelt zich voor. Op een breed scherm start de
   //    rondleiding vanzelf, op telefoonformaat staat Aaf rechtsonder klaar.
   //    (Welke van de twee, controleert `rondleiding.spec.ts` in detail.)

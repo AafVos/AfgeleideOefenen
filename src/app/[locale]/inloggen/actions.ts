@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
@@ -42,6 +43,24 @@ export async function loginAction(
     }
   }
 
+  // De gebruikersnaam die bij het registreren is ingevuld staat wel in de
+  // metagegevens van de auth-rij, maar nog niet in `profiles`: met
+  // e-mailbevestiging aan is er op dat moment nog geen sessie om hem mee weg
+  // te schrijven (zie registreren/actions.ts). Dat doen we hier, bij de
+  // eerste keer inloggen — anders staat er voor altijd een e-mailadres in de
+  // bovenbalk in plaats van de naam die de leerling zelf koos.
+  //
+  // `is('username', null)` houdt het op één query en zorgt ervoor dat een
+  // naam die de leerling later bij Instellingen koos, blijft staan.
+  const gekozenNaam = data.user?.user_metadata?.username
+  if (data.user && typeof gekozenNaam === 'string' && gekozenNaam.trim() !== '') {
+    await supabase
+      .from('profiles')
+      .update({ username: gekozenNaam.trim() })
+      .eq('id', data.user.id)
+      .is('username', null)
+  }
+
   // Vangnet naast de webhook op e-mailbevestiging: wie daar tussendoor valt,
   // krijgt de welkomstmail alsnog bij de eerste keer inloggen. De functie is
   // idempotent, dus dubbel aanroepen levert geen tweede mail op.
@@ -78,7 +97,19 @@ export async function resendConfirmationAction(
   email: string,
 ): Promise<{ ok: boolean }> {
   const supabase = await createClient()
-  const { error } = await supabase.auth.resend({ type: 'signup', email })
+  const origin = (await headers()).get('origin') ?? ''
+  const locale = await getLocale()
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      // Dezelfde bestemming als bij het registreren. Laat je dit weg, dan
+      // valt Supabase terug op de voorpagina van de site en komt de leerling
+      // na het bevestigen op de homepage terecht in plaats van op de
+      // inlogpagina met "Je account is bevestigd!".
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
+    },
+  })
   if (error) {
     console.error('[inloggen] bevestigingsmail opnieuw sturen mislukt:', error.message)
     return { ok: false }
