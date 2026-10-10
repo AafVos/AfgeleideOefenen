@@ -1,8 +1,8 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { redirect } from 'next/navigation'
 
 import { loadConfigData } from '@/lib/practice/custom-test'
+import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
 import { ConfigForm } from './config-form'
@@ -19,11 +19,7 @@ export async function generateMetadata({
 
 export default async function ZelfToetsPage() {
   const supabase = await createClient()
-  const locale = await getLocale()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect(`/${locale}/inloggen`)
+  const user = await requireUser()
 
   const t = await getTranslations('ZelfToets')
 

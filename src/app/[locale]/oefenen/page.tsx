@@ -1,5 +1,4 @@
-import { getTranslations, getLocale } from 'next-intl/server'
-import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 
 import {
   loadAllTopics,
@@ -8,7 +7,8 @@ import {
   loadQuestionNew,
   type ClusterInfo,
 } from '@/lib/practice/chapter-overview'
-import { getChapters, getCurrentUser } from '@/lib/supabase/request-cache'
+import { getChapters } from '@/lib/supabase/request-cache'
+import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
 import { OefenenClient } from './oefenen-client'
@@ -34,9 +34,7 @@ type PageProps = {
 
 export default async function OefenenPage({ searchParams }: PageProps) {
   const supabase = await createClient()
-  const locale = await getLocale()
-  const user = await getCurrentUser()
-  if (!user) redirect(`/${locale}/inloggen`)
+  await requireUser()
 
   const params = (await searchParams) ?? {}
   const chapterParam = params.chapter?.trim() ?? null

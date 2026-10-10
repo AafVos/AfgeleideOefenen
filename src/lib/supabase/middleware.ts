@@ -10,9 +10,9 @@ const TAAL = routing.defaultLocale
 // Pagina's waar je ingelogd voor moet zijn. Schrijf ze hier zonder taalcode
 // op: `zonderTaalcode` hieronder haalt de `/nl` er eerst af.
 //
-// Deze lijst hoort gelijk te lopen met de pagina's die zelf `if (!user)
-// redirect(...)` bovenaan hebben staan. Die controle blijft staan: dit poortje
-// scheelt de leerling alleen het laadscherm dat anders eerst in beeld komt.
+// Deze lijst hoort gelijk te lopen met de pagina's die de controle ook zelf
+// doen — via `requireUser()` in hun `layout.tsx` of `page.tsx`. Die controle
+// blijft staan: dit poortje scheelt alleen een rondje door de pagina.
 const ALLEEN_INGELOGD = [
   '/dashboard',
   '/feedback',
