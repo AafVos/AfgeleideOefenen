@@ -21,6 +21,31 @@ Gebouwd met **Next.js (App Router) + Supabase + Gemini**. Zie
 
 ## Snelstart
 
+### 0. Node 24 of nieuwer
+
+Dit project heeft **npm 11** nodig, en die zit bij Node 24. Werk je met `nvm`,
+dan pakt `nvm use` de juiste versie uit [`.nvmrc`](./.nvmrc):
+
+```bash
+nvm use          # of: nvm install 24
+node -v          # v24.x of hoger
+npm -v           # 11.x of hoger
+```
+
+Op Node 22 (npm 10) stopt `npm ci` met een melding die niets over de oorzaak
+zegt:
+
+```
+npm error code EUSAGE
+npm error Missing: @swc/helpers@0.5.23 from lock file
+```
+
+Dat komt doordat `next@16.2.4` `@swc/helpers` tegelijk opgeeft als gewone
+afhankelijkheid (`0.5.15`) en als losse eis (`>=0.5.17`). npm 11 lost die
+tegenspraak op, npm 10 niet. Daarom staat de eis op twee plekken vastgelegd:
+`engines.node` (`>=24`) in `package.json`, dat Vercel leest voor de bouw-Node,
+en `.nvmrc`, dat `nvm` en de automatische controle lezen.
+
 ### 1. Installeer dependencies
 
 ```bash
