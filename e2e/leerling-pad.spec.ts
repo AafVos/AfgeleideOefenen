@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import {
   TESTLEERLING,
+  dashboardKaart,
   dashboardRegel,
   geefAntwoord,
   kiesOpgave,
@@ -106,6 +107,13 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
 
   // En dat zie je terug op het dashboard.
   await page.goto('/nl/dashboard')
+
+  // De kaarten bovenaan tellen alles wat de leerling ooit gedaan heeft,
+  // niet alleen de laatste twee weken (zie AFG-106).
+  await expect(dashboardKaart(page, 'Dagen op rij')).toHaveText('1')
+  const beantwoord = await dashboardKaart(page, 'Vragen').innerText()
+  expect(Number(beantwoord)).toBeGreaterThanOrEqual(opgaven.length)
+
   const regel = await dashboardRegel(page, 'Beheersen (e2e)')
   await expect(regel).toContainText('1/1')
   await expect(regel).toContainText('100%')

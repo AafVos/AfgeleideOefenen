@@ -146,3 +146,14 @@ export async function dashboardRegel(
   await klikTot(hoofdstuk, regel)
   return regel
 }
+
+/**
+ * Het getal op een van de kaarten bovenaan het dashboard, bijvoorbeeld
+ * "Dagen op rij". Het getal staat in het blokje direct onder het kopje.
+ */
+export function dashboardKaart(page: Page, kopje: string): Locator {
+  return page
+    .getByText(kopje, { exact: true })
+    .first()
+    .locator('xpath=following-sibling::div[1]')
+}
