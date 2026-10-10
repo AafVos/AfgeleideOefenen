@@ -33,6 +33,7 @@ function naarAdres(): string | undefined {
 
 beforeEach(() => {
   vi.stubEnv('NOTIFY_EMAIL', 'aaf@example.test')
+  vi.stubEnv('RESEND_API_KEY', 're_nep')
   vi.spyOn(console, 'error').mockImplementation(() => {})
   send.mockReset()
   send.mockResolvedValue({ error: null })
@@ -67,6 +68,17 @@ describe('vraag via Aaf', () => {
 
     expect(send).not.toHaveBeenCalled()
   })
+
+  it('zegt het tegen de leerling als de mailsleutel ontbreekt', async () => {
+    vi.stubEnv('RESEND_API_KEY', '')
+
+    expect(await askAafAction(LEEG, bericht('Hoe werkt de kettingregel?'))).toEqual({
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+      sent: false,
+    })
+
+    expect(send).not.toHaveBeenCalled()
+  })
 })
 
 describe('feedback', () => {
@@ -81,6 +93,17 @@ describe('feedback', () => {
 
   it('stuurt niets als er geen meldadres is ingesteld', async () => {
     vi.stubEnv('NOTIFY_EMAIL', '   ')
+
+    expect(await sendFeedbackAction(LEEG, bericht('Fijne site!'))).toEqual({
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+      sent: false,
+    })
+
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it('zegt het tegen de leerling als de mailsleutel ontbreekt', async () => {
+    vi.stubEnv('RESEND_API_KEY', '')
 
     expect(await sendFeedbackAction(LEEG, bericht('Fijne site!'))).toEqual({
       error: 'Versturen is niet gelukt. Probeer het later nog eens.',
