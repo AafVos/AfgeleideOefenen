@@ -6,7 +6,7 @@ import {
   getCurrentProfile,
   getCurrentUser,
 } from '@/lib/supabase/request-cache'
-import { THEORY_OVERVIEW } from '@/lib/theory'
+import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 import { MobileNav } from './mobile-nav'
 import { NavDropdown } from './nav-dropdown'
 import { UserMenu } from './user-menu'

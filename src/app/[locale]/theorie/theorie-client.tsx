@@ -5,7 +5,7 @@ import { useRef, useState } from 'react'
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { cn } from '@/components/ui'
-import type { OverviewCard } from '@/lib/theory'
+import type { OverviewCard } from '@/content/theory/afgeleiden'
 
 export type TheorieChapter = {
   slug: string

@@ -8,7 +8,6 @@ import type {
   ChapterInfo,
   ClusterInfo,
   NewExerciseTile,
-  TopicCategory,
   TopicInfo,
 } from '@/lib/practice/chapter-overview'
 
@@ -51,10 +50,6 @@ type Props = {
   chapters: ChapterInfo[]
   allTopics: TopicInfo[]
   allClusters: ClusterInfo[]
-  showCategories: boolean
-  activeCategory: TopicCategory | null
-  categoryOrder: TopicCategory[]
-  categoryLabels: Record<TopicCategory, string>
   initialChapterSlug: string | null
   initialTopicSlug: string | null
   initialClusterSlug: string | null
@@ -82,10 +77,6 @@ export function OefenenClient({
   chapters,
   allTopics,
   allClusters,
-  showCategories,
-  activeCategory,
-  categoryOrder,
-  categoryLabels,
   initialChapterSlug,
   initialTopicSlug,
   initialClusterSlug,
@@ -184,8 +175,7 @@ export function OefenenClient({
     [topicClusters, selectedClusterSlug],
   )
 
-  const catQS = activeCategory ? `category=${encodeURIComponent(activeCategory)}&` : ''
-  const baseHref = `/oefenen?${catQS}chapter=${encodeURIComponent(selectedChapter?.slug ?? '')}${
+  const baseHref = `/oefenen?chapter=${encodeURIComponent(selectedChapter?.slug ?? '')}${
     selectedTopic ? `&topic=${encodeURIComponent(selectedTopic.slug)}` : ''
   }${selectedCluster ? `&cluster=${encodeURIComponent(selectedCluster.slug)}` : ''}`
 
@@ -226,7 +216,7 @@ export function OefenenClient({
     : baseHref
 
   function chapterHref(slug: string): string {
-    return `/oefenen?${catQS}chapter=${encodeURIComponent(slug)}`
+    return `/oefenen?chapter=${encodeURIComponent(slug)}`
   }
 
   // Scroll-spy: markeer in de zijbalk het hoofdstuk dat in beeld is
@@ -477,29 +467,6 @@ export function OefenenClient({
         onScroll={handleMainScroll}
         className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
       >
-        {showCategories && (
-          <nav className="border-b border-border bg-surface">
-            <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
-              {categoryOrder.map((cat) => {
-                const catActive = cat === activeCategory
-                return (
-                  <Link
-                    key={cat}
-                    href={`/oefenen?category=${encodeURIComponent(cat)}` as '/oefenen'}
-                    className={
-                      catActive
-                        ? 'border-b-2 border-accent px-4 py-3 text-sm font-medium text-accent'
-                        : 'border-b-2 border-transparent px-4 py-3 text-sm text-text-muted hover:text-text'
-                    }
-                  >
-                    {categoryLabels[cat]}
-                  </Link>
-                )
-              })}
-            </div>
-          </nav>
-        )}
-
         <div className="mx-auto max-w-6xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
 

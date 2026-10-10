@@ -1,41 +1,17 @@
 import { getTranslations, getLocale } from 'next-intl/server'
 import { redirect } from 'next/navigation'
 
-import { SITE } from '@/config/site'
 import {
   loadAllTopics,
   loadClustersForTopics,
   loadTilesForClusters,
   loadQuestionNew,
   type ClusterInfo,
-  type TopicCategory,
 } from '@/lib/practice/chapter-overview'
 import { getChapters, getCurrentUser } from '@/lib/supabase/request-cache'
 import { createClient } from '@/lib/supabase/server'
 
 import { OefenenClient } from './oefenen-client'
-
-const CATEGORY_ORDER: TopicCategory[] = [
-  'primitiveren',
-  'integralen',
-  'vergelijkingen',
-  'toepassingen',
-]
-const CATEGORY_LABELS: Record<TopicCategory, string> = {
-  primitiveren: 'Primitiveren',
-  integralen: 'Integralen',
-  vergelijkingen: 'Vergelijkingen',
-  toepassingen: 'Toepassingen',
-}
-
-function isCategory(v: string | null): v is TopicCategory {
-  return (
-    v === 'primitiveren' ||
-    v === 'integralen' ||
-    v === 'vergelijkingen' ||
-    v === 'toepassingen'
-  )
-}
 
 export async function generateMetadata({
   params,
@@ -49,7 +25,6 @@ export async function generateMetadata({
 
 type PageProps = {
   searchParams?: Promise<{
-    category?: string
     chapter?: string
     topic?: string
     cluster?: string
@@ -64,33 +39,16 @@ export default async function OefenenPage({ searchParams }: PageProps) {
   if (!user) redirect(`/${locale}/inloggen`)
 
   const params = (await searchParams) ?? {}
-  const categoryParam = params.category?.trim() ?? null
   const chapterParam = params.chapter?.trim() ?? null
   const topicParam = params.topic?.trim() ?? null
   const clusterParam = params.cluster?.trim() ?? null
   const qParam = params.q?.trim() ?? null
 
-  const showCategories = SITE === 'integralen'
-  const activeCategory: TopicCategory | null = showCategories
-    ? isCategory(categoryParam)
-      ? categoryParam
-      : 'primitiveren'
-    : null
-
-  const [t, chapters, allTopicsRaw] = await Promise.all([
+  const [t, visibleChapters, allTopics] = await Promise.all([
     getTranslations('FreeExercise'),
     getChapters(),
     loadAllTopics(supabase),
   ])
-
-  const allTopics = activeCategory
-    ? allTopicsRaw.filter((t) => t.category === activeCategory)
-    : allTopicsRaw
-
-  const visibleChapterIds = new Set(allTopics.map((t) => t.chapter_id))
-  const visibleChapters = activeCategory
-    ? chapters.filter((c) => visibleChapterIds.has(c.id))
-    : chapters
 
   // Load ALL clusters for ALL visible topics (needed for client-side sidebar)
   const allClusters = await loadClustersForTopics(
@@ -153,14 +111,9 @@ export default async function OefenenPage({ searchParams }: PageProps) {
 
   return (
     <OefenenClient
-      key={activeCategory ?? 'none'}
       chapters={visibleChapters}
       allTopics={allTopics}
       allClusters={allClusters}
-      showCategories={showCategories}
-      activeCategory={activeCategory}
-      categoryOrder={CATEGORY_ORDER}
-      categoryLabels={CATEGORY_LABELS}
       initialChapterSlug={activeChapter?.slug ?? null}
       initialTopicSlug={activeTopic?.slug ?? null}
       initialClusterSlug={activeCluster?.slug ?? null}

@@ -89,7 +89,6 @@ cp .env.local.example .env.local
 | `EMAIL_FROM`                    | Afzender van de mail die de site zelf stuurt; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
 | `NOTIFY_EMAIL`                  | Adres waar het seintje "nieuwe gebruiker" heen gaat. Geen standaardwaarde |
 | `WEBHOOK_SECRET`                | Zelf te verzinnen; zelfde waarde als de header `x-webhook-secret` in Supabase → Database → Webhooks. Zonder match: 401 |
-| `NEXT_PUBLIC_SITE`              | `afgeleiden` of `integralen` — kiest de merknaam en het domein. Standaard: `afgeleiden` |
 
 ### 4. Start de dev server
 
