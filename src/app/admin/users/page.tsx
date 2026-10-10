@@ -2,75 +2,31 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { Badge, Card } from '@/components/ui'
 
 import { setUserRole } from './actions'
+import { loadUserOverview, type UserOverview } from './statistieken'
 
 export default async function UsersPage() {
-  const admin = createServiceRoleClient()
+  let users: UserOverview[] = []
+  let loadFailed = false
 
-  const [
-    authUsersRes,
-    { data: profiles },
-    { data: progressRows },
-    { data: answerRows },
-  ] = await Promise.all([
-    admin.auth.admin.listUsers({ page: 1, perPage: 200 }),
-    admin
-      .from('profiles')
-      .select('id, username, role, created_at')
-      .order('created_at', { ascending: false }),
-    admin
-      .from('user_progress_new')
-      .select('user_id, status'),
-    admin
-      .from('session_answers_new')
-      .select(
-        'is_correct, answered_at, session_id, user_sessions_new!inner(user_id)',
-      )
-      .returns<
-        Array<{
-          is_correct: boolean | null
-          answered_at: string
-          session_id: string
-          user_sessions_new: { user_id: string } | { user_id: string }[]
-        }>
-      >(),
-  ])
-
-  const emailById = new Map(
-    authUsersRes.data.users.map((u) => [u.id, u.email ?? '—']),
-  )
-
-  const masteredByUser = new Map<string, number>()
-  for (const row of progressRows ?? []) {
-    if (row.status === 'mastered') {
-      masteredByUser.set(row.user_id, (masteredByUser.get(row.user_id) ?? 0) + 1)
-    }
+  try {
+    users = await loadUserOverview(createServiceRoleClient())
+  } catch (error) {
+    console.error('Gebruikers ophalen mislukt', error)
+    loadFailed = true
   }
 
-  const answersByUser = new Map<
-    string,
-    { total: number; correct: number; lastAnsweredAt: string | null }
-  >()
-  for (const row of answerRows ?? []) {
-    const userId = (
-      Array.isArray(row.user_sessions_new)
-        ? row.user_sessions_new[0]
-        : (row.user_sessions_new as unknown as { user_id: string })
-    )?.user_id
-    if (!userId) continue
-    const agg = answersByUser.get(userId) ?? {
-      total: 0,
-      correct: 0,
-      lastAnsweredAt: null,
-    }
-    agg.total += 1
-    if (row.is_correct) agg.correct += 1
-    if (
-      !agg.lastAnsweredAt ||
-      (row.answered_at && row.answered_at > agg.lastAnsweredAt)
-    ) {
-      agg.lastAnsweredAt = row.answered_at
-    }
-    answersByUser.set(userId, agg)
+  if (loadFailed) {
+    return (
+      <div className="space-y-6">
+        <h2 className="font-serif text-xl text-text">Gebruikers</h2>
+        <Card>
+          <p className="text-sm text-text">
+            De gebruikers konden nu niet opgehaald worden. Ververs de pagina om
+            het opnieuw te proberen.
+          </p>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -78,8 +34,8 @@ export default async function UsersPage() {
       <div>
         <h2 className="font-serif text-xl text-text">Gebruikers</h2>
         <p className="text-sm text-text-muted">
-          {profiles?.length ?? 0} accounts. Klik op een rol om iemand admin te
-          maken of terug te zetten naar student.
+          {users.length} {users.length === 1 ? 'account' : 'accounts'}. Klik op
+          een rol om iemand admin te maken of terug te zetten naar student.
         </p>
       </div>
 
@@ -97,27 +53,19 @@ export default async function UsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {profiles?.map((p) => {
-              const stats = answersByUser.get(p.id)
-              const mastered = masteredByUser.get(p.id) ?? 0
-              const pct =
-                stats && stats.total > 0
-                  ? Math.round((stats.correct / stats.total) * 100)
-                  : null
-              const setRole = setUserRole.bind(null, p.id)
+            {users.map((u) => {
+              const setRole = setUserRole.bind(null, u.id)
               return (
-                <tr key={p.id} className="align-top">
+                <tr key={u.id} className="align-top">
                   <td className="px-4 py-2">
-                    {p.username ?? <span className="text-text-muted">—</span>}
+                    {u.username ?? <span className="text-text-muted">—</span>}
                   </td>
-                  <td className="px-4 py-2 text-text-muted">
-                    {emailById.get(p.id) ?? '—'}
-                  </td>
+                  <td className="px-4 py-2 text-text-muted">{u.email}</td>
                   <td className="px-4 py-2">
                     <form action={setRole} className="flex items-center gap-2">
                       <select
                         name="role"
-                        defaultValue={p.role}
+                        defaultValue={u.role}
                         className="rounded-md border border-border bg-surface px-2 py-1 text-sm"
                       >
                         <option value="student">student</option>
@@ -132,29 +80,29 @@ export default async function UsersPage() {
                     </form>
                   </td>
                   <td className="px-4 py-2">
-                    {mastered > 0 ? (
-                      <Badge tone="accent">{mastered}</Badge>
+                    {u.mastered > 0 ? (
+                      <Badge tone="accent">{u.mastered}</Badge>
                     ) : (
                       <span className="text-text-muted">0</span>
                     )}
                   </td>
-                  <td className="px-4 py-2">{stats?.total ?? 0}</td>
+                  <td className="px-4 py-2">{u.total}</td>
                   <td className="px-4 py-2">
-                    {pct === null ? (
+                    {u.percentCorrect === null ? (
                       <span className="text-text-muted">—</span>
                     ) : (
-                      `${pct}%`
+                      `${u.percentCorrect}%`
                     )}
                   </td>
                   <td className="px-4 py-2 text-xs text-text-muted">
-                    {stats?.lastAnsweredAt
-                      ? new Date(stats.lastAnsweredAt).toLocaleString('nl-NL')
+                    {u.lastAnsweredAt
+                      ? new Date(u.lastAnsweredAt).toLocaleString('nl-NL')
                       : '—'}
                   </td>
                 </tr>
               )
             })}
-            {!profiles?.length && (
+            {users.length === 0 && (
               <tr>
                 <td
                   colSpan={7}
