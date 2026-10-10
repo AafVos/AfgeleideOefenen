@@ -125,6 +125,28 @@ describe('countAnswersPerUser', () => {
     expect(perGebruiker.get('b')?.total).toBe(1)
     expect(perGebruiker.size).toBe(2)
   })
+
+  it('telt een opgevraagde uitwerking niet als antwoord', () => {
+    // "Ik weet het niet" komt met een lege is_correct binnen (zie AFG-102).
+    const rijen: AnswerRow[] = [
+      {
+        is_correct: true,
+        answered_at: '2026-01-01T10:00:00Z',
+        user_sessions_new: { user_id: 'a' },
+      },
+      {
+        is_correct: null,
+        answered_at: '2026-01-02T10:00:00Z',
+        user_sessions_new: { user_id: 'a' },
+      },
+    ]
+
+    expect(countAnswersPerUser(rijen).get('a')).toEqual({
+      total: 1,
+      correct: 1,
+      lastAnsweredAt: '2026-01-01T10:00:00Z',
+    })
+  })
 })
 
 // ---------------------------------------------------------------------
