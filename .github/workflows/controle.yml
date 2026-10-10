@@ -35,12 +35,13 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # Node 24 (huidige LTS). Niet lager: package-lock.json is door npm 11
-          # geschreven en npm 10 (dat bij Node 22 zit) weigert hem met
-          # "Missing: @swc/helpers@0.5.23 from lock file". Dat komt doordat
-          # next@16.2.4 @swc/helpers zowel als afhankelijkheid 0.5.15 als als
-          # losse eis ">=0.5.17" opgeeft; alleen npm 11 lost dat op.
-          node-version: 24
+          # De Node-versie staat in .nvmrc, zodat deze controle, `nvm use` en
+          # `engines.node` in package.json niet uit elkaar kunnen lopen. Lager
+          # dan 24 kan niet: package-lock.json is door npm 11 geschreven en
+          # npm 10 (dat bij Node 22 zit) weigert hem met "Missing:
+          # @swc/helpers@0.5.23 from lock file" — zie README, "Node 24 of
+          # nieuwer".
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Pakketten installeren
@@ -69,7 +70,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           # Zelfde reden als hierboven: npm 11 is nodig voor package-lock.json.
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
       # Verandert er in een pull request alleen tekst (README, docs, bronnen
