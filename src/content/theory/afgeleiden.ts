@@ -86,7 +86,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           {
             problem: 'f(x) = \\dfrac{x-2}{x+5}',
             answer: "f'(x) = \\dfrac{7}{(x+5)^2}",
-            steps: ["$t = x-2,\\ t' = 1$", "$n = x+5,\\ n' = 1$", "$f'(x) = \\dfrac{1\\cdot(x+5)-(x-2)\\cdot 1}{(x+5)^2} = \\dfrac{7}{(x+5)^2}$"],
+            steps: ["$g = x-2,\\ g' = 1$", "$h = x+5,\\ h' = 1$", "$f'(x) = \\dfrac{1\\cdot(x+5)-(x-2)\\cdot 1}{(x+5)^2} = \\dfrac{7}{(x+5)^2}$"],
           },
         ],
       },
@@ -146,16 +146,16 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         id: 'gonio_kettingregel',
         title: 'Kettingregel met goniometrie',
         formula: [
-          "f(x) = \\cos\\bigl(u(x)\\bigr) \\implies f'(x) = -u'(x) \\cdot \\sin\\bigl(u(x)\\bigr)",
-          "f(x) = \\sin\\bigl(u(x)\\bigr) \\implies f'(x) = u'(x) \\cdot \\cos\\bigl(u(x)\\bigr)",
+          "f(x) = \\cos\\bigl(g(x)\\bigr) \\implies f'(x) = -g'(x) \\cdot \\sin\\bigl(g(x)\\bigr)",
+          "f(x) = \\sin\\bigl(g(x)\\bigr) \\implies f'(x) = g'(x) \\cdot \\cos\\bigl(g(x)\\bigr)",
         ],
         examples: [
           {
             problem: 'f(x) = \\sin(3x^2)',
             answer: "f'(x) = 6x\\cos(3x^2)",
             steps: [
-              "Binnenste functie: $u(x) = 3x^2$, dus $u'(x) = 6x$",
-              "$f'(x) = u'(x) \\cdot \\cos\\bigl(u(x)\\bigr) = 6x\\cos(3x^2)$",
+              "Binnenste functie: $g(x) = 3x^2$, dus $g'(x) = 6x$",
+              "$f'(x) = g'(x) \\cdot \\cos\\bigl(g(x)\\bigr) = 6x\\cos(3x^2)$",
             ],
           },
         ],
