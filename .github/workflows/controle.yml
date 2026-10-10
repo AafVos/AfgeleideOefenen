@@ -78,8 +78,11 @@ jobs:
     runs-on: ubuntu-latest
     # Normaal duurt deze job twee à drie minuten. Hangt er een stap (dat
     # gebeurde: het installeren van de browser bleef 17 minuten staan), dan
-    # stopt GitHub er na tien minuten mee in plaats van na zes uur.
-    timeout-minutes: 10
+    # stopt GitHub er hier mee in plaats van na zes uur. Ruim genoeg dat ook
+    # een tweede poging bij "Browser installeren" nog af kan maken: wordt die
+    # door de job afgekapt, dan staat de controle alsnog op rood en moet hij
+    # met de hand opnieuw.
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@v7
 
@@ -154,21 +157,45 @@ jobs:
       # Stond de browser er al, dan hoeven alleen de systeembibliotheken nog.
       # Mislukt het of blijft het hangen, dan proberen we het één keer
       # opnieuw: dat is meestal een hapering bij de download.
+      #
+      # Twee dingen om te weten voor je hier aan de getallen draait:
+      #
+      # 1. De grens per poging stond op 80 seconden. Dat is te krap: haalt
+      #    apt-get de lettertypen bij een trage mirror op, dan is een poging
+      #    die gewoon nog bezig is al voor vastgelopen aangezien. Vier
+      #    minuten is ruim genoeg voor een langzame ronde en nog steeds kort
+      #    genoeg om een echte hangende stap af te kappen.
+      # 2. `timeout` kan de apt-get van een afgekapte poging niet
+      #    meenemen. Playwright start die via sudo, dus als root, en een
+      #    proces van de runner mag root geen signaal sturen: die apt-get
+      #    loopt door. De tweede poging struikelde daardoor over "Could not
+      #    get lock /var/lib/dpkg/lock-frontend" en liet de hele job vallen.
+      #    Met DPkg::Lock::Timeout wacht apt-get netjes tot het slot vrij is
+      #    in plaats van er meteen mee te stoppen.
       - name: Browser installeren
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
-        timeout-minutes: 3
+        timeout-minutes: 9
         env:
           UIT_OPSLAG: ${{ steps.browser-opslag.outputs.cache-hit }}
         run: |
+          echo 'DPkg::Lock::Timeout "120";' \
+            | sudo tee /etc/apt/apt.conf.d/99-wacht-op-dpkg-slot > /dev/null
+
           installeren() {
             if [ "$UIT_OPSLAG" = "true" ]; then
-              timeout 80 npx playwright install-deps chromium
+              timeout --kill-after=15 240 npx playwright install-deps chromium
             else
-              timeout 80 npx playwright install --with-deps chromium
+              timeout --kill-after=15 240 npx playwright install --with-deps chromium
             fi
           }
+
           installeren || {
-            echo "::warning::Installeren van de browser mislukte of liep vast; nog één poging."
+            code=$?
+            if [ "$code" -eq 124 ] || [ "$code" -eq 137 ]; then
+              echo "::warning::Installeren van de browser duurde langer dan vier minuten; nog één poging."
+            else
+              echo "::warning::Installeren van de browser mislukte (afsluitcode $code); nog één poging."
+            fi
             installeren
           }
 
