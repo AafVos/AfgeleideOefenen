@@ -74,7 +74,7 @@
     "faq7A": "Zeker. Afgeleiden zijn de basis voor grote onderdelen van het VWO wiskunde B examen (extremen, raaklijnen, dynamische modellen). Door hier vlot in te worden maak je op het examen sneller en met minder fouten de andere onderdelen."
   },
   "HoeHetWerkt": {
-    "title": "Hoe het werkt · __DOMAIN__",
+    "title": "Hoe het werkt",
     "description": "Hoe het oefenen werkt: zelf een hoofdstuk en een opgave kiezen, direct nakijken met het stappenplan, en jezelf overhoren met de zelf-toets.",
     "eyebrow": "Het idee achter deze site",
     "h1": "Twee manieren om afgeleiden te oefenen",
@@ -106,7 +106,7 @@
     "ctaBack": "← Terug naar home"
   },
   "Theorie": {
-    "title": "Differentiëren: alle regels op één pagina · __DOMAIN__",
+    "title": "Differentiëren: alle regels op één pagina",
     "description": "Alle differentieerregels voor wiskunde B VWO op één pagina: machtsregel, somregel, productregel, quotiëntregel, kettingregel, e-macht, goniometrie en ln. Met voorbeelden en stappen.",
     "eyebrow": "Theorie",
     "h1": "Differentiëren: alle regels op één pagina",
@@ -125,7 +125,7 @@
     "detailsLabel": "Uitleg en voorbeelden"
   },
   "Login": {
-    "title": "Inloggen · __DOMAIN__",
+    "title": "Inloggen",
     "h1": "Inloggen",
     "subtitle": "Welkom terug. Log in om verder te oefenen.",
     "emailLabel": "E-mailadres",
@@ -150,7 +150,7 @@
     "errorGeneric": "Er ging iets mis bij het inloggen. Probeer het opnieuw."
   },
   "Register": {
-    "title": "Registreren · __DOMAIN__",
+    "title": "Registreren",
     "h1": "Account aanmaken",
     "subtitle": "Gratis, in het Nederlands, en je kunt gelijk oefenen.",
     "usernameLabel": "Gebruikersnaam (optioneel)",
@@ -175,7 +175,7 @@
     "noticeConfirmEmail": "Account aangemaakt. Klik op de link in de bevestigingsmail om in te loggen."
   },
   "ForgotPassword": {
-    "title": "Wachtwoord vergeten · __DOMAIN__",
+    "title": "Wachtwoord vergeten",
     "h1": "Wachtwoord vergeten",
     "subtitle": "Vul je e-mailadres in. Als er een account bij hoort, ontvang je een link om je wachtwoord te resetten.",
     "emailLabel": "E-mailadres",
@@ -187,7 +187,7 @@
     "errorGeneric": "Er ging iets mis bij het versturen. Probeer het opnieuw."
   },
   "NewPassword": {
-    "title": "Nieuw wachtwoord · __DOMAIN__",
+    "title": "Nieuw wachtwoord",
     "h1": "Nieuw wachtwoord instellen",
     "passwordLabel": "Nieuw wachtwoord",
     "passwordHint": "Minstens 8 tekens.",
@@ -199,7 +199,7 @@
     "errorGeneric": "Er ging iets mis bij het opslaan van je wachtwoord. Probeer het opnieuw."
   },
   "Dashboard": {
-    "title": "Dashboard · __DOMAIN__",
+    "title": "Dashboard",
     "greetingWithName": "Hoi {name}",
     "progressTitle": "Jouw voortgang",
     "statMastered": "Beheerst",
@@ -285,7 +285,7 @@
     "hasVideo": "Uitlegvideo"
   },
   "FreeExercise": {
-    "title": "Oefenen · __DOMAIN__",
+    "title": "Oefenen",
     "h1": "Oefenen",
     "topicLabel": "Onderwerp",
     "chapterLabel": "Hoofdstuk",
@@ -312,7 +312,7 @@
     "expandSidebar": "Zijbalk uitklappen"
   },
   "ZelfToets": {
-    "title": "Zelf-toets · __DOMAIN__",
+    "title": "Zelf-toets",
     "runnerTitle": "Zelf-toets bezig",
     "resultsTitle": "Zelf-toets resultaat",
     "eyebrow": "Zelf-toets",
@@ -378,7 +378,7 @@
     "runnerNotFound": "Deze toets-sessie bestaat niet meer."
   },
   "Settings": {
-    "title": "Instellingen · __DOMAIN__",
+    "title": "Instellingen",
     "h1": "Instellingen",
     "accountH2": "Account",
     "emailLabel": "E-mailadres",
@@ -395,7 +395,7 @@
     "noUsername": "Nog niet ingesteld"
   },
   "Feedback": {
-    "title": "Feedback · __DOMAIN__",
+    "title": "Feedback",
     "h1": "Feedback sturen",
     "intro": "Mis je iets, klopt er iets niet, of heb je een idee? Laat het weten. Alle feedback is welkom.",
     "placeholder": "Vertel wat je kwijt wilt…",
