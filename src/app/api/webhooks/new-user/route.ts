@@ -1,4 +1,5 @@
 import { SITE_CONFIG } from '@/config/site'
+import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
 import { maakMailer } from '@/lib/email/mailer'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -31,9 +32,15 @@ export async function POST(req: Request) {
       return Response.json({ ok: true })
     }
 
-    // Zonder mailsleutel gaat dit seintje er stil niet uit. Toch een 200
-    // terug: het bericht is voor onszelf, en bij een foutcode blijft Supabase
-    // het onnodig opnieuw proberen.
+    // Zonder ontvanger of mailsleutel gaat dit seintje er stil niet uit. Toch
+    // een 200 terug: het bericht is voor onszelf, en bij een foutcode blijft
+    // Supabase het onnodig opnieuw proberen.
+    const naar = meldAdres()
+    if (!naar) {
+      console.error('[nieuwe-gebruiker] geen NOTIFY_EMAIL; seintje niet verstuurd')
+      return Response.json({ ok: true, mail: 'overgeslagen' })
+    }
+
     const resend = maakMailer()
     if (!resend) {
       console.error('[nieuwe-gebruiker] geen RESEND_API_KEY; seintje niet verstuurd')
@@ -75,8 +82,8 @@ export async function POST(req: Request) {
     }
 
     const { error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? `no-reply@${SITE_CONFIG.domain}`,
-      to: process.env.NOTIFY_EMAIL!,
+      from: EMAIL_FROM,
+      to: naar,
       subject: `Nieuwe gebruiker op ${SITE_CONFIG.domain}`,
       html: `
         <h2>Nieuwe registratie</h2>
