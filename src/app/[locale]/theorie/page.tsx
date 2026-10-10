@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 
-import { THEORY_OVERVIEW } from '@/lib/theory'
+import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 
 import { TheorieClient, type TheorieChapter } from './theorie-client'
 
