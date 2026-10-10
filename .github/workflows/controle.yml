@@ -76,13 +76,13 @@ jobs:
   e2e:
     name: Weg van een leerling
     runs-on: ubuntu-latest
-    # Normaal duurt deze job twee à drie minuten. Hangt er een stap (dat
+    # Normaal duurt deze job vier à vijf minuten. Hangt er een stap (dat
     # gebeurde: het installeren van de browser bleef 17 minuten staan), dan
     # stopt GitHub er hier mee in plaats van na zes uur. Ruim genoeg dat ook
     # een tweede poging bij "Browser installeren" nog af kan maken: wordt die
     # door de job afgekapt, dan staat de controle alsnog op rood en moet hij
     # met de hand opnieuw.
-    timeout-minutes: 14
+    timeout-minutes: 17
     steps:
       - uses: actions/checkout@v7
 
@@ -199,12 +199,14 @@ jobs:
             installeren
           }
 
-      # Alleen wat de test nodig heeft: de database, inloggen (auth) en de
-      # data-API. De rest (studio, opslag, mail, realtime, edge-functies,
-      # statistieken) gebruikt de site niet in deze test. Het scriptje zet ze
-      # in de config uit; dat scheelt meer dan `start -x`, want uitgezette
-      # onderdelen worden ook niet gedownload. De config van je eigen computer
-      # blijft ongemoeid: dit draait alleen hier.
+      # Alleen wat de test nodig heeft: de database, inloggen (auth), de
+      # data-API en de testpostbus (Mailpit). Die postbus is er sinds
+      # AFG-108 bij: de test maakt de bevestigingsmail en de resetmail echt
+      # open. De rest (studio, opslag, realtime, edge-functies, statistieken)
+      # gebruikt de site niet in deze test. Het scriptje zet ze in de config
+      # uit; dat scheelt meer dan `start -x`, want uitgezette onderdelen
+      # worden ook niet gedownload. De config van je eigen computer blijft
+      # ongemoeid: dit draait alleen hier.
       - name: Lokale Supabase starten
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
         timeout-minutes: 4
@@ -212,9 +214,13 @@ jobs:
           node scripts/ci-supabase-kaal.mjs
           npx supabase start -x imgproxy,postgres-meta
 
+      # Sinds AFG-108 loopt hier ook de weg van een nieuwe leerling doorheen:
+      # registreren, de mail ophalen, bevestigen, wachtwoord vergeten. Dat
+      # kost een paar minuten meer dan de oude set, vandaar acht in plaats
+      # van vijf.
       - name: Weg van een leerling nalopen
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
-        timeout-minutes: 5
+        timeout-minutes: 8
         run: npm run test:e2e
 
       - name: Uitslag bewaren

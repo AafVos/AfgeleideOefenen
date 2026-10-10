@@ -110,8 +110,11 @@ port = 54324
 # Uncomment to expose additional ports for testing user applications that send emails.
 # smtp_port = 54325
 # pop3_port = 54326
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# Afzender van de lokale mail: dezelfde merknaam en hetzelfde adres als in
+# productie, zodat de e2e-test kan nalopen of een leerling een mail van
+# afgeleideoefenen.nl krijgt en niet van "Admin".
+admin_email = "no-reply@afgeleideoefenen.nl"
+sender_name = "AfgeleideOefenen"
 
 [storage]
 enabled = true
@@ -161,7 +164,16 @@ site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+# De e2e-tests draaien op een eigen poort (3177, of wat E2E_PORT zegt). Zonder
+# die tweede regel weigert Supabase de link in de bevestigingsmail met
+# "Redirect URL not allowed". Dit is de lokale config: op de echte site staat
+# de lijst in het Supabase-dashboard en staat alleen afgeleideoefenen.nl erin.
+# `**` dekt ook het pad en de vraagtekens erachter; de link in de mail eindigt
+# op `/auth/callback?next=…`.
+additional_redirect_urls = [
+  "http://localhost:3000/auth/callback",
+  "http://localhost:*/**",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -197,7 +209,11 @@ password_requirements = ""
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
-email_sent = 2
+# Ruim omhoog: dit is de lokale config, en de e2e-tests sturen per run een
+# handvol bevestigings- en resetmails naar de testpostbus. Op twee per uur
+# loopt de tweede test al tegen "email rate limit exceeded" aan. De echte site
+# heeft hier niets mee te maken; die staat in het Supabase-dashboard.
+email_sent = 100
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
@@ -205,9 +221,12 @@ anonymous_users = 30
 # Number of sessions that can be refreshed in a 5 minute interval per IP address.
 token_refresh = 150
 # Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
-sign_in_sign_ups = 30
+# Ook hier ruim omhoog, en om dezelfde reden als bij `email_sent` hierboven:
+# alle e2e-tests komen van één IP-adres en registreren en loggen binnen een
+# paar minuten een stuk of twintig keer in.
+sign_in_sign_ups = 300
 # Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
-token_verifications = 30
+token_verifications = 300
 # Number of Web3 logins that can be made in a 5 minute interval per IP address.
 web3 = 30
 
@@ -224,7 +243,10 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+# Staat op de echte site ook aan. Lokaal moet hij aan staan omdat de e2e-test
+# juist dát stuk naloopt: het bevestigen van je e-mailadres is de plek waar een
+# nieuwe leerling in de praktijk blijft steken.
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -248,6 +270,22 @@ otp_expiry = 3600
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
+
+# De twee mails die Supabase zelf naar een leerling stuurt. De sjablonen staan
+# in supabase/email-templates/ en worden met de hand in het Supabase-dashboard
+# geplakt (Authentication → Email Templates); hier wijzen we de lokale Supabase
+# naar dezelfde bestanden. Zo loopt de e2e-test over de tekst die de leerling in
+# productie ook krijgt, en valt het op als er Engels in terugsluipt.
+#
+# Let op: de onderwerpregel staat hier én in het dashboard. Verander je er één,
+# verander dan allebei.
+[auth.email.template.confirmation]
+subject = "Bevestig je e-mailadres voor AfgeleideOefenen"
+content_path = "./supabase/email-templates/confirm-signup.html"
+
+[auth.email.template.recovery]
+subject = "Nieuw wachtwoord voor AfgeleideOefenen"
+content_path = "./supabase/email-templates/reset-password-nl.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

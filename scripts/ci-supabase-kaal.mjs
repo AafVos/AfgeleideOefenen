@@ -9,7 +9,9 @@
  * ongeveer 45 seconden aan downloads voor containers die daarna stilstonden.
  * Staat een onderdeel in de config uit, dan wordt er niets opgehaald.
  *
- * De test heeft alleen de database, inloggen (auth) en de data-API nodig.
+ * De test heeft de database, inloggen (auth), de data-API en de testpostbus
+ * nodig. Die postbus (Mailpit, poort 54324) blijft dus met opzet aan: zonder
+ * hem kan de test de bevestigingsmail en de resetmail niet ophalen.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 
@@ -28,7 +30,6 @@ const UIT = new Set([
   'realtime',
   'analytics', // logflare en vector
   'edge_runtime',
-  'local_smtp', // de testmailbox
 ])
 
 const pad = 'supabase/config.toml'
