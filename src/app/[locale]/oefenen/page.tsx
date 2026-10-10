@@ -7,6 +7,7 @@ import {
   loadQuestionNew,
   type ClusterInfo,
 } from '@/lib/practice/chapter-overview'
+import { canoniek } from '@/lib/seo'
 import { getChapters } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
@@ -20,7 +21,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'FreeExercise' })
-  return { title: t('title') }
+  return { title: t('title'), alternates: canoniek(locale, '/oefenen') }
 }
 
 type PageProps = {

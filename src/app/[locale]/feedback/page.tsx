@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { redirect } from 'next/navigation'
 
+import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
 import { FeedbackForm } from './feedback-form'
@@ -12,7 +13,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Feedback' })
-  return { title: t('title') }
+  return { title: t('title'), alternates: canoniek(locale, '/feedback') }
 }
 
 export default async function FeedbackPage({

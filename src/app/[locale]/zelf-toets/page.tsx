@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { loadConfigData } from '@/lib/practice/custom-test'
+import { canoniek } from '@/lib/seo'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
@@ -14,7 +15,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'ZelfToets' })
-  return { title: t('title') }
+  return { title: t('title'), alternates: canoniek(locale, '/zelf-toets') }
 }
 
 export default async function ZelfToetsPage() {

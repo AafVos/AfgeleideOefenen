@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { redirect } from 'next/navigation'
 
+import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
 import { PasswordForm, UsernameForm } from './settings-forms'
@@ -12,7 +13,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Settings' })
-  return { title: t('title') }
+  return { title: t('title'), alternates: canoniek(locale, '/instellingen') }
 }
 
 export default async function InstellingenPage({

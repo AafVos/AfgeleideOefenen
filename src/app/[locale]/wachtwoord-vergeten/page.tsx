@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { Link } from '@/i18n/navigation'
+import { canoniek } from '@/lib/seo'
 
 import { ForgotForm } from './forgot-form'
 
@@ -11,7 +12,10 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'ForgotPassword' })
-  return { title: t('title') }
+  return {
+    title: t('title'),
+    alternates: canoniek(locale, '/wachtwoord-vergeten'),
+  }
 }
 
 export default async function WachtwoordVergetenPage() {

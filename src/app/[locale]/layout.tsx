@@ -6,21 +6,16 @@ import { notFound } from 'next/navigation'
 import { SiteHeader } from '@/components/site-header'
 import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
+import { SITE_URL } from '@/lib/seo'
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}): Promise<Metadata> {
-  const { locale } = await params
+export async function generateMetadata(): Promise<Metadata> {
   const domain = SITE_CONFIG.domain
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${domain}`
 
   const SITE_DESCRIPTION =
     'Differentiëren oefenen voor wiskunde B VWO — gratis en adaptief. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen.'
 
   return {
-    metadataBase: new URL(siteUrl),
+    metadataBase: new URL(SITE_URL),
     title: {
       default: `Differentiëren oefenen — afgeleide wiskunde B VWO | ${domain}`,
       template: `%s · ${domain}`,
@@ -28,13 +23,12 @@ export async function generateMetadata({
     description: SITE_DESCRIPTION,
     applicationName: domain,
     authors: [{ name: domain }],
-    alternates: {
-      canonical: `/${locale}`,
-    },
+    // Geen `alternates` hier: dat zou elke pagina hieronder de canonieke link
+    // van de layout geven. Elke pagina noemt haar eigen adres — zie
+    // `canoniek()` in `src/lib/seo.ts`.
     openGraph: {
       type: 'website',
       locale: 'nl_NL',
-      url: siteUrl,
       siteName: domain,
       title: 'Afgeleide oefenen — wiskunde B VWO',
       description: SITE_DESCRIPTION,

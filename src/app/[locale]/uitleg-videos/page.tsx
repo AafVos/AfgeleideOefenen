@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { SITE } from '@/config/site'
+import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 import { getUitlegVideos } from '@/lib/videos'
 
@@ -13,7 +14,11 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'UitlegVideos' })
-  return { title: t('title'), description: t('intro') }
+  return {
+    title: t('title'),
+    description: t('intro'),
+    alternates: canoniek(locale, '/uitleg-videos'),
+  }
 }
 
 type PageProps = {
