@@ -1886,6 +1886,58 @@ update public.profiles
  where id = 'e2e00000-0000-4000-8000-000000000001';
 
 -- ---------------------------------------------------------------------
+-- Tweede testleerling: nieuw@test.local / oefenen123
+-- ---------------------------------------------------------------------
+-- Een kersverse leerling die de rondleiding nog nooit heeft gezien. Apart
+-- account, zodat de rondleiding niet in de weg zit bij de tests hierboven.
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+)
+values (
+  '00000000-0000-0000-0000-000000000000',
+  'e2e00000-0000-4000-8000-000000000003',
+  'authenticated',
+  'authenticated',
+  'nieuw@test.local',
+  crypt('oefenen123', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"display_name":"Nieuwe Leerling"}'::jsonb,
+  now(),
+  now(),
+  '', '', '', ''
+)
+on conflict (id) do update
+  set email              = excluded.email,
+      encrypted_password = excluded.encrypted_password,
+      email_confirmed_at = excluded.email_confirmed_at,
+      updated_at         = now();
+
+insert into auth.identities (
+  id, user_id, provider_id, identity_data, provider,
+  last_sign_in_at, created_at, updated_at
+)
+values (
+  'e2e00000-0000-4000-8000-000000000004',
+  'e2e00000-0000-4000-8000-000000000003',
+  'e2e00000-0000-4000-8000-000000000003',
+  '{"sub":"e2e00000-0000-4000-8000-000000000003","email":"nieuw@test.local","email_verified":true,"phone_verified":false}'::jsonb,
+  'email',
+  now(),
+  now(),
+  now()
+)
+on conflict (provider_id, provider) do nothing;
+
+-- Nog nooit rondgeleid: hier hoort Aaf dus zelf in beeld te komen.
+update public.profiles
+   set display_name = 'Nieuwe Leerling',
+       tour_seen_at = null
+ where id = 'e2e00000-0000-4000-8000-000000000003';
+
+-- ---------------------------------------------------------------------
 -- Vaste oefenstof voor de tests: één hoofdstuk, twee onderwerpen
 -- ---------------------------------------------------------------------
 insert into public.chapters (slug, title, book_part, order_index, site)

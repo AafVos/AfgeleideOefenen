@@ -7,9 +7,20 @@ import { askAafAction, type FeedbackState } from '@/app/[locale]/feedback/action
 import { markTourSeenAction } from '@/lib/tour-actions'
 
 
+/** Breedte van de tekstballon; op een smal scherm krimpt hij mee. */
 const GUIDE_WIDTH = 400
 
+/**
+ * Vanaf deze breedte staan Theorie, Oefenen en de rest in de bovenbalk. Is
+ * het scherm smaller, dan zitten ze in het menu en valt er niets te omringen:
+ * dan loopt de rondleiding als losse tekstballonnen midden in beeld.
+ */
+const BREED_SCHERM = 900
+
 type Step = { target?: string; text: string }
+
+/** Waar de tekstballon staat, hoe breed hij is, en of hij bij een item hangt. */
+type Plek = { x: number; y: number; breedte: number; bijItem: boolean }
 
 const initialAskState: FeedbackState = { error: null, sent: false }
 
@@ -51,14 +62,15 @@ function AafHelper({ onRestartTour }: { onRestartTour: () => void }) {
               </button>
             </form>
           )}
-          <div className="mt-3 border-t border-border pt-2">
+          <div className="mt-3 border-t border-border">
+            {/* Breed en hoog genoeg om met een duim te raken */}
             <button
               type="button"
               onClick={() => {
                 setOpen(false)
                 onRestartTour()
               }}
-              className="text-xs font-medium text-text-muted underline-offset-2 hover:text-text hover:underline"
+              className="block w-full py-3 text-left text-xs font-medium text-text-muted underline-offset-2 hover:text-text hover:underline"
             >
               {t('restart')}
             </button>
@@ -140,7 +152,7 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
   const t = useTranslations('Tour')
   const [phase, setPhase] = useState<'hidden' | 'tour' | 'rest'>('hidden')
   const [stepIdx, setStepIdx] = useState(0)
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const [plek, setPlek] = useState<Plek | null>(null)
 
   const steps: Step[] = useMemo(
     () => [
@@ -157,14 +169,13 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
   const step = steps[stepIdx]!
   const isLast = stepIdx === steps.length - 1
 
-  // Eerste keer inloggen: start de rondleiding (alleen op brede schermen)
+  // Eerste keer inloggen: start de rondleiding, maar alleen op een breed
+  // scherm — daar staan de items waar hij naar wijst ook echt in beeld. Op
+  // een telefoon gaat Aaf meteen rechtsonder staan, zodat je haar altijd iets
+  // kunt vragen of de rondleiding alsnog kunt opvragen (zie AFG-101).
   useEffect(() => {
     const id = window.setTimeout(() => {
-      if (tourSeen) {
-        setPhase('rest')
-      } else if (window.innerWidth >= 900) {
-        setPhase('tour')
-      }
+      setPhase(!tourSeen && window.innerWidth >= BREED_SCHERM ? 'tour' : 'rest')
     }, 700)
     return () => window.clearTimeout(id)
   }, [tourSeen])
@@ -175,22 +186,29 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
 
     function place() {
       document.querySelectorAll('.tour-ring').forEach((el) => el.classList.remove('tour-ring'))
+      // Op een smal scherm blijft de ballon binnen beeld in plaats van er
+      // half naast te hangen.
+      const breedte = Math.min(GUIDE_WIDTH, window.innerWidth - 16)
       const s = steps[stepIdx]!
-      if (s.target) {
+      if (s.target && window.innerWidth >= BREED_SCHERM) {
         const el = document.querySelector(`[data-tour="${s.target}"]`)
         if (el) {
           el.classList.add('tour-ring')
           const r = el.getBoundingClientRect()
-          setPos({
-            x: Math.max(8, Math.min(r.left + r.width / 2 - GUIDE_WIDTH / 2, window.innerWidth - GUIDE_WIDTH - 8)),
+          setPlek({
+            x: Math.max(8, Math.min(r.left + r.width / 2 - breedte / 2, window.innerWidth - breedte - 8)),
             y: r.bottom + 14,
+            breedte,
+            bijItem: true,
           })
           return
         }
       }
-      setPos({
-        x: (window.innerWidth - GUIDE_WIDTH) / 2,
+      setPlek({
+        x: Math.max(8, (window.innerWidth - breedte) / 2),
         y: Math.max(120, window.innerHeight * 0.34),
+        breedte,
+        bijItem: false,
       })
     }
 
@@ -218,14 +236,14 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
     return <AafHelper onRestartTour={restart} />
   }
 
-  if (phase !== 'tour' || !pos) return null
+  if (phase !== 'tour' || !plek) return null
 
   return (
     <>
-      {/* Dim de pagina; zonder doelwit in de header dimmen we het hele scherm */}
+      {/* Dim de pagina; hangt de ballon niet bij een item, dan het hele scherm */}
       <div
         className={
-          step.target
+          plek.bijItem
             ? 'fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
             : 'fixed inset-0 z-40 bg-[#101820]/30'
         }
@@ -236,14 +254,14 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
         role="dialog"
         aria-label={t('restart')}
         className="fixed left-0 top-0 z-50 flex items-start gap-1 transition-transform duration-500 ease-out"
-        style={{ transform: `translate(${pos.x}px, ${pos.y}px)`, width: GUIDE_WIDTH }}
+        style={{ transform: `translate(${plek.x}px, ${plek.y}px)`, width: plek.breedte }}
       >
         <div className="shrink-0">
-          <Aaf size={72} />
+          <Aaf size={plek.breedte < 360 ? 56 : 72} />
         </div>
-        <div className="rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3 shadow-xl">
+        <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3 shadow-xl">
           <p className="text-sm leading-relaxed text-text">{step.text}</p>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
             <button
               type="button"
               onClick={() => (isLast ? finish() : setStepIdx((i) => i + 1))}
