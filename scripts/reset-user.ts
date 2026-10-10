@@ -48,12 +48,6 @@ async function main() {
     .delete({ count: 'exact' }).eq('user_id', uid)
   console.log('user_progress_new verwijderd:', up)
 
-  // Reset onboarding in profiel (onboarded_at = null forceert onboarding-flow)
-  await sb.from('profiles')
-    .update({ onboarded_at: null })
-    .eq('id', uid)
-  console.log('Profiel gereset')
-
   console.log('\n✓ User', EMAIL, 'is terug naar nieuwe-gebruiker-staat')
 }
 
