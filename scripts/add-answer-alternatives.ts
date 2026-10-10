@@ -16,7 +16,7 @@ async function main() {
   // Try Supabase Management API (needs personal access token — won't work with service role)
   // Instead, verify the column exists or provide instructions
   const sb = createClient(url, key)
-  const { data, error } = await sb.from('questions').select('answer_alternatives').limit(1)
+  const { error } = await sb.from('questions').select('answer_alternatives').limit(1)
 
   if (!error) {
     console.log('✅ Kolom answer_alternatives bestaat al!')

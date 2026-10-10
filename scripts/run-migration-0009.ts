@@ -62,7 +62,6 @@ async function main() {
   const bi = `${KL}.binnenste_differentieren`, bu = `${KL}.buitenste_differentieren`
   const vm = `${KL}.vermenigvuldigen`, hr = `${KL}.herschrijven_machtsvorm`
   const rc = `${KL}.regel_combineren`, cs = `${KL}.combi_somregel`
-  const vs = `${KL}.vereenvoudigen`
   const pf = 'productregel.formule_invullen', qf = 'quotientregel.formule_volgorde'
 
   const questions = [

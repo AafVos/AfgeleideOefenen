@@ -51,6 +51,11 @@ jobs:
       - name: Pakketten installeren
         run: npm ci
 
+      # `npm run lint` staat op `--max-warnings=0`: ook een waarschuwing laat
+      # deze stap vallen. Zonder die drempel stapelen waarschuwingen zich op
+      # tot niemand ze meer leest — dat gebeurde al een keer (veertien stuks).
+      # Een waarschuwing die echt moet blijven, zet je met een `eslint-disable`
+      # en een reden erbij uit, zodat te zien is waarom.
       - name: Lint
         run: npm run lint
 
