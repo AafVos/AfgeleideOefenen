@@ -1,9 +1,8 @@
 'use server'
 
-import { Resend } from 'resend'
-
 import { SITE_CONFIG } from '@/config/site'
 import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
+import { maakMailer } from '@/lib/email/mailer'
 import { createClient } from '@/lib/supabase/server'
 
 export type FeedbackState = {
@@ -47,8 +46,16 @@ export async function askAafAction(
     }
   }
 
+  const resend = maakMailer()
+  if (!resend) {
+    console.error('[ask-aaf] geen RESEND_API_KEY; vraag niet verstuurd')
+    return {
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+      sent: false,
+    }
+  }
+
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: naar,
@@ -106,8 +113,16 @@ export async function sendFeedbackAction(
     }
   }
 
+  const resend = maakMailer()
+  if (!resend) {
+    console.error('[feedback] geen RESEND_API_KEY; bericht niet verstuurd')
+    return {
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+      sent: false,
+    }
+  }
+
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: naar,

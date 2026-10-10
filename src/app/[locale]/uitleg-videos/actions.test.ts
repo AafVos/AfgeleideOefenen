@@ -29,6 +29,7 @@ function vraag(tekst: string): FormData {
 
 beforeEach(() => {
   vi.stubEnv('NOTIFY_EMAIL', 'aaf@example.test')
+  vi.stubEnv('RESEND_API_KEY', 're_nep')
   vi.spyOn(console, 'error').mockImplementation(() => {})
   send.mockReset()
   send.mockResolvedValue({ error: null })
@@ -55,6 +56,17 @@ describe('video-verzoek', () => {
 
   it('stuurt niets als er geen meldadres is ingesteld', async () => {
     vi.stubEnv('NOTIFY_EMAIL', '')
+
+    expect(await vraagVideoAction(LEEG, vraag('Kun je 1/x uitleggen?'))).toEqual({
+      error: 'Versturen mislukt. Probeer het later opnieuw.',
+      sent: false,
+    })
+
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it('zegt het tegen de leerling als de mailsleutel ontbreekt', async () => {
+    vi.stubEnv('RESEND_API_KEY', '')
 
     expect(await vraagVideoAction(LEEG, vraag('Kun je 1/x uitleggen?'))).toEqual({
       error: 'Versturen mislukt. Probeer het later opnieuw.',

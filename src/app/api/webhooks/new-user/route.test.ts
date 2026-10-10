@@ -47,6 +47,7 @@ const AUTH_RIJ = {
 beforeEach(() => {
   vi.stubEnv('WEBHOOK_SECRET', 'geheimpje')
   vi.stubEnv('NOTIFY_EMAIL', 'aaf@example.test')
+  vi.stubEnv('RESEND_API_KEY', 're_nep')
   send.mockClear()
   send.mockResolvedValue({ error: null })
   // Standaard: de auth-rij kent het e-mailadres en de gebruikersnaam staat
@@ -104,6 +105,18 @@ describe('seintje bij een nieuwe gebruiker', () => {
     await POST(seintje(AUTH_RIJ))
 
     expect(gebruikersnaamInMail()).toBe('—')
+  })
+
+  it('stuurt stil niets zonder mailsleutel, maar houdt het bij een 200', async () => {
+    vi.stubEnv('RESEND_API_KEY', '')
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // Een foutcode zou Supabase het seintje laten herhalen; dat helpt niet,
+    // want zonder sleutel gaat er nooit iets uit.
+    expect((await POST(seintje(AUTH_RIJ))).status).toBe(200)
+    expect(send).not.toHaveBeenCalled()
+
+    log.mockRestore()
   })
 
   it('negeert een gebruikersnaam die geen bruikbare tekst is', async () => {

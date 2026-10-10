@@ -1,10 +1,9 @@
 'use server'
 
-import { Resend } from 'resend'
-
 import { SITE_CONFIG } from '@/config/site'
 import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
 import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
+import { maakMailer } from '@/lib/email/mailer'
 import { answersMatch } from '@/lib/practice/engine'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -113,8 +112,13 @@ export async function vraagVideoAction(
     return { error: 'Versturen mislukt. Probeer het later opnieuw.', sent: false }
   }
 
+  const resend = maakMailer()
+  if (!resend) {
+    console.error('[vraag-video] geen RESEND_API_KEY; vraag niet verstuurd')
+    return { error: 'Versturen mislukt. Probeer het later opnieuw.', sent: false }
+  }
+
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: naar,
