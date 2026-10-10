@@ -201,7 +201,17 @@
   "Dashboard": {
     "title": "Dashboard · __DOMAIN__",
     "greetingWithName": "Hoi {name}",
-    "progressTitle": "Jouw voortgang"
+    "progressTitle": "Jouw voortgang",
+    "statMastered": "Beheerst",
+    "statMasteredSub": "onderdelen",
+    "statStreak": "Dagen op rij",
+    "statCorrect": "Goed beantwoord",
+    "statAnswered": "Vragen",
+    "statAnsweredSub": "totaal beantwoord",
+    "chapterProgress": "Voortgang per hoofdstuk",
+    "activityTitle": "Afgelopen 14 dagen",
+    "activityStart": "14 dagen geleden",
+    "activityEnd": "vandaag"
   },
   "HomeDemo": {
     "eyebrow": "Probeer direct",

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
 import { cn } from '@/components/ui'
@@ -21,6 +22,7 @@ export function DashboardGrid({
   totalAnswered?: number
   totalCorrect?: number
 }) {
+  const t = useTranslations('Dashboard')
   const allClusters = useMemo(
     () => chapterData.flatMap((ch) => ch.topics.flatMap((t) => t.clusters)),
     [chapterData],
@@ -39,10 +41,21 @@ export function DashboardGrid({
     <>
       {/* KPI row */}
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiHero pct={pctOverall} mastered={mastered} total={total} />
-        <KpiCard label="Streak" value={String(streakDays)} sub="dagen op rij" tone="warn" />
-        <KpiCard label="Accuracy" value={`${pctAccuracy}%`} tone="accent" />
-        <KpiCard label="Vragen" value={String(totalAnswered)} sub="totaal beantwoord" tone="neutral" />
+        <KpiHero
+          pct={pctOverall}
+          mastered={mastered}
+          total={total}
+          label={t('statMastered')}
+          sub={t('statMasteredSub')}
+        />
+        <KpiCard label={t('statStreak')} value={String(streakDays)} tone="warn" />
+        <KpiCard label={t('statCorrect')} value={`${pctAccuracy}%`} tone="accent" />
+        <KpiCard
+          label={t('statAnswered')}
+          value={String(totalAnswered)}
+          sub={t('statAnsweredSub')}
+          tone="neutral"
+        />
       </div>
 
       {/* 2-column layout */}
@@ -50,7 +63,7 @@ export function DashboardGrid({
         {/* Left: topic accordions */}
         <div className="lg:col-span-2">
           <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-muted">
-            Voortgang per hoofdstuk
+            {t('chapterProgress')}
           </p>
           <div className="space-y-2">
             {chapterData.map((chapter) => (
@@ -68,19 +81,29 @@ export function DashboardGrid({
   )
 }
 
-function KpiHero({ pct, mastered, total }: { pct: number; mastered: number; total: number }) {
+function KpiHero({
+  pct,
+  mastered,
+  total,
+  label,
+  sub,
+}: {
+  pct: number
+  mastered: number
+  total: number
+  label: string
+  sub: string
+}) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-3">
         <Ring pct={pct} size={60} stroke={7} />
         <div>
-          <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">Mastery</div>
+          <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">{label}</div>
           <div className="font-serif text-xl text-text">
             {mastered} <span className="text-text-muted">/ {total}</span>
           </div>
-          <div className="text-xs text-text-muted">
-            onderdelen gemasterd
-          </div>
+          <div className="text-xs text-text-muted">{sub}</div>
         </div>
       </div>
     </div>
@@ -110,6 +133,7 @@ function KpiCard({
 }
 
 function ActivityCard({ activity }: { activity: ActivityDay[] }) {
+  const t = useTranslations('Dashboard')
   const max = Math.max(1, ...activity.map((a) => a.count))
   const padded =
     activity.length >= 14
@@ -118,7 +142,7 @@ function ActivityCard({ activity }: { activity: ActivityDay[] }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">
-        Afgelopen 14 dagen
+        {t('activityTitle')}
       </div>
       <div className="mt-3 flex h-20 items-end gap-1">
         {padded.map((d, i) => (
@@ -135,8 +159,8 @@ function ActivityCard({ activity }: { activity: ActivityDay[] }) {
         ))}
       </div>
       <div className="mt-2 flex justify-between text-[10px] text-text-muted">
-        <span>14 dgn geleden</span>
-        <span>vandaag</span>
+        <span>{t('activityStart')}</span>
+        <span>{t('activityEnd')}</span>
       </div>
     </div>
   )
