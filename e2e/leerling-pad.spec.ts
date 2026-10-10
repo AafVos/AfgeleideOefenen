@@ -34,7 +34,7 @@ test('een goed antwoord wordt goedgekeurd @telefoon', async ({ page }) => {
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   // Geen vast getal: deze test draait twee keer (computer én telefoon) op
   // dezelfde oefenleerling, dus de reeks staat de tweede keer een hoger.
-  await expect(page.getByText(/Streak: \d\/3/)).toBeVisible()
+  await expect(page.getByText(/\d van de 3 goed op rij/)).toBeVisible()
 })
 
 test('een fout antwoord wordt afgekeurd', async ({ page }) => {
@@ -70,8 +70,8 @@ test('een goed antwoord in een andere notatie telt één keer', async ({ page })
   await geefAntwoord(page, '-1/x^2')
 
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
-  await expect(page.getByText('Streak: 1/3')).toBeVisible()
-  await expect(page.getByText('Streak: 2/3')).toBeHidden()
+  await expect(page.getByText('1 van de 3 goed op rij')).toBeVisible()
+  await expect(page.getByText('2 van de 3 goed op rij')).toBeHidden()
 })
 
 test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
@@ -91,7 +91,7 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
     await geefAntwoord(page, opgave.antwoord)
 
     if (i < opgaven.length - 1) {
-      await expect(page.getByText(`Streak: ${i + 1}/3`)).toBeVisible()
+      await expect(page.getByText(`${i + 1} van de 3 goed op rij`)).toBeVisible()
     } else {
       await expect(page.getByText('Geweldig, onderdeel afgerond!')).toBeVisible()
       // En de kaart belooft niets wat de site niet doet: er wordt niets
