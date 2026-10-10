@@ -264,7 +264,6 @@
     "correct": "Goed!",
     "masteredBody": "Je hebt 3 keer goed op rij. Dit onderdeel staat nu als afgerond op je voortgangspagina.",
     "streakBody": "{streak} van de 3 goed op rij. Nog {remaining} te gaan.",
-    "nextCluster": "Volgend onderdeel",
     "nextQuestion": "Volgende",
     "navigating": "Laden…",
     "retry": "Opnieuw",
