@@ -3,18 +3,13 @@
 import { Resend } from 'resend'
 
 import { SITE_CONFIG } from '@/config/site'
+import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
 import { createClient } from '@/lib/supabase/server'
 
 export type FeedbackState = {
   error: string | null
   sent: boolean
 }
-
-/**
- * Afzender: zet EMAIL_FROM zodra het eigen domein in Resend geverifieerd is;
- * tot die tijd valt dit terug op het domein van de site.
- */
-const EMAIL_FROM = process.env.EMAIL_FROM ?? `no-reply@${SITE_CONFIG.domain}`
 
 function escapeHtml(s: string): string {
   return s
@@ -43,11 +38,20 @@ export async function askAafAction(
   } = await supabase.auth.getUser()
   if (!user) return { error: 'Niet ingelogd.', sent: false }
 
+  const naar = meldAdres()
+  if (!naar) {
+    console.error('[ask-aaf] geen NOTIFY_EMAIL ingesteld; vraag niet verstuurd')
+    return {
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+      sent: false,
+    }
+  }
+
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
-      to: 'alhvos@gmail.com',
+      to: naar,
       replyTo: user.email ?? undefined,
       subject: `Vraag via Aaf op ${SITE_CONFIG.domain}`,
       html: `
@@ -93,11 +97,20 @@ export async function sendFeedbackAction(
   } = await supabase.auth.getUser()
   if (!user) return { error: 'Niet ingelogd.', sent: false }
 
+  const naar = meldAdres()
+  if (!naar) {
+    console.error('[feedback] geen NOTIFY_EMAIL ingesteld; bericht niet verstuurd')
+    return {
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+      sent: false,
+    }
+  }
+
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
-      to: process.env.NOTIFY_EMAIL!,
+      to: naar,
       replyTo: user.email ?? undefined,
       subject: `Feedback op ${SITE_CONFIG.domain}`,
       html: `
