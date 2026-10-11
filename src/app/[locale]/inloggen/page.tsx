@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 
 import { LoginForm } from './login-form'
 import { MailMelding, type Mail } from './mail-melding'
+import { VerlopenMailForm } from './verlopen-mail-form'
 
 /** Alleen de waarden die `/auth/callback` zet tellen mee. */
 function leesMail(waarde: string | undefined): Mail | null {
@@ -52,6 +53,11 @@ export default async function LoginPage({
       <p className="mt-2 text-sm text-text-muted">{t('subtitle')}</p>
 
       {bevestigingsmail && <MailMelding mail={bevestigingsmail} />}
+      {bevestigingsmail === 'verlopen' && (
+        <div className="mt-6">
+          <VerlopenMailForm />
+        </div>
+      )}
 
       <div className="mt-8 rounded-xl border border-border bg-surface p-6">
         <LoginForm callbackError={callbackError} />
