@@ -162,6 +162,37 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
 })
 
+test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon', async ({
+  page,
+}) => {
+  const email = await registreerEnBevestig(page)
+  await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+  await sluitRondleiding(page)
+
+  // Geen lege voortgangsrapportage, maar een knop naar een opgave. Die moet
+  // met een duim te raken zijn (zie AFG-114).
+  const beginnen = page.getByRole('link', { name: 'Begin met oefenen' })
+  await expect(beginnen).toBeVisible()
+  const vak = await beginnen.boundingBox()
+  expect(vak?.height ?? 0).toBeGreaterThanOrEqual(44)
+
+  // Eén klik, en er staat echt een opgave op het scherm: een invoerveld en
+  // de knop om hem na te laten kijken.
+  await beginnen.click()
+  await expect(page.getByPlaceholder('Bijv. 12x^2')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible()
+
+  // En met de terugknop van de browser staat hij weer op het dashboard, met
+  // het eerste hoofdstuk opengeklapt: de onderwerpen eronder zijn zichtbaar
+  // zonder dat hij eerst ergens op moet klikken.
+  await page.goBack()
+  await expect(
+    page.locator('li a[href*="/oefenen?chapter="]').first(),
+  ).toBeVisible()
+})
+
 test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   const email = uniekAdres()
 

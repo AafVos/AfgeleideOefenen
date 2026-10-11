@@ -209,6 +209,11 @@
     "statAnswered": "Vragen",
     "statAnsweredSub": "totaal beantwoord",
     "chapterProgress": "Voortgang per hoofdstuk",
+    "chapterOverview": "Wat je kunt oefenen",
+    "startTitle": "Je eerste opgave staat klaar",
+    "startBody": "Je hebt nog niets gemaakt, dus hier valt nog weinig te zien. Druk op de knop, dan staat er meteen een som op je scherm. Typ je antwoord en je krijgt direct te horen of het goed is.",
+    "startButton": "Begin met oefenen",
+    "startWhere": "Je begint bij {chapter} — {topic}. Je kunt hieronder ook zelf iets anders kiezen.",
     "activityTitle": "Afgelopen 14 dagen",
     "activityStart": "14 dagen geleden",
     "activityEnd": "vandaag"
