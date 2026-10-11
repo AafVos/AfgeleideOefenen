@@ -21,6 +21,8 @@ export type SignupState = {
   noticeKey: 'noticeConfirmEmail' | null
   /** Ingevulde velden terugzetten na een foutmelding */
   values?: { username: string; email: string }
+  /** Het e-mailadres waarmee geregistreerd is; nodig voor de knop "opnieuw sturen" */
+  email?: string
 }
 
 export async function signupAction(
@@ -66,7 +68,7 @@ export async function signupAction(
 
   // If email confirmation is enabled, the user isn't logged in yet.
   if (!data.session) {
-    return { errorKey: null, noticeKey: 'noticeConfirmEmail' }
+    return { errorKey: null, noticeKey: 'noticeConfirmEmail', email }
   }
 
   // Persist username on the auto-created profile row.

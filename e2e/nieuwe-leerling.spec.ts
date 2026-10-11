@@ -107,10 +107,16 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
     gebruikersnaam: GEBRUIKERSNAAM,
   })
 
-  // 2. De site zegt dat er een bevestigingsmail onderweg is — en stuurt je
-  //    niet stiekem al ingelogd door.
+  // 2. De site zegt dat er een bevestigingsmail onderweg is, met een knop om
+  //    de mail opnieuw te laten sturen, en een link naar de inlogpagina.
   await expect(
     page.getByText('Klik op de link in de bevestigingsmail'),
+  ).toBeVisible()
+  await expect(
+    page.getByText('Check ook je spammap'),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Stuur bevestigingsmail opnieuw' }),
   ).toBeVisible()
   await expect(page.getByRole('link', { name: 'Naar inlogpagina' })).toBeVisible()
 
