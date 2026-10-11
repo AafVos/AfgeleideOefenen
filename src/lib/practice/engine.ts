@@ -5,6 +5,14 @@ export const MASTERY_THRESHOLD = 3
 // =====================================================================
 // Normalisatie (sectie 5.3)
 // =====================================================================
+/**
+ * Eenheid achter een getal, zoals `2 seconden` of `2 meter`.
+ * Langste vorm eerst, anders blijft van `seconden` een losse `n` over.
+ * Alleen als er een cijfer direct voor staat, zodat `2x` geen eenheid verliest.
+ */
+const EENHEID_ACHTER_GETAL =
+  /(\d)(?:seconden|seconde|minuten|minuut|centimeters|centimeter|kilometers|kilometer|millimeters|millimeter|meters|meter|uren|uur|graden|procent|liters|liter)\.?$/
+
 export function normalizeAnswer(raw: string): string {
   return raw
     .toLowerCase()
@@ -18,6 +26,10 @@ export function normalizeAnswer(raw: string): string {
     .replace(/\+-/g, '-')
     .replace(/−/g, '-')
     .replace(/\u2212/g, '-')
+    // Verhaaltje: de leerling typt soms het voorvoegsel of de eenheid mee.
+    // Het opgeslagen antwoord blijft het kale getal. 0,33 blijft 0,33.
+    .replace(/^[txh]=/, '')
+    .replace(EENHEID_ACHTER_GETAL, '$1')
 }
 
 export function answersMatch(
