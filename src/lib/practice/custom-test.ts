@@ -11,6 +11,13 @@ import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
 
+/** Rij uit session_answers_new na join op user_sessions_new (AFG-118). */
+type SessionAnswerJoinRow = {
+  question_id: string
+  is_correct: boolean | null
+  user_sessions_new: unknown
+}
+
 export type QuestionSource = 'new' | 'all' | 'wrong'
 
 export type ConfigChapter = {
@@ -77,27 +84,22 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
     questionsByCluster.set(q.cluster_id, arr)
   }
 
-  // Load user's session IDs to derive answered/wrong question IDs
-  const { data: sessions } = await db
-    .from('user_sessions_new')
-    .select('id')
-    .eq('user_id', userId)
-  const sessionIds = (sessions ?? []).map((s) => s.id)
+  // Load user's answered/wrong question IDs via join, not via
+  // alle sessie-ids apart ophalen (die lijst groeit onbeperkt, AFG-118).
+  const { data: answers } = await db
+    .from('session_answers_new')
+    .select('question_id, is_correct, user_sessions_new!inner(user_id)')
+    .eq('user_sessions_new.user_id', userId)
+    .returns<SessionAnswerJoinRow[]>()
 
   const answeredIds = new Set<string>()
   const wrongIds = new Set<string>()
-  if (sessionIds.length > 0) {
-    const { data: answers } = await db
-      .from('session_answers_new')
-      .select('question_id, is_correct')
-      .in('session_id', sessionIds)
-    for (const a of answers ?? []) {
-      // Een opgevraagde uitwerking heeft een lege is_correct: de leerling
-      // heeft de opgave niet gemaakt, dus hij blijft "nieuw" (zie AFG-102).
-      if (a.is_correct !== true && a.is_correct !== false) continue
-      answeredIds.add(a.question_id)
-      if (a.is_correct === false) wrongIds.add(a.question_id)
-    }
+  for (const a of answers ?? []) {
+    // Een opgevraagde uitwerking heeft een lege is_correct: de leerling
+    // heeft de opgave niet gemaakt, dus hij blijft "nieuw" (zie AFG-102).
+    if (a.is_correct !== true && a.is_correct !== false) continue
+    answeredIds.add(a.question_id)
+    if (a.is_correct === false) wrongIds.add(a.question_id)
   }
 
   const enrichedClusters: ConfigCluster[] = (clusters ?? []).map((c) => {
@@ -150,26 +152,20 @@ export async function pickQuestionsForTest(
   if (pool.length === 0) return []
 
   if (source !== 'all') {
-    const { data: sessions } = await db
-      .from('user_sessions_new')
-      .select('id')
-      .eq('user_id', userId)
-    const sessionIds = (sessions ?? []).map((s) => s.id)
-
     const answeredIds = new Set<string>()
     const wrongIds = new Set<string>()
 
-    if (sessionIds.length > 0) {
-      const { data: answers } = await db
-        .from('session_answers_new')
-        .select('question_id, is_correct')
-        .in('session_id', sessionIds)
-      for (const a of answers ?? []) {
-        // Zie hierboven: een opgevraagde uitwerking telt niet als gemaakt.
-        if (a.is_correct !== true && a.is_correct !== false) continue
-        answeredIds.add(a.question_id)
-        if (a.is_correct === false) wrongIds.add(a.question_id)
-      }
+    const { data: answers } = await db
+      .from('session_answers_new')
+      .select('question_id, is_correct, user_sessions_new!inner(user_id)')
+      .eq('user_sessions_new.user_id', userId)
+      .returns<SessionAnswerJoinRow[]>()
+
+    for (const a of answers ?? []) {
+      // Zie hierboven: een opgevraagde uitwerking telt niet als gemaakt.
+      if (a.is_correct !== true && a.is_correct !== false) continue
+      answeredIds.add(a.question_id)
+      if (a.is_correct === false) wrongIds.add(a.question_id)
     }
 
     if (source === 'new') pool = pool.filter((id) => !answeredIds.has(id))
