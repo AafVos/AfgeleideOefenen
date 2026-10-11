@@ -1,0 +1,43 @@
+# Zichtbaar maken dat een pull request botst met main.
+#
+# controle.yml draait op de samengevoegde versie (refs/pull/<nummer>/merge).
+# Bij een conflict kan GitHub die versie niet maken, en dan start die
+# workflow helemaal niet: geen rode check, gewoon niets. Vercel wordt wel
+# groen, want die bouwt de tak zelf. In `gh pr checks` lijkt het dan alsof
+# de controle nog moet beginnen.
+#
+# Deze workflow draait op de tak zelf, bij een gewone push. Een conflict
+# maakt hem rood en noemt de bestanden. Achterlopen zonder conflict blijft
+# groen: de controle test de samengevoegde versie dan alsnog.
+name: Botst met main
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+# Snel achter elkaar duwen: alleen de laatste stand telt.
+concurrency:
+  group: botst-met-main-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  botst:
+    name: Botst met main
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Volledige geschiedenis, anders vindt merge-tree de gemeenschappelijke
+          # ouder niet en meldt hij ten onrechte een conflict.
+          fetch-depth: 0
+
+      - name: Main ophalen
+        run: git fetch --no-tags origin main
+
+      - name: Kijken of de tak botst
+        run: bash scripts/botst-met-main.sh origin/main
