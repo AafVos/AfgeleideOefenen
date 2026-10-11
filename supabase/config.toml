@@ -253,10 +253,22 @@ enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-# Eén seconde is voor de e2e-tests: die vragen vlak na elkaar een bevestigings-
-# en een resetmail aan. De echte site staat op een minuut — zie
-# [remotes.productie.auth.email] onderaan dit bestand.
-max_frequency = "1s"
+#
+# Op "1ns" gezet, dus in de praktijk geen wachttijd. De e2e-test logt binnen
+# een seconde na het registreren alweer in met een nog niet bevestigd adres,
+# wat Supabase al een nieuwe bevestigingsmail laat sturen; de klik op "Stuur
+# bevestigingsmail opnieuw" komt daar net achteraan. Met "1s" weigert Supabase
+# die tweede mail (zie AFG-116), en op de snelle GitHub-runner valt de test
+# daardoor willekeurig om.
+#
+# Niet "0s" gebruiken: GoTrue vult 0 stilletjes aan tot één minuut, en dan
+# weigert Supabase de tweede mail juist weer (met "you can only request this
+# after 58 seconds"). Een nanoseconde is de kleinste waarde die de limiet echt
+# uitzet.
+#
+# De echte site staat op een minuut — zie [remotes.productie.auth.email]
+# onderaan dit bestand.
+max_frequency = "1ns"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
@@ -519,9 +531,9 @@ email_sent = 100
 # e2e-controle klikt meteen op de link, dus die merkt het verschil niet.
 otp_expiry = 86400
 # Een minuut tussen twee mails naar hetzelfde adres (de standaard van Supabase).
-# Lokaal staat dit op één seconde voor de e2e-tests; zonder deze regel zou
-# `config push` die seconde meenemen naar de echte site, en kon iemand met de
-# knop "stuur opnieuw" een postbus volgooien.
+# Lokaal staat dit op een nanoseconde (dus zonder wachttijd) voor de e2e-tests;
+# zonder deze regel zou `config push` die waarde meenemen naar de echte site, en
+# kon iemand met de knop "stuur opnieuw" een postbus volgooien.
 max_frequency = "60s"
 
 # De SMTP-gegevens staan met opzet níét in dit blok: daar hoort een wachtwoord
