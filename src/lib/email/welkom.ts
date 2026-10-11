@@ -1,9 +1,8 @@
 import { SITE_CONFIG } from '@/config/site'
+import { EMAIL_FROM } from '@/lib/email/adressen'
 import { maakMailer } from '@/lib/email/mailer'
 import { SITE_URL } from '@/lib/seo'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-
-const EMAIL_FROM = process.env.EMAIL_FROM ?? `no-reply@${SITE_CONFIG.domain}`
 
 export type WelkomResultaat =
   | { verstuurd: true }
