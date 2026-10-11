@@ -20,6 +20,7 @@ type Question = {
   id: string
   cluster_id: string | null
   latex_body: string | null
+  answer_prefix: string | null
   difficulty: 1 | 2 | 3
   steps: Array<{ id: string; step_order: number; step_description: string }>
 }
