@@ -90,7 +90,7 @@ async function registreerEnBevestig(page: Page): Promise<string> {
 
   const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
   await page.goto(linkUitMail(mail, VERIFY_PAD))
-  await expect(page).toHaveURL(/\/nl\/inloggen/)
+  await expect(page).toHaveURL(/\/nl\/oefenen/)
 
   return email
 }
@@ -130,20 +130,14 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   expect(mail.html).toContain('Bevestig je e-mailadres')
   isNederlands(mail)
 
-  // 4. Op de link klikken: je komt op de inlogpagina met een nette melding,
-  //    niet op een foutpagina en niet met een Engelse systeemtekst.
+  // 4. Op de link klikken: de code wordt ingewisseld voor een sessie en je
+  //    landt direct ingelogd op de oefenpagina — geen inlogformulier.
   await page.goto(linkUitMail(mail, VERIFY_PAD))
-  await expect(page).toHaveURL(/\/nl\/inloggen/)
-  await expect(page.getByText('Je account is bevestigd!')).toBeVisible()
-  await expect(foutmelding(page)).toHaveCount(0)
+  await expect(page).toHaveURL(/\/nl\/oefenen/)
 
-  // 5. Inloggen met het verse account. Dit is ook het pad waarop de site de
-  //    welkomstmail stuurt.
-  await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
-
-  // Die welkomstmail gaat echt de deur uit: naar dit adres, van ons, in het
-  // Nederlands, en met de boodschap die erin hoort. Hij komt ná het antwoord
-  // aan de leerling, dus hier even op wachten.
+  // De welkomstmail gaat nu uit via `after()` in de callback, net als na
+  // inloggen. Hij komt ná het antwoord aan de leerling, dus hier even op
+  // wachten.
   const welkom = await wachtOpSitemail(email, { onderwerpBevat: 'Welkom' })
   expect(welkom.aan).toEqual([email])
   expect(welkom.onderwerp).toBe(ONDERWERP_WELKOM)
@@ -195,9 +189,10 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
 test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon', async ({
   page,
 }) => {
-  const email = await registreerEnBevestig(page)
-  await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+  await registreerEnBevestig(page)
+  // Net geregistreerd en bevestigd: de callback zet je meteen op /nl/oefenen.
   await sluitRondleiding(page)
+  await page.goto('/nl/dashboard')
 
   // Geen lege voortgangsrapportage, maar een knop naar een opgave. Die moet
   // met een duim te raken zijn (zie AFG-114).
@@ -233,9 +228,14 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
   const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
   const link = linkUitMail(mail, VERIFY_PAD)
 
-  // De eerste klik gaat goed: dat pad mag deze fix niet stukmaken.
+  // De eerste klik gaat goed: de code wordt ingewisseld en je landt direct
+  // ingelogd op de oefenpagina. Geen "bevestigd"-melding, geen inlogformulier.
   await page.goto(link)
-  await expect(page.getByText('Je account is bevestigd!')).toBeVisible()
+  await expect(page).toHaveURL(/\/nl\/oefenen/)
+
+  // Uitloggen voor de tweede klik, anders stuurt de nog actieve sessie je
+  // meteen door vanaf de inlogpagina en zie je de foutmelding niet.
+  await logUit(page, email)
 
   // Dezelfde link een tweede keer: hij is op. Dan hoort er géén groene
   // "bevestigd" te staan, maar een Nederlandse melding die zegt wat de
@@ -309,6 +309,10 @@ test('registreren met een adres dat al bestaat maakt geen tweede account', async
   page,
 }) => {
   const email = await registreerEnBevestig(page)
+
+  // Uitloggen: de registreren-pagina stuurt ingelogde gebruikers door naar
+  // het dashboard, en daar is het registratieformulier niet te vinden.
+  await logUit(page, email)
 
   await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
 
@@ -420,9 +424,10 @@ test('de webhook op e-mailbevestiging stuurt de welkomstmail, maar alleen met he
   page,
   request,
 }) => {
-  // Een bevestigd account dat nog niet ingelogd heeft, want bij het inloggen
-  // zou de welkomstmail al uitgaan.
+  // De callback heeft tijdens het bevestigen al een welkomstmail gestuurd
+  // via `after()`, net als bij inloggen.
   const email = await registreerEnBevestig(page)
+  expect(await sitemails(email)).toHaveLength(1)
   const { data } = await testDatabase().auth.admin.listUsers({ perPage: 100 })
   const leerling = data.users.find((u) => u.email === email)
   expect(leerling, 'het verse account staat in de database').toBeTruthy()
@@ -435,21 +440,23 @@ test('de webhook op e-mailbevestiging stuurt de welkomstmail, maar alleen met he
     old_record: { email_confirmed_at: null },
   }
 
-  // Met een verkeerd geheim komt er niets door: geen mail, en een 401.
+  // Met een verkeerd geheim komt er niets door: geen extra mail, en een 401.
   const afgewezen = await request.post('/api/webhooks/welkom', {
     headers: { 'x-webhook-secret': 'niet-het-geheim' },
     data: bericht,
   })
   expect(afgewezen.status()).toBe(401)
-  expect(await sitemails(email)).toHaveLength(0)
+  // De mail die de callback al stuurde is er nog steeds; er is geen tweede bij.
+  expect(await sitemails(email)).toHaveLength(1)
 
-  // Met het juiste geheim wél, en precies één keer.
+  // Met het juiste geheim wél, maar de welkomstmail is al eerder gegaan
+  // (de callback was sneller dan de webhook). De functie is idempotent.
   const toegelaten = await request.post('/api/webhooks/welkom', {
     headers: { 'x-webhook-secret': webhookGeheim() },
     data: bericht,
   })
   expect(toegelaten.status()).toBe(200)
-  expect(await toegelaten.json()).toMatchObject({ ok: true, verstuurd: true })
+  expect(await toegelaten.json()).toMatchObject({ ok: true, verstuurd: false, reden: 'al-verstuurd' })
 
   const welkom = await wachtOpSitemail(email, { onderwerpBevat: 'Welkom' })
   expect(welkom.aan).toEqual([email])

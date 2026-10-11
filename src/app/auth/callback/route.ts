@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { after } from 'next/server'
 
+import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
@@ -14,12 +16,13 @@ export async function GET(request: NextRequest) {
       : `/nl${nextParam}`  // no locale prefix → prepend default locale
     : '/nl/dashboard'      // no next param → default
 
-  // Bestemming is de inlogpagina (bv. na e-mailbevestiging): geen sessie
-  // aanmaken, zodat de gebruiker daar echt zelf kan inloggen. Het account is
-  // op dat moment al bevestigd door Supabase's verify-endpoint.
+  // E-mailbevestiging: de code inwisselen voor een sessie, zodat de leerling
+  // direct ingelogd is op de oefenpagina — net als bij aanmelden zonder
+  // bevestigingsmail. Oude mails met `next=/nl/inloggen` blijven werken: ook
+  // dan wordt de code ingewisseld; de inlogpagina stuurt een ingelogde
+  // leerling alsnog door.
   //
-  // Of het ook gelukt is, zegt Supabase op twee verschillende manieren, en dat
-  // hangt af van de mail waar de link in stond:
+  // Of het ook gelukt is, zegt Supabase op twee verschillende manieren:
   //
   //   * De mail van het registreren is met een code-uitdaging aangevraagd.
   //     Gelukt geeft `?code=…`, mislukt geeft `?error=…&error_code=otp_expired`.
@@ -29,9 +32,46 @@ export async function GET(request: NextRequest) {
   //     browser nooit naar de server. Daar kan hier dus niets over gezegd
   //     worden: dat vangt de inlogpagina zelf op (`mail=onbekend`).
   if (/^\/nl\/inloggen(\/|$|\?)/.test(next)) {
+    if (searchParams.has('error') || searchParams.has('error_code')) {
+      const url = new URL(next, origin)
+      url.searchParams.set('mail', 'verlopen')
+      return NextResponse.redirect(url)
+    }
+
+    if (code) {
+      const supabase = await createClient()
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+      if (error) {
+        const url = new URL(next, origin)
+        url.searchParams.set('mail', 'verlopen')
+        return NextResponse.redirect(url)
+      }
+
+      // Ingelogd op de oefenpagina na bevestigen.
+      // Kopieer de gebruikersnaam uit user_metadata naar profiles, net als
+      // de login-action doet -- anders staat er voor altijd een e-mailadres
+      // in de bovenbalk in plaats van de naam die de leerling koos.
+      if (data.user) {
+        const gekozenNaam = data.user.user_metadata?.username
+        if (typeof gekozenNaam === 'string' && gekozenNaam.trim() !== '') {
+          await supabase
+            .from('profiles')
+            .update({ username: gekozenNaam.trim() })
+            .eq('id', data.user.id)
+            .is('username', null)
+        }
+
+        after(async () => {
+          await stuurWelkomstmail(data.user.id)
+        })
+      }
+      return NextResponse.redirect(`${origin}/nl/oefenen`)
+    }
+
+    // Geen code en geen fout: de `#`-staart met het antwoord is niet bij de
+    // server aangekomen. De inlogpagina vangt dat zelf op.
     const url = new URL(next, origin)
-    const mislukt = searchParams.has('error') || searchParams.has('error_code')
-    url.searchParams.set('mail', mislukt ? 'verlopen' : code ? 'bevestigd' : 'onbekend')
+    url.searchParams.set('mail', 'onbekend')
     return NextResponse.redirect(url)
   }
 
