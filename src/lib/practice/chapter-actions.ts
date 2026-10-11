@@ -249,29 +249,6 @@ export async function skipStudyQuestionAction(
 }
 
 // =====================================================================
-// Markeer welke stappen fout gingen
-// =====================================================================
-export async function resolveWithStepsNewAction(
-  answerId: string,
-  wrongStepIds: string[],
-): Promise<void> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error('Niet ingelogd.')
-
-  if (wrongStepIds.length > 0) {
-    const rows = wrongStepIds.map((stepId) => ({
-      answer_id: answerId,
-      step_id: stepId,
-    }))
-    const { error } = await supabase.from('step_mistakes_new').insert(rows)
-    if (error) throw new Error(error.message)
-  }
-}
-
-// =====================================================================
 // Vraag flaggen
 // =====================================================================
 export async function flagQuestionNewAction(
