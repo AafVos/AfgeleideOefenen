@@ -58,6 +58,39 @@ describe('answersMatch', () => {
     expect(answersMatch('2x', '3x')).toBe(false)
     expect(answersMatch('', '3x')).toBe(false)
   })
+
+  it('rekent t =, x = en h = hetzelfde als het kale getal', () => {
+    expect(answersMatch('2', '2')).toBe(true)
+    expect(answersMatch('t = 2', '2')).toBe(true)
+    expect(answersMatch('t=2', '2')).toBe(true)
+    expect(answersMatch('x = 2', '2')).toBe(true)
+    expect(answersMatch('h = 2', '2')).toBe(true)
+    expect(answersMatch('T = 2', '2')).toBe(true)
+  })
+
+  it('rekent een eenheid achter het getal hetzelfde als het kale getal', () => {
+    expect(answersMatch('2 seconden', '2')).toBe(true)
+    expect(answersMatch('2 meter', '2')).toBe(true)
+    expect(answersMatch('t = 2 seconden', '2')).toBe(true)
+  })
+
+  it('rekent een fout getal fout, ook met voorvoegsel of eenheid', () => {
+    expect(answersMatch('3', '2')).toBe(false)
+    expect(answersMatch('t = 3', '2')).toBe(false)
+    expect(answersMatch('3 seconden', '2')).toBe(false)
+    expect(answersMatch('h = 4', '2')).toBe(false)
+  })
+
+  it('rekent 0,33 niet gelijk aan 1/3', () => {
+    expect(answersMatch('0,33', '1/3')).toBe(false)
+    expect(answersMatch('0.33', '1/3')).toBe(false)
+  })
+
+  it('haalt geen langere formule of losse letter weg', () => {
+    expect(answersMatch("f'(x) = 2", '2')).toBe(false)
+    expect(answersMatch('2x', '2')).toBe(false)
+    expect(answersMatch('2m', '2')).toBe(false)
+  })
 })
 
 // =====================================================================
