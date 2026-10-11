@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server'
 
 import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
 import { createClient } from '@/lib/supabase/server'
+import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
 
 /** Sleutels uit de `Register`-teksten; het formulier vertaalt ze. */
 export type SignupErrorKey =
@@ -66,13 +67,15 @@ export async function signupAction(
   }
 
   // If email confirmation is enabled, the user isn't logged in yet.
-  if (!data.session) {
-    return { errorKey: null, noticeKey: 'noticeConfirmEmail', email }
+  // Toch proberen: met RLS aan werkt dit niet, maar de callback en
+  // login-actie doen later een nieuwe poging. Foutloos als het nu al lukt
+  // (bijvoorbeeld als bevestiging uit staat).
+  if (data.user) {
+    await zetGekozenGebruikersnaam(supabase, data.user)
   }
 
-  // Persist username on the auto-created profile row.
-  if (username && data.user) {
-    await supabase.from('profiles').update({ username }).eq('id', data.user.id)
+  if (!data.session) {
+    return { errorKey: null, noticeKey: 'noticeConfirmEmail', email }
   }
 
   revalidatePath('/', 'layout')

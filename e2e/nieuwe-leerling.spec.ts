@@ -31,6 +31,12 @@ import {
 
 const GEBRUIKERSNAAM = 'Sanne'
 
+/** Een naam die nog nooit gebruikt is, zodat de test niet kan slagen op
+ *  een eerder achtergebleven account. */
+function uniekeNaam(): string {
+  return `${GEBRUIKERSNAAM}-${Date.now()}`
+}
+
 /** De onderwerpregels uit `supabase/config.toml`. */
 const ONDERWERP_BEVESTIGEN = 'Bevestig je e-mailadres'
 const ONDERWERP_RESET = 'Nieuw wachtwoord'
@@ -83,9 +89,13 @@ function isNederlands(mail: Mail) {
  * Registreren én bevestigen in één keer, voor de tests die een werkend
  * account nodig hebben maar niet over het registreren zelf gaan.
  */
-async function registreerEnBevestig(page: Page): Promise<string> {
+async function registreerEnBevestig(page: Page, opts?: { gebruikersnaam?: string }): Promise<string> {
   const email = uniekAdres()
-  await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+  await vulRegistratieIn(page, {
+    email,
+    wachtwoord: WEGWERP_WACHTWOORD,
+    gebruikersnaam: opts?.gebruikersnaam,
+  })
   await expect(melding(page)).toBeVisible()
 
   const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
@@ -99,12 +109,13 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   page,
 }) => {
   const email = uniekAdres()
+  const naam = uniekeNaam()
 
   // 1. Het formulier invullen en versturen.
   await vulRegistratieIn(page, {
     email,
     wachtwoord: WEGWERP_WACHTWOORD,
-    gebruikersnaam: GEBRUIKERSNAAM,
+    gebruikersnaam: naam,
   })
 
   // 2. De site zegt dat er een bevestigingsmail onderweg is, met een knop om
@@ -153,7 +164,7 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   // e-mailadres. Op telefoonformaat zit die naam in het menu.
   if ((page.viewportSize()?.width ?? 0) >= 768) {
     await expect(
-      page.getByRole('button', { name: GEBRUIKERSNAAM, exact: true }),
+      page.getByRole('button', { name: naam, exact: true }),
     ).toBeVisible()
   }
 
@@ -168,7 +179,7 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   }
 
   // 7. Uitloggen en opnieuw inloggen: het account blijft gewoon werken.
-  await logUit(page, GEBRUIKERSNAAM)
+  await logUit(page, naam)
   await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
   await sluitRondleiding(page)
 
