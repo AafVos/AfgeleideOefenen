@@ -3,11 +3,24 @@
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
+import { Link } from '@/i18n/navigation'
 import { cn } from '@/components/ui'
 
 import { ChapterBlock, type ChapterData } from './topic-block'
 
 export type ActivityDay = { date: string; count: number }
+
+/**
+ * De eerste opgave van een leerling die nog niets gemaakt heeft. Is dit
+ * gevuld, dan staat er een startblok bovenaan in plaats van vier nullen en
+ * een leeg staafdiagram (zie AFG-114).
+ */
+export type StartData = {
+  href: string
+  chapterId: string
+  chapterTitle: string
+  topicTitle: string
+}
 
 export function DashboardGrid({
   chapterData,
@@ -15,12 +28,14 @@ export function DashboardGrid({
   activity = [],
   totalAnswered = 0,
   totalCorrect = 0,
+  start = null,
 }: {
   chapterData: ChapterData[]
   streakDays?: number
   activity?: ActivityDay[]
   totalAnswered?: number
   totalCorrect?: number
+  start?: StartData | null
 }) {
   const t = useTranslations('Dashboard')
   const allClusters = useMemo(
@@ -39,45 +54,82 @@ export function DashboardGrid({
 
   return (
     <>
-      {/* KPI row */}
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiHero
-          pct={pctOverall}
-          mastered={mastered}
-          total={total}
-          label={t('statMastered')}
-          sub={t('statMasteredSub')}
-        />
-        <KpiCard label={t('statStreak')} value={String(streakDays)} tone="warn" />
-        <KpiCard label={t('statCorrect')} value={`${pctAccuracy}%`} tone="accent" />
-        <KpiCard
-          label={t('statAnswered')}
-          value={String(totalAnswered)}
-          sub={t('statAnsweredSub')}
-          tone="neutral"
-        />
-      </div>
+      {start ? (
+        <StartCard start={start} />
+      ) : (
+        /* KPI row */
+        <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <KpiHero
+            pct={pctOverall}
+            mastered={mastered}
+            total={total}
+            label={t('statMastered')}
+            sub={t('statMasteredSub')}
+          />
+          <KpiCard label={t('statStreak')} value={String(streakDays)} tone="warn" />
+          <KpiCard label={t('statCorrect')} value={`${pctAccuracy}%`} tone="accent" />
+          <KpiCard
+            label={t('statAnswered')}
+            value={String(totalAnswered)}
+            sub={t('statAnsweredSub')}
+            tone="neutral"
+          />
+        </div>
+      )}
 
       {/* 2-column layout */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className={cn('grid gap-4', !start && 'lg:grid-cols-3')}>
         {/* Left: topic accordions */}
-        <div className="lg:col-span-2">
+        <div className={cn(!start && 'lg:col-span-2')}>
           <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-muted">
-            {t('chapterProgress')}
+            {start ? t('chapterOverview') : t('chapterProgress')}
           </p>
           <div className="space-y-2">
             {chapterData.map((chapter) => (
-              <ChapterBlock key={chapter.id} chapter={chapter} />
+              <ChapterBlock
+                key={chapter.id}
+                chapter={chapter}
+                defaultOpen={chapter.id === start?.chapterId}
+              />
             ))}
           </div>
         </div>
 
         {/* Right: activity */}
-        <div className="space-y-3">
-          <ActivityCard activity={activity} />
-        </div>
+        {!start && (
+          <div className="space-y-3">
+            <ActivityCard activity={activity} />
+          </div>
+        )}
       </div>
     </>
+  )
+}
+
+/**
+ * Het startblok voor een kersverse leerling: één knop die meteen een opgave
+ * op het scherm zet. Zonder dit blok moest hij eerst zelf een hoofdstuk
+ * openklappen en een onderwerp aanklikken, en dat deed bijna niemand.
+ */
+function StartCard({ start }: { start: StartData }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="mb-5 rounded-xl border border-accent/30 bg-accent-light p-5">
+      <p className="font-serif text-xl text-text sm:text-2xl">{t('startTitle')}</p>
+      <p className="mt-1 max-w-prose text-sm text-text-muted">{t('startBody')}</p>
+      <Link
+        href={start.href}
+        className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-lg bg-accent px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-accent/90"
+      >
+        {t('startButton')}
+      </Link>
+      <p className="mt-3 text-xs text-text-muted">
+        {t('startWhere', {
+          chapter: start.chapterTitle,
+          topic: start.topicTitle,
+        })}
+      </p>
+    </div>
   )
 }
 

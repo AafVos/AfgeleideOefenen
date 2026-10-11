@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 
 import { berekenReeks, dagSleutel, laatsteDagen, telOefendagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
+import { eersteOnderdeel, eersteOpgaveId, opgaveLink } from './start'
 import type { ChapterData, TopicData } from './topic-block'
 
 export async function generateMetadata({
@@ -169,6 +170,29 @@ export default async function DashboardPage() {
     }))
     .filter((ch) => ch.topics.length > 0)
 
+  // Een leerling die nog nooit iets gemaakt heeft, krijgt geen lege
+  // voortgangsrapportage maar één knop die meteen zijn eerste opgave opent
+  // (zie AFG-114). "Ik weet het niet" telt niet mee in `totalAnswered`, maar
+  // zet wel een voortgangsregel neer: wie die al heeft, is dus begonnen.
+  const nogNietsGedaan =
+    totalAnswered === 0 && (progressRows?.length ?? 0) === 0
+  const onderdeel = nogNietsGedaan ? eersteOnderdeel(chapterData) : null
+  const eersteVraagId = onderdeel
+    ? await eersteOpgaveId(supabase, onderdeel.clusterId)
+    : null
+
+  // Staat er geen enkele opgave klaar, dan beloven we er ook geen: dan krijgt
+  // de leerling gewoon het normale dashboard te zien.
+  const start =
+    onderdeel && eersteVraagId
+      ? {
+          href: opgaveLink(onderdeel, eersteVraagId),
+          chapterId: onderdeel.chapterId,
+          chapterTitle: onderdeel.chapterTitle,
+          topicTitle: onderdeel.topicTitle,
+        }
+      : null
+
   return (
     <div className="mx-auto max-w-[1400px] px-3 py-6">
       <div className="mb-2">
@@ -185,6 +209,7 @@ export default async function DashboardPage() {
         activity={activity}
         totalAnswered={totalAnswered}
         totalCorrect={totalCorrect}
+        start={start}
       />
     </div>
   )
