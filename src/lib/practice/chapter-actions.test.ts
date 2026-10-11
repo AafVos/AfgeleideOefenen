@@ -21,6 +21,7 @@ type AnswerRow = {
   user_answer: string | null
   is_correct: boolean | null
   hints_used: number
+  time_spent_sec: number | null
 }
 
 type QueryResult = { data: unknown; error: null }
@@ -69,6 +70,7 @@ function from(table: string) {
           user_answer: (values.user_answer ?? null) as string | null,
           is_correct: (values.is_correct ?? null) as boolean | null,
           hints_used: (values.hints_used ?? 0) as number,
+          time_spent_sec: (values.time_spent_sec ?? null) as number | null,
         }
         answers.push(row)
         return { data: { id: row.id }, error: null }
@@ -176,6 +178,18 @@ describe('submitStudyAnswerAction', () => {
     expect(progress.total_correct).toBe(2)
   })
 
+  it('slaat op hoe lang de leerling over de opgave deed', async () => {
+    await submitStudyAnswerAction('q1', '6x', 42.4)
+
+    expect(answers[0].time_spent_sec).toBe(42)
+  })
+
+  it('laat de tijd leeg als de browser niets meestuurt', async () => {
+    await submitStudyAnswerAction('q1', '6x')
+
+    expect(answers[0].time_spent_sec).toBeNull()
+  })
+
   it('laat "beheerst" staan bij een misser tijdens het herhalen', async () => {
     progress = { ...freshProgress(3, 3), status: 'mastered', mastered_at: '2026-01-01' }
 
@@ -208,6 +222,12 @@ describe('skipStudyQuestionAction', () => {
       is_correct: null,
       hints_used: 1,
     })
+  })
+
+  it('slaat ook bij "Ik weet het niet" op hoe lang de opgave op het scherm stond', async () => {
+    await skipStudyQuestionAction('q1', 17.2)
+
+    expect(answers[0].time_spent_sec).toBe(17)
   })
 
   it('laat het percentage goed met rust en zet de reeks terug op 0', async () => {

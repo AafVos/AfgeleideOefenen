@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Button, ErrorBanner } from '@/components/ui'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
+import { useTimeSpent } from '@/lib/practice/use-time-spent'
 
 import { MathKeyboard } from '@/components/math-keyboard'
 import {
@@ -52,6 +53,7 @@ export function TestRunnerCard({
   const [answer, setAnswer] = useState('')
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const { secondsSpent } = useTimeSpent()
 
   // Bij een nieuwe vraag begint deze kaart leeg: de pagina geeft hem een key
   // met de vraag-id mee, dus React zet alle invoer hierboven zelf terug.
@@ -102,11 +104,13 @@ export function TestRunnerCard({
     if (!answer.trim() || state.phase !== 'input') return
 
     setSubmitting(true)
+    const seconds = secondsSpent()
     startTransition(async () => {
       const result: CustomTestAnswerResult = await submitCustomTestAnswerAction(
         sessionId,
         question.id,
         answer,
+        seconds,
       )
       setSubmitting(false)
       if (result.kind === 'error') {

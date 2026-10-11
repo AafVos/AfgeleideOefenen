@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
 import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
-import { answersMatch } from '@/lib/practice/engine'
+import { answersMatch, cleanTimeSpentSec } from '@/lib/practice/engine'
 import { pickQuestionsForTest, type QuestionSource } from '@/lib/practice/custom-test'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -156,7 +156,7 @@ export async function submitCustomTestAnswerAction(
       question_id: question.id,
       user_answer: userAnswer,
       is_correct: isCorrect,
-      time_spent_sec: timeSpentSec ?? null,
+      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
     })
     .select('id')
     .single()
