@@ -109,7 +109,6 @@ const env = {
   NEXT_PUBLIC_SUPABASE_URL: supabase.API_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: supabase.ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: supabase.SERVICE_ROLE_KEY,
-  NEXT_PUBLIC_SITE: 'afgeleiden',
   // Geen echte Gemini in de tests.
   AI_CHECK_MODE: 'stub',
   // En geen echte mail: Resend kijkt zelf naar RESEND_BASE_URL, dus hiermee
