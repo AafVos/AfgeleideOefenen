@@ -19,6 +19,27 @@ bij elke pull request (`.github/workflows/controle.yml`). Daar start Supabase be
 overgeslagen als een pull request alleen tekst verandert. Lokaal start
 `npx supabase start` gewoon alles, inclusief Studio.
 
+## Een keer per nacht: wijkt het dashboard af?
+
+`.github/workflows/dashboard-vergelijken.yml` draait elke ochtend (en met de
+hand vanaf het tabblad Actions) `supabase config diff` tegen het echte project.
+Zo valt het op als iemand iets in het Supabase-dashboard heeft veranderd zonder
+`supabase/config.toml` bij te werken, of andersom.
+
+* **Alleen lezen.** Deze controle doet nooit `supabase config push`; dat project
+  draagt de echte accounts en voortgang van leerlingen.
+* **Bij verschil komt er een issue in de repo**, geen rode controle. Een
+  waarschuwing in een logboek leest niemand, en een pull request van iemand
+  anders hoort niet te blijven hangen door iets wat die persoon niet
+  veroorzaakt heeft. Is het verschil weg, dan sluit de controle de melding
+  zelf.
+* Hij heeft het geheim `SUPABASE_ACCESS_TOKEN` nodig (GitHub → Settings →
+  Secrets). Staat dat er niet, dan slaat de controle zichzelf over met uitleg.
+* Deze repo is openbaar, en het logboek van de run dus ook. E-mailadressen en
+  wachtwoorden worden uit de uitvoer gehaald voordat er iets wordt
+  opgeschreven; het hele verschil zie je met `npx supabase config diff` op je
+  eigen computer.
+
 ## De e2e-tests: een echte browser door de site
 
 In `e2e/` staan Playwright-tests die de weg van een leerling nalopen:
