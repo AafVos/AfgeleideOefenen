@@ -163,12 +163,13 @@ export async function loadQuestionNew(
   id: string
   cluster_id: string | null
   latex_body: string | null
+  answer_prefix: string | null
   difficulty: 1 | 2 | 3
   steps: Array<{ id: string; step_order: number; step_description: string }>
 } | null> {
   const { data: q, error: qErr } = await db
     .from('questions_new')
-    .select('id, cluster_id, difficulty, latex_body')
+    .select('id, cluster_id, difficulty, latex_body, answer_prefix')
     .eq('id', questionId)
     .maybeSingle()
   if (qErr) throw new Error(qErr.message)
@@ -184,6 +185,7 @@ export async function loadQuestionNew(
     id: q.id,
     cluster_id: q.cluster_id ?? null,
     latex_body: q.latex_body,
+    answer_prefix: q.answer_prefix,
     difficulty: clampDiff(q.difficulty),
     steps: (steps ?? []) as Array<{
       id: string
