@@ -19,6 +19,26 @@ bij elke pull request (`.github/workflows/controle.yml`). Daar start Supabase be
 overgeslagen als een pull request alleen tekst verandert. Lokaal start
 `npx supabase start` gewoon alles, inclusief Studio.
 
+Botst een pull request met `main`, dan maakt GitHub de samengevoegde versie
+niet aan en start die controle helemaal niet. Niet rood en niet "in
+afwachting": in `gh pr checks` blijven alleen de Vercel-regels over. De check
+"Botst met main" (`.github/workflows/botst-met-main.yml`) draait op de tak
+zelf en wordt dan rood, met de bestanden die botsen. Voeg `main` samen of
+rebase, en duw opnieuw — daarna start de controle vanzelf.
+
+Ontbreekt de controle-run (omdat `main` na je laatste push is verschoven, of
+omdat de rode check hierboven er ook niet is), kijk dan eerst of de pull
+request botst:
+
+```bash
+gh pr view <nummer> --json mergeable,mergeStateStatus
+```
+
+Staat `mergeable` op `false`, of `mergeStateStatus` op `dirty`, dan is dat de
+reden. Zelfde stap: `main` erbij halen en opnieuw duwen. Achterlopen zonder
+conflict is geen probleem: de controle draait dan gewoon op de samengevoegde
+versie.
+
 ## Een keer per nacht: wijkt het dashboard af?
 
 `.github/workflows/dashboard-vergelijken.yml` draait elke ochtend (en met de
