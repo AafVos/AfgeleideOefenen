@@ -108,10 +108,9 @@ describe('welkomstmail', () => {
     expect(updateUserById.mock.calls.at(-1)?.[1]?.user_metadata?.username).toBe('Sanne')
   })
 
-  // De welkomstmail gaat via Resend en niet via Supabase, dus hij komt in de
-  // e2e-tests nooit in de testpostbus terecht. Wat erin staat, controleren we
-  // daarom hier: Nederlands, de merknaam van deze site, en de link waar de
-  // leerling op moet klikken.
+  // Dát de mail uitgaat, loopt `e2e/nieuwe-leerling.spec.ts` na met een neppe
+  // Resend. Wat er precies in staat, controleren we hier: Nederlands, de
+  // merknaam van deze site, en de link waar de leerling op moet klikken.
   it('stuurt een Nederlandse mail van AfgeleideOefenen', async () => {
     await stuurWelkomstmail(USER_ID)
 
