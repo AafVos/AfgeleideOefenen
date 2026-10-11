@@ -5,6 +5,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 import {
   answersMatch,
+  cleanTimeSpentSec,
   progressAfterCorrect,
   progressAfterIncorrect,
 } from './engine'
@@ -29,6 +30,47 @@ export type SkipResult =
       latexCorrectAnswer: string | null
     }
   | { kind: 'error'; message: string }
+
+// =====================================================================
+// De opgave staat op het scherm
+// =====================================================================
+
+/**
+ * De leerling heeft deze opgave geopend. Zorg dat er een sessie is, ook als
+ * er nooit een antwoord komt.
+ *
+ * Tot nu toe ontstond een sessie pas bij het eerste antwoord. Een leerling
+ * die een opgave opende, ernaar keek en wegklikte liet dus geen enkel spoor
+ * na, terwijl juist dáár wordt afgehaakt (zie AFG-115).
+ *
+ * Boekhouding mag het oefenen niet in de weg zitten: gaat er iets mis, dan
+ * merkt de leerling daar niets van en blijft de opgave gewoon werken.
+ */
+export async function startStudySessionAction(questionId: string): Promise<void> {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: question } = await supabase
+      .from('questions_new')
+      .select('topic_id, cluster_id')
+      .eq('id', questionId)
+      .maybeSingle()
+    if (!question) return
+
+    await getOrCreateSession(
+      supabase,
+      user.id,
+      question.topic_id,
+      question.cluster_id,
+    )
+  } catch (e) {
+    console.error('[start-study-session]', e)
+  }
+}
 
 export async function submitStudyAnswerAction(
   questionId: string,
@@ -65,7 +107,7 @@ export async function submitStudyAnswerAction(
       question_id: question.id,
       user_answer: userAnswer,
       is_correct: isCorrect,
-      time_spent_sec: timeSpentSec ?? null,
+      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
     })
     .select('id')
     .single()
@@ -190,7 +232,7 @@ export async function skipStudyQuestionAction(
       user_answer: null,
       is_correct: null,
       hints_used: 1,
-      time_spent_sec: timeSpentSec ?? null,
+      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
     })
 
   if (answerError) {
@@ -227,23 +269,6 @@ export async function resolveWithStepsNewAction(
     const { error } = await supabase.from('step_mistakes_new').insert(rows)
     if (error) throw new Error(error.message)
   }
-}
-
-// =====================================================================
-// Markeer fout als slordigheidsfoutje
-// =====================================================================
-export async function markCarelessNewAction(answerId: string): Promise<void> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error('Niet ingelogd.')
-
-  const { error } = await supabase
-    .from('session_answers_new')
-    .update({ is_careless: true })
-    .eq('id', answerId)
-  if (error) throw new Error(error.message)
 }
 
 // =====================================================================
