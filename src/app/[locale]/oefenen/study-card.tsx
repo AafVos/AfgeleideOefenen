@@ -10,11 +10,13 @@ import { Math as TeX, RichMath } from '@/components/math'
 import { Button, ErrorBanner } from '@/components/ui'
 import {
   skipStudyQuestionAction,
+  startStudySessionAction,
   submitStudyAnswerAction,
   type SkipResult,
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
+import { useTimeSpent } from '@/lib/practice/use-time-spent'
 import type { UitlegVideo } from '@/lib/videos'
 
 import { MathKeyboard } from '@/components/math-keyboard'
@@ -92,7 +94,14 @@ export function StudyCard({
   const [revealed, setRevealed] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const feedbackRef = useRef<HTMLDivElement | null>(null)
+  const { secondsSpent, restart: restartTimer } = useTimeSpent()
   // Reset bij vraagwissel gebeurt via key={question.id} op de call site.
+
+  // De opgave staat op het scherm: vanaf nu is er een oefensessie, ook als de
+  // leerling niets invult (zie AFG-115).
+  useEffect(() => {
+    void startStudySessionAction(question.id)
+  }, [question.id])
 
   // Stappenplan + knoppen automatisch in beeld brengen na het onthullen
   useEffect(() => {
@@ -115,6 +124,9 @@ export function StudyCard({
     setAnswer('')
     setRevealed(false)
     setState({ phase: 'input', error: null })
+    // Nieuwe poging, nieuwe tijdmeting: anders telt het lezen van de
+    // uitwerking mee bij het volgende antwoord.
+    restartTimer()
     requestAnimationFrame(() => inputRef.current?.focus())
   }
 
@@ -159,8 +171,13 @@ export function StudyCard({
 
     setSubmitting(true)
     const submitted = answer
+    const seconds = secondsSpent()
     startTransition(async () => {
-      const result: StudyResult = await submitStudyAnswerAction(question.id, submitted)
+      const result: StudyResult = await submitStudyAnswerAction(
+        question.id,
+        submitted,
+        seconds,
+      )
       setSubmitting(false)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })
@@ -192,8 +209,9 @@ export function StudyCard({
     if (state.phase !== 'input' || submitting) return
 
     setSubmitting(true)
+    const seconds = secondsSpent()
     startTransition(async () => {
-      const result: SkipResult = await skipStudyQuestionAction(question.id)
+      const result: SkipResult = await skipStudyQuestionAction(question.id, seconds)
       setSubmitting(false)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })

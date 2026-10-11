@@ -71,8 +71,7 @@ type ProgressAfterIncorrect = {
  * herhalen mag "beheerst" niet afpakken.
  *
  * "Meteen" betekent: op het moment dat het antwoord echt fout blijkt, dus ná
- * de AI-controle en los van de vraag of de leerling de stapkiezer of het
- * slordigheidsfoutje nog aanraakt.
+ * de AI-controle.
  */
 export function progressAfterIncorrect(
   currentStatus: ProgressStatus,
@@ -82,4 +81,24 @@ export function progressAfterIncorrect(
     return { correct_streak: currentStreak, status: 'mastered' }
   }
   return { correct_streak: 0, status: 'in_progress' }
+}
+
+// =====================================================================
+// Tijd per opgave
+// =====================================================================
+
+/**
+ * Langer dan een uur op één opgave is geen denkwerk meer, maar een tabblad
+ * dat open bleef staan. Alles daarboven wordt hierop afgekapt.
+ */
+export const MAX_TIME_SPENT_SEC = 60 * 60
+
+/**
+ * De tijd die de browser meestuurt, klaargemaakt voor de database: hele
+ * seconden, nooit negatief, nooit langer dan een uur. Niets, NaN of oneindig
+ * wordt leeg — liever geen meting dan een verzonnen meting.
+ */
+export function cleanTimeSpentSec(raw: number | null | undefined): number | null {
+  if (raw == null || !Number.isFinite(raw)) return null
+  return Math.min(Math.max(Math.round(raw), 0), MAX_TIME_SPENT_SEC)
 }

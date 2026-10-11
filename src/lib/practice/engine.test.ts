@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   answersMatch,
+  cleanTimeSpentSec,
   MASTERY_THRESHOLD,
+  MAX_TIME_SPENT_SEC,
   progressAfterCorrect,
   progressAfterIncorrect,
 } from './engine'
@@ -129,5 +131,30 @@ describe('progressAfterIncorrect', () => {
       correct_streak: 0,
       status: 'in_progress',
     })
+  })
+})
+
+// =====================================================================
+// Tijd per opgave
+// =====================================================================
+describe('cleanTimeSpentSec', () => {
+  it('rondt af op hele seconden', () => {
+    expect(cleanTimeSpentSec(12.4)).toBe(12)
+    expect(cleanTimeSpentSec(12.6)).toBe(13)
+  })
+
+  it('laat leeg wat geen meting is', () => {
+    expect(cleanTimeSpentSec(undefined)).toBeNull()
+    expect(cleanTimeSpentSec(null)).toBeNull()
+    expect(cleanTimeSpentSec(Number.NaN)).toBeNull()
+    expect(cleanTimeSpentSec(Number.POSITIVE_INFINITY)).toBeNull()
+  })
+
+  it('kapt een vergeten tabblad af op een uur', () => {
+    expect(cleanTimeSpentSec(8 * 60 * 60)).toBe(MAX_TIME_SPENT_SEC)
+  })
+
+  it('maakt van een klok die achteruit liep geen negatieve tijd', () => {
+    expect(cleanTimeSpentSec(-5)).toBe(0)
   })
 })
