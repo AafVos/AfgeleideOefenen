@@ -1,0 +1,337 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const userId = 'leerling-1'
+const mislukt = 'Het maken van je toets lukte niet. Probeer het nog een keer.'
+
+type Sessie = {
+  id: string
+  user_id: string
+  session_type: string
+  name: string
+  show_answers: string
+}
+
+type VraagRij = {
+  session_id: string
+  question_id: string
+  order_index: number
+}
+
+type DbFout = {
+  code: string
+  message: string
+  details: string | null
+  hint: string | null
+}
+
+type AanmaakLog = DbFout & { questionCount: number }
+
+type QueryResult = {
+  data: { id: string } | VraagRij[] | null
+  error: DbFout | null
+  count?: number | null
+}
+
+const db = vi.hoisted(() => ({
+  sessions: [] as Sessie[],
+  questions: [] as VraagRij[],
+  deletedIds: [] as string[],
+  logs: [] as AanmaakLog[],
+  insertFailCount: 0,
+  countFailCount: 0,
+  countErrorCount: 0,
+  deleteFailCount: 0,
+  sid: 0,
+  picked: ['q1', 'q2', 'q3', 'q2'] as string[],
+}))
+
+function reset() {
+  db.sessions = []
+  db.questions = []
+  db.deletedIds = []
+  db.logs = []
+  db.insertFailCount = 0
+  db.countFailCount = 0
+  db.countErrorCount = 0
+  db.deleteFailCount = 0
+  db.sid = 0
+  db.picked = ['q1', 'q2', 'q3', 'q2']
+}
+
+function invoegFout(): DbFout {
+  return { code: '23505', message: 'duplicate key value', details: 'd', hint: 'h' }
+}
+
+function makeClient() {
+  function from(table: string) {
+    let op = ''
+    let vals: unknown
+    let filterWaarde = ''
+    let head = false
+    let countMode = ''
+
+    function uitvoeren(): QueryResult {
+      if (table === 'user_sessions_new' && op === 'insert') {
+        db.sid += 1
+        const waarde = vals as Omit<Sessie, 'id'>
+        const id = `s${db.sid}`
+        db.sessions.push({ id, ...waarde })
+        return { data: { id }, error: null }
+      }
+
+      if (table === 'user_sessions_new' && op === 'delete') {
+        if (db.deleteFailCount > 0) {
+          db.deleteFailCount -= 1
+          return {
+            data: null,
+            error: { code: '42501', message: 'permission denied', details: null, hint: null },
+          }
+        }
+        if (filterWaarde) {
+          db.deletedIds.push(filterWaarde)
+          db.sessions = db.sessions.filter((sessie) => sessie.id !== filterWaarde)
+          db.questions = db.questions.filter((vraag) => vraag.session_id !== filterWaarde)
+        }
+        return { data: null, error: null }
+      }
+
+      if (table === 'custom_test_questions' && op === 'insert') {
+        if (db.insertFailCount > 0) {
+          db.insertFailCount -= 1
+          return { data: null, error: invoegFout() }
+        }
+        const rijen = Array.isArray(vals) ? (vals as VraagRij[]) : []
+        db.questions.push(...rijen)
+        return { data: null, error: null }
+      }
+
+      if (table === 'custom_test_questions' && op === 'select' && head && countMode === 'exact') {
+        if (db.countErrorCount > 0) {
+          db.countErrorCount -= 1
+          return {
+            data: null,
+            count: null,
+            error: { code: '57014', message: 'statement timeout', details: null, hint: null },
+          }
+        }
+        const aanwezig = db.questions.filter((vraag) => vraag.session_id === filterWaarde).length
+        const aantal = db.countFailCount > 0 ? 0 : aanwezig
+        if (db.countFailCount > 0) db.countFailCount -= 1
+        return { data: null, count: aantal, error: null }
+      }
+
+      return { data: null, error: null }
+    }
+
+    const keten = {
+      insert(waarde: unknown) {
+        op = 'insert'
+        vals = waarde
+        return keten
+      },
+      delete() {
+        op = 'delete'
+        return keten
+      },
+      select(_kolommen?: string, opties?: { head?: boolean; count?: string }) {
+        if (op !== 'insert') op = 'select'
+        head = opties?.head ?? false
+        countMode = opties?.count ?? ''
+        return keten
+      },
+      eq(_kolom: string, waarde: string) {
+        filterWaarde = waarde
+        return keten
+      },
+      single: () => Promise.resolve(uitvoeren()),
+      maybeSingle: () => Promise.resolve(uitvoeren()),
+      then(
+        onFulfilled?: (waarde: QueryResult) => unknown,
+        onRejected?: (reden: unknown) => unknown,
+      ) {
+        return Promise.resolve(uitvoeren()).then(onFulfilled, onRejected)
+      },
+    }
+
+    return keten
+  }
+
+  return {
+    auth: { getUser: async () => ({ data: { user: { id: userId } } }) },
+    from,
+  }
+}
+
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: async () => makeClient(),
+  createServiceRoleClient: () => makeClient(),
+}))
+
+vi.mock('@/lib/practice/custom-test', () => ({
+  pickQuestionsForTest: async () => db.picked,
+}))
+
+vi.mock('next-intl/server', () => ({
+  getLocale: async () => 'nl',
+}))
+
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn(),
+}))
+
+const { createCustomTestAction } = await import('./actions')
+
+const payload = {
+  clusterIds: ['c1'],
+  count: 10,
+  source: 'all' as const,
+  name: 'Mijn toets',
+  showAnswers: 'immediate' as const,
+}
+
+describe('createCustomTestAction', () => {
+  beforeEach(() => {
+    reset()
+    vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      const payloadLog = args[1]
+      if (payloadLog && typeof payloadLog === 'object') db.logs.push(payloadLog as AanmaakLog)
+    })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('maakt een toets met unieke vragen', async () => {
+    const res = await createCustomTestAction(payload)
+
+    expect(res).toEqual({ sessionId: 's1' })
+    expect(db.questions.map((vraag) => vraag.question_id)).toEqual(['q1', 'q2', 'q3'])
+    expect(db.questions.map((vraag) => vraag.order_index)).toEqual([0, 1, 2])
+    expect(db.deletedIds).toEqual([])
+    expect(db.logs).toEqual([])
+  })
+
+  it('gebruikt Zelf-toets als standaardnaam', async () => {
+    await createCustomTestAction({ ...payload, name: '   ' })
+    expect(db.sessions[0]?.name).toBe('Zelf-toets')
+  })
+
+  it('vraagt om minstens één onderwerp', async () => {
+    const res = await createCustomTestAction({ ...payload, clusterIds: [] })
+    expect(res).toEqual({ error: 'Kies minstens één onderwerp.' })
+    expect(db.sessions).toEqual([])
+  })
+
+  it('weigert een ongeldige bron', async () => {
+    const res = await createCustomTestAction({ ...payload, source: 'bla' as never })
+    expect(res).toEqual({ error: 'Ongeldige bron.' })
+  })
+
+  it('zegt het als er geen vragen zijn', async () => {
+    db.picked = []
+    const res = await createCustomTestAction(payload)
+    expect(res).toEqual({ error: 'Geen vragen beschikbaar voor deze selectie.' })
+    expect(db.sessions).toEqual([])
+  })
+
+  it('haalt een mislukte toets weg en probeert het nog een keer', async () => {
+    db.insertFailCount = 1
+
+    const res = await createCustomTestAction(payload)
+
+    expect(res).toEqual({ sessionId: 's2' })
+    expect(db.deletedIds).toEqual(['s1'])
+    expect(db.sessions.map((sessie) => sessie.id)).toEqual(['s2'])
+    expect(db.questions).toHaveLength(3)
+    expect(db.questions.every((vraag) => vraag.session_id === 's2')).toBe(true)
+    expect(db.logs).toHaveLength(1)
+    expect(JSON.stringify(res)).not.toContain('duplicate key')
+  })
+
+  it('laat geen lege toets staan als beide pogingen mislukken', async () => {
+    db.insertFailCount = 2
+
+    const res = await createCustomTestAction(payload)
+
+    expect(res).toEqual({ error: mislukt })
+    expect(db.deletedIds).toEqual(['s1', 's2'])
+    expect(db.sessions).toEqual([])
+    expect(db.questions).toEqual([])
+    expect(db.logs).toHaveLength(2)
+  })
+
+  it('logt de echte fout zonder leerlinggegevens', async () => {
+    db.insertFailCount = 2
+    await createCustomTestAction(payload)
+
+    expect(db.logs[0]).toEqual({
+      code: '23505',
+      message: 'duplicate key value',
+      details: 'd',
+      hint: 'h',
+      questionCount: 3,
+    })
+    expect(JSON.stringify(db.logs)).not.toContain(userId)
+    expect(JSON.stringify(db.logs)).not.toContain('user_id')
+  })
+
+  it('haalt de toets weg als niet alle vragen zijn opgeslagen', async () => {
+    db.countFailCount = 1
+
+    const res = await createCustomTestAction(payload)
+
+    expect(res).toEqual({ sessionId: 's2' })
+    expect(db.deletedIds).toEqual(['s1'])
+    expect(db.questions.every((vraag) => vraag.session_id === 's2')).toBe(true)
+    expect(db.logs[0]).toMatchObject({
+      code: 'COUNT_MISMATCH',
+      questionCount: 3,
+    })
+  })
+
+  it('logt een mislukte telling en ruimt de toets op', async () => {
+    db.countErrorCount = 2
+
+    const res = await createCustomTestAction(payload)
+
+    expect(res).toEqual({ error: mislukt })
+    expect(db.deletedIds).toEqual(['s1', 's2'])
+    expect(db.sessions).toEqual([])
+    expect(db.logs[0]).toMatchObject({
+      code: '57014',
+      message: 'statement timeout',
+      questionCount: 3,
+    })
+  })
+
+  it('schrijft een toets van vijftig vragen weg, ook na een mislukte eerste poging', async () => {
+    db.picked = [...Array.from({ length: 50 }, (_, i) => `vraag-${i}`), 'vraag-0']
+    db.insertFailCount = 1
+
+    const res = await createCustomTestAction({ ...payload, count: 50 })
+
+    expect(res).toEqual({ sessionId: 's2' })
+    expect(db.deletedIds).toEqual(['s1'])
+    expect(db.sessions).toHaveLength(1)
+    expect(db.questions).toHaveLength(50)
+    expect(db.questions.map((vraag) => vraag.order_index)).toEqual(
+      Array.from({ length: 50 }, (_, i) => i),
+    )
+    expect(new Set(db.questions.map((vraag) => vraag.question_id)).size).toBe(50)
+    expect(db.logs[0]?.questionCount).toBe(50)
+    expect(JSON.stringify(db.logs)).not.toContain(userId)
+  })
+
+  it('meldt het opruimen als de lege toets niet weggehaald kan worden', async () => {
+    db.insertFailCount = 1
+    db.deleteFailCount = 1
+
+    const res = await createCustomTestAction(payload)
+
+    expect(res).toEqual({ sessionId: 's2' })
+    expect(db.sessions.map((sessie) => sessie.id)).toEqual(['s1', 's2'])
+    expect(db.logs.map((regel) => regel.code)).toEqual(['23505', '42501'])
+    expect(JSON.stringify(res)).not.toContain('permission denied')
+  })
+})
