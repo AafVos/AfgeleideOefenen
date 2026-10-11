@@ -6,8 +6,9 @@ import { leegPostbus, leegSitepostbus } from './postbus'
 /**
  * Draait één keer vóór alle e2e-tests.
  *
- * 1. Controleert dat we tegen een LOKALE Supabase werken. De echte database
- *    is gedeeld met integraaloefenen.nl; daar mag een test nooit aankomen.
+ * 1. Controleert dat we tegen een LOKALE Supabase werken. De echte database is
+ *    de productiedatabase met echte accounts en voortgang; daar mag een test
+ *    nooit aankomen.
  * 2. Veegt de voortgang van de testleerling schoon en zet de oefenstof van
  *    het testhoofdstuk terug in de begintoestand, zodat elke run hetzelfde
  *    begint — ook als je de tests twee keer achter elkaar draait.
