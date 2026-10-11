@@ -8,6 +8,7 @@ import { getLocale } from 'next-intl/server'
 
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
+import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
 
 /** Sleutels uit de `Login`-teksten; het formulier vertaalt ze. */
 export type LoginErrorKey =
@@ -52,13 +53,8 @@ export async function loginAction(
   //
   // `is('username', null)` houdt het op één query en zorgt ervoor dat een
   // naam die de leerling later bij Instellingen koos, blijft staan.
-  const gekozenNaam = data.user?.user_metadata?.username
-  if (data.user && typeof gekozenNaam === 'string' && gekozenNaam.trim() !== '') {
-    await supabase
-      .from('profiles')
-      .update({ username: gekozenNaam.trim() })
-      .eq('id', data.user.id)
-      .is('username', null)
+  if (data.user) {
+    await zetGekozenGebruikersnaam(supabase, data.user)
   }
 
   // Vangnet naast de webhook op e-mailbevestiging: wie daar tussendoor valt,
