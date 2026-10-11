@@ -9,9 +9,9 @@
 /**
  * `locked` komt uit het weggehaalde leerpad en wordt door deze site nergens
  * meer gezet. De waarde blijft staan omdat de database hem nog toestaat
- * (CHECK op `user_progress_new.status`, migratie 0018) en gedeeld is met
- * integraaloefenen.nl: een oude rij kan hem nog hebben. Weghalen kan pas als
- * de database hem ook niet meer kent.
+ * (CHECK op `user_progress_new.status`, migratie 0018): een oude rij in de
+ * productiedatabase kan hem nog hebben. Weghalen kan pas als de database hem
+ * ook niet meer kent.
  */
 export type ProgressStatus = 'locked' | 'in_progress' | 'mastered'
 export type ProfileRole = 'student' | 'admin'

@@ -1,9 +1,10 @@
 /**
  * Merknaam, domein en vakwoorden van deze site.
  *
- * `SITE` is ook de waarde van de kolom `site` in de database. Die database is
- * gedeeld met integraaloefenen.nl (eigen repo sinds oktober 2026), dus élke
- * query filtert hierop — anders zie je hier integralen-opgaven staan.
+ * `SITE` is ook de waarde van de kolom `site` in de database. Sinds 9 oktober
+ * 2026 heeft integraaloefenen.nl een eigen database, maar de oude
+ * integralen-rijen staan hier nog, dus élke query filtert hierop — anders zie
+ * je hier integralen-opgaven staan.
  */
 
 export const SITE = 'afgeleiden' as const
