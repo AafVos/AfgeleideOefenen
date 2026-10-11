@@ -1,10 +1,10 @@
 'use server'
 
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
+import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
 import { createClient } from '@/lib/supabase/server'
 
 /** Sleutels uit de `Register`-teksten; het formulier vertaalt ze. */
@@ -49,7 +49,6 @@ export async function signupAction(
   }
 
   const supabase = await createClient()
-  const origin = (await headers()).get('origin') ?? ''
   const locale = await getLocale()
 
   const { data, error } = await supabase.auth.signUp({
@@ -57,7 +56,7 @@ export async function signupAction(
     password,
     options: {
       // Na het bevestigen van de e-mail direct naar de inlogpagina
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
+      emailRedirectTo: `${await bepaalAanvraagAdres()}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
       data: username ? { username } : undefined,
     },
   })
