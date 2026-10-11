@@ -44,14 +44,24 @@ lokaal:
 * een **testpostbus** (Mailpit, poort 54324) waar de mail van Supabase in
   blijft hangen. `e2e/postbus.ts` maakt hem daar open via de HTTP-API, dus er
   gaat nooit echt een mail de deur uit;
+* een **neppe Resend** (`scripts/nep-resend.mjs`) voor de mail die de site
+  zelf stuurt — de welkomstmail. `scripts/e2e.mjs` start dat postkantoortje op
+  een vrije poort en wijst `RESEND_BASE_URL` daarheen; `e2e/postbus.ts` haalt
+  de opgevangen mail weer op met `wachtOpSitemail`;
 * een **neppe AI-controle** (`AI_CHECK_MODE=stub`), zodat er geen Gemini aan
   te pas komt. Die schakelaar doet niets zodra `NODE_ENV` op `production`
   staat — zie `src/lib/ai/stub.ts`.
 
 De welkomstmail van de site zelf gaat via Resend en komt dus **niet** in de
-testpostbus. `scripts/e2e.mjs` zet `RESEND_API_KEY` leeg, zodat hij lokaal
-stil overgeslagen wordt; wat erin staat, controleert
-`src/lib/email/welkom.test.ts`.
+testpostbus van Supabase, maar in de neppe Resend hierboven.
+`e2e/nieuwe-leerling.spec.ts` kijkt na dat hij na het eerste inloggen echt
+uitgaat, naar het juiste adres, en maar één keer — ook na opnieuw inloggen.
+Dezelfde postbus controleert de webhook `/api/webhooks/welkom`: met het juiste
+geheim komt de mail, met een verkeerd geheim een 401 en niets. Wat er in de
+mail staat, controleert daarnaast `src/lib/email/welkom.test.ts`.
+
+De tests mogen nooit echte mail versturen: wijst `RESEND_BASE_URL` naar iets
+anders dan deze computer, dan stopt `scripts/e2e.mjs` met uitleg.
 
 Wat deze tests níét kunnen controleren: of de echte mail in productie ook
 aankomt. Dat hangt aan de instellingen in het Supabase-dashboard en bij

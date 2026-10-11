@@ -10,7 +10,13 @@ import {
   testDatabase,
   uniekAdres,
 } from './leerling'
-import { linkUitMail, wachtOpMail, type Mail } from './postbus'
+import {
+  linkUitMail,
+  sitemails,
+  wachtOpMail,
+  wachtOpSitemail,
+  type Mail,
+} from './postbus'
 
 /**
  * De weg van een leerling die hier nog nooit geweest is: registreren, de
@@ -18,11 +24,9 @@ import { linkUitMail, wachtOpMail, type Mail } from './postbus'
  * antwoord geven. En de paden waar het misgaat: een adres dat al bestaat, een
  * te kort wachtwoord, inloggen vóór bevestigen, en wachtwoord vergeten.
  *
- * De mail komt echt aan: de lokale Supabase stuurt hem naar een testpostbus
- * in Docker (Mailpit) en `e2e/postbus.ts` maakt hem daar open. De
- * welkomstmail van de site zelf gaat via Resend en komt hier dus níét langs;
- * die hoort geen enkele stap op te houden. Wat erin staat, controleert
- * `src/lib/email/welkom.test.ts`.
+ * Alle mail komt echt aan, in twee lokale postbussen (zie `e2e/postbus.ts`):
+ * wat Supabase stuurt in Mailpit, en wat de site zelf stuurt — de
+ * welkomstmail — in een neppe Resend. Er gaat dus nooit een mail de deur uit.
  */
 
 const GEBRUIKERSNAAM = 'Sanne'
@@ -30,6 +34,9 @@ const GEBRUIKERSNAAM = 'Sanne'
 /** De onderwerpregels uit `supabase/config.toml`. */
 const ONDERWERP_BEVESTIGEN = 'Bevestig je e-mailadres'
 const ONDERWERP_RESET = 'Nieuw wachtwoord'
+
+/** Het onderwerp van de welkomstmail uit `src/lib/email/welkom.ts`. */
+const ONDERWERP_WELKOM = 'Welkom bij AfgeleideOefenen!'
 
 /** Waar de link in een mail van Supabase altijd langs gaat. */
 const VERIFY_PAD = '/auth/v1/verify'
@@ -125,9 +132,22 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   await expect(foutmelding(page)).toHaveCount(0)
 
   // 5. Inloggen met het verse account. Dit is ook het pad waarop de site de
-  //    welkomstmail probeert te sturen; zonder Resend-sleutel hoort dat
-  //    niemand op te houden.
+  //    welkomstmail stuurt.
   await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+
+  // Die welkomstmail gaat echt de deur uit: naar dit adres, van ons, in het
+  // Nederlands, en met de boodschap die erin hoort. Hij komt ná het antwoord
+  // aan de leerling, dus hier even op wachten.
+  const welkom = await wachtOpSitemail(email, { onderwerpBevat: 'Welkom' })
+  expect(welkom.aan).toEqual([email])
+  expect(welkom.onderwerp).toBe(ONDERWERP_WELKOM)
+  expect(welkom.afzenderNaam).toBe('AfgeleideOefenen')
+  expect(welkom.afzenderAdres).toContain('afgeleideoefenen.nl')
+  for (const versie of [welkom.html, welkom.tekst]) {
+    expect(versie).toContain('Je account is klaar.')
+    expect(versie).toContain('Groeten van Aaf')
+  }
+  isNederlands(welkom)
 
   // De naam die hij bij het registreren koos staat in de bovenbalk, niet zijn
   // e-mailadres. Op telefoonformaat zit die naam in het menu.
@@ -160,6 +180,10 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   })
   await geefAntwoord(page, '12x^2')
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
+
+  // 9. En na dat tweede keer inloggen is er nog steeds maar één welkomstmail
+  //    de deur uit. Hij hoort niet bij elk bezoek opnieuw te komen.
+  expect(await sitemails(email, { onderwerpBevat: 'Welkom' })).toHaveLength(1)
 })
 
 test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon', async ({
@@ -313,4 +337,63 @@ test('wachtwoord vergeten: mail, link, nieuw wachtwoord, inloggen', async ({
   await expect(foutmelding(page)).toContainText(
     'Onjuiste combinatie van e-mail en wachtwoord.',
   )
+})
+
+/**
+ * Het geheim waarmee Supabase zich bij onze webhooks meldt. Verzonnen voor de
+ * tests; `scripts/e2e.mjs` geeft dezelfde waarde aan de site mee.
+ */
+function webhookGeheim(): string {
+  const geheim = process.env.WEBHOOK_SECRET
+  if (!geheim) throw new Error('Start de tests met `npm run test:e2e`.')
+  return geheim
+}
+
+test('de webhook op e-mailbevestiging stuurt de welkomstmail, maar alleen met het juiste geheim', async ({
+  page,
+  request,
+}) => {
+  // Een bevestigd account dat nog niet ingelogd heeft, want bij het inloggen
+  // zou de welkomstmail al uitgaan.
+  const email = await registreerEnBevestig(page)
+  const { data } = await testDatabase().auth.admin.listUsers({ perPage: 100 })
+  const leerling = data.users.find((u) => u.email === email)
+  expect(leerling, 'het verse account staat in de database').toBeTruthy()
+
+  // Het bericht zoals Supabase het stuurt: `email_confirmed_at` ging van leeg
+  // naar gevuld.
+  const bericht = {
+    type: 'UPDATE',
+    record: { id: leerling!.id, email_confirmed_at: new Date().toISOString() },
+    old_record: { email_confirmed_at: null },
+  }
+
+  // Met een verkeerd geheim komt er niets door: geen mail, en een 401.
+  const afgewezen = await request.post('/api/webhooks/welkom', {
+    headers: { 'x-webhook-secret': 'niet-het-geheim' },
+    data: bericht,
+  })
+  expect(afgewezen.status()).toBe(401)
+  expect(await sitemails(email)).toHaveLength(0)
+
+  // Met het juiste geheim wél, en precies één keer.
+  const toegelaten = await request.post('/api/webhooks/welkom', {
+    headers: { 'x-webhook-secret': webhookGeheim() },
+    data: bericht,
+  })
+  expect(toegelaten.status()).toBe(200)
+  expect(await toegelaten.json()).toMatchObject({ ok: true, verstuurd: true })
+
+  const welkom = await wachtOpSitemail(email, { onderwerpBevat: 'Welkom' })
+  expect(welkom.aan).toEqual([email])
+  expect(welkom.html).toContain('Je account is klaar.')
+
+  // Komt hetzelfde bericht nog een keer langs — Supabase probeert het opnieuw
+  // — dan blijft het bij die ene mail.
+  const nogEens = await request.post('/api/webhooks/welkom', {
+    headers: { 'x-webhook-secret': webhookGeheim() },
+    data: bericht,
+  })
+  expect(await nogEens.json()).toMatchObject({ verstuurd: false, reden: 'al-verstuurd' })
+  expect(await sitemails(email, { onderwerpBevat: 'Welkom' })).toHaveLength(1)
 })

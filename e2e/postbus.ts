@@ -1,15 +1,20 @@
 /**
- * De testpostbus van de lokale Supabase.
+ * De twee testpostbussen van de e2e-tests. Allebei lokaal: er gaat nooit een
+ * mail echt de deur uit.
  *
- * Mail die de lokale Supabase verstuurt gaat nergens heen: hij blijft hangen
- * in Mailpit, een postbus in Docker die standaard op poort 54324 draait. Via
- * de HTTP-API daarvan kunnen de tests de bevestigingsmail en de resetmail
- * echt openmaken en op de link klikken, net als een leerling.
+ * 1. De mail die **Supabase** stuurt (bevestigen, wachtwoord opnieuw) blijft
+ *    hangen in Mailpit, een postbus in Docker die standaard op poort 54324
+ *    draait. Via de HTTP-API daarvan kunnen de tests die mail echt openmaken
+ *    en op de link klikken, net als een leerling. Daarvoor is `wachtOpMail`.
+ * 2. De mail die **de site zelf** stuurt (de welkomstmail) gaat via Resend.
+ *    `scripts/e2e.mjs` start een neppe Resend (`scripts/nep-resend.mjs`) en
+ *    wijst `RESEND_BASE_URL` daarheen; daar haalt `wachtOpSitemail` hem op.
  *
- * Let op: dit is alleen de mail die Supabase zelf stuurt (bevestigen,
- * wachtwoord opnieuw). De welkomstmail van de site gaat via Resend en komt
- * hier dus niet aan — zie `src/lib/email/welkom.test.ts` voor die inhoud.
+ * Een test ziet er bij allebei hetzelfde uit: wachten tot er mail voor een
+ * adres ligt, en dan `linkUitMail` erop loslaten.
  */
+
+/* ---------- De testpostbus van Supabase (Mailpit) ---------- */
 
 /** Waar de postbus luistert. `scripts/e2e.mjs` vult dit uit `supabase status`. */
 function postbus(): string {
@@ -68,7 +73,8 @@ export async function leegPostbus(): Promise<void> {
 }
 
 /**
- * Wacht tot er mail voor dit adres binnen is en geef de nieuwste terug.
+ * Wacht tot er mail van Supabase voor dit adres binnen is en geef de nieuwste
+ * terug.
  *
  * Supabase verstuurt de mail nadat het formulier al antwoord heeft gegeven,
  * dus even wachten hoort erbij — net als bij een leerling die zijn inbox
@@ -139,6 +145,122 @@ async function openMail(id: string): Promise<Mail> {
     tekst: mail.Text ?? '',
   }
 }
+
+/* ---------- De postbus van de site zelf (de neppe Resend) ---------- */
+
+/** Waar het neppe postkantoor luistert. `scripts/e2e.mjs` vult dit. */
+function sitepostbus(): string {
+  const url = process.env.RESEND_BASE_URL
+  if (!url) {
+    throw new Error(
+      'RESEND_BASE_URL ontbreekt. Start de tests met `npm run test:e2e`; dat zet de neppe Resend klaar.',
+    )
+  }
+  return url
+}
+
+/** Eén mail zoals `scripts/nep-resend.mjs` hem bewaart. */
+type NepResendRegel = {
+  id: string
+  ontvangenOp: string
+  from: string
+  to: string[]
+  subject: string
+  html: string
+  text: string
+}
+
+async function uitSitepostbus(): Promise<NepResendRegel[]> {
+  let antwoord: Response
+  try {
+    antwoord = await fetch(`${sitepostbus()}/opgevangen`)
+  } catch (e) {
+    throw new Error(
+      `Het neppe postkantoor op ${sitepostbus()} reageert niet. Start de tests ` +
+        `met \`npm run test:e2e\`. (${(e as Error).message})`,
+    )
+  }
+  if (!antwoord.ok) {
+    throw new Error(`Het neppe postkantoor gaf ${antwoord.status}.`)
+  }
+  const { mails } = (await antwoord.json()) as { mails: NepResendRegel[] }
+  return mails ?? []
+}
+
+/** `AfgeleideOefenen <no-reply@...>` uit elkaar halen in naam en adres. */
+function alsMail(regel: NepResendRegel): Mail {
+  const afzender = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(regel.from ?? '')
+  return {
+    id: regel.id,
+    onderwerp: regel.subject ?? '',
+    afzenderNaam: afzender?.[1] ?? '',
+    afzenderAdres: afzender?.[2] ?? regel.from ?? '',
+    aan: regel.to ?? [],
+    html: regel.html ?? '',
+    tekst: regel.text ?? '',
+  }
+}
+
+/** Gooit alle mail van de site weg. Draait vóór de tests. */
+export async function leegSitepostbus(): Promise<void> {
+  const antwoord = await fetch(`${sitepostbus()}/opgevangen`, { method: 'DELETE' })
+  if (!antwoord.ok) {
+    throw new Error(`Het neppe postkantoor leegmaken mislukte: ${antwoord.status}.`)
+  }
+}
+
+/**
+ * Alle mail die de site naar dit adres stuurde, oudste eerst. Voor "en er
+ * kwam er geen tweede bij".
+ */
+export async function sitemails(
+  adres: string,
+  opties: { onderwerpBevat?: string } = {},
+): Promise<Mail[]> {
+  return (await uitSitepostbus())
+    .filter((m) =>
+      (m.to ?? []).some((t) => t.toLowerCase() === adres.toLowerCase()),
+    )
+    .filter((m) => !opties.onderwerpBevat || m.subject?.includes(opties.onderwerpBevat))
+    .map(alsMail)
+}
+
+/**
+ * Wacht tot de site mail naar dit adres gestuurd heeft en geef de nieuwste
+ * terug.
+ *
+ * De welkomstmail gaat na het antwoord aan de leerling de deur uit (`after()`
+ * in `src/app/[locale]/inloggen/actions.ts`), dus even wachten hoort erbij.
+ */
+export async function wachtOpSitemail(
+  adres: string,
+  opties: { onderwerpBevat?: string; wachtMs?: number } = {},
+): Promise<Mail> {
+  const grens = Date.now() + (opties.wachtMs ?? 20_000)
+  let laatsteFout = `de site stuurde niets naar ${adres}`
+
+  while (Date.now() < grens) {
+    const voorMij = await sitemails(adres)
+    const passend = opties.onderwerpBevat
+      ? voorMij.filter((m) => m.onderwerp.includes(opties.onderwerpBevat!))
+      : voorMij
+
+    if (passend.length > 0) return passend[passend.length - 1]
+
+    if (voorMij.length > 0 && opties.onderwerpBevat) {
+      laatsteFout =
+        `de site stuurde wel mail naar ${adres}, maar geen onderwerp met ` +
+        `"${opties.onderwerpBevat}" erin. Gevonden: ` +
+        voorMij.map((m) => `"${m.onderwerp}"`).join(', ')
+    }
+
+    await new Promise((klaar) => setTimeout(klaar, 300))
+  }
+
+  throw new Error(`Geen mail van de site: ${laatsteFout}.`)
+}
+
+/* ---------- Voor allebei de postbussen ---------- */
 
 /**
  * De link uit een mail waar een leerling op klikt.

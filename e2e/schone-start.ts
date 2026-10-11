@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 import { TESTLEERLING, WEGWERP_ADRES_BEGIN } from './leerling'
-import { leegPostbus } from './postbus'
+import { leegPostbus, leegSitepostbus } from './postbus'
 
 /**
  * Draait één keer vóór alle e2e-tests.
@@ -34,8 +34,11 @@ export default async function schoneStart() {
 
   await ruimWegwerpAccountsOp(db)
   // Mail van een vorige run weg, anders ziet een test die op een
-  // bevestigingsmail wacht misschien een oude aan voor een verse.
+  // bevestigingsmail wacht misschien een oude aan voor een verse. Allebei de
+  // postbussen: die van Supabase en die van de site zelf. Het leegmaken
+  // controleert meteen dat ze allebei bereikbaar zijn.
   await leegPostbus()
+  await leegSitepostbus()
 
   // Welke vragen horen bij het testhoofdstuk?
   const ONDERWERPEN = ['e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking']
