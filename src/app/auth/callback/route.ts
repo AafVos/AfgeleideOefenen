@@ -19,7 +19,18 @@ export async function GET(request: NextRequest) {
   // op dat moment al bevestigd door Supabase's verify-endpoint.
   if (/^\/(nl|en)\/inloggen(\/|$|\?)/.test(next)) {
     const url = new URL(next, origin)
-    url.searchParams.set('bevestigd', '1')
+    // Alleen "bevestigd" zeggen als Supabase het ook écht bevestigd heeft.
+    // Dat herken je aan de `code` in de adresregel. Ging het mis — de link is
+    // verlopen of al een keer gebruikt — dan stuurt Supabase in plaats daarvan
+    // `error`, `error_code` (bv. `otp_expired`) en `error_description` mee.
+    // Die Engelse tekst hoort niet op het scherm van een leerling; de
+    // inlogpagina maakt er een eigen melding van.
+    const mislukt = searchParams.has('error') || searchParams.has('error_code')
+    if (code && !mislukt) {
+      url.searchParams.set('bevestigd', '1')
+    } else {
+      url.searchParams.set('mail', 'verlopen')
+    }
     return NextResponse.redirect(url)
   }
 

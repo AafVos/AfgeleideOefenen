@@ -20,7 +20,7 @@ export async function generateMetadata({
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; bevestigd?: string }>
+  searchParams: Promise<{ error?: string; bevestigd?: string; mail?: string }>
 }) {
   const supabase = await createClient()
   const locale = await getLocale()
@@ -33,20 +33,32 @@ export default async function LoginPage({
   }
 
   const t = await getTranslations('Login')
-  const { error, bevestigd } = await searchParams
+  const { error, bevestigd, mail } = await searchParams
   const callbackError = error === 'auth_callback_failed' ? t('callbackError') : null
+  // `mail=verlopen` komt van /auth/callback: de bevestigingslink was verlopen
+  // of al een keer gebruikt. Dan is er dus niets bevestigd.
+  const linkVerlopen = mail === 'verlopen'
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <h1 className="font-serif text-3xl text-text">{t('h1')}</h1>
       <p className="mt-2 text-sm text-text-muted">{t('subtitle')}</p>
 
-      {bevestigd && (
+      {bevestigd && !linkVerlopen && (
         <p
           role="status"
           className="mt-6 rounded-md border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent"
         >
           {t('confirmedNotice')}
+        </p>
+      )}
+
+      {linkVerlopen && (
+        <p
+          role="alert"
+          className="mt-6 rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
+        >
+          {t('expiredNotice')}
         </p>
       )}
 

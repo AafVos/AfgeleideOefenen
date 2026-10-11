@@ -193,6 +193,44 @@ test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon',
   ).toBeVisible()
 })
 
+test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async ({
+  page,
+}) => {
+  const email = uniekAdres()
+  await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+  await expect(melding(page)).toBeVisible()
+
+  const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
+  const link = linkUitMail(mail, VERIFY_PAD)
+
+  // De eerste klik gaat goed: dat pad mag deze fix niet stukmaken.
+  await page.goto(link)
+  await expect(page.getByText('Je account is bevestigd!')).toBeVisible()
+
+  // Dezelfde link een tweede keer: hij is op. Dan hoort er géén groene
+  // "bevestigd" te staan, maar een Nederlandse melding die zegt wat de
+  // leerling nu moet doen.
+  await page.goto(link)
+  await expect(page).toHaveURL(/\/nl\/inloggen/)
+  await expect(page.getByText('Je account is bevestigd!')).toHaveCount(0)
+  await expect(foutmelding(page)).toContainText(
+    'Deze link is verlopen of al gebruikt.',
+  )
+  // En niet de Engelse systeemtekst van Supabase.
+  await expect(page.locator('body')).not.toContainText('Email link is invalid')
+
+  // Dezelfde afloop als bij een echt verlopen link: Supabase hangt dan
+  // dezelfde foutparameters aan de terugkeer-URL.
+  await page.goto(
+    '/auth/callback?next=%2Fnl%2Finloggen&error=access_denied&error_code=otp_expired',
+  )
+  await expect(page).toHaveURL(/\/nl\/inloggen/)
+  await expect(page.getByText('Je account is bevestigd!')).toHaveCount(0)
+
+  // Het account zelf is bij die eerste klik wél bevestigd, dus inloggen lukt.
+  await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+})
+
 test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   const email = uniekAdres()
 
