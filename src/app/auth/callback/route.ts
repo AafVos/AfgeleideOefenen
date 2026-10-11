@@ -3,6 +3,7 @@ import { after } from 'next/server'
 
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
+import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -52,14 +53,7 @@ export async function GET(request: NextRequest) {
       // de login-action doet -- anders staat er voor altijd een e-mailadres
       // in de bovenbalk in plaats van de naam die de leerling koos.
       if (data.user) {
-        const gekozenNaam = data.user.user_metadata?.username
-        if (typeof gekozenNaam === 'string' && gekozenNaam.trim() !== '') {
-          await supabase
-            .from('profiles')
-            .update({ username: gekozenNaam.trim() })
-            .eq('id', data.user.id)
-            .is('username', null)
-        }
+        await zetGekozenGebruikersnaam(supabase, data.user)
 
         after(async () => {
           await stuurWelkomstmail(data.user.id)
