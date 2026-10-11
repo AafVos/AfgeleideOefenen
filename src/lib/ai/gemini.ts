@@ -14,6 +14,63 @@ export type GeminiJsonResponse<T> =
   | { ok: true; data: T; raw: string }
   | { ok: false; error: string; raw?: string }
 
+/** Het responseSchema dat Gemini teruggeeft, in OpenAPI-stijl. */
+export type GeminiSchema = {
+  type: 'OBJECT' | 'ARRAY' | 'STRING' | 'BOOLEAN' | 'NUMBER' | 'INTEGER'
+  properties?: Record<string, GeminiSchema>
+  items?: GeminiSchema
+  required?: string[]
+  description?: string
+}
+
+const HEX_ESCAPE = /^[0-9a-fA-F]{4}$/
+
+/**
+ * Verdubbel losse LaTeX-backslashes zodat `JSON.parse` er niet over struikelt.
+ *
+ * Gemini zet LaTeX in een JSON-tekst soms met een enkele backslash neer
+ * (bijv. `\sin(4x)` in plaats van `\\sin(4x)`). `\s` is geen geldige
+ * JSON-escape, dus `JSON.parse` gooit dan een fout. Erger: `\frac` is
+ * toevallig wél een geldige escape (formfeed) en glipt er stilletjes doorheen.
+ *
+ * Alleen een echte JSON-escape blijft staan: `\"`, `\\`, `\/` en `\uXXXX`.
+ * Elke andere backslash is vrijwel zeker een LaTeX-commando (`\sin`, `\frac`,
+ * `\neq`, `\left`, `\{`, ...) en wordt verdubbeld. De functie is idempotent:
+ * een al verdubbelde `\\sin` blijft onaangeroerd.
+ */
+export function repairLatexBackslashes(raw: string): string {
+  let result = ''
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i]
+    if (ch !== '\\') {
+      result += ch
+      continue
+    }
+
+    const next = raw[i + 1]
+    if (next === undefined) {
+      result += ch
+      continue
+    }
+
+    // Echte JSON-escapes ongewijzigd laten.
+    if (next === '\\' || next === '"' || next === '/') {
+      result += ch + next
+      i++
+      continue
+    }
+    if (next === 'u' && HEX_ESCAPE.test(raw.slice(i + 2, i + 6))) {
+      result += raw.slice(i, i + 6)
+      i += 5
+      continue
+    }
+
+    // Al het andere is LaTeX: verdubbelen.
+    result += '\\\\'
+  }
+  return result
+}
+
 /**
  * Roep Gemini aan en forceer een JSON-response.
  * T is de verwachte shape van de JSON.
@@ -24,6 +81,7 @@ export async function generateJson<T>(
     model?: string
     temperature?: number
     signal?: AbortSignal
+    schema?: GeminiSchema
   } = {},
 ): Promise<GeminiJsonResponse<T>> {
   const apiKey = process.env.GEMINI_API_KEY
@@ -50,6 +108,7 @@ export async function generateJson<T>(
         generationConfig: {
           temperature: options.temperature ?? 0.4,
           responseMimeType: 'application/json',
+          ...(options.schema ? { responseSchema: options.schema } : {}),
         },
       }),
     })
@@ -89,8 +148,11 @@ export async function generateJson<T>(
     return { ok: false, error: 'Lege response van Gemini.' }
   }
 
+  // Herstel losse LaTeX-backslashes vóór het parsen. Idempotent, dus een al
+  // nette JSON (met `\\sin` enzovoort) blijft exact gelijk.
+  const repaired = repairLatexBackslashes(text)
   try {
-    const data = JSON.parse(text) as T
+    const data = JSON.parse(repaired) as T
     return { ok: true, data, raw: text }
   } catch {
     return { ok: false, error: 'Gemini gaf geen geldige JSON terug.', raw: text }

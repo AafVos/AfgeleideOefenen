@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import { normalizeAnswer } from '@/lib/practice/engine'
 
-import { generateJson, type GeminiJsonResponse } from './gemini'
+import { generateJson, type GeminiJsonResponse, type GeminiSchema } from './gemini'
 import { buildCheckAnswerPromptNew } from './prompts'
 import { aiCheckIsStubbed, stubCheckAnswerJson } from './stub'
 
@@ -24,6 +24,23 @@ type AiAnswerJson = {
   category?: string
   error_explanation?: string
   solution_steps?: string[]
+}
+
+/** De vorm van de JSON die Gemini moet teruggeven; dwingt nette JSON af. */
+const CHECK_ANSWER_SCHEMA: GeminiSchema = {
+  type: 'OBJECT',
+  properties: {
+    is_mathematically_correct: { type: 'BOOLEAN' },
+    category: { type: 'STRING' },
+    error_explanation: { type: 'STRING' },
+    solution_steps: { type: 'ARRAY', items: { type: 'STRING' } },
+  },
+  required: [
+    'is_mathematically_correct',
+    'category',
+    'error_explanation',
+    'solution_steps',
+  ],
 }
 
 /**
@@ -120,6 +137,7 @@ export async function checkWrongAnswerNew(
           clusterTitle: cluster?.title ?? '',
           stepsAlreadyExist,
         }),
+        { schema: CHECK_ANSWER_SCHEMA },
       )
   if (!ai.ok) return { error: ai.error }
 
