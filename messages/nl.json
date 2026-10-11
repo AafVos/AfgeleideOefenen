@@ -192,7 +192,8 @@
     "sentMessage": "Als dit e-mailadres bij een account hoort, ontvang je zo een resetlink. Check ook je spammap.",
     "backToLogin": "← Terug naar inloggen",
     "errorMissingEmail": "Vul je e-mailadres in.",
-    "errorGeneric": "Er ging iets mis bij het versturen. Probeer het opnieuw."
+    "errorGeneric": "Er ging iets mis bij het versturen. Probeer het opnieuw.",
+    "linkVerlopen": "Deze link is verlopen of al gebruikt. Vul hieronder je e-mailadres in, dan sturen we een nieuwe."
   },
   "NewPassword": {
     "title": "Nieuw wachtwoord",

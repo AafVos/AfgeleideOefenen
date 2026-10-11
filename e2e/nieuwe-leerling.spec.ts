@@ -396,6 +396,14 @@ test('wachtwoord vergeten: mail, link, nieuw wachtwoord, inloggen', async ({
   await expect(foutmelding(page)).toContainText(
     'Onjuiste combinatie van e-mail en wachtwoord.',
   )
+
+  // Dezelfde resetlink is nu verbruikt. Opnieuw aanklikken stuurt niet naar
+  // een inlogfout, maar naar wachtwoord-vergeten met een eigen melding.
+  await page.goto(linkUitMail(mail, VERIFY_PAD))
+  await expect(page).toHaveURL(/\/nl\/wachtwoord-vergeten/)
+  await expect(
+    page.getByText('Deze link is verlopen of al gebruikt.'),
+  ).toBeVisible()
 })
 
 /**

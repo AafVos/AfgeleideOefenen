@@ -35,6 +35,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Bestemming is niet de inlogpagina (bv. de resetpagina na een
+  // wachtwoordverzoek) en Supabase meldt een fout: de link is verlopen of al
+  // gebruikt. Stuur naar de pagina waar je een nieuwe link kunt aanvragen,
+  // zodat het formulier meteen onder de melding staat.
+  if (searchParams.has('error') || searchParams.has('error_code')) {
+    const url = new URL('/nl/wachtwoord-vergeten', origin)
+    url.searchParams.set('mail', 'verlopen')
+    return NextResponse.redirect(url)
+  }
+
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
