@@ -72,7 +72,7 @@ jobs:
   # Loopt de weg van een leerling na in een echte browser: inloggen →
   # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:
   # een wegwerp-Supabase in Docker en een neppe AI-controle, zodat deze
-  # controle nooit aan de gedeelde database of aan Gemini komt.
+  # controle nooit aan de productiedatabase of aan Gemini komt.
   e2e:
     name: Weg van een leerling
     runs-on: ubuntu-latest

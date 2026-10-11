@@ -1825,7 +1825,8 @@ on conflict (question_id, step_order) do update
 -- =====================================================================
 -- Dit deel draait alleen op een lokale Supabase (`npx supabase db reset`)
 -- en op de wegwerp-database in GitHub Actions. Het staat met opzet NIET in
--- een migratie, dus het komt nooit in de echte, gedeelde database terecht.
+-- een migratie, dus het komt nooit in de productiedatabase met de echte
+-- accounts en voortgang terecht.
 --
 -- Het wachtwoord hieronder is geen geheim: dit account bestaat alleen op
 -- je eigen computer en in de testomgeving.

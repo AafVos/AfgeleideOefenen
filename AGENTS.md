@@ -101,8 +101,8 @@ daarnaast nog een keer op telefoonformaat (390×844).
 ### Regels bij het uitbreiden
 
 * Nieuwe testopgaven horen in het testhoofdstuk in `supabase/seed.sql`, niet
-  in een migratie. De database is gedeeld met integraaloefenen.nl; een
-  migratie raakt die site ook.
+  in een migratie. Een migratie draait op de productiedatabase met de echte
+  accounts en voortgang van leerlingen; testopgaven horen daar niet thuis.
 * Verander je iets in `supabase/config.toml`, dan pikt een draaiende Supabase
   dat niet vanzelf op: `npx supabase stop && npx supabase start`. Bevestigen
   per mail staat daar aan, net als op de echte site.

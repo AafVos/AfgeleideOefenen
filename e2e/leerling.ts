@@ -45,8 +45,8 @@ export function uniekAdres(): string {
 
 /**
  * Een verbinding met de lokale testdatabase, om te controleren wat er
- * daadwerkelijk is opgeslagen. Alleen lokaal: de echte database is gedeeld
- * met integraaloefenen.nl.
+ * daadwerkelijk is opgeslagen. Alleen lokaal: de echte database is de
+ * productiedatabase met echte accounts en voortgang.
  */
 export function testDatabase(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
