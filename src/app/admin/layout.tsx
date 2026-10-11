@@ -42,8 +42,12 @@ export default async function AdminLayout({
 
   if (profile?.role !== 'admin') redirect(`/${TAAL}`)
 
+  // `w-full` is geen overbodige regel: `body` is een flexkolom en door
+  // `mx-auto` krimpt dit blok anders niet mee met een smal scherm, maar groeit
+  // het met zijn inhoud mee. De hele pagina schuift dan opzij in plaats van
+  // alleen een brede tabel.
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-accent">
