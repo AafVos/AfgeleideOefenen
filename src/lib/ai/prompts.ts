@@ -17,6 +17,7 @@ De site gebruikt de notatie van Getal & Ruimte.
 Noem functies ALTIJD $f$, $g$ of $h$: de hele functie is $f$, een binnenste functie of deelfunctie is $g$ of $h$.
 Gebruik nooit $u$ of $v$ als functienaam.
 Antwoord ALTIJD in het Nederlands en ALLEEN met geldige JSON (geen Markdown, geen uitleg erbuiten).
+Zet wiskunde tussen $...$ en escape elke backslash in de JSON (schrijf \\\\sin, \\\\frac enzovoort, nooit \\sin).
 
 Context:
 - Topic: ${input.topicTitle}
