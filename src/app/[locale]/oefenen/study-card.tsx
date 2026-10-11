@@ -15,6 +15,7 @@ import {
   type SkipResult,
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
+import { answerPrefix } from '@/lib/practice/answer-prefix'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import { useTimeSpent } from '@/lib/practice/use-time-spent'
 import type { UitlegVideo } from '@/lib/videos'
@@ -24,15 +25,6 @@ import { MathKeyboard } from '@/components/math-keyboard'
 import { FlagQuestionButton } from './flag-question'
 
 const MASTERY_THRESHOLD = 3
-
-/**
- * Notatie voor de antwoordregel onder de opgave, afgeleid van de functieletter
- * in de vraag: "k(x) = …" → "k'(x) =".
- */
-function answerPrefix(latexBody: string | null): string {
-  const letter = latexBody?.match(/([a-zA-Z])\s*\(\s*x\s*\)\s*=/)?.[1] ?? 'f'
-  return `${letter}'(x) =`
-}
 
 type Step = { id: string; step_order: number; step_description: string }
 
@@ -48,6 +40,8 @@ function IconVideo() {
 type StudyQuestion = {
   id: string
   latex_body: string | null
+  /** Tekst vóór het antwoordvak. Leeg: de pagina toont `f'(x) =`. */
+  answer_prefix: string | null
   difficulty: 1 | 2 | 3
 }
 
@@ -86,6 +80,7 @@ export function StudyCard({
 }) {
   const router = useRouter()
   const t = useTranslations('PracticeCard')
+  const prefix = answerPrefix(question.latex_body, question.answer_prefix)
   const [pending, startTransition] = useTransition()
   const [submitting, setSubmitting] = useState(false)
   const [answer, setAnswer] = useState('')
@@ -248,10 +243,12 @@ export function StudyCard({
         )}
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 min-w-0">
         <div className="font-serif text-2xl leading-snug text-text">
           {question.latex_body?.includes('$') ? (
-            <RichMath source={question.latex_body} />
+            <div className="break-words">
+              <RichMath source={question.latex_body} />
+            </div>
           ) : (
             <TeX tex={question.latex_body ?? ''} displayMode />
           )}
@@ -259,7 +256,7 @@ export function StudyCard({
         {state.phase === 'input' && (
           <div className="mt-2 font-serif text-2xl leading-snug text-accent">
             <TeX
-              tex={`${answerPrefix(question.latex_body)} ${
+              tex={`${prefix} ${
                 answer.trim() ? toLatexPreview(answer) : '\\ldots'
               }`}
               displayMode
@@ -275,9 +272,7 @@ export function StudyCard({
                 </p>
                 <div className="mt-1 font-serif text-2xl leading-snug text-accent-2">
                   <TeX
-                    tex={`${answerPrefix(question.latex_body)} ${toLatexPreview(
-                      state.userAnswer,
-                    )}`}
+                    tex={`${prefix} ${toLatexPreview(state.userAnswer)}`}
                   />
                 </div>
               </div>
@@ -289,7 +284,7 @@ export function StudyCard({
                 </p>
                 <div className="mt-1 font-serif text-2xl leading-snug text-accent">
                   <TeX
-                    tex={`${answerPrefix(question.latex_body)} ${(
+                    tex={`${prefix} ${(
                       state.latexCorrectAnswer ?? state.correctAnswer
                     ).replaceAll('$', '')}`}
                   />
