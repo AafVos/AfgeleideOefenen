@@ -28,6 +28,16 @@ function Tijdstip({ waarde }: { waarde: string | null }) {
  * dus de kaart schuift horizontaal mee in plaats van de tekst te persen.
  */
 export function GebruikersTabel({ users }: { users: UserOverview[] }) {
+  // Zonder gebruikers geen tabel: een regel die over tien kolommen gecentreerd
+  // staat, schuift op een smal scherm het zichtbare deel uit.
+  if (users.length === 0) {
+    return (
+      <Card className="px-3 py-10 text-center text-text-muted">
+        Nog geen gebruikers.
+      </Card>
+    )
+  }
+
   return (
     <Card className="overflow-x-auto p-0">
       <table className="w-full min-w-[64rem] text-sm">
@@ -106,13 +116,6 @@ export function GebruikersTabel({ users }: { users: UserOverview[] }) {
               </tr>
             )
           })}
-          {users.length === 0 && (
-            <tr>
-              <td colSpan={10} className="px-3 py-10 text-center text-text-muted">
-                Nog geen gebruikers.
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
     </Card>
