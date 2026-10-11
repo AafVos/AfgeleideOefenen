@@ -64,8 +64,11 @@ De tests mogen nooit echte mail versturen: wijst `RESEND_BASE_URL` naar iets
 anders dan deze computer, dan stopt `scripts/e2e.mjs` met uitleg.
 
 Wat deze tests níét kunnen controleren: of de echte mail in productie ook
-aankomt. Dat hangt aan de instellingen in het Supabase-dashboard en bij
-Resend, niet aan code in deze repo.
+aankomt. De instellingen van het echte project staan wel in de repo, onderaan
+`supabase/config.toml` onder `[remotes.productie]` — maar ze komen daar pas
+terecht als iemand met de hand `supabase config push` draait, en de
+SMTP-gegevens bij Resend staan er sowieso niet in. Zie "De instellingen van de
+echte site" in `README.md`.
 
 ### Eén keer klaarzetten
 

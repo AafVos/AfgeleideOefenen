@@ -108,7 +108,7 @@ Wie een mail niet ziet aankomen, moet dus eerst weten wélke mail het is.
 | Soort mail | Wie verstuurt | Waar instellen |
 |------------|---------------|----------------|
 | Welkomstmail, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY`, `EMAIL_FROM` en `NOTIFY_EMAIL` in de omgevingsvariabelen |
-| Bevestig je e-mailadres, wachtwoord vergeten | **Supabase**, niet de site | Supabase → **Authentication → Emails → SMTP Settings** |
+| Bevestig je e-mailadres, wachtwoord vergeten | **Supabase**, niet de site | `supabase/config.toml` (zie [De instellingen van de echte site](#de-instellingen-van-de-echte-site)); de SMTP-gegevens in Supabase → **Authentication → Emails → SMTP Settings** |
 
 De mail van het inloggen loopt via `supabase.auth.signUp()`, `supabase.auth.resend()`
 en `supabase.auth.resetPasswordForEmail()`. Die roepen de code van Resend niet
@@ -129,8 +129,78 @@ paar per uur. Test na het omzetten dus meteen één aanmelding met een echt adre
 
 De sjablonen van die mails staan in [`supabase/email-templates/`](./supabase/email-templates/)
 (`confirm-signup.html`, `reset-password-nl.html`, `reset-password-en.html`).
-Die staan níét automatisch in Supabase: je plakt ze er met de hand in onder
-**Authentication → Emails**.
+Zolang ze nog niet één keer naar het echte project zijn geschreven, staan ze
+daar met de hand in geplakt onder **Authentication → Emails** — zie de volgende
+paragraaf.
+
+---
+
+## De instellingen van de echte site
+
+Alles wat bepaalt hoe de mail van het inloggen eruitziet en werkt — het
+onderwerp, de tekst, hoeveel mail per uur, hoe lang een link geldig is, waar de
+link heen mag wijzen — hoorde tot nu toe op twee plekken die niets van elkaar
+wisten: `supabase/config.toml` voor de lokale Supabase, en het Supabase-dashboard
+voor de echte site. Verander je er één, dan verandert de andere niet mee, en de
+e2e-controle blijft gewoon groen.
+
+Onderaan [`supabase/config.toml`](./supabase/config.toml) staat daarom een blok
+`[remotes.productie]` met de instellingen van het echte project. De lokale
+instellingen staan er los van: `npx supabase start`, `npx supabase db reset` en
+`npm run test:e2e` lezen dat blok niet.
+
+### Kijken waar het dashboard afwijkt
+
+Dit leest alleen; het verandert niets, lokaal noch in het echt:
+
+```bash
+npx supabase login                      # eenmalig
+npx supabase config diff --project-ref <projectcode>
+```
+
+De projectcode zijn de twintig letters uit `NEXT_PUBLIC_SUPABASE_URL`
+(`https://<projectcode>.supabase.co`), ook te zien in de adresbalk van het
+dashboard; hij staat ook in het blok zelf. Pak de code van de echte site, niet
+die van het ontwikkelproject — de CLI pakt het blok waarvan `project_id` bij
+`--project-ref` past, en vergelijkt zonder zo'n blok gewoon met de lokale
+instellingen.
+
+### Wegschrijven: alleen met de hand, en alleen door Aaf
+
+```bash
+npx supabase config push --project-ref <projectcode>
+```
+
+Dit staat met opzet in **geen enkel** script, geen `npm run` en geen
+GitHub-controle. Draai het nooit blind, en lees eerst de uitkomst van
+`config diff`. Hij vraagt per instelling om bevestiging en laat zien wat er
+verandert; instellingen die het blok niet noemt, blijft hij af. Drie redenen om
+toch op te letten:
+
+* **Een lijst die het blok wél noemt, vervangt hij in zijn geheel.** Staan er in
+  het dashboard nu nog andere adressen bij *Redirect URLs* — bijvoorbeeld de
+  voorbeeldomgevingen van Vercel — dan haalt `push` die weg, en werkt de link in
+  de bevestigingsmail daar niet meer. Zet ze eerst bij
+  `additional_redirect_urls` in het blok.
+* **Hij schrijft álles weg wat het bestand noemt, niet alleen het blok
+  `[remotes.productie]`.** Dat blok is een laagje bovenop de rest: wat er niet
+  in staat, komt uit de instellingen erboven — die van de lokale Supabase. Staat
+  daar iets dat alleen voor de tests bedoeld is, dan gaat dat mee. Daarom staan
+  de drie die er het meest toe doen (`additional_redirect_urls`, `email_sent`,
+  `max_frequency`) expliciet in het blok. Loop `config diff` regel voor regel na
+  op dingen die daar nog niet in staan.
+* **Je schrijft naar het project met de echte accounts en de echte voortgang
+  van leerlingen.** Een verkeerde `site_url` of een te korte geldigheidsduur
+  merk je pas als een leerling niet meer binnenkomt.
+* **De grens van 100 mails per uur laat Supabase pas toe als "Enable Custom
+  SMTP" aanstaat.** Zolang de ingebouwde testmailer aanstaat, blijft het een
+  paar per uur, wat er ook in de repo staat.
+
+### Wat er bewust níét in staat
+
+De SMTP-gegevens van Resend. Daar hoort een wachtwoord bij, en deze repo is
+openbaar. Die blijven in het dashboard onder **Authentication → Emails → SMTP
+Settings**.
 
 ---
 
