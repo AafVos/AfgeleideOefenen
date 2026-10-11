@@ -1,11 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 
+import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 
@@ -97,7 +97,6 @@ export async function resendConfirmationAction(
   email: string,
 ): Promise<{ ok: boolean }> {
   const supabase = await createClient()
-  const origin = (await headers()).get('origin') ?? ''
   const locale = await getLocale()
   const { error } = await supabase.auth.resend({
     type: 'signup',
@@ -107,7 +106,7 @@ export async function resendConfirmationAction(
       // valt Supabase terug op de voorpagina van de site en komt de leerling
       // na het bevestigen op de homepage terecht in plaats van op de
       // inlogpagina met "Je account is bevestigd!".
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
+      emailRedirectTo: `${await bepaalAanvraagAdres()}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
     },
   })
   if (error) {
