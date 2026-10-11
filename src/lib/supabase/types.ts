@@ -372,6 +372,7 @@ export type Database = {
           latex_body: string | null
           answer: string
           latex_answer: string | null
+          answer_prefix: string | null
           answer_alternatives: string[]
           difficulty: Difficulty
           is_ai_generated: boolean
@@ -386,6 +387,7 @@ export type Database = {
           latex_body?: string | null
           answer: string
           latex_answer?: string | null
+          answer_prefix?: string | null
           answer_alternatives?: string[]
           difficulty: Difficulty
           is_ai_generated?: boolean
