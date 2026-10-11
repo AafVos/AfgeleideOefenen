@@ -1,7 +1,6 @@
 'use server'
 
-import { headers } from 'next/headers'
-
+import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
 import { createClient } from '@/lib/supabase/server'
 
 /** Sleutels uit de `ForgotPassword`-teksten; het formulier vertaalt ze. */
@@ -16,17 +15,12 @@ export async function forgotPasswordAction(
   const email = (formData.get('email') ?? '').toString().trim()
   if (!email) return { sent: false, errorKey: 'errorMissingEmail' }
 
-  // Use the actual request origin so we don't depend on NEXT_PUBLIC_SITE_URL.
-  const headersList = await headers()
-  const origin =
-    headersList.get('origin') ??
-    headersList.get('x-forwarded-host') ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    'http://localhost:3000'
-
   const supabase = await createClient()
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?next=/wachtwoord-opnieuw`,
+    // Eén hulpfunctie bouwt het volledige adres: de origin van de aanvraag,
+    // anders de host met https:// ervoor, anders het adres uit de config.
+    // Zonder volledig adres weigert Supabase de resetlink.
+    redirectTo: `${await bepaalAanvraagAdres()}/auth/callback?next=/wachtwoord-opnieuw`,
   })
 
   // Configuratiefouten ("Redirect URL not allowed") en rate limits moeten wél
