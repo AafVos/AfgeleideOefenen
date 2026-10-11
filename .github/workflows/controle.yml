@@ -6,6 +6,11 @@
 # linting."). De Vercel-build blijft dus groen bij lintfouten. Deze workflow
 # vult dat gat.
 #
+# Botst de pull request met main, dan maakt GitHub de samengevoegde versie
+# (refs/pull/<nummer>/merge) niet aan en start deze workflow helemaal niet.
+# De checks hieronder blijven dan weg: niet rood, gewoon afwezig. De workflow
+# botst-met-main.yml draait op de tak zelf en wordt in dat geval rood.
+#
 # Bouwen doet Vercel al bij elke pull request; dat herhalen we hier niet.
 name: Controle
 
