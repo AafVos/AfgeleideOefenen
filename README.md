@@ -128,7 +128,7 @@ dat Resend níét kent, dan komt er helemáál geen mail meer aan in plaats van 
 paar per uur. Test na het omzetten dus meteen één aanmelding met een echt adres.
 
 De sjablonen van die mails staan in [`supabase/email-templates/`](./supabase/email-templates/)
-(`confirm-signup.html`, `reset-password-nl.html`, `reset-password-en.html`).
+(`confirm-signup.html` en `reset-password-nl.html`).
 Zolang ze nog niet één keer naar het echte project zijn geschreven, staan ze
 daar met de hand in geplakt onder **Authentication → Emails** — zie de volgende
 paragraaf.

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   // otherwise default to the Dutch dashboard.
   const nextParam = searchParams.get('next')
   const next = nextParam
-    ? /^\/(nl|en)(\/|$)/.test(nextParam)
+    ? /^\/nl(\/|$)/.test(nextParam)
       ? nextParam          // already has locale prefix → use as-is
       : `/nl${nextParam}`  // no locale prefix → prepend default locale
     : '/nl/dashboard'      // no next param → default
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   //     Dan zet Supabase het antwoord achter de `#`, en dat stuk stuurt een
   //     browser nooit naar de server. Daar kan hier dus niets over gezegd
   //     worden: dat vangt de inlogpagina zelf op (`mail=onbekend`).
-  if (/^\/(nl|en)\/inloggen(\/|$|\?)/.test(next)) {
+  if (/^\/nl\/inloggen(\/|$|\?)/.test(next)) {
     const url = new URL(next, origin)
     const mislukt = searchParams.has('error') || searchParams.has('error_code')
     url.searchParams.set('mail', mislukt ? 'verlopen' : code ? 'bevestigd' : 'onbekend')
