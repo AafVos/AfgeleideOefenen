@@ -144,6 +144,7 @@
     "resendSuccess": "Mail verstuurd. Check je inbox (en je spammap).",
     "resendError": "Dat lukte niet. Probeer het over een minuut nog eens.",
     "confirmedNotice": "Je account is bevestigd! Je kunt nu inloggen.",
+    "expiredNotice": "Deze link is verlopen of al gebruikt. Vul hieronder je e-mailadres en wachtwoord in, dan kun je een nieuwe mail laten sturen.",
     "errorMissingFields": "Vul je e-mailadres en wachtwoord in.",
     "errorInvalidCredentials": "Onjuiste combinatie van e-mail en wachtwoord.",
     "errorUnconfirmed": "Je hebt je e-mailadres nog niet bevestigd. Check je inbox.",
