@@ -44,8 +44,15 @@ function computeProgress(clusters: ClusterData[]) {
   return { mastered, total, pct }
 }
 
-export function ChapterBlock({ chapter }: { chapter: ChapterData }) {
-  const [open, setOpen] = useState(false)
+export function ChapterBlock({
+  chapter,
+  defaultOpen = false,
+}: {
+  chapter: ChapterData
+  /** Bij een kersverse leerling staat het eerste hoofdstuk alvast open. */
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
 
   const allClusters = chapter.topics.flatMap((t) => t.clusters)
   const { mastered, total, pct } = computeProgress(allClusters)
