@@ -173,7 +173,12 @@
     "errorEmailInUse": "Er bestaat al een account met dit e-mailadres.",
     "errorWeakPassword": "Kies een sterker wachtwoord (minstens 8 tekens).",
     "errorGeneric": "Er ging iets mis bij het aanmaken van je account. Probeer het opnieuw.",
-    "noticeConfirmEmail": "Account aangemaakt. Klik op de link in de bevestigingsmail om in te loggen."
+    "noticeConfirmEmail": "Account aangemaakt. Klik op de link in de bevestigingsmail om in te loggen. Check ook je spammap als je de mail niet meteen ziet.",
+    "resendButton": "Stuur bevestigingsmail opnieuw",
+    "resendPending": "Bezig met versturen…",
+    "resendSuccess": "Mail verstuurd. Check je inbox (en je spammap).",
+    "resendError": "Dat lukte niet. Probeer het over een minuut nog eens.",
+    "resendCooldown": "Wacht {seconds} seconden voor je het opnieuw probeert."
   },
   "ForgotPassword": {
     "title": "Wachtwoord vergeten",

@@ -1,18 +1,57 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { signupAction, type SignupState } from './actions'
+import { resendConfirmationAction } from '../inloggen/actions'
 
 const initialState: SignupState = { errorKey: null, noticeKey: null }
+
+const COOLDOWN_SECONDS = 60
 
 export function SignupForm() {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
   const [showPassword, setShowPassword] = useState(false)
+  const [resendPending, startResend] = useTransition()
+  const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [cooldown, setCooldown] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const startCooldown = useCallback(() => {
+    setCooldown(COOLDOWN_SECONDS)
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current)
+            timerRef.current = null
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
+
+  function handleResend() {
+    if (!state.email) return
+    startResend(async () => {
+      const { ok } = await resendConfirmationAction(state.email!)
+      setResendStatus(ok ? 'success' : 'error')
+      startCooldown()
+    })
+  }
 
   if (state.noticeKey) {
     return (
@@ -23,6 +62,35 @@ export function SignupForm() {
         >
           {t(state.noticeKey)}
         </p>
+
+        <div className="space-y-1 rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-muted">
+          {resendStatus === 'success' ? (
+            <p role="status">{t('resendSuccess')}</p>
+          ) : resendStatus === 'error' ? (
+            <p role="alert" className="text-accent-2">
+              {t('resendError')}
+            </p>
+          ) : null}
+          {cooldown > 0 ? (
+            <button
+              type="button"
+              disabled
+              className="font-medium text-text-muted opacity-60"
+            >
+              {t('resendCooldown', { seconds: cooldown })}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendPending}
+              className="font-medium text-accent hover:underline disabled:opacity-60"
+            >
+              {resendPending ? t('resendPending') : t('resendButton')}
+            </button>
+          )}
+        </div>
+
         <Link
           href="/inloggen"
           className="block w-full rounded-md bg-accent px-4 py-2.5 text-center font-medium text-white shadow-sm transition hover:bg-accent/90"
