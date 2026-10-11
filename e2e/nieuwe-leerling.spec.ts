@@ -226,6 +226,21 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
   )
   await expect(page).toHaveURL(/\/nl\/inloggen/)
   await expect(page.getByText('Je account is bevestigd!')).toHaveCount(0)
+  await expect(foutmelding(page)).toContainText(
+    'Deze link is verlopen of al gebruikt.',
+  )
+
+  // En de link uit een opnieuw gestuurde mail: die zet het antwoord achter de
+  // `#`. Dat stuk stuurt een browser nooit naar de server, dus de inlogpagina
+  // moet het zelf opvangen. Het blijft ook niet in de adresregel staan.
+  await page.goto(
+    '/auth/callback?next=%2Fnl%2Finloggen#error=access_denied&error_code=otp_expired',
+  )
+  await expect(foutmelding(page)).toContainText(
+    'Deze link is verlopen of al gebruikt.',
+  )
+  await expect(page.getByText('Je account is bevestigd!')).toHaveCount(0)
+  expect(await page.evaluate(() => window.location.hash)).toBe('')
 
   // Het account zelf is bij die eerste klik wél bevestigd, dus inloggen lukt.
   await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
