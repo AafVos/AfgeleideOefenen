@@ -17,7 +17,6 @@ export type ProgressStatus = 'locked' | 'in_progress' | 'mastered'
 export type ProfileRole = 'student' | 'admin'
 export type Difficulty = 1 | 2 | 3
 export type Grade = 'vwo_4' | 'vwo_5' | 'vwo_6' | 'examen_training' | 'anders'
-export type LearningMode = 'guided' | 'topic_select' | 'diagnostic' | 'free'
 
 export type Database = {
   public: {
@@ -135,8 +134,6 @@ export type Database = {
           role: ProfileRole
           grade: Grade | null
           display_name: string | null
-          learning_mode: LearningMode | null
-          onboarded_at: string | null
           tour_seen_at: string | null
           created_at: string
         }
@@ -146,8 +143,6 @@ export type Database = {
           role?: ProfileRole
           grade?: Grade | null
           display_name?: string | null
-          learning_mode?: LearningMode | null
-          onboarded_at?: string | null
           tour_seen_at?: string | null
           created_at?: string
         }
