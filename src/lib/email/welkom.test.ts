@@ -10,12 +10,15 @@ type Mail = {
 }
 
 // Geen echte mail en geen echte database: allebei vervangen door een nepje.
-const { send, getUserById, updateUserById, maybeSingle } = vi.hoisted(() => ({
-  send: vi.fn<(mail: Mail) => Promise<{ error: unknown }>>(),
-  getUserById: vi.fn(),
-  updateUserById: vi.fn(),
-  maybeSingle: vi.fn(),
-}))
+const { send, getUserById, updateUserById, maybeSingle, insertClaim, deleteClaim } =
+  vi.hoisted(() => ({
+    send: vi.fn<(mail: Mail) => Promise<{ error: unknown }>>(),
+    getUserById: vi.fn(),
+    updateUserById: vi.fn(),
+    maybeSingle: vi.fn(),
+    insertClaim: vi.fn(),
+    deleteClaim: vi.fn(),
+  }))
 
 vi.mock('resend', () => ({
   Resend: class {
@@ -26,11 +29,19 @@ vi.mock('resend', () => ({
 vi.mock('@/lib/supabase/server', () => ({
   createServiceRoleClient: () => ({
     auth: { admin: { getUserById, updateUserById } },
-    from: () => ({
-      select: () => ({
-        eq: () => ({ maybeSingle }),
-      }),
-    }),
+    from: (tabel: string) => {
+      if (tabel === 'welkomstmail_claim') {
+        return {
+          insert: insertClaim,
+          delete: () => ({ eq: deleteClaim }),
+        }
+      }
+      return {
+        select: () => ({
+          eq: () => ({ maybeSingle }),
+        }),
+      }
+    },
   }),
 }))
 
@@ -62,6 +73,10 @@ beforeEach(() => {
   })
   updateUserById.mockReset()
   updateUserById.mockResolvedValue({ data: {}, error: null })
+  insertClaim.mockReset()
+  insertClaim.mockResolvedValue({ error: null })
+  deleteClaim.mockReset()
+  deleteClaim.mockResolvedValue({ error: null })
   maybeSingle.mockReset()
   maybeSingle.mockResolvedValue({ data: { username: 'Sanne' }, error: null })
 })
@@ -77,7 +92,9 @@ describe('welkomstmail', () => {
 
     expect(send).toHaveBeenCalledTimes(1)
     expect(updateUserById).toHaveBeenCalledTimes(1)
+    expect(insertClaim).toHaveBeenCalledWith({ user_id: USER_ID })
     expect(laatsteVlag()).toEqual(expect.any(String))
+    expect(deleteClaim).not.toHaveBeenCalled()
   })
 
   it('zet de vlag niet als de mailsleutel ontbreekt', async () => {
@@ -89,6 +106,7 @@ describe('welkomstmail', () => {
     })
 
     expect(updateUserById).not.toHaveBeenCalled()
+    expect(insertClaim).not.toHaveBeenCalled()
     expect(send).not.toHaveBeenCalled()
   })
 
@@ -98,6 +116,7 @@ describe('welkomstmail', () => {
     expect(await stuurWelkomstmail(USER_ID)).toEqual({ verstuurd: false, reden: 'fout' })
 
     expect(laatsteVlag()).toBeNull()
+    expect(deleteClaim).toHaveBeenCalledWith('user_id', USER_ID)
   })
 
   it('draait de vlag terug als het versturen een fout gooit', async () => {
@@ -106,6 +125,7 @@ describe('welkomstmail', () => {
     expect(await stuurWelkomstmail(USER_ID)).toEqual({ verstuurd: false, reden: 'fout' })
 
     expect(laatsteVlag()).toBeNull()
+    expect(deleteClaim).toHaveBeenCalledWith('user_id', USER_ID)
   })
 
   it('houdt de overige metagegevens heel bij het terugdraaien', async () => {
@@ -157,6 +177,32 @@ describe('welkomstmail', () => {
     })
 
     expect(send).not.toHaveBeenCalled()
+    expect(insertClaim).not.toHaveBeenCalled()
+  })
+
+  it('stuurt niets als een andere aanroep de mail net claimt', async () => {
+    insertClaim.mockResolvedValue({
+      error: { code: '23505', message: 'duplicate key' },
+    })
+
+    expect(await stuurWelkomstmail(USER_ID)).toEqual({
+      verstuurd: false,
+      reden: 'al-verstuurd',
+    })
+
+    expect(send).not.toHaveBeenCalled()
+    expect(updateUserById).not.toHaveBeenCalled()
+  })
+
+  it('stuurt toch als de claim-tabel er nog niet is', async () => {
+    insertClaim.mockResolvedValue({
+      error: { code: 'PGRST205', message: 'welkomstmail_claim ontbreekt' },
+    })
+
+    expect(await stuurWelkomstmail(USER_ID)).toEqual({ verstuurd: true })
+
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(deleteClaim).not.toHaveBeenCalled()
   })
 
   it('stuurt Aaf één seintje als de welkomstmail lukt', async () => {
