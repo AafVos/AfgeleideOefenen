@@ -1,13 +1,13 @@
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 
 /**
- * Supabase Database Webhook op `auth.users` (UPDATE). Zodra `email_confirmed_at`
+ * Trigger `webhook_welkom` op `auth.users` (UPDATE), uit
+ * supabase/migrations/0035_webhook_welkom.sql. Zodra `email_confirmed_at`
  * van leeg naar gevuld gaat, krijgt de leerling de welkomstmail.
  *
- * Instellen: Supabase → Database → Webhooks → nieuwe webhook op `auth.users`,
- * event UPDATE, type HTTP Request POST naar
- * `https://<domein>/api/webhooks/welkom`, met header
- * `x-webhook-secret: <WEBHOOK_SECRET>`.
+ * Waar deze aanroep heen gaat en met welk geheim, staat in de Vault
+ * (`webhook_basis_url` en `webhook_secret`); lokaal zet supabase/seed.sql die
+ * op de ontwikkelserver. Niets meer instellen in het Supabase-dashboard dus.
  */
 export async function POST(req: Request) {
   if (req.headers.get('x-webhook-secret') !== process.env.WEBHOOK_SECRET) {
