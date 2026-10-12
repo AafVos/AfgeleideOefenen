@@ -6,16 +6,10 @@ import { notFound } from 'next/navigation'
 import { SiteHeader } from '@/components/site-header'
 import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
-import { SITE_URL } from '@/lib/seo'
+import { DEEL_TEKST_START, DEEL_TITEL_START, SITE_URL } from '@/lib/seo'
 
 export async function generateMetadata(): Promise<Metadata> {
   const domain = SITE_CONFIG.domain
-
-  // "Adaptief" stond hier nog uit de tijd van het leerpad (weg sinds AFG-12).
-  // De site kiest niets voor je: je kiest zelf een hoofdstuk, een onderwerp en
-  // een opgave, en bij een fout krijg je het stappenplan erbij.
-  const SITE_DESCRIPTION =
-    'Differentiëren oefenen voor wiskunde B VWO — gratis, met uitleg bij elke fout. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen.'
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -23,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
       default: `Differentiëren oefenen — afgeleide wiskunde B VWO | ${domain}`,
       template: `%s · ${domain}`,
     },
-    description: SITE_DESCRIPTION,
+    description: DEEL_TEKST_START,
     applicationName: domain,
     authors: [{ name: domain }],
     // Geen `alternates` hier: dat zou elke pagina hieronder de canonieke link
@@ -33,8 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       locale: 'nl_NL',
       siteName: domain,
-      title: 'Afgeleide oefenen — wiskunde B VWO',
-      description: SITE_DESCRIPTION,
+      title: DEEL_TITEL_START,
+      description: DEEL_TEKST_START,
     },
     robots: {
       index: true,

@@ -12,6 +12,11 @@ import { SITE_CONFIG } from '@/config/site'
  */
 export const SITE_URL = bepaalSiteUrl()
 
+/** Deeltitel en tekst van de startpagina. Andere pagina's zetten hun eigen. */
+export const DEEL_TITEL_START = 'Afgeleide oefenen — wiskunde B VWO'
+export const DEEL_TEKST_START =
+  'Differentiëren oefenen voor wiskunde B VWO — gratis, met uitleg bij elke fout. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen.'
+
 function bepaalSiteUrl(): string {
   const metWww = `https://www.${SITE_CONFIG.domain}`
   const uitOmgeving = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '')
@@ -20,6 +25,15 @@ function bepaalSiteUrl(): string {
   // naar www. Noem dan meteen waar de pagina echt staat.
   if (uitOmgeving === `https://${SITE_CONFIG.domain}`) return metWww
   return uitOmgeving
+}
+
+/**
+ * Het echte adres van één pagina, mét www en mét taalcode.
+ *
+ * `paginaAdres('nl', '/theorie')` → `https://www.afgeleideoefenen.nl/nl/theorie`
+ */
+export function paginaAdres(locale: string, pad = ''): string {
+  return `${SITE_URL}/${locale}${pad}`
 }
 
 /**
@@ -32,5 +46,21 @@ function bepaalSiteUrl(): string {
  * `canoniek('nl', '/theorie')` → `https://www.afgeleideoefenen.nl/nl/theorie`
  */
 export function canoniek(locale: string, pad = ''): Metadata['alternates'] {
-  return { canonical: `${SITE_URL}/${locale}${pad}` }
+  return { canonical: paginaAdres(locale, pad) }
+}
+
+/**
+ * Het deel-kaartje van één openbare pagina: titel, korte tekst en hetzelfde
+ * adres als de canonieke link. Zonder dit veld toont een gedeelde link de
+ * tekst van de startpagina.
+ */
+export function deelkaart(
+  locale: string,
+  pad = '',
+  inhoud?: { title: string; description: string },
+): NonNullable<Metadata['openGraph']> {
+  return {
+    url: paginaAdres(locale, pad),
+    ...(inhoud ? { title: inhoud.title, description: inhoud.description } : {}),
+  }
 }
