@@ -58,6 +58,18 @@ export default async function HomePage() {
         name: domain,
       },
       {
+        '@type': 'LearningResource',
+        '@id': `${SITE_URL}#lessite`,
+        name: domain,
+        url: SITE_URL,
+        description:
+          'Lessite over differentiëren voor vwo wiskunde B. De naam is afgeleideoefenen.nl en het adres is https://www.afgeleideoefenen.nl.',
+        educationalLevel: 'vwo',
+        teaches: 'differentiëren',
+        inLanguage: 'nl',
+        learningResourceType: 'lessite',
+      },
+      {
         '@type': 'FAQPage',
         '@id': `${SITE_URL}#faq`,
         mainEntity: FAQ_ITEMS.map((item) => ({
