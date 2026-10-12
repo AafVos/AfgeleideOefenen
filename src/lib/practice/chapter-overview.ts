@@ -1,6 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-import { SITE } from '@/config/site'
 import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
@@ -13,19 +12,12 @@ export type ChapterInfo = {
   order_index: number
 }
 
-export type TopicCategory =
-  | 'primitiveren'
-  | 'integralen'
-  | 'vergelijkingen'
-  | 'toepassingen'
-
 export type TopicInfo = {
   id: string
   slug: string
   title: string
   chapter_id: string
   order_index: number
-  category: TopicCategory | null
 }
 
 export type ClusterInfo = {
@@ -67,7 +59,6 @@ export async function loadChapters(db: DB): Promise<ChapterInfo[]> {
   const { data, error } = await db
     .from('chapters')
     .select('id, slug, title, book_part, order_index')
-    .eq('site', SITE)
     .order('order_index')
   if (error) throw new Error(error.message)
   return (data ?? []) as ChapterInfo[]
@@ -76,8 +67,7 @@ export async function loadChapters(db: DB): Promise<ChapterInfo[]> {
 export async function loadAllTopics(db: DB): Promise<TopicInfo[]> {
   const { data, error } = await db
     .from('topics_new')
-    .select('id, slug, title, chapter_id, order_index, category')
-    .eq('site', SITE)
+    .select('id, slug, title, chapter_id, order_index')
     .order('order_index')
   if (error) throw new Error(error.message)
   return (data ?? []) as TopicInfo[]
@@ -91,7 +81,6 @@ export async function loadClustersForTopics(
   const { data, error } = await db
     .from('topic_clusters_new')
     .select('id, slug, title, topic_id, order_index')
-    .eq('site', SITE)
     .in('topic_id', topicIds)
     .order('order_index')
   if (error) throw new Error(error.message)
@@ -106,7 +95,6 @@ export async function loadTilesForClusters(
   const { data, error } = await db
     .from('questions_new')
     .select('id, cluster_id, difficulty, order_index, latex_body')
-    .eq('site', SITE)
     .in('cluster_id', clusterIds)
   if (error) throw new Error(error.message)
 

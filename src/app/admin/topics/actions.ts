@@ -3,38 +3,28 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 
 // ---------------------------------------------------------------------
 // Topics
 // ---------------------------------------------------------------------
-function parseCategory(v: FormDataEntryValue | null) {
-  const s = (v ?? '').toString()
-  if (s === 'primitiveren' || s === 'integralen' || s === 'vergelijkingen' || s === 'toepassingen') return s
-  return null
-}
-
 export async function createTopic(formData: FormData) {
   const slug = (formData.get('slug') ?? '').toString().trim()
   const title = (formData.get('title') ?? '').toString().trim()
   const chapter_id = (formData.get('chapter_id') ?? '').toString().trim()
   const order_index = Number(formData.get('order_index') ?? 0)
   const is_unlocked_by_default = formData.get('is_unlocked_by_default') === 'on'
-  const category = parseCategory(formData.get('category'))
 
   if (!slug || !title) throw new Error('Slug en titel zijn verplicht.')
   if (!chapter_id) throw new Error('Kies een hoofdstuk.')
 
   const supabase = await createClient()
   const { error } = await supabase.from('topics_new').insert({
-    site: SITE,
     slug,
     title,
     chapter_id,
     order_index,
     is_unlocked_by_default,
-    category,
   })
   if (error) throw new Error(error.message)
 
@@ -48,7 +38,6 @@ export async function updateTopic(id: string, formData: FormData) {
   const chapter_id = (formData.get('chapter_id') ?? '').toString().trim()
   const order_index = Number(formData.get('order_index') ?? 0)
   const is_unlocked_by_default = formData.get('is_unlocked_by_default') === 'on'
-  const category = parseCategory(formData.get('category'))
 
   if (!slug || !title) throw new Error('Slug en titel zijn verplicht.')
   if (!chapter_id) throw new Error('Kies een hoofdstuk.')
@@ -56,7 +45,7 @@ export async function updateTopic(id: string, formData: FormData) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('topics_new')
-    .update({ slug, title, chapter_id, order_index, is_unlocked_by_default, category })
+    .update({ slug, title, chapter_id, order_index, is_unlocked_by_default })
     .eq('id', id)
   if (error) throw new Error(error.message)
 
@@ -85,7 +74,6 @@ export async function createCluster(topicId: string, formData: FormData) {
 
   const supabase = await createClient()
   const { error } = await supabase.from('topic_clusters_new').insert({
-    site: SITE,
     topic_id: topicId,
     slug,
     title,

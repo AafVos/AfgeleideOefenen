@@ -5,14 +5,8 @@
  * vóór de overstap) zijn weg sinds migratie 0033.
  */
 
-/**
- * `locked` komt uit het weggehaalde leerpad en wordt door deze site nergens
- * meer gezet. De waarde blijft staan omdat de database hem nog toestaat
- * (CHECK op `user_progress_new.status`, migratie 0018): een oude rij in de
- * productiedatabase kan hem nog hebben. Weghalen kan pas als de database hem
- * ook niet meer kent.
- */
-export type ProgressStatus = 'locked' | 'in_progress' | 'mastered'
+/** `locked` is weg sinds migratie 0034 (het oude leerpad). */
+export type ProgressStatus = 'in_progress' | 'mastered'
 export type ProfileRole = 'student' | 'admin'
 export type Difficulty = 1 | 2 | 3
 export type Grade = 'vwo_4' | 'vwo_5' | 'vwo_6' | 'examen_training' | 'anders'
@@ -46,7 +40,6 @@ export type Database = {
       chapters: {
         Row: {
           id: string
-          site: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           book_part: number
@@ -55,7 +48,6 @@ export type Database = {
         }
         Insert: {
           id?: string
-          site?: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           book_part: number
@@ -68,24 +60,20 @@ export type Database = {
       topics_new: {
         Row: {
           id: string
-          site: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           chapter_id: string
           order_index: number
           is_unlocked_by_default: boolean
-          category: 'primitiveren' | 'integralen' | 'vergelijkingen' | 'toepassingen' | null
           created_at: string
         }
         Insert: {
           id?: string
-          site?: 'afgeleiden' | 'integralen'
           slug: string
           title: string
           chapter_id: string
           order_index: number
           is_unlocked_by_default?: boolean
-          category?: 'primitiveren' | 'integralen' | 'vergelijkingen' | 'toepassingen' | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['topics_new']['Insert']>
@@ -94,7 +82,6 @@ export type Database = {
       topic_clusters_new: {
         Row: {
           id: string
-          site: 'afgeleiden' | 'integralen'
           topic_id: string
           slug: string
           title: string
@@ -102,7 +89,6 @@ export type Database = {
         }
         Insert: {
           id?: string
-          site?: 'afgeleiden' | 'integralen'
           topic_id: string
           slug: string
           title: string
@@ -114,7 +100,6 @@ export type Database = {
       questions_new: {
         Row: {
           id: string
-          site: 'afgeleiden' | 'integralen'
           topic_id: string
           cluster_id: string
           latex_body: string | null
@@ -129,7 +114,6 @@ export type Database = {
         }
         Insert: {
           id?: string
-          site?: 'afgeleiden' | 'integralen'
           topic_id: string
           cluster_id: string
           latex_body?: string | null

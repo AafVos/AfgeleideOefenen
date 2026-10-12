@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server'
 
-import { SITE } from '@/config/site'
 import { canoniek } from '@/lib/seo'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
@@ -39,19 +38,16 @@ export default async function DashboardPage() {
   const { data: chapters } = await supabase
     .from('chapters')
     .select('id, slug, title, order_index')
-    .eq('site', SITE)
     .order('order_index')
 
   const { data: topics } = await supabase
     .from('topics_new')
     .select('id, title, slug, chapter_id, order_index')
-    .eq('site', SITE)
     .order('order_index')
 
   const { data: clusters } = await supabase
     .from('topic_clusters_new')
     .select('id, title, slug, topic_id, order_index')
-    .eq('site', SITE)
     .order('order_index')
 
   const { data: progressRows } = await supabase

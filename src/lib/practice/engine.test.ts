@@ -158,13 +158,6 @@ describe('progressAfterIncorrect', () => {
       ),
     ).toMatchObject({ status: 'mastered', mastered: true })
   })
-
-  it('zet een cluster dat nog op slot stond op in_progress', () => {
-    expect(progressAfterIncorrect('locked', 0)).toEqual({
-      correct_streak: 0,
-      status: 'in_progress',
-    })
-  })
 })
 
 // =====================================================================
