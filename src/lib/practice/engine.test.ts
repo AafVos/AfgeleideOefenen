@@ -86,6 +86,29 @@ describe('answersMatch', () => {
     expect(answersMatch('0.33', '1/3')).toBe(false)
   })
 
+  // De breukknop zet haakjes neer. Die vorm is niet vanzelf gelijk aan 3/2.
+  it('rekent de breukknop en een precies kommagetal goed als ze erbij staan', () => {
+    const anderhalf = ['(3)/(2)', '(3)/2', '1,5', '1.5']
+    const tweederde = ['(2)/(3)', '(2)/3']
+    const tweeenhalf = ['(5)/(2)', '(5)/2', '2,5', '2.5']
+
+    expect(answersMatch('(3)/(2)', '3/2')).toBe(false)
+    expect(answersMatch('(3)/(2)', '3/2', anderhalf)).toBe(true)
+    expect(answersMatch('(3)/2', '3/2', anderhalf)).toBe(true)
+    expect(answersMatch('1,5', '3/2', anderhalf)).toBe(true)
+    expect(answersMatch('1.5', '3/2', anderhalf)).toBe(true)
+
+    expect(answersMatch('(2)/(3)', '2/3', tweederde)).toBe(true)
+    expect(answersMatch('(2)/3', '2/3', tweederde)).toBe(true)
+    expect(answersMatch('0,67', '2/3', tweederde)).toBe(false)
+    expect(answersMatch('0.67', '2/3', tweederde)).toBe(false)
+
+    expect(answersMatch('(5)/(2)', '5/2', tweeenhalf)).toBe(true)
+    expect(answersMatch('(5)/2', '5/2', tweeenhalf)).toBe(true)
+    expect(answersMatch('2,5', '5/2', tweeenhalf)).toBe(true)
+    expect(answersMatch('2.5', '5/2', tweeenhalf)).toBe(true)
+  })
+
   it('haalt geen langere formule of losse letter weg', () => {
     expect(answersMatch("f'(x) = 2", '2')).toBe(false)
     expect(answersMatch('2x', '2')).toBe(false)
