@@ -5,7 +5,8 @@
 -- Het opgeslagen antwoord blijft staan. Alleen de extra vormen komen erbij.
 -- Bij 2/3 komt geen kommagetal: 0,67 is niet hetzelfde getal.
 --
--- Zoek de rijen op site, onderwerp, soort, volgnummer en antwoord.
+-- De kolom site is in 0034 weggehaald. Deze database bevat alleen nog
+-- afgeleiden. Zoek de rijen op onderwerp, soort, volgnummer en antwoord.
 -- Ze hebben geen vast id.
 -- Twee keer draaien voegt niets dubbel toe en laat het antwoord staan.
 
@@ -22,7 +23,6 @@ SET answer_alternatives = (
 FROM public.topics_new AS t
 JOIN public.topic_clusters_new AS c
   ON c.topic_id = t.id
- AND c.site = 'afgeleiden'
 JOIN (
   VALUES
     (1, '3/2', ARRAY['(3)/(2)', '(3)/2', '1,5', '1.5']::text[]),
@@ -30,10 +30,8 @@ JOIN (
     (4, '5/2', ARRAY['(5)/(2)', '(5)/2', '2,5', '2.5']::text[])
 ) AS v(volgnummer, antwoord, extra)
   ON true
-WHERE t.site = 'afgeleiden'
-  AND t.slug = 'h6_kettingregel'
+WHERE t.slug = 'h6_kettingregel'
   AND c.slug = 'wortel_in_een_verhaal'
-  AND q.site = 'afgeleiden'
   AND q.topic_id = t.id
   AND q.cluster_id = c.id
   AND q.order_index = v.volgnummer
@@ -57,14 +55,12 @@ BEGIN
     FROM public.questions_new AS q
     JOIN public.topics_new AS t
       ON t.id = q.topic_id
-     AND t.site = 'afgeleiden'
      AND t.slug = 'h6_kettingregel'
     JOIN public.topic_clusters_new AS c
       ON c.id = q.cluster_id
-     AND c.site = 'afgeleiden'
+     AND c.topic_id = t.id
      AND c.slug = 'wortel_in_een_verhaal'
-    WHERE q.site = 'afgeleiden'
-      AND q.order_index = v.volgnummer
+    WHERE q.order_index = v.volgnummer
       AND q.answer = v.antwoord
       AND q.is_ai_generated = false
       AND q.answer_alternatives @> v.extra
