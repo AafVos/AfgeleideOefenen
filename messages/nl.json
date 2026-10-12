@@ -255,13 +255,13 @@
     "easyStep3": "Somregel: $f'(x) = 6x + 5$",
     "mediumQuestion": "Bereken de afgeleide van $f(x) = \\sin(3x)$",
     "mediumPlaceholder": "Bijv. 3cos(3x)",
-    "mediumStep1": "Kettingregel: buitenste functie $\\sin(u) \\to \\cos(u)$",
-    "mediumStep2": "Binnenste functie $u = 3x$, dus $u' = 3$",
+    "mediumStep1": "Kettingregel: buitenste functie $\\sin(g) \\to \\cos(g)$",
+    "mediumStep2": "Binnenste functie $g(x) = 3x$, dus $g'(x) = 3$",
     "mediumStep3": "Vermenigvuldigen: $f'(x) = 3\\cos(3x)$",
     "hardQuestion": "Bereken de afgeleide van $f(x) = x^2 \\cdot e^x$",
     "hardPlaceholder": "Bijv. (x^2+2x)*e^x",
-    "hardStep1": "Productregel: $(u \\cdot v)' = u'v + uv'$",
-    "hardStep2": "$u = x^2 \\to u' = 2x$ en $v = e^x \\to v' = e^x$",
+    "hardStep1": "Productregel: $(g \\cdot h)' = g'h + gh'$",
+    "hardStep2": "$g(x) = x^2 \\to g'(x) = 2x$ en $h(x) = e^x \\to h'(x) = e^x$",
     "hardStep3": "$f'(x) = 2x \\cdot e^x + x^2 \\cdot e^x = (x^2 + 2x)e^x$"
   },
   "PracticeCard": {
