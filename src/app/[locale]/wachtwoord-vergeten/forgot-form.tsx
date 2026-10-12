@@ -49,7 +49,7 @@ function SubmitBtn() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-md bg-accent px-4 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+      className="min-h-11 w-full rounded-md bg-accent px-4 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? t('submitPending') : t('submitLabel')}
     </button>
