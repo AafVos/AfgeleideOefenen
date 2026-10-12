@@ -39,6 +39,14 @@ reden. Zelfde stap: `main` erbij halen en opnieuw duwen. Achterlopen zonder
 conflict is geen probleem: de controle draait dan gewoon op de samengevoegde
 versie.
 
+## Migraties in de titel
+
+Een pull request die een bestand in `supabase/migrations/` toevoegt, zet het
+woord "migratie" in de titel. Welke van die bestanden al op de echte database
+gedraaid zijn, staat in `supabase_migrations.schema_migrations` (versie en
+naam). Migratie `0029_schema_migrations.sql` maakt die tabel aan en vult hem
+met 0001 t/m 0028, de bestanden waarvan het resultaat al aanwezig was.
+
 ## Een keer per nacht: wijkt het dashboard af?
 
 `.github/workflows/dashboard-vergelijken.yml` draait elke ochtend (en met de
