@@ -1,13 +1,9 @@
 /**
  * Merknaam, domein en vakwoorden van deze site.
  *
- * `SITE` is ook de waarde van de kolom `site` in de database. Sinds 9 oktober
- * 2026 heeft integraaloefenen.nl een eigen database, maar de oude
- * integralen-rijen staan hier nog, dus élke query filtert hierop — anders zie
- * je hier integralen-opgaven staan.
+ * Integraaloefenen heeft sinds 9 oktober 2026 een eigen database. De
+ * kolom `site` en de integralen-rijen zijn hier weg (migratie 0034).
  */
-
-export const SITE = 'afgeleiden' as const
 
 export const SITE_CONFIG = {
   brand: 'AfgeleideOefenen',

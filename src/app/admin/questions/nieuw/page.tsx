@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui'
 
@@ -14,12 +13,10 @@ export default async function NewQuestionPage() {
     supabase
       .from('topics_new')
       .select('id, title, order_index')
-      .eq('site', SITE)
       .order('order_index'),
     supabase
       .from('topic_clusters_new')
       .select('id, topic_id, title, order_index')
-      .eq('site', SITE)
       .order('order_index'),
   ])
 

@@ -1,6 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-import { SITE } from '@/config/site'
 import type { Database } from '@/lib/supabase/types'
 
 import type { ChapterData } from './topic-block'
@@ -83,7 +82,6 @@ export async function eersteOpgaveId(
   const { data } = await db
     .from('questions_new')
     .select('id')
-    .eq('site', SITE)
     .eq('cluster_id', clusterId)
     .order('difficulty', { ascending: true })
     .order('order_index', { ascending: true })

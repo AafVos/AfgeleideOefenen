@@ -132,45 +132,42 @@ update public.profiles
 -- ---------------------------------------------------------------------
 -- Vaste oefenstof voor de tests: één hoofdstuk, twee onderwerpen
 -- ---------------------------------------------------------------------
-insert into public.chapters (slug, title, book_part, order_index, site)
-values ('e2e', 'Testhoofdstuk voor de e2e-tests', 1, 99, 'afgeleiden')
+insert into public.chapters (slug, title, book_part, order_index)
+values ('e2e', 'Testhoofdstuk voor de e2e-tests', 1, 99)
 on conflict (slug) do update
   set title       = excluded.title,
-      order_index = excluded.order_index,
-      site        = excluded.site;
+      order_index = excluded.order_index;
 
 insert into public.topics_new
-  (slug, title, chapter_id, order_index, is_unlocked_by_default, site)
+  (slug, title, chapter_id, order_index, is_unlocked_by_default)
 values
   ('e2e_nakijken',  'Nakijken (e2e)',
-   (select id from public.chapters where slug = 'e2e'), 1, true, 'afgeleiden'),
+   (select id from public.chapters where slug = 'e2e'), 1, true),
   ('e2e_beheersen', 'Beheersen (e2e)',
-   (select id from public.chapters where slug = 'e2e'), 2, true, 'afgeleiden'),
+   (select id from public.chapters where slug = 'e2e'), 2, true),
   -- Achteraan, zodat de opgavenummers van de bestaande tests niet opschuiven.
   ('e2e_uitwerking', 'Uitwerking (e2e)',
-   (select id from public.chapters where slug = 'e2e'), 3, true, 'afgeleiden')
+   (select id from public.chapters where slug = 'e2e'), 3, true)
 on conflict (slug) do update
   set title       = excluded.title,
       chapter_id  = excluded.chapter_id,
-      order_index = excluded.order_index,
-      site        = excluded.site;
+      order_index = excluded.order_index;
 
-insert into public.topic_clusters_new (topic_id, slug, title, order_index, site)
+insert into public.topic_clusters_new (topic_id, slug, title, order_index)
 values
   ((select id from public.topics_new where slug = 'e2e_nakijken'),
-   'e2e_goed',    'Goed antwoord (e2e)',    1, 'afgeleiden'),
+   'e2e_goed',    'Goed antwoord (e2e)',    1),
   ((select id from public.topics_new where slug = 'e2e_nakijken'),
-   'e2e_fout',    'Fout antwoord (e2e)',    2, 'afgeleiden'),
+   'e2e_fout',    'Fout antwoord (e2e)',    2),
   ((select id from public.topics_new where slug = 'e2e_nakijken'),
-   'e2e_notatie', 'Andere notatie (e2e)',   3, 'afgeleiden'),
+   'e2e_notatie', 'Andere notatie (e2e)',   3),
   ((select id from public.topics_new where slug = 'e2e_beheersen'),
-   'e2e_rij',     'Drie goed op rij (e2e)', 1, 'afgeleiden'),
+   'e2e_rij',     'Drie goed op rij (e2e)', 1),
   ((select id from public.topics_new where slug = 'e2e_uitwerking'),
-   'e2e_niet_weten', 'Ik weet het niet (e2e)', 1, 'afgeleiden')
+   'e2e_niet_weten', 'Ik weet het niet (e2e)', 1)
 on conflict (topic_id, slug) do update
   set title       = excluded.title,
-      order_index = excluded.order_index,
-      site        = excluded.site;
+      order_index = excluded.order_index;
 
 -- Vragen opnieuw neerzetten (questions_new heeft geen natuurlijke sleutel).
 delete from public.questions_new
@@ -181,9 +178,9 @@ delete from public.questions_new
 
 insert into public.questions_new
   (topic_id, cluster_id, latex_body, answer, latex_answer,
-   difficulty, order_index, site)
+   difficulty, order_index)
 select tc.topic_id, tc.id, q.latex_body, q.answer, q.latex_answer,
-       1, q.order_index, 'afgeleiden'
+       1, q.order_index
 from (values
   -- Eén goed antwoord: f(x) = 4x^3  →  f'(x) = 12x^2
   ('e2e_goed',    'f(x) = 4x^{3}',          '12x^2', '12x^{2}', 1),
