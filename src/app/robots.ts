@@ -18,7 +18,7 @@ const PERSOONLIJK_MET_TAALCODE = [
 ]
 
 // Deze adressen staan in `src/app` zelf en hebben dus geen taalcode — zie
-// `ZONDER_TAALCODE` in `src/proxy.ts`.
+// `ZONDER_TAALCODE` in `src/middleware.ts`.
 const ZONDER_TAALCODE = ['/api/', '/admin', '/admin/', '/uitloggen', '/auth/']
 
 export default function robots(): MetadataRoute.Robots {

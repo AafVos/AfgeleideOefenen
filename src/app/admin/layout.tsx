@@ -6,7 +6,7 @@ import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 
 // Het beheergedeelte staat buiten `src/app/[locale]`, dus de taalcode moet
-// er hier zelf bij. Zonder die code stuurt `src/proxy.ts` de bezoeker alsnog
+// er hier zelf bij. Zonder die code stuurt `src/middleware.ts` de bezoeker alsnog
 // door, maar dat is een extra sprong die niemand nodig heeft.
 const TAAL = routing.defaultLocale
 

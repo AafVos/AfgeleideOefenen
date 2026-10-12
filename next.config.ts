@@ -14,7 +14,8 @@ const nextConfig: NextConfig = {
       // Video-verzoeken mogen foto's van een boekopgave meesturen. Standaard
       // is 1 MB, te weinig voor een telefoonfoto. De browser verkleint ze al
       // (zie lib/images/compress.ts); 4 MB is de marge, en blijft onder de
-      // ~4,5 MB die Vercel per request toestaat.
+      // ~4,5 MB die Vercel per request toestaat. De grens van Cloudflare
+      // Workers is hier nog niet opnieuw nagekeken.
       bodySizeLimit: '4mb',
     },
   },
