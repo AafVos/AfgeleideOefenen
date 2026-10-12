@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useSyncExternalStore } from 'react'
 
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
@@ -24,6 +24,23 @@ type Labels = {
   detailsLabel: string
 }
 
+const desktopQuery = '(min-width: 1024px)'
+
+function subscribeDesktop(onChange: () => void) {
+  const mq = window.matchMedia(desktopQuery)
+  mq.addEventListener('change', onChange)
+  return () => mq.removeEventListener('change', onChange)
+}
+
+/** Op de server (en bij de eerste paint) dicht, zodat een telefoon de formule ziet. */
+function useIsDesktop() {
+  return useSyncExternalStore(
+    subscribeDesktop,
+    () => window.matchMedia(desktopQuery).matches,
+    () => false,
+  )
+}
+
 /** "H2 — De afgeleide functie" → { code: "H2", short: "De afgeleide functie" } */
 function splitTitle(title: string): { code: string | null; short: string } {
   const m = title.match(/^(H\d+)\s*[—–-]\s*(.+)$/)
@@ -37,7 +54,10 @@ export function TheorieClient({
   chapters: TheorieChapter[]
   labels: Labels
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const isDesktop = useIsDesktop()
+  // null = volg het scherm: dicht op een telefoon, open op een computer.
+  const [sidebarChoice, setSidebarChoice] = useState<boolean | null>(null)
+  const sidebarOpen = sidebarChoice ?? isDesktop
   const [activeSlug, setActiveSlug] = useState<string | null>(chapters[0]?.slug ?? null)
   const [openCards, setOpenCards] = useState<Set<string>>(new Set())
   const mainScrollRef = useRef<HTMLDivElement | null>(null)
@@ -77,7 +97,7 @@ export function TheorieClient({
           'nice-scrollbar border-b border-border bg-surface lg:h-full lg:border-b-0 lg:border-r',
           sidebarOpen
             ? 'overflow-x-auto p-4 lg:w-64 lg:overflow-x-visible lg:overflow-y-auto lg:py-8'
-            : 'p-2 lg:w-12 lg:py-4',
+            : 'px-0 py-2 lg:w-11 lg:py-4',
         )}
       >
         <div className={sidebarOpen ? 'flex items-center justify-between gap-2' : 'flex justify-center'}>
@@ -88,11 +108,11 @@ export function TheorieClient({
           )}
           <button
             type="button"
-            onClick={() => setSidebarOpen((v) => !v)}
+            onClick={() => setSidebarChoice(!sidebarOpen)}
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
-            className="rounded-md p-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
           >
             <svg
               viewBox="0 0 24 24"
