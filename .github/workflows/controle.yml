@@ -11,7 +11,9 @@
 # De checks hieronder blijven dan weg: niet rood, gewoon afwezig. De workflow
 # botst-met-main.yml draait op de tak zelf en wordt in dat geval rood.
 #
-# Bouwen doet Vercel al bij elke pull request; dat herhalen we hier niet.
+# De Vercel-bouw doet Vercel zelf. De Workers-bouw draait hier wel, zodat een
+# pull request die Cloudflare breekt meteen rood wordt. Die job is nog geen
+# verplichte controle op main; dat komt pas bij de overstap.
 name: Controle
 
 on:
@@ -73,6 +75,26 @@ jobs:
       # antwoorden stukmaakt gewoon groen door de controle.
       - name: Rekenregels
         run: npm test
+
+  # Zelfde site, gebouwd voor Cloudflare Workers. Vercel blijft de live site;
+  # deze job laat alleen zien dat de Workers-bouw niet stuk is.
+  workers:
+    name: Bouw voor Workers
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Pakketten installeren
+        run: npm ci
+
+      - name: Bouw voor Cloudflare Workers
+        run: npm run cf:build
 
   # Loopt de weg van een leerling na in een echte browser: inloggen →
   # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:

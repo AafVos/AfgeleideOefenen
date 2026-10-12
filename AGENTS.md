@@ -12,12 +12,27 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | Typecontrole        | `npm run typecheck` | altijd                          |
 | Rekenregels (snel)  | `npm test`          | als je aan nakijken/voortgang zit |
 | Weg van een leerling| `npm run test:e2e`  | als je aan inloggen, oefenen, nakijken of het dashboard zit |
+| Bouw voor Workers   | `npm run cf:build`  | als je servercode, config of pakketten raakt |
 
-Lint, typecontrole, de rekenregels en de e2e-tests draaien ook automatisch
+Lint, typecontrole, de rekenregels, de Workers-bouw en de e2e-tests draaien ook automatisch
 bij elke pull request (`.github/workflows/controle.yml`). Daar start Supabase bewust kaal
 (alleen database, inloggen en de data-API) en wordt de e2e-controle
 overgeslagen als een pull request alleen tekst verandert. Lokaal start
 `npx supabase start` gewoon alles, inclusief Studio.
+
+## Lokaal op Workers
+
+De live site staat nog op Vercel. Dezelfde code kan ook op Cloudflare
+Workers, via OpenNext. Zo draai je die versie op je eigen computer:
+
+```bash
+cp .dev.vars.example .dev.vars   # één keer; blijft buiten git
+npm run cf:preview
+```
+
+`npm run cf:preview` bouwt de site en start hem in de Workers-omgeving.
+`npm run dev` blijft de gewone ontwikkelserver. Zet de site niet zelf live
+met `wrangler` of `opennextjs-cloudflare deploy`.
 
 Botst een pull request met `main`, dan maakt GitHub de samengevoegde versie
 niet aan en start die controle helemaal niet. Niet rood en niet "in

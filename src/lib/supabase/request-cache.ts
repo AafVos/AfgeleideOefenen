@@ -13,8 +13,8 @@ import { createClient } from './server'
  * elkaar. `cache()` van React houdt het resultaat vast binnen één request, dus
  * de tweede en derde aanroep kosten niets meer.
  *
- * Let op: dit werkt alleen binnen dezelfde render. De proxy draait op Vercel
- * als een aparte invocatie en deelt deze cache dus niet.
+ * Let op: dit werkt alleen binnen dezelfde render. De middleware draait als
+ * een aparte stap en deelt deze cache dus niet.
  */
 
 export const getCurrentUser = cache(async () => {

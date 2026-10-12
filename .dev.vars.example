@@ -1,0 +1,4 @@
+# Kopieer naar .dev.vars. Dat bestand blijft buiten git.
+# Zonder deze regel leest `npx opennextjs-cloudflare preview` de
+# productie-stand en dus niet je .env.local.
+NEXTJS_ENV=development
