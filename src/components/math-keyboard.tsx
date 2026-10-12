@@ -60,7 +60,7 @@ export function MathKeyboard({
           title={k.title}
           aria-label={k.title}
           className={cn(
-            'h-9 min-w-9 rounded-md border border-border bg-surface px-2.5 font-mono text-sm text-text shadow-sm transition hover:border-accent hover:bg-accent-light disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-3 sm:text-base',
+            'h-11 min-w-11 rounded-md border border-border bg-surface px-2.5 font-mono text-sm text-text shadow-sm transition hover:border-accent hover:bg-accent-light disabled:opacity-50 sm:px-3 sm:text-base',
             k.className,
           )}
         >
@@ -76,7 +76,7 @@ export function MathKeyboard({
           aria-label="Uitleg over machten typen"
           aria-expanded={showHelp}
           className={cn(
-            'h-9 rounded-md border border-border bg-surface px-2.5 text-sm font-medium text-text-muted shadow-sm transition hover:border-accent hover:bg-accent-light hover:text-text sm:h-10 sm:px-3',
+            'h-11 min-w-11 rounded-md border border-border bg-surface px-2.5 text-sm font-medium text-text-muted shadow-sm transition hover:border-accent hover:bg-accent-light hover:text-text sm:px-3',
             showHelp && 'border-accent bg-accent-light text-text',
           )}
         >
