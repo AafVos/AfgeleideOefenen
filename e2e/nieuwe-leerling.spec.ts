@@ -384,8 +384,8 @@ test('wachtwoord vergeten: mail, link, nieuw wachtwoord, inloggen', async ({
   // Aanvragen.
   await page.goto('/nl/wachtwoord-vergeten')
   await page.locator('input[name="email"]').fill(email)
-  await page.getByRole('button', { name: 'Stuur reset-link' }).click()
-  await expect(page.getByText('ontvang je zo een resetlink')).toBeVisible()
+  await page.getByRole('button', { name: 'Stuur een nieuwe link' }).click()
+  await expect(page.getByText('ontvang je zo een link om je wachtwoord opnieuw in te stellen')).toBeVisible()
 
   // De mail komt aan, is Nederlands en komt van afgeleideoefenen.nl.
   const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_RESET })
