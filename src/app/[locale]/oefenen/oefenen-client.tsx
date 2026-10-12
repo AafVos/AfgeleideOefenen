@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { Link, useRouter } from '@/i18n/navigation'
 import { Card, cn } from '@/components/ui'
@@ -15,6 +15,23 @@ import { getVideoForCluster } from '@/lib/videos'
 
 import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
 import { StudyCard } from './study-card'
+
+const desktopQuery = '(min-width: 1024px)'
+
+function subscribeDesktop(onChange: () => void) {
+  const mq = window.matchMedia(desktopQuery)
+  mq.addEventListener('change', onChange)
+  return () => mq.removeEventListener('change', onChange)
+}
+
+/** Op de server (en bij de eerste paint) dicht, zodat een telefoon de opgave ziet. */
+function useIsDesktop() {
+  return useSyncExternalStore(
+    subscribeDesktop,
+    () => window.matchMedia(desktopQuery).matches,
+    () => false,
+  )
+}
 
 type Question = {
   id: string
@@ -109,7 +126,10 @@ export function OefenenClient({
     initialClusterSlug ?? null,
   )
   const [tiles, setTiles] = useState<NewExerciseTile[]>(initialTiles)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const isDesktop = useIsDesktop()
+  // null = volg het scherm: dicht op een telefoon, open op een computer.
+  const [sidebarChoice, setSidebarChoice] = useState<boolean | null>(null)
+  const sidebarOpen = sidebarChoice ?? isDesktop
   const [allTilesState, setAllTilesState] = useState<NewExerciseTile[]>(allTiles)
 
   // URL-navigatie (bijv. via de opgaven-navigator naar een ander hoofdstuk)
@@ -302,7 +322,7 @@ export function OefenenClient({
           'nice-scrollbar border-b border-border bg-surface lg:h-full lg:border-b-0 lg:border-r',
           sidebarOpen
             ? 'overflow-x-auto p-4 lg:w-64 lg:overflow-x-visible lg:overflow-y-auto lg:py-8'
-            : 'p-2 lg:w-12 lg:py-4',
+            : 'px-0 py-2 lg:w-11 lg:py-4',
         )}
       >
         <div className={sidebarOpen ? 'flex items-center justify-between gap-2' : 'flex justify-center'}>
@@ -313,11 +333,11 @@ export function OefenenClient({
           )}
           <button
             type="button"
-            onClick={() => setSidebarOpen((v) => !v)}
+            onClick={() => setSidebarChoice(!sidebarOpen)}
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
-            className="rounded-md p-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
           >
             <svg
               viewBox="0 0 24 24"

@@ -147,6 +147,10 @@ export async function kiesOpgave(
 
   const zijbalk = page.getByRole('complementary').first()
   const hoofdstuk = zijbalk.getByRole('button', { name: TESTHOOFDSTUK.titel })
+  // Op een telefoon begint de lijst dicht, zodat de opgave in beeld staat.
+  if (!(await hoofdstuk.isVisible())) {
+    await zijbalk.getByRole('button', { name: 'Zijbalk uitklappen' }).click()
+  }
   const soortSom = zijbalk.getByRole('button', { name: opgave.soortSom })
 
   if (opgave.onderwerp) {
