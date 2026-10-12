@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
+import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
@@ -65,6 +66,7 @@ export default async function NotFound() {
           </p>
         </div>
       </main>
+      <SiteFooter />
     </NextIntlClientProvider>
   )
 }
