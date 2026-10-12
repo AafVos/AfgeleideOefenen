@@ -44,6 +44,15 @@ export default async function SignupPage() {
           {t('forgotPassword')}
         </Link>
       </p>
+      <p className="mt-4 text-center text-sm leading-relaxed text-text-muted">
+        {t.rich('privacyNote', {
+          link: (chunks) => (
+            <Link href="/privacy" className="font-medium text-accent hover:underline">
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
     </div>
   )
 }
