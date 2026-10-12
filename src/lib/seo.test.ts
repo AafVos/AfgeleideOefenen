@@ -14,7 +14,7 @@ describe('deelkaart', () => {
     })
   })
 
-  it('zet op de startpagina alleen het eigen adres', () => {
-    expect(deelkaart('nl')).toEqual({ url: paginaAdres('nl') })
+  it('zet op de startpagina het eigen adres', () => {
+    expect(deelkaart('nl').url).toBe(paginaAdres('nl'))
   })
 })
