@@ -1,5 +1,5 @@
 import { SITE_CONFIG } from '@/config/site'
-import { EMAIL_FROM } from '@/lib/email/adressen'
+import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
 import { maakMailer } from '@/lib/email/mailer'
 import { SITE_URL } from '@/lib/seo'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -94,6 +94,86 @@ function html(videosUrl: string): string {
 </table>`
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function alsTekst(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null
+}
+
+/**
+ * Seintje aan Aaf dat deze leerling zijn adres heeft bevestigd.
+ *
+ * Gaat mee met de welkomstmail en dus met dezelfde vlag: wie geen tweede
+ * welkomstmail krijgt, krijgt ook geen tweede seintje. Lukt het versturen
+ * niet, dan blijft het bij één regel in de log — de welkomstmail is dan al
+ * weg en die mag niet opnieuw. Het adres van de leerling komt niet in die log.
+ */
+async function seintjeBevestigd(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  user: {
+    id: string
+    email?: string | null
+    email_confirmed_at?: string | null
+    user_metadata?: Record<string, unknown>
+  },
+): Promise<void> {
+  const naar = meldAdres()
+  if (!naar) {
+    console.error('[seintje bevestigd] geen NOTIFY_EMAIL; seintje niet verstuurd')
+    return
+  }
+
+  const resend = maakMailer()
+  if (!resend) {
+    console.error('[seintje bevestigd] geen RESEND_API_KEY; seintje niet verstuurd')
+    return
+  }
+
+  let username = alsTekst(user.user_metadata?.username)
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .maybeSingle()
+    username = alsTekst(profile?.username) ?? username
+  } catch {
+    console.error('[seintje bevestigd] gebruikersnaam niet opgehaald')
+  }
+
+  const bevestigdOp = new Date(user.email_confirmed_at ?? Date.now()).toLocaleString(
+    'nl-NL',
+    { timeZone: 'Europe/Amsterdam' },
+  )
+  const email = user.email ?? null
+
+  try {
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: naar,
+      subject: `Adres bevestigd op ${SITE_CONFIG.domain}`,
+      html: `
+        <h2>Leerling heeft zijn adres bevestigd</h2>
+        <p>Deze leerling heeft op de link in de bevestigingsmail geklikt en heeft de welkomstmail gekregen.</p>
+        <table cellpadding="6">
+          <tr><td><b>E-mail</b></td><td>${email ? escapeHtml(email) : '—'}</td></tr>
+          <tr><td><b>Gebruikersnaam</b></td><td>${username ? escapeHtml(username) : '—'}</td></tr>
+          <tr><td><b>Bevestigd op</b></td><td>${bevestigdOp}</td></tr>
+          <tr><td><b>ID</b></td><td>${escapeHtml(user.id)}</td></tr>
+        </table>
+      `,
+    })
+    if (error) console.error('[seintje bevestigd] versturen mislukt')
+  } catch {
+    console.error('[seintje bevestigd] versturen mislukt')
+  }
+}
+
 function tekst(videosUrl: string): string {
   return `Je account is klaar.
 
@@ -161,6 +241,8 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
       })
       return { verstuurd: false, reden: 'fout' }
     }
+
+    await seintjeBevestigd(supabase, user)
 
     return { verstuurd: true }
   } catch (e) {
