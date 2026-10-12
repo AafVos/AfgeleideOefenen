@@ -186,25 +186,62 @@ Vertel het door aan vrienden. Hoe meer vragen er binnenkomen, hoe meer uitleg er
 Groeten van Aaf`
 }
 
+type ServiceClient = ReturnType<typeof createServiceRoleClient>
+
+/**
+ * De eerste aanroep mag de mail sturen. Een tweede, die tegelijk binnenkomt,
+ * botst op de primaire sleutel en mag niets sturen.
+ *
+ * `ontbreekt` is de tussentijd vlak na het live zetten, als de tabel er nog
+ * niet is. Dan gaat de mail alsnog uit via de vlag hieronder, zoals voorheen.
+ */
+async function claimWelkomstmail(
+  supabase: ServiceClient,
+  userId: string,
+): Promise<'geclaimd' | 'bezet' | 'ontbreekt' | 'fout'> {
+  const { error } = await supabase.from('welkomstmail_claim').insert({ user_id: userId })
+  if (!error) return 'geclaimd'
+
+  const code = error.code ?? ''
+  if (code === '23505') return 'bezet'
+  // PGRST205: tabel staat nog niet in de schema-cache. 42P01: tabel bestaat niet.
+  if (code === 'PGRST205' || code === '42P01') {
+    console.error('[welkomstmail] claim-tabel ontbreekt; val terug op de vlag')
+    return 'ontbreekt'
+  }
+
+  console.error('[welkomstmail] claim mislukt', code)
+  return 'fout'
+}
+
+/** Rij weer weg, zodat een mislukte poging het later opnieuw mag proberen. */
+async function laatClaimVrij(supabase: ServiceClient, userId: string): Promise<void> {
+  const { error } = await supabase.from('welkomstmail_claim').delete().eq('user_id', userId)
+  if (error) console.error('[welkomstmail] claim vrijgeven mislukt', error.code)
+}
+
 /**
  * Stuurt de welkomstmail, maar alleen als het adres bevestigd is en er nog geen
- * welkomstmail uit is. De vlag staat in `user_metadata.welcome_sent_at` en niet
- * in een eigen kolom, zodat hier geen migratie voor nodig is.
+ * welkomstmail uit is.
  *
- * Wordt vanaf twee kanten aangeroepen — de webhook op e-mailbevestiging en het
- * inloggen als vangnet — dus deze functie moet idempotent zijn.
+ * Wordt vanaf twee kanten aangeroepen — de webhook op e-mailbevestiging en de
+ * bevestigingspagina, plus het inloggen als vangnet. Die kunnen elkaar
+ * inhalen. De rij in `welkomstmail_claim` beslist wie er mag sturen; de vlag
+ * in `user_metadata.welcome_sent_at` blijft staan voor de volgende keer.
  */
 export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat> {
-  try {
-    // Vóór de vlag: zonder sleutel gaat er niets uit, en dan mag er ook niet
-    // "verstuurd" komen te staan.
-    const resend = maakMailer()
-    if (!resend) {
-      console.error('[welkomstmail] geen RESEND_API_KEY; mail overgeslagen')
-      return { verstuurd: false, reden: 'geen-sleutel' }
-    }
+  // Vóór de vlag: zonder sleutel gaat er niets uit, en dan mag er ook niet
+  // "verstuurd" komen te staan.
+  const resend = maakMailer()
+  if (!resend) {
+    console.error('[welkomstmail] geen RESEND_API_KEY; mail overgeslagen')
+    return { verstuurd: false, reden: 'geen-sleutel' }
+  }
 
-    const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient()
+  let vastgehouden = false
+
+  try {
     const { data, error } = await supabase.auth.admin.getUserById(userId)
     if (error || !data.user) return { verstuurd: false, reden: 'fout' }
 
@@ -213,12 +250,22 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
     if (!user.email_confirmed_at) return { verstuurd: false, reden: 'niet-bevestigd' }
     if (user.user_metadata?.welcome_sent_at) return { verstuurd: false, reden: 'al-verstuurd' }
 
-    // Vlag eerst zetten: bij twee gelijktijdige aanroepen is één mail te weinig
-    // vervelender dan geen, maar twee mails naar een leerling is erger.
+    const claim = await claimWelkomstmail(supabase, userId)
+    if (claim === 'bezet') return { verstuurd: false, reden: 'al-verstuurd' }
+    if (claim === 'fout') return { verstuurd: false, reden: 'fout' }
+    vastgehouden = claim === 'geclaimd'
+
+    // Vlag daarna zetten, voor de volgende aanroep die niet tegelijk loopt.
+    // Bij twee gelijktijdige aanroepen heeft de claim hierboven al beslist.
     const nu = new Date().toISOString()
-    await supabase.auth.admin.updateUserById(userId, {
+    const { error: vlagError } = await supabase.auth.admin.updateUserById(userId, {
       user_metadata: { ...user.user_metadata, welcome_sent_at: nu },
     })
+    if (vlagError) {
+      if (vastgehouden) await laatClaimVrij(supabase, userId)
+      vastgehouden = false
+      return { verstuurd: false, reden: 'fout' }
+    }
 
     // Vanaf hier staat de vlag. Gaat het versturen op welke manier dan ook mis
     // — een fout terug van Resend, of een fout die eruit vliegt — dan moet de
@@ -239,14 +286,19 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
       await supabase.auth.admin.updateUserById(userId, {
         user_metadata: { ...user.user_metadata, welcome_sent_at: null },
       })
+      if (vastgehouden) await laatClaimVrij(supabase, userId)
+      vastgehouden = false
       return { verstuurd: false, reden: 'fout' }
     }
 
+    // De mail is weg. De claim blijft staan, ook als het seintje hieronder mislukt.
+    vastgehouden = false
     await seintjeBevestigd(supabase, user)
 
     return { verstuurd: true }
   } catch (e) {
     console.error('[welkomstmail]', e)
+    if (vastgehouden) await laatClaimVrij(supabase, userId)
     return { verstuurd: false, reden: 'fout' }
   }
 }
