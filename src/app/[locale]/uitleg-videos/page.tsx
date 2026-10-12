@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 
-import { canoniek } from '@/lib/seo'
+import { canoniek, deelkaart } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 import { getUitlegVideos } from '@/lib/videos'
 
@@ -13,10 +13,13 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'UitlegVideos' })
+  const title = t('title')
+  const description = t('intro')
   return {
-    title: t('title'),
-    description: t('intro'),
+    title,
+    description,
     alternates: canoniek(locale, '/uitleg-videos'),
+    openGraph: deelkaart(locale, '/uitleg-videos', { title, description }),
   }
 }
 
