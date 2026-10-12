@@ -156,6 +156,7 @@ export default async function HomePage() {
                 ['topic4Title', 'topic4Body', '/theorie#kaart-h2-quotientregel'],
                 ['topic5Title', 'topic5Body', '/theorie#kaart-h6-kettingregel'],
                 ['topic6Title', 'topic6Body', '/theorie#hoofdstuk-h7'],
+                ['topic7Title', 'topic7Body', '/theorie#hoofdstuk-h9'],
               ] as const
             ).map(([titleKey, bodyKey, href]) => (
               <li key={titleKey}>
