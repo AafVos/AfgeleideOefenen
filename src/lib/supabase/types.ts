@@ -36,6 +36,19 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
         Relationships: []
       }
+      /** Eén rij per leerling die de welkomstmail krijgt. Migratie 0038. */
+      welkomstmail_claim: {
+        Row: {
+          user_id: string
+          geclaimd_op: string
+        }
+        Insert: {
+          user_id: string
+          geclaimd_op?: string
+        }
+        Update: Partial<Database['public']['Tables']['welkomstmail_claim']['Insert']>
+        Relationships: []
+      }
       // ── New shadow tables (migrations 0013 / 0014) ──────────────────
       chapters: {
         Row: {
