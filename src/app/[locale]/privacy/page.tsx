@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
-import { canoniek } from '@/lib/seo'
+import { canoniek, deelkaart } from '@/lib/seo'
 
 export async function generateMetadata({
   params,
@@ -10,10 +10,13 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Privacy' })
+  const title = t('title')
+  const description = t('description')
   return {
-    title: t('title'),
-    description: t('description'),
+    title,
+    description,
     alternates: canoniek(locale, '/privacy'),
+    openGraph: deelkaart(locale, '/privacy', { title, description }),
   }
 }
 
@@ -37,6 +40,7 @@ export default async function PrivacyPage() {
           <li>{t('accountPassword')}</li>
           <li>{t('accountUsername')}</li>
           <li>{t('accountConfirmed')}</li>
+          <li>{t('accountLastLogin')}</li>
           <li>{t('accountTour')}</li>
         </ul>
         <p className="mt-3">{t('accountNot')}</p>
@@ -48,8 +52,8 @@ export default async function PrivacyPage() {
           <li>{t('practiceCorrect')}</li>
           <li>{t('practiceTime')}</li>
           <li>{t('practiceWhen')}</li>
-          <li>{t('practiceStep')}</li>
           <li>{t('practiceSkip')}</li>
+          <li>{t('practiceName')}</li>
           <li>{t('practiceProgress')}</li>
         </ul>
 
