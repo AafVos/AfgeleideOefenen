@@ -10,10 +10,11 @@ type Mail = {
 }
 
 // Geen echte mail en geen echte database: allebei vervangen door een nepje.
-const { send, getUserById, updateUserById } = vi.hoisted(() => ({
+const { send, getUserById, updateUserById, maybeSingle } = vi.hoisted(() => ({
   send: vi.fn<(mail: Mail) => Promise<{ error: unknown }>>(),
   getUserById: vi.fn(),
   updateUserById: vi.fn(),
+  maybeSingle: vi.fn(),
 }))
 
 vi.mock('resend', () => ({
@@ -25,6 +26,11 @@ vi.mock('resend', () => ({
 vi.mock('@/lib/supabase/server', () => ({
   createServiceRoleClient: () => ({
     auth: { admin: { getUserById, updateUserById } },
+    from: () => ({
+      select: () => ({
+        eq: () => ({ maybeSingle }),
+      }),
+    }),
   }),
 }))
 
@@ -56,6 +62,8 @@ beforeEach(() => {
   })
   updateUserById.mockReset()
   updateUserById.mockResolvedValue({ data: {}, error: null })
+  maybeSingle.mockReset()
+  maybeSingle.mockResolvedValue({ data: { username: 'Sanne' }, error: null })
 })
 
 afterEach(() => {
@@ -149,5 +157,39 @@ describe('welkomstmail', () => {
     })
 
     expect(send).not.toHaveBeenCalled()
+  })
+
+  it('stuurt Aaf één seintje als de welkomstmail lukt', async () => {
+    vi.stubEnv('NOTIFY_EMAIL', 'beheer@example.test')
+
+    expect(await stuurWelkomstmail(USER_ID)).toEqual({ verstuurd: true })
+
+    expect(send).toHaveBeenCalledTimes(2)
+    const seintje = send.mock.calls[1][0]
+    expect(seintje.to).toBe('beheer@example.test')
+    expect(seintje.subject).toBe('Adres bevestigd op afgeleideoefenen.nl')
+    expect(seintje.html).toContain('Leerling heeft zijn adres bevestigd')
+    expect(seintje.html).toContain('leerling@example.test')
+    expect(seintje.html).toContain('Sanne')
+    expect(seintje.html).toContain(USER_ID)
+
+    const gelogd = vi.mocked(console.error).mock.calls.flat().join(' ')
+    expect(gelogd).not.toContain('leerling@example.test')
+  })
+
+  it('laat de welkomstmail staan als het seintje mislukt', async () => {
+    vi.stubEnv('NOTIFY_EMAIL', 'beheer@example.test')
+    send.mockImplementation(async (mail) =>
+      mail.to === 'beheer@example.test'
+        ? { error: { message: 'leerling@example.test geweigerd' } }
+        : { error: null },
+    )
+
+    expect(await stuurWelkomstmail(USER_ID)).toEqual({ verstuurd: true })
+    expect(laatsteVlag()).toEqual(expect.any(String))
+
+    const gelogd = vi.mocked(console.error).mock.calls.flat().join(' ')
+    expect(gelogd).toContain('[seintje bevestigd] versturen mislukt')
+    expect(gelogd).not.toContain('leerling@example.test')
   })
 })
