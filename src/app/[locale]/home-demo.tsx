@@ -277,7 +277,7 @@ export function HomeDemo() {
             key={tab.id}
             type="button"
             onClick={() => setActive(tab.id)}
-            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+            className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
               active === tab.id
                 ? 'bg-accent text-white shadow-sm'
                 : 'text-text-muted hover:text-text'
