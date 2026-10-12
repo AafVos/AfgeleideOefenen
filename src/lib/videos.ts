@@ -141,6 +141,12 @@ export function uitlegVideoPad(slug: string): string {
   return `/uitleg-videos/${encodeURIComponent(slug)}`
 }
 
+/** Weergaveduur "2:20" als duur die zoekmachines lezen: "PT2M20S". */
+export function duurAlsKaartje(duur: string): string {
+  const [minuten, seconden] = duur.split(':')
+  return `PT${Number(minuten)}M${Number(seconden)}S`
+}
+
 /** De hoofdstukken waar video's bij horen, in de volgorde H2, H6, H7, H9. */
 export function getVideoChapters(): string[] {
   const uniek = new Set(
