@@ -18,6 +18,9 @@ const eslintConfig = defineConfig([
     // Losse Remotion-werkplaats met een eigen package.json en tsconfig.json;
     // de typecontrole van de site slaat hem ook al over (zie tsconfig.json).
     "video/**",
+    // Bouwuitvoer van OpenNext en Wrangler.
+    ".open-next/**",
+    ".wrangler/**",
   ]),
 ]);
 

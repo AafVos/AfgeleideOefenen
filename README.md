@@ -15,7 +15,7 @@ Gebouwd met **Next.js (App Router) + Supabase + Gemini**. Zie
 | Database    | Supabase (PostgreSQL + Auth)                  |
 | AI          | Google Gemini (`gemini-2.5-flash`)            |
 | Wiskunde    | KaTeX                                         |
-| Hosting     | Vercel                                        |
+| Hosting     | Vercel (live). Cloudflare Workers via OpenNext staat klaar |
 
 ---
 
@@ -217,7 +217,7 @@ Settings**.
 │   │       ├── server.ts           # Server + service-role client
 │   │       ├── middleware.ts       # Session refresh + admin guard (helper)
 │   │       └── types.ts            # Database TypeScript types
-│   └── proxy.ts                    # Next.js 16 proxy (voorheen middleware)
+│   └── middleware.ts               # Sessie en taalcode (edge, ook voor Workers)
 ├── supabase/
 │   ├── migrations/
 │   │   └── 0001_init.sql           # Schema uit sectie 3
@@ -238,6 +238,8 @@ Settings**.
 | `npm run typecheck` | TypeScript-controle (`tsc --noEmit`)    |
 | `npm test`        | Vitest (unit tests, eenmalig)             |
 | `npm run test:watch` | Vitest in watch-modus                  |
+| `npm run cf:build`   | Bouw voor Cloudflare Workers           |
+| `npm run cf:preview` | Die bouw lokaal starten in Workers     |
 
 Tests staan naast de code die ze controleren (`src/**/*.test.ts`) en draaien
 zonder database en zonder AI — alleen pure rekenregels, zoals het nakijken van
@@ -246,10 +248,25 @@ antwoorden in `src/lib/practice/engine.ts`.
 ### Automatische controle
 
 Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`,
-`npm run typecheck` en `npm test`. Dat is nodig omdat `next build` sinds
-Next.js 16 zelf geen lint meer draait; zonder deze workflow zou een lintfout of
-een kapotte rekenregel ongezien door de Vercel-build komen. De build zelf laten
-we aan Vercel over.
+`npm run typecheck`, `npm test` en `npm run cf:build`. Dat is nodig omdat
+`next build` sinds Next.js 16 zelf geen lint meer draait; zonder deze workflow
+zou een lintfout of een kapotte rekenregel ongezien door de Vercel-build komen.
+De Vercel-bouw doet Vercel zelf. De Workers-bouw draait in deze controle, zodat
+een pull request die Cloudflare breekt meteen rood wordt.
+
+### Lokaal op Workers
+
+De live site staat nog op Vercel. Zo kijk je of dezelfde code in de
+Workers-omgeving start:
+
+```bash
+cp .dev.vars.example .dev.vars   # één keer; blijft buiten git
+npm run cf:preview
+```
+
+`.dev.vars` zet de preview op je `.env.local`. Zonder dat bestand leest de
+preview de productie-stand. Zet de site niet zelf live: dat doet later de
+koppeling met Cloudflare, na een merge.
 
 ---
 

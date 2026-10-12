@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "afgeleide-oefenen",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // Geheimen (Supabase service role, Resend, Gemini, webhook) staan als
+  // Worker-secrets in Cloudflare, nooit in dit bestand.
+  // NEXT_PUBLIC_*-waarden worden tijdens de build ingebakken: die staan bij
+  // de build-variabelen van Workers Builds.
+}

@@ -16,7 +16,10 @@ const ZONDER_TAALCODE = [
   'sitemap.xml',
 ]
 
-export async function proxy(request: NextRequest) {
+// Next.js 16 noemt dit liever `proxy.ts`. Dat bestand draait altijd op Node
+// en wordt op Workers een zware, aparte bundel. Deze lichtere edge-versie
+// is wat Cloudflare aan kan en wat Vercel ook gewoon blijft draaien.
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // De site was ooit ook Engels. Oude /en-adressen blijven werken: ze gaan
