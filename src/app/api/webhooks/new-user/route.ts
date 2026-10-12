@@ -3,6 +3,16 @@ import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
 import { maakMailer } from '@/lib/email/mailer'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+/**
+ * Trigger `webhook_nieuwe_gebruiker` op `auth.users` (INSERT), uit
+ * supabase/migrations/0036_webhook_registratie.sql. Zodra iemand een
+ * account aanmaakt, gaat het seintje van een nieuwe registratie de deur uit.
+ *
+ * Het geheim komt uit de Vault (`webhook_secret`), net als bij de
+ * welkomstmail. Niet in de triggertekst zetten: die is leesbaar voor
+ * iedereen die de database mag inzien.
+ */
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')

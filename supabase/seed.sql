@@ -220,8 +220,9 @@ on conflict (question_id, step_order) do update
 -- =====================================================================
 -- De welkomstmail-webhook, lokaal
 -- =====================================================================
--- De trigger uit migratie 0035 stuurt alleen iets als allebei deze
--- waarden in de Vault staan. Hier wijzen ze naar de ontwikkelserver op
+-- De triggers uit migratie 0035 (welkomstmail) en 0036 (nieuwe
+-- registratie) sturen alleen iets als allebei deze waarden in de Vault
+-- staan. Hier wijzen ze naar de ontwikkelserver op
 -- je eigen computer, zodat een bevestiging in een test nooit bij de
 -- echte site uitkomt. De migratie zet er het echte domein neer; dit
 -- blok draait daarna en zet het terug naar lokaal.

@@ -88,7 +88,7 @@ cp .env.local.example .env.local
 | `RESEND_API_KEY`                | [resend.com/api-keys](https://resend.com/api-keys) — zonder deze key gaat de mail die de site zelf stuurt er stil niet uit. De mail van het inloggen gaat niet hierlangs, zie [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen) |
 | `EMAIL_FROM`                    | Afzender van de mail die de site zelf stuurt; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
 | `NOTIFY_EMAIL`                  | Adres waar alle post van de site heen gaat: het seintje "nieuwe gebruiker", feedback, een vraag via Aaf en een video-verzoek. Geen standaardwaarde: zonder deze regel gaan die berichten niet weg en ziet de leerling "Versturen is niet gelukt" |
-| `WEBHOOK_SECRET`                | Zelf te verzinnen. Dezelfde waarde staat in de Vault als `webhook_secret` (de welkomstmail, zie migratie 0035) en als header bij het seintje voor een nieuwe gebruiker. Zonder match: 401 |
+| `WEBHOOK_SECRET`                | Zelf te verzinnen. Dezelfde waarde staat in de Vault als `webhook_secret`. De welkomstmail (migratie 0035) en het seintje bij een nieuwe registratie (migratie 0036) lezen hem daar. Zonder match: 401 |
 
 ### 4. Start de dev server
 
