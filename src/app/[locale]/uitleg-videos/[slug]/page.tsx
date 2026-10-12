@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { canoniek, deelkaart } from '@/lib/seo'
-import { getUitlegVideo, getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
+import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
+import { duurAlsKaartje, getUitlegVideo, getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
 
 import { UitlegVideosInhoud } from '../inhoud'
 
@@ -38,5 +38,25 @@ export default async function UitlegVideoPage({ params }: PageProps) {
   const video = getUitlegVideo(slug)
   if (!video) notFound()
 
-  return <UitlegVideosInhoud locale={locale} slug={video.slug} />
+  const pad = uitlegVideoPad(video.slug)
+  const kaartje = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    '@id': `${paginaAdres(locale, pad)}#video`,
+    name: video.title,
+    description: video.description,
+    contentUrl: video.src,
+    duration: duurAlsKaartje(video.duration),
+    inLanguage: 'nl',
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(kaartje) }}
+      />
+      <UitlegVideosInhoud locale={locale} slug={video.slug} />
+    </>
+  )
 }
