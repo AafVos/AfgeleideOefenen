@@ -233,7 +233,7 @@ export function StudyCard({
         </div>
         {video && (
           <Link
-            href={`/uitleg-videos?video=${encodeURIComponent(video.slug)}` as '/uitleg-videos'}
+            href={`/uitleg-videos/${encodeURIComponent(video.slug)}` as '/uitleg-videos'}
             title={video.title}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent-light px-2.5 py-1 text-xs font-medium text-accent transition hover:border-accent/60"
           >
