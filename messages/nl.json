@@ -530,7 +530,7 @@
     "cookiesH2": "Cookies",
     "cookiesLead": "Een cookie is een klein bestandje dat je browser bewaart.",
     "cookiesLogin": "Om ingelogd te blijven zet de site een cookie. Zonder die cookie moet je elke keer opnieuw inloggen.",
-    "cookiesNone": "We meten je bezoek niet met een apart programma, en we maken geen opnames van je scherm.",
+    "cookiesNone": "We tellen bezoeken met Vercel Web Analytics. Die dienst gebruikt geen cookies en geen persoonsgegevens. We maken geen opnames van je scherm.",
     "rightsH2": "Weghalen of aanpassen",
     "rightsChange": "Je gebruikersnaam en wachtwoord pas je zelf aan bij Instellingen. Je e-mailadres kun je daar niet wijzigen.",
     "rightsDelete": "Wil je je account weg, of wil je zien wat we van je hebben? Dan halen we je account weg, en de oefengegevens die aan dat account hangen. Het kale foute antwoord bij een opgave, zonder jouw naam, blijft staan.",
