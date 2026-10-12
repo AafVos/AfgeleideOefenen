@@ -148,20 +148,26 @@ export default async function HomePage() {
           <h2 className="font-serif text-3xl text-text">{t('topicsH2')}</h2>
           <p className="mt-3 text-text-muted">{t('topicsIntro')}</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-            {[
-              [t('topic1Title'), t('topic1Body')],
-              [t('topic2Title'), t('topic2Body')],
-              [t('topic3Title'), t('topic3Body')],
-              [t('topic4Title'), t('topic4Body')],
-              [t('topic5Title'), t('topic5Body')],
-              [t('topic6Title'), t('topic6Body')],
-            ].map(([title, body]) => (
-              <li
-                key={title}
-                className="rounded-xl border border-border bg-surface p-4"
-              >
-                <p className="font-medium text-text">{title}</p>
-                <p className="mt-1 text-sm text-text-muted">{body}</p>
+            {(
+              [
+                ['topic1Title', 'topic1Body', '/theorie#kaart-h2-machtsregel'],
+                ['topic2Title', 'topic2Body', '/theorie#kaart-h2-somregel'],
+                ['topic3Title', 'topic3Body', '/theorie#kaart-h2-productregel'],
+                ['topic4Title', 'topic4Body', '/theorie#kaart-h2-quotientregel'],
+                ['topic5Title', 'topic5Body', '/theorie#kaart-h6-kettingregel'],
+                ['topic6Title', 'topic6Body', '/theorie#hoofdstuk-h7'],
+              ] as const
+            ).map(([titleKey, bodyKey, href]) => (
+              <li key={titleKey}>
+                <Link
+                  href={href}
+                  className="block min-h-11 rounded-xl border border-border bg-surface p-4 hover:bg-surface-2"
+                >
+                  <p className="font-medium text-text underline decoration-border underline-offset-4">
+                    {t(titleKey)}
+                  </p>
+                  <p className="mt-1 text-sm text-text-muted">{t(bodyKey)}</p>
+                </Link>
               </li>
             ))}
           </ul>
