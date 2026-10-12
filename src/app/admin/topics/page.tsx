@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 import { Badge, Button, Card, Input } from '@/components/ui'
 
@@ -13,7 +12,6 @@ type TopicRow = {
   chapter_id: string
   order_index: number
   is_unlocked_by_default: boolean
-  category: string | null
   topic_clusters_new: Array<{ count: number }>
 }
 
@@ -24,15 +22,13 @@ export default async function TopicsPage() {
     supabase
       .from('topics_new')
       .select(
-        'id, slug, title, chapter_id, order_index, is_unlocked_by_default, category, topic_clusters_new(count)',
+        'id, slug, title, chapter_id, order_index, is_unlocked_by_default, topic_clusters_new(count)',
       )
-      .eq('site', SITE)
       .order('order_index', { ascending: true })
       .returns<TopicRow[]>(),
     supabase
       .from('chapters')
       .select('id, slug, title, order_index')
-      .eq('site', SITE)
       .order('order_index'),
   ])
 
@@ -55,7 +51,6 @@ export default async function TopicsPage() {
               <th className="px-4 py-2 font-medium">#</th>
               <th className="px-4 py-2 font-medium">Titel</th>
               <th className="px-4 py-2 font-medium">Hoofdstuk</th>
-              <th className="px-4 py-2 font-medium">Categorie</th>
               <th className="px-4 py-2 font-medium">Slug</th>
               <th className="px-4 py-2 font-medium">Clusters</th>
               <th className="px-4 py-2 font-medium">Toegang</th>
@@ -69,9 +64,6 @@ export default async function TopicsPage() {
                 <td className="px-4 py-2 font-medium">{t.title}</td>
                 <td className="px-4 py-2 text-text-muted">
                   {chapterById.get(t.chapter_id)?.slug ?? '—'}
-                </td>
-                <td className="px-4 py-2 text-xs text-text-muted">
-                  {t.category ?? '—'}
                 </td>
                 <td className="px-4 py-2 font-mono text-xs text-text-muted">
                   {t.slug}
@@ -99,7 +91,7 @@ export default async function TopicsPage() {
             {!topics?.length && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={7}
                   className="px-4 py-8 text-center text-text-muted"
                 >
                   Nog geen topics. Voeg er hieronder een toe.
@@ -113,13 +105,13 @@ export default async function TopicsPage() {
       <Card>
         <h3 className="mb-4 font-serif text-lg text-text">Nieuw topic</h3>
         <form action={createTopic} className="grid gap-3 sm:grid-cols-2">
-          <Input name="title" label="Titel" required placeholder="De Integraalregel" />
+          <Input name="title" label="Titel" required placeholder="De productregel" />
           <Input
             name="slug"
             label="Slug"
             required
             pattern="[a-z0-9_-]+"
-            placeholder="h3_integraalregel"
+            placeholder="h4_productregel"
             hint="Kleine letters, cijfers, - of _"
           />
           <div>
@@ -137,21 +129,6 @@ export default async function TopicsPage() {
                   {c.slug} — {c.title}
                 </option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-text">
-              Categorie
-            </label>
-            <select
-              name="category"
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
-            >
-              <option value="">— geen —</option>
-              <option value="primitiveren">Primitiveren</option>
-              <option value="integralen">Integralen</option>
-              <option value="vergelijkingen">Vergelijkingen</option>
-              <option value="toepassingen">Toepassingen</option>
             </select>
           </div>
           <Input

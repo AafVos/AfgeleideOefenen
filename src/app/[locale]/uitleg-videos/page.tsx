@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server'
 
-import { SITE } from '@/config/site'
 import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 import { getUitlegVideos } from '@/lib/videos'
@@ -76,7 +75,6 @@ export default async function UitlegVideosPage({ params, searchParams }: PagePro
     const { data } = await supabase
       .from('questions_new')
       .select('id, cluster_id, difficulty, latex_body')
-      .eq('site', SITE)
       .in('cluster_id', activeVideo.clusterIds)
     vragen = pickQuestions(data ?? [], activeVideo.clusterIds, 3)
   }

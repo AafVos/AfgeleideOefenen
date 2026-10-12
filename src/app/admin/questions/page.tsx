@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-import { SITE } from '@/config/site'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui'
 
@@ -24,12 +23,10 @@ export default async function QuestionsPage({
     supabase
       .from('topics_new')
       .select('id, slug, title, order_index')
-      .eq('site', SITE)
       .order('order_index'),
     supabase
       .from('topic_clusters_new')
       .select('id, topic_id, slug, title, order_index')
-      .eq('site', SITE)
       .order('order_index'),
   ])
 
@@ -38,7 +35,6 @@ export default async function QuestionsPage({
     .select(
       'id, answer, difficulty, is_ai_generated, topic_id, cluster_id, created_at',
     )
-    .eq('site', SITE)
     .order('created_at', { ascending: false })
     .limit(200)
 
