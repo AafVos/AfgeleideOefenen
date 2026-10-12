@@ -246,6 +246,8 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
 
   // Uitloggen voor de tweede klik, anders stuurt de nog actieve sessie je
   // meteen door vanaf de inlogpagina en zie je de foutmelding niet.
+  // Op een breed scherm ligt de rondleiding over het menu heen.
+  await sluitRondleiding(page)
   await logUit(page, email)
 
   // Dezelfde link een tweede keer: hij is op. Dan hoort er géén groene
@@ -323,6 +325,8 @@ test('registreren met een adres dat al bestaat maakt geen tweede account', async
 
   // Uitloggen: de registreren-pagina stuurt ingelogde gebruikers door naar
   // het dashboard, en daar is het registratieformulier niet te vinden.
+  // Op een breed scherm ligt de rondleiding over het menu heen.
+  await sluitRondleiding(page)
   await logUit(page, email)
 
   await vulRegistratieIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
