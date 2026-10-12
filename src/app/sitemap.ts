@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 
 import { routing } from '@/i18n/routing'
 import { SITE_URL } from '@/lib/seo'
+import { getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
 
 // De pagina's staan in `src/app/[locale]`, dus hun echte adres begint met een
 // taalcode. Zonder taalcode werkt het ook, maar via een doorverwijzing — en in
@@ -38,5 +39,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    ...getUitlegVideos().map((video) => ({
+      url: `${SITE_URL}/${TAAL}${uitlegVideoPad(video.slug)}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
   ]
 }

@@ -126,6 +126,21 @@ export function getUitlegVideos(): UitlegVideo[] {
   return VIDEOS
 }
 
+/** Eén video op slug, of null als die naam niet bestaat. */
+export function getUitlegVideo(slug: string): UitlegVideo | null {
+  const schoon = slug.trim()
+  if (!schoon) return null
+  return VIDEOS.find((v) => v.slug === schoon) ?? null
+}
+
+/**
+ * Pad van één uitlegvideo, zonder taalcode.
+ * `uitlegVideoPad('quotientregel')` → `/uitleg-videos/quotientregel`
+ */
+export function uitlegVideoPad(slug: string): string {
+  return `/uitleg-videos/${encodeURIComponent(slug)}`
+}
+
 /** De hoofdstukken waar video's bij horen, in de volgorde H2, H6, H7, H9. */
 export function getVideoChapters(): string[] {
   const uniek = new Set(
