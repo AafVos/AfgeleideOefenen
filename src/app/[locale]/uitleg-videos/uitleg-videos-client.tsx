@@ -91,7 +91,7 @@ function VideoLink({ video, isActive }: { video: VideoItem; isActive: boolean })
         href={video.href as '/uitleg-videos'}
         scroll={false}
         aria-current={isActive ? 'true' : undefined}
-        className={`flex items-start gap-2.5 rounded-xl border p-3 transition ${
+        className={`flex min-h-11 items-start gap-2.5 rounded-xl border p-3 transition ${
           isActive
             ? 'border-accent bg-accent-light text-text'
             : 'border-border bg-surface text-text-muted hover:border-accent/40 hover:text-text'
@@ -126,7 +126,7 @@ function Hoofdstukgroep({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-text transition hover:text-accent"
+        className="flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-text transition hover:text-accent"
       >
         <svg
           className={`size-3.5 shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
@@ -232,7 +232,7 @@ export function UitlegVideosClient({
           <button
             type="button"
             onClick={naarVraagFormulier}
-            className="mt-3 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/90"
+            className="mt-3 min-h-11 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/90"
           >
             {labels.askCta}
           </button>
@@ -477,10 +477,11 @@ function OefenKaart({
 
   const navigatie = (
     <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-      <Button onClick={() => gaNaarVraag(index - 1)} disabled={index === 0}>
+      <Button className="min-h-11 px-4" onClick={() => gaNaarVraag(index - 1)} disabled={index === 0}>
         ← {labels.previousQuestion}
       </Button>
       <Button
+        className="min-h-11 px-4"
         onClick={() => gaNaarVraag(index + 1)}
         disabled={index === vragen.length - 1}
       >
@@ -563,7 +564,7 @@ function OefenKaart({
             />
           </label>
           <ErrorBanner>{error}</ErrorBanner>
-          <Button type="submit" disabled={pending || !answer.trim()}>
+          <Button type="submit" disabled={pending || !answer.trim()} className="min-h-11 px-4">
             {pending ? labels.checking : labels.check}
           </Button>
         </form>
@@ -714,7 +715,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
       />
 
       <div className="max-w-2xl">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text transition hover:border-accent/50">
+        <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text transition hover:border-accent/50">
           <IconCamera />
           <span>{fotoBezig ? labels.askPhotoBusy : labels.askPhoto}</span>
           <input
@@ -757,7 +758,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
       </div>
 
       <ErrorBanner>{fotoFout ?? state.error}</ErrorBanner>
-      <Button type="submit" disabled={fotoBezig}>
+      <Button type="submit" disabled={fotoBezig} className="min-h-11 px-4">
         {labels.askSend}
       </Button>
     </form>
