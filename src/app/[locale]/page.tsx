@@ -3,7 +3,7 @@ import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
 import { SITE_CONFIG } from '@/config/site'
-import { canoniek, SITE_URL } from '@/lib/seo'
+import { canoniek, deelkaart, SITE_URL } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
 import { HomeDemo } from './home-demo'
@@ -14,7 +14,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  return { alternates: canoniek(locale) }
+  return {
+    alternates: canoniek(locale),
+    openGraph: deelkaart(locale),
+  }
 }
 
 export default async function HomePage() {

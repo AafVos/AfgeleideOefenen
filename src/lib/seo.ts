@@ -23,6 +23,15 @@ function bepaalSiteUrl(): string {
 }
 
 /**
+ * Het echte adres van één pagina, mét www en mét taalcode.
+ *
+ * `paginaAdres('nl', '/theorie')` → `https://www.afgeleideoefenen.nl/nl/theorie`
+ */
+export function paginaAdres(locale: string, pad = ''): string {
+  return `${SITE_URL}/${locale}${pad}`
+}
+
+/**
  * De canonieke link van één pagina: haar eigen adres, mét taalcode.
  *
  * Elke pagina moet dit zelf zetten. Doet ze dat niet, dan heeft ze geen
@@ -32,5 +41,21 @@ function bepaalSiteUrl(): string {
  * `canoniek('nl', '/theorie')` → `https://www.afgeleideoefenen.nl/nl/theorie`
  */
 export function canoniek(locale: string, pad = ''): Metadata['alternates'] {
-  return { canonical: `${SITE_URL}/${locale}${pad}` }
+  return { canonical: paginaAdres(locale, pad) }
+}
+
+/**
+ * Het deel-kaartje van één openbare pagina: titel, korte tekst en hetzelfde
+ * adres als de canonieke link. Zonder dit veld toont een gedeelde link de
+ * tekst van de startpagina.
+ */
+export function deelkaart(
+  locale: string,
+  pad = '',
+  inhoud?: { title: string; description: string },
+): NonNullable<Metadata['openGraph']> {
+  return {
+    url: paginaAdres(locale, pad),
+    ...(inhoud ? { title: inhoud.title, description: inhoud.description } : {}),
+  }
 }
