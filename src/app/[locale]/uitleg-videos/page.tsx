@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { permanentRedirect } from 'next/navigation'
 
-import { canoniek } from '@/lib/seo'
+import { canoniek, deelkaart } from '@/lib/seo'
 import { getUitlegVideo, uitlegVideoPad } from '@/lib/videos'
 
 import { UitlegVideosInhoud } from './inhoud'
@@ -34,10 +34,13 @@ export async function generateMetadata({ params, searchParams }: PageProps) {
   stuurOudeVideolinkDoor(locale, search.video)
 
   const t = await getTranslations({ locale, namespace: 'UitlegVideos' })
+  const title = t('title')
+  const description = t('intro')
   return {
-    title: t('title'),
-    description: t('intro'),
+    title,
+    description,
     alternates: canoniek(locale, '/uitleg-videos'),
+    openGraph: deelkaart(locale, '/uitleg-videos', { title, description }),
   }
 }
 

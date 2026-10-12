@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { Card } from '@/components/ui'
-import { canoniek } from '@/lib/seo'
+import { canoniek, deelkaart } from '@/lib/seo'
 
 export async function generateMetadata({
   params,
@@ -11,10 +11,13 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'HoeHetWerkt' })
+  const title = t('title')
+  const description = t('description')
   return {
-    title: t('title'),
-    description: t('description'),
+    title,
+    description,
     alternates: canoniek(locale, '/hoe-het-werkt'),
+    openGraph: deelkaart(locale, '/hoe-het-werkt', { title, description }),
   }
 }
 

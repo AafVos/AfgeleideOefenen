@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { SITE_CONFIG } from '@/config/site'
-import { canoniek } from '@/lib/seo'
+import { canoniek, deelkaart } from '@/lib/seo'
 import { getUitlegVideo, getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
 
 import { UitlegVideosInhoud } from '../inhoud'
@@ -27,13 +26,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: video.title,
     description: video.description,
     alternates: canoniek(locale, pad),
-    openGraph: {
-      type: 'website',
-      locale: 'nl_NL',
-      siteName: SITE_CONFIG.domain,
+    openGraph: deelkaart(locale, pad, {
       title: video.title,
       description: video.description,
-    },
+    }),
   }
 }
 
