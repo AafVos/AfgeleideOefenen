@@ -95,9 +95,14 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       },
       {
         id: 'quotientregel',
-        title: 'Quotiëntregel',
-        formula:
-          "f(x) = \\dfrac{g(x)}{h(x)} \\implies f'(x) = \\dfrac{g'(x)h(x) - g(x)h'(x)}{\\bigl(h(x)\\bigr)^2}",
+        title: 'De quotiëntregel',
+        uitlegPad: '/theorie/quotientregel',
+        // Zelfde letters als de uitlegpagina: f de hele functie, g de teller, h de noemer.
+        // Het id blijft `quotientregel`, zodat het anker `kaart-h2-quotientregel` blijft.
+        formula: [
+          'f(x) = \\dfrac{g(x)}{h(x)}',
+          "f'(x) = \\dfrac{g'(x) \\cdot h(x) - g(x) \\cdot h'(x)}{\\bigl(h(x)\\bigr)^2}",
+        ],
         examples: [
           {
             problem: 'f(x) = \\dfrac{x-2}{x+5}',
