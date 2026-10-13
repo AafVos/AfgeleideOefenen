@@ -214,6 +214,7 @@ export function TestRunnerCard({
                 <Button
                   type="submit"
                   disabled={(pending && submitting) || !answer.trim()}
+                  className="min-h-11 px-5"
                 >
                   {t('submit')}
                 </Button>
@@ -227,7 +228,7 @@ export function TestRunnerCard({
         <div className="rounded-xl border border-accent/30 bg-accent-light p-4">
           <p className="font-serif text-xl text-accent">{t('correct')}</p>
           <div className="mt-4">
-            <Button onClick={next} disabled={pending}>
+            <Button onClick={next} disabled={pending} className="min-h-11 px-5">
               {pending ? t('navigating') : state.done ? t('toResults') : t('nextQuestion')}
             </Button>
           </div>
@@ -238,7 +239,7 @@ export function TestRunnerCard({
         <div className="rounded-xl border border-border bg-surface-2 p-4">
           <p className="font-serif text-xl text-text">{t('savedDeferred')}</p>
           <div className="mt-4">
-            <Button onClick={next} disabled={pending}>
+            <Button onClick={next} disabled={pending} className="min-h-11 px-5">
               {pending ? t('navigating') : state.done ? t('toResults') : t('nextQuestion')}
             </Button>
           </div>
@@ -290,7 +291,7 @@ export function TestRunnerCard({
           )}
 
           <div className="mt-4">
-            <Button onClick={next} disabled={pending}>
+            <Button onClick={next} disabled={pending} className="min-h-11 px-5">
               {pending ? t('navigating') : state.done ? t('toResults') : t('nextQuestion')}
             </Button>
           </div>
