@@ -23,11 +23,10 @@ function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
  * somregel (g(x) = 5, h(x) = 3(x⁴ − x)(x + 1)). Op de productregelpagina
  * heet dat tweede deel f. De slotscène voegt alles samen.
  *
- * Voice-over: public/voiceover-som30/ (Pauline). Die fragmenten zeggen nog
- * u en v; niet opnieuw genereren zonder akkoord. Beats zijn op haar tempo
- * getimed (TEMPO = 1 in scenes-som30.tsx).
+ * Voice-over: public/voiceover-som30/ (Pauline), letters f, g en h.
+ * Beats zijn op haar tempo getimed (TEMPO = 1 in scenes-som30.tsx).
  */
-export const SOM30_SCENES = [200, 880, 1160, 1560, 850].map(t)
+export const SOM30_SCENES = [200, 880, 1160, 1820, 990].map(t)
 export const SOM30_DUUR = SOM30_SCENES.reduce((a, b) => a + b, 0)
 
 export function Som30Video() {
