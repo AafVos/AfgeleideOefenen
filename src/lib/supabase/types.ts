@@ -235,7 +235,6 @@ export type Database = {
           user_answer: string | null
           is_correct: boolean | null
           hints_used: number
-          is_careless: boolean
           time_spent_sec: number | null
           answered_at: string
         }
@@ -246,29 +245,10 @@ export type Database = {
           user_answer?: string | null
           is_correct?: boolean | null
           hints_used?: number
-          is_careless?: boolean
           time_spent_sec?: number | null
           answered_at?: string
         }
         Update: Partial<Database['public']['Tables']['session_answers_new']['Insert']>
-        Relationships: []
-      }
-      step_mistakes_new: {
-        Row: {
-          id: string
-          answer_id: string
-          step_id: string
-          is_careless: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          answer_id: string
-          step_id: string
-          is_careless?: boolean
-          created_at?: string
-        }
-        Update: Partial<Database['public']['Tables']['step_mistakes_new']['Insert']>
         Relationships: []
       }
       question_flags_new: {
