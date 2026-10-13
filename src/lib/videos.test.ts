@@ -18,6 +18,17 @@ describe('uitlegvideo-adressen', () => {
     expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel')
   })
 
+  it('zet bij elke video een eigen uitleg', () => {
+    for (const video of getUitlegVideos()) {
+      expect(video.uitleg.leer.length).toBeGreaterThan(40)
+      expect(video.uitleg.regel.length).toBeGreaterThan(0)
+      expect(video.uitleg.stappen.length).toBeGreaterThan(0)
+      expect(video.uitleg.antwoord).toContain("'")
+      expect(video.uitleg.leer).not.toMatch(/\b[uv]\(/)
+      expect(video.uitleg.stappen.join(' ')).not.toMatch(/\$[uv]\(/)
+    }
+  })
+
   it('kent een onbekende video niet', () => {
     expect(getUitlegVideo('bestaat-niet')).toBeNull()
     expect(getUitlegVideo('  ')).toBeNull()

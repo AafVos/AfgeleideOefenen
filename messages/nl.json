@@ -477,7 +477,10 @@
     "askPhotoTooBig": "Deze foto's zijn samen te groot. Kies er minder of maak een nieuwe foto.",
     "groupGeneral": "Algemene uitleg",
     "groupWalkthrough": "Vraaguitwerkingen",
-    "chapterOther": "Overig"
+    "chapterOther": "Overig",
+    "learnTitle": "Wat je leert",
+    "ruleTitle": "De regel",
+    "exampleTitle": "Een voorbeeld"
   },
   "NotFound": {
     "eyebrow": "Fout 404",

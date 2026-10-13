@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
 import { Math as TeX, RichMath } from '@/components/math'
+import type { VideoUitleg } from '@/lib/videos'
 import { MathKeyboard } from '@/components/math-keyboard'
 import { Button, ErrorBanner } from '@/components/ui'
 import { verkleinFoto } from '@/lib/images/compress'
@@ -27,6 +28,7 @@ type VideoItem = {
   slug: string
   title: string
   description: string
+  uitleg: VideoUitleg
   soort: 'algemeen' | 'vraaguitwerking'
   chapter: string | null
   duration: string
@@ -68,6 +70,9 @@ type Labels = {
   groupGeneral: string
   groupWalkthrough: string
   chapterOther: string
+  learnTitle: string
+  ruleTitle: string
+  exampleTitle: string
   askNoAccount: string
   askLogin: string
   askRegister: string
@@ -151,6 +156,58 @@ function Hoofdstukgroep({
         </ul>
       )}
     </div>
+  )
+}
+
+/** Korte eigen uitleg onder het filmpje: wat je leert, de regel, één voorbeeld. */
+function VideoUitlegBlok({
+  uitleg,
+  labels,
+}: {
+  uitleg: VideoUitleg
+  labels: Labels
+}) {
+  return (
+    <section className="mt-5 space-y-5 text-base leading-relaxed text-text">
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {labels.learnTitle}
+        </h3>
+        <p className="mt-1">{uitleg.leer}</p>
+      </div>
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {labels.ruleTitle}
+        </h3>
+        <div className="mt-2 space-y-2 overflow-x-auto rounded-lg bg-accent-light/60 px-4 py-3 text-[0.95em]">
+          {uitleg.regel.map((regel) => (
+            <p key={regel}>
+              <TeX tex={regel} wrap />
+            </p>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {labels.exampleTitle}
+        </h3>
+        <ol className="mt-2 space-y-2">
+          {uitleg.stappen.map((stap, i) => (
+            <li key={stap} className="flex items-start gap-2">
+              <span className="min-w-[1.25rem] shrink-0 font-semibold tabular-nums text-accent">
+                {i + 1}.
+              </span>
+              <span className="min-w-0 overflow-x-auto">
+                <RichMath source={stap} />
+              </span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-3 overflow-x-auto rounded-lg border border-border bg-surface-2 px-4 py-3 font-serif text-lg">
+          <TeX tex={uitleg.antwoord} wrap />
+        </p>
+      </div>
+    </section>
   )
 }
 
@@ -264,6 +321,7 @@ export function UitlegVideosClient({
             <div className="mt-3">
               <h2 className="font-serif text-xl text-text">{active.title}</h2>
               <p className="mt-1 text-sm text-text-muted">{active.description}</p>
+              <VideoUitlegBlok uitleg={active.uitleg} labels={labels} />
             </div>
           ) : null}
         </div>
