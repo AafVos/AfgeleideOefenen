@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Link } from '@/i18n/navigation'
 
 import { cn } from '@/components/ui'
+import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 
 export type ClusterData = {
   id: string
@@ -72,8 +73,11 @@ export function ChapterBlock({
         >
           <path d="M8 5l8 7-8 7V5z" />
         </svg>
-        <span className="font-mono text-[11px] font-semibold text-text-muted">
-          {chapter.slug.toUpperCase()}
+        <span
+          title={chapter.title}
+          className="w-9 shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-center font-mono text-[11px] font-semibold text-text-muted"
+        >
+          {hoofdstukCode(chapter.slug)}
         </span>
         <span className="flex-1 font-serif text-[15px] text-text">{chapter.title}</span>
         <span className="tabular-nums text-xs text-text-muted">{mastered}/{total}</span>

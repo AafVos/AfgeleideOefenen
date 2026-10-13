@@ -127,7 +127,10 @@ export function NavDropdown({
                   className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text"
                 >
                   {item.code && (
-                    <span className="w-9 shrink-0 rounded-md bg-accent-light px-1.5 py-0.5 text-center font-mono text-[11px] font-semibold text-accent">
+                    <span
+                      title={item.label}
+                      className="w-9 shrink-0 overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-accent-light px-1.5 py-0.5 text-center font-mono text-[11px] font-semibold text-accent"
+                    >
                       {item.code}
                     </span>
                   )}

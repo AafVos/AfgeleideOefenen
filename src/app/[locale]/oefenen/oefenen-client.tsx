@@ -11,6 +11,7 @@ import type {
   TopicInfo,
 } from '@/lib/practice/chapter-overview'
 
+import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 import { getVideoForCluster } from '@/lib/videos'
 
 import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
@@ -384,7 +385,12 @@ export function OefenenClient({
                     <span className="hidden size-3 lg:block" />
                   )}
                   <span className="truncate text-left">
-                    <span className="font-mono font-semibold">{ch.slug.toUpperCase()}</span>
+                    <span
+                      title={ch.title}
+                      className="inline-block w-9 shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-center font-mono font-semibold"
+                    >
+                      {hoofdstukCode(ch.slug)}
+                    </span>
                     {' – '}
                     {ch.title}
                   </span>
@@ -503,8 +509,11 @@ export function OefenenClient({
                 className="scroll-mt-4"
               >
                 <h2 className="mt-20 border-b border-border pb-3 font-serif text-2xl text-text first:mt-6">
-                  <span className="font-mono font-semibold">
-                    {g.chapter.slug.toUpperCase()}
+                  <span
+                    title={g.chapter.title}
+                    className="inline-block w-9 overflow-hidden text-ellipsis whitespace-nowrap text-center font-mono font-semibold"
+                  >
+                    {hoofdstukCode(g.chapter.slug)}
                   </span>
                   {' – '}
                   {g.chapter.title}
@@ -588,8 +597,11 @@ export function OefenenClient({
                   {chapterGroups.map((g) => (
                     <div key={g.chapter.slug}>
                       <p className="text-xs font-medium text-text-muted">
-                        <span className="font-mono font-semibold">
-                          {g.chapter.slug.toUpperCase()}
+                        <span
+                          title={g.chapter.title}
+                          className="inline-block w-9 overflow-hidden text-ellipsis whitespace-nowrap text-center font-mono font-semibold"
+                        >
+                          {hoofdstukCode(g.chapter.slug)}
                         </span>
                         {' – '}
                         {g.chapter.title}
@@ -609,7 +621,7 @@ export function OefenenClient({
                               href={href as '/oefenen'}
                               prefetch={false}
                               aria-current={active ? 'page' : undefined}
-                              aria-label={`${g.chapter.slug.toUpperCase()} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
+                              aria-label={`${g.chapter.title} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
                               className={cn(
                                 'flex size-9 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
                                 active &&

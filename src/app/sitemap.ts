@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 import { KETTINGREGEL_PAD } from '@/content/theory/kettingregel'
+import { PRODUCTREGEL_PAD } from '@/content/theory/productregel'
 import { routing } from '@/i18n/routing'
 import { SITE_URL } from '@/lib/seo'
 import { getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
@@ -42,6 +43,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${SITE_URL}/${TAAL}${KETTINGREGEL_PAD}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/${TAAL}${PRODUCTREGEL_PAD}`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.7,
