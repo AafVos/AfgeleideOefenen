@@ -29,148 +29,51 @@ De kern van de site is **practice-first**: studenten beginnen direct met oefenen
 
 ---
 
-## 3. Database Schema (Supabase / PostgreSQL)
+## 3. Database (Supabase / PostgreSQL)
 
-### 3.1 `topics`
-```sql
-CREATE TABLE topics (
-  id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug                    TEXT UNIQUE NOT NULL,      -- bijv. 'machtsregel'
-  title                   TEXT NOT NULL,             -- bijv. 'De Machtsregel'
-  order_index             INT NOT NULL,              -- volgorde 1,2,3...
-  is_unlocked_by_default  BOOLEAN DEFAULT false,
-  created_at              TIMESTAMP DEFAULT now()
-);
-```
+Dit hoofdstuk beschrijft de tabellen zoals ze nu zijn (oktober 2026). De
+namen met `_new` komen uit de overstap; er staat geen oude tabel meer naast.
+De tabellen zonder `_new` van de eerste opzet (`topics`, `questions`,
+`user_progress` en de rest van die reeks) zijn op 12 oktober 2026 van de
+echte database af.
 
-### 3.2 `topic_clusters`
-```sql
-CREATE TABLE topic_clusters (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  topic_id    UUID REFERENCES topics(id),
-  slug        TEXT NOT NULL,           -- bijv. 'macht_lineair'
-  title       TEXT NOT NULL,           -- bijv. 'Macht + lineaire binnenste'
-  order_index INT NOT NULL,
-  UNIQUE(topic_id, slug)
-);
-```
+De kolommen zelf staan in `supabase/migrations/`. Hier alleen welke tabel
+waarvoor dient.
 
-### 3.3 `root_causes`
-```sql
-CREATE TABLE root_causes (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  topic_id    UUID REFERENCES topics(id),
-  slug        TEXT UNIQUE NOT NULL,    -- bijv. 'exponent_verlaging'
-  description TEXT NOT NULL           -- leesbare uitleg
-);
-```
+### Oefenstof
 
-### 3.4 `questions`
-```sql
-CREATE TABLE questions (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  topic_id         UUID REFERENCES topics(id),
-  cluster_id       UUID REFERENCES topic_clusters(id),
-  body             TEXT NOT NULL,      -- platte tekst versie
-  latex_body       TEXT,               -- KaTeX versie
-  answer           TEXT NOT NULL,      -- juiste antwoord (genormaliseerd)
-  latex_answer     TEXT,
-  difficulty       INT CHECK (difficulty IN (1, 2, 3)),
-  root_cause_tags  TEXT[] DEFAULT '{}',
-  is_ai_generated  BOOLEAN DEFAULT false,
-  order_index      INT,
-  created_at       TIMESTAMP DEFAULT now()
-);
-```
+Iedereen mag lezen. Alleen een beheerder mag schrijven. Hoofdstukken komen
+alleen via een migratie binnen.
 
-### 3.5 `question_steps`
-```sql
-CREATE TABLE question_steps (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  question_id      UUID REFERENCES questions(id),
-  step_order       INT NOT NULL,
-  step_description TEXT NOT NULL,      -- bijv. 'Verlaag de exponent met 1'
-  root_cause_id    UUID REFERENCES root_causes(id)
-);
-```
+| Tabel | Wat erin staat |
+|---|---|
+| `chapters` | De hoofdstukken |
+| `topics_new` | De onderwerpen in een hoofdstuk |
+| `topic_clusters_new` | De soorten sommen in een onderwerp |
+| `questions_new` | De opgave, het antwoord en de moeilijkheid |
+| `question_steps_new` | De tussenstappen bij een opgave |
 
-### 3.6 `profiles` (uitbreiding op Supabase Auth)
-```sql
-CREATE TABLE profiles (
-  id         UUID PRIMARY KEY REFERENCES auth.users(id),
-  username   TEXT UNIQUE,
-  role       TEXT DEFAULT 'student' CHECK (role IN ('student', 'admin')),
-  created_at TIMESTAMP DEFAULT now()
-);
-```
+### Van de leerling
 
-### 3.7 `user_progress`
-```sql
-CREATE TABLE user_progress (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID REFERENCES profiles(id),
-  topic_id        UUID REFERENCES topics(id),
-  cluster_id      UUID REFERENCES topic_clusters(id),
-  status          TEXT CHECK (status IN ('locked', 'in_progress', 'mastered')),
-  correct_streak  INT DEFAULT 0,       -- max 3 = mastered
-  total_answered  INT DEFAULT 0,
-  total_correct   INT DEFAULT 0,
-  mastered_at     TIMESTAMP,
-  UNIQUE(user_id, cluster_id)
-);
-```
+Alleen die leerling, plus een beheerder.
 
-### 3.8 `user_sessions`
-```sql
-CREATE TABLE user_sessions (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID REFERENCES profiles(id),
-  topic_id   UUID REFERENCES topics(id),
-  cluster_id UUID REFERENCES topic_clusters(id),
-  started_at TIMESTAMP DEFAULT now(),
-  ended_at   TIMESTAMP
-);
-```
+| Tabel | Wat erin staat |
+|---|---|
+| `profiles` | Naam, gebruikersnaam, klas, rol, of de rondleiding gezien is. Ontstaat vanzelf bij een nieuw account. |
+| `user_progress_new` | Per soort som: bezig of gehaald, en de reeks goede antwoorden |
+| `user_sessions_new` | Een oefensessie of een zelftoets |
+| `custom_test_questions` | Welke opgaven in welke volgorde in een zelftoets zitten |
+| `session_answers_new` | Elk antwoord: wat er stond, goed of fout, hoe lang |
+| `question_flags_new` | Een melding dat een opgave niet klopt |
+| `known_wrong_answers_new` | Een fout antwoord dat vaker voorkomt, met een korte uitleg |
+| `welkomstmail_claim` | Eén rij per leerling, zodat de welkomstmail niet twee keer uitgaat |
 
-### 3.9 `session_answers`
-```sql
-CREATE TABLE session_answers (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id      UUID REFERENCES user_sessions(id),
-  question_id     UUID REFERENCES questions(id),
-  user_answer     TEXT,
-  is_correct      BOOLEAN,
-  hints_used      INT DEFAULT 0,
-  is_careless     BOOLEAN DEFAULT false,
-  time_spent_sec  INT,
-  answered_at     TIMESTAMP DEFAULT now()
-);
-```
+`auth.users` is de accounttabel van Supabase zelf. Die hoort niet bij deze
+lijst. `step_mistakes_new` staat nog in de database, maar de site leest en
+schrijft hem niet.
 
-### 3.10 `step_mistakes`
-```sql
-CREATE TABLE step_mistakes (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  answer_id   UUID REFERENCES session_answers(id),
-  step_id     UUID REFERENCES question_steps(id),
-  is_careless BOOLEAN DEFAULT false,
-  created_at  TIMESTAMP DEFAULT now()
-);
-```
-
-### 3.11 `known_wrong_answers`
-```sql
-CREATE TABLE known_wrong_answers (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  question_id       UUID REFERENCES questions(id),
-  wrong_answer      TEXT NOT NULL,      -- exacte tekst match
-  error_explanation TEXT NOT NULL,      -- uitleg voor de student
-  root_cause_slug   TEXT NOT NULL,
-  seen_count        INT DEFAULT 1,
-  created_at        TIMESTAMP DEFAULT now(),
-  UNIQUE(question_id, wrong_answer)
-);
-```
+De rest van dit bestand is de bouwopdracht van april 2026. Die beschrijft
+het oorspronkelijke plan, niet de tabellen hierboven.
 
 ---
 
