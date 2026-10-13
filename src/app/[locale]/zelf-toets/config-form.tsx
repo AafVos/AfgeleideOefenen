@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 
 import { Button, ErrorBanner } from '@/components/ui'
+import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 import type {
   ConfigCluster,
   ConfigData,
@@ -282,8 +283,11 @@ export function ConfigForm({
                     ariaLabel={ch.title}
                   />
                   <span className="flex-1 truncate">
-                    <span className="font-mono font-semibold">
-                      {ch.slug.toUpperCase()}
+                    <span
+                      title={ch.title}
+                      className="inline-block w-9 shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-center font-mono font-semibold"
+                    >
+                      {hoofdstukCode(ch.slug)}
                     </span>
                     {' – '}
                     {ch.title}
