@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { canoniek } from '@/lib/seo'
+import { getCurrentProfile } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
@@ -25,14 +26,10 @@ export default async function DashboardPage() {
 
   const t = await getTranslations('Dashboard')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const firstName =
-    profile?.display_name?.trim().split(/\s+/)[0]?.trim() || null
+  // De gebruikersnaam staat in `username`. `display_name` wordt nergens
+  // geschreven, dus daarop groeten liet iedereen „Jouw voortgang” zien.
+  const profile = await getCurrentProfile()
+  const firstName = profile?.username?.trim() || null
 
   // New tables
   const { data: chapters } = await supabase
