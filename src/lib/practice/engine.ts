@@ -92,9 +92,13 @@ export function normalizeAnswer(raw: string): string {
     .replace(/\+-/g, '-')
     .replace(/−/g, '-')
     .replace(/\u2212/g, '-')
+    // Een komma tussen twee cijfers is hetzelfde scheidingsteken als een punt.
+    // Zo zijn 0,2 en 0.2 gelijk, en ook 1,8x^2 en 1.8x^2. 0,33 wordt 0.33
+    // en blijft ongelijk aan 1/3: we ronden niet af naar een breuk.
+    .replace(/(\d),(?=\d)/g, '$1.')
     // Verhaaltje of lijn: de leerling typt soms het voorvoegsel of de eenheid mee.
     // Het opgeslagen antwoord blijft het kale getal of de kale uitdrukking.
-    // 0,33 blijft 0,33. Een andere termvolgorde van een lijn staat hieronder.
+    // Een andere termvolgorde van een lijn staat hieronder.
     .replace(/^[txhy]=/, '')
   return haalEenheidWeg(zonderOpmaak)
 }
