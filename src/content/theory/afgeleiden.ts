@@ -62,6 +62,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "Tel op: $f'(x) = 3x^2 + 10x$",
             ],
           },
+          {
+            problem: 'f(x) = 4x^2 - 6x',
+            answer: "f'(x) = 8x - 6",
+            steps: ['$(4x^2)\' = 8x$', '$(-6x)\' = -6$', "Tel op: $f'(x) = 8x - 6$"],
+          },
         ],
       },
       {
@@ -75,6 +80,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
             answer: "f'(x) = 2x(x^3+2x) + (x^2-4)(3x^2+2)",
             steps: ["$g = x^2-4,\\ g' = 2x$", "$h = x^3+2x,\\ h' = 3x^2+2$", "$f'(x) = 2x(x^3+2x) + (x^2-4)(3x^2+2)$"],
           },
+          {
+            problem: 'f(x) = (2x+1)(x-3)',
+            answer: "f'(x) = 4x - 5",
+            steps: ["$g = 2x+1,\\ g' = 2$", "$h = x-3,\\ h' = 1$", "$f'(x) = 2(x-3) + (2x+1)\\cdot 1 = 4x - 5$"],
+          },
         ],
       },
       {
@@ -87,6 +97,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
             problem: 'f(x) = \\dfrac{x-2}{x+5}',
             answer: "f'(x) = \\dfrac{7}{(x+5)^2}",
             steps: ["$g = x-2,\\ g' = 1$", "$h = x+5,\\ h' = 1$", "$f'(x) = \\dfrac{1\\cdot(x+5)-(x-2)\\cdot 1}{(x+5)^2} = \\dfrac{7}{(x+5)^2}$"],
+          },
+          {
+            problem: 'f(x) = \\dfrac{2x}{x+1}',
+            answer: "f'(x) = \\dfrac{2}{(x+1)^2}",
+            steps: ["$g = 2x,\\ g' = 2$", "$h = x+1,\\ h' = 1$", "$f'(x) = \\dfrac{2(x+1)-2x\\cdot 1}{(x+1)^2} = \\dfrac{2}{(x+1)^2}$"],
           },
         ],
       },
@@ -102,7 +117,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         formula: "f(x) = \\dfrac{1}{x^n} = x^{-n} \\implies f'(x) = -nx^{-n-1}",
         examples: [
           { problem: 'f(x) = \\sqrt{x} = x^{1/2}', answer: "f'(x) = \\tfrac{1}{2}x^{-1/2}", steps: ["Herschrijf: $f(x) = x^{1/2}$", "$n = \\tfrac{1}{2}$: $f'(x) = \\tfrac{1}{2}x^{\\frac{1}{2}-1} = \\tfrac{1}{2}x^{-1/2}$"] },
-          { problem: 'f(x) = \\sqrt[n]{x} = x^{1/n}', answer: "f'(x) = \\tfrac{1}{n}x^{\\tfrac{1}{n}-1}" },
+          { problem: 'f(x) = \\sqrt[n]{x} = x^{1/n}', answer: "f'(x) = \\tfrac{1}{n}x^{\\tfrac{1}{n}-1}", steps: ["Herschrijf: $f(x) = x^{1/n}$", "$f'(x) = \\tfrac{1}{n}x^{\\tfrac{1}{n}-1}$"] },
         ],
       },
       {
@@ -110,9 +125,9 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         title: 'De kettingregel',
         formula: "f\\bigl(g(x)\\bigr)' = f'\\bigl(g(x)\\bigr) \\cdot g'(x)",
         examples: [
-          { problem: '(4x+3)^3', answer: "12(4x+3)^2" },
-          { problem: '(x^2+1)^3', answer: "6x(x^2+1)^2" },
-          { problem: '\\sqrt{3x+1}', answer: "\\dfrac{3}{2\\sqrt{3x+1}}" },
+          { problem: 'f(x) = (4x+3)^3', answer: "f'(x) = 12(4x+3)^2", steps: ['Binnenste: $g(x) = 4x+3$, dus $g\'(x) = 4$', 'Buitenste macht 3: $3(4x+3)^2 \\cdot 4 = 12(4x+3)^2$'] },
+          { problem: 'f(x) = (x^2+1)^3', answer: "f'(x) = 6x(x^2+1)^2", steps: ['Binnenste: $g(x) = x^2+1$, dus $g\'(x) = 2x$', "$f'(x) = 3(x^2+1)^2 \\cdot 2x = 6x(x^2+1)^2$"] },
+          { problem: 'f(x) = \\sqrt{3x+1}', answer: "f'(x) = \\dfrac{3}{2\\sqrt{3x+1}}", steps: ['Herschrijf: $(3x+1)^{1/2}$', "Afgeleide: $\\tfrac{1}{2}(3x+1)^{-1/2} \\cdot 3 = \\dfrac{3}{2\\sqrt{3x+1}}$"] },
           { problem: '\\sqrt{x^2+1}', answer: "\\dfrac{x}{\\sqrt{x^2+1}}" },
         ],
       },
@@ -140,6 +155,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f'(x) = 3\\cos(x) + 2\\sin(x)$",
             ],
           },
+          {
+            problem: 'f(x) = \\sin(x) + 4\\cos(x)',
+            answer: "f'(x) = \\cos(x) - 4\\sin(x)",
+            steps: ['$(\\sin(x))\' = \\cos(x)$', '$(4\\cos(x))\' = -4\\sin(x)$', "$f'(x) = \\cos(x) - 4\\sin(x)$"],
+          },
         ],
       },
       {
@@ -157,6 +177,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "Binnenste functie: $g(x) = 3x^2$, dus $g'(x) = 6x$",
               "$f'(x) = g'(x) \\cdot \\cos\\bigl(g(x)\\bigr) = 6x\\cos(3x^2)$",
             ],
+          },
+          {
+            problem: 'f(x) = \\cos(2x)',
+            answer: "f'(x) = -2\\sin(2x)",
+            steps: ['Binnenste: $g(x) = 2x$, dus $g\'(x) = 2$', "$f'(x) = -g'(x)\\sin(2x) = -2\\sin(2x)$"],
           },
         ],
       },
@@ -176,7 +201,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         examples: [
           { problem: 'f(x) = e^{g(x)}', answer: "f'(x) = g'(x) \\cdot e^{g(x)}", steps: ['Kettingregel: buitenste $e^{\\ldots}$ blijft staan', "Vermenigvuldig met de afgeleide van de exponent: $g'(x)$"] },
           { problem: 'f(x) = e^{2x+3}', answer: "f'(x) = 2e^{2x+3}", steps: ["$g(x) = 2x+3,\\ g'(x) = 2$", "$f'(x) = 2 \\cdot e^{2x+3}$"] },
-          { problem: 'f(x) = 3^x', answer: "f'(x) = 3^x \\cdot \\ln(3)" },
+          { problem: 'f(x) = 3^x', answer: "f'(x) = 3^x \\cdot \\ln(3)", steps: ['$g = 3$', "$f'(x) = 3^x \\cdot \\ln(3)$"] },
         ],
       },
       {
@@ -185,9 +210,9 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         formula: "f(x) = \\ln(x) \\implies f'(x) = \\dfrac{1}{x}",
         examples: [
           { problem: 'f(x) = \\ln(g(x))', answer: "f'(x) = \\dfrac{g'(x)}{g(x)}", steps: ['Kettingregel: afgeleide van wat erin staat gedeeld door wat erin staat', "$f'(x) = \\dfrac{g'(x)}{g(x)}$"] },
-          { problem: 'f(x) = {}^g\\!\\log(x)', answer: "f'(x) = \\dfrac{1}{x \\cdot \\ln(g)}" },
+          { problem: 'f(x) = {}^2\\!\\log(5x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['Schrijf ${}^2\\!\\log(5x) = {}^2\\!\\log(5) + {}^2\\!\\log(x)$', 'De constante valt weg. ${}^2\\!\\log(x)$ heeft afgeleide $\\dfrac{1}{x\\ln(2)}$'] },
           { problem: 'f(x) = \\ln(x^2+1)', answer: "f'(x) = \\dfrac{2x}{x^2+1}", steps: ["$g(x) = x^2+1,\\ g'(x) = 2x$", "$f'(x) = \\dfrac{2x}{x^2+1}$"] },
-          { problem: 'f(x) = {}^2\\!\\log(x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}" },
+          { problem: 'f(x) = {}^2\\!\\log(x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['De formule voor ${}^g\\!\\log(x)$ met $g = 2$', "$f'(x) = \\dfrac{1}{x\\ln(2)}$"] },
         ],
       },
     ],
@@ -212,6 +237,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               'De snelheid is $\\sqrt{8^2 + 15^2} = \\sqrt{289} = 17$',
             ],
           },
+          {
+            problem: 'x(t) = 3t,\\ y(t) = 4t',
+            answer: '\\text{snelheid } 5',
+            steps: ["$x'(t) = 3$ en $y'(t) = 4$", '$\\sqrt{9 + 16} = \\sqrt{25} = 5$'],
+          },
         ],
         notes: [
           'De snelheid is de lengte van de snelheidsvector. Die is nooit negatief.',
@@ -223,6 +253,18 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         formula: [
           "x''(t),\\ y''(t)",
           "\\text{grootte} = \\sqrt{\\left(x''(t)\\right)^2 + \\left(y''(t)\\right)^2}",
+        ],
+        examples: [
+          {
+            problem: 'x(t) = t^2,\\ y(t) = 3t',
+            answer: '\\text{grootte versnelling } 2',
+            steps: ["$x''(t) = 2$ en $y''(t) = 0$", '$\\sqrt{4 + 0} = 2$'],
+          },
+          {
+            problem: 'x(t) = t^3,\\ y(t) = t^2',
+            answer: '2\\sqrt{9t^2 + 1}',
+            steps: ["$x''(t) = 6t$ en $y''(t) = 2$", '$\\sqrt{36t^2 + 4} = 2\\sqrt{9t^2 + 1}$'],
+          },
         ],
         notes: [
           'Differentieer de plaats twee keer. Daarna neem je weer de lengte.',
@@ -240,6 +282,15 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$x' = 1$, $x'' = 0$, $y' = 3t^2 - 3$, $y'' = 6t$",
               'Het inproduct is $18t(t^2 - 1) = 0$, dus $t = 0$ of $t = 1$',
               'Op $t = 1$ is de snelheid $1$. Op $t = 0$ is die $\\sqrt{10}$, groter',
+            ],
+          },
+          {
+            problem: 'x(t) = 2t,\\ y(t) = t^2,\\ t \\geq 0',
+            answer: '\\text{kleinste snelheid } 2 \\text{ op } t = 0',
+            steps: [
+              "$x' = 2$, $x'' = 0$, $y' = 2t$, $y'' = 2$",
+              'Het inproduct is $4t = 0$, dus $t = 0$',
+              'De snelheid is daar $\\sqrt{4 + 0} = 2$',
             ],
           },
         ],
@@ -264,6 +315,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               'De lengte is $18$. Nog een keer differentiëren geeft lengte $36$',
             ],
           },
+          {
+            problem: 'x(t) = 5\\cos(t),\\ y(t) = 5\\sin(t)',
+            answer: '\\text{snelheid } 5,\\ \\text{versnelling } 5',
+            steps: ['$R = 5$ en $\\omega = 1$', 'Snelheid $R|\\omega| = 5$. Versnelling $R\\omega^2 = 5$'],
+          },
         ],
         notes: [
           'De snelheid is constant. De versnelling wijst naar het middelpunt.',
@@ -286,6 +342,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               'Een cosinus zit tussen $-1$ en $1$, dus de grootste $|f\'(t)|$ is $10$',
             ],
           },
+          {
+            problem: 'f(t) = 3\\sin(4t)',
+            answer: '\\text{grootste snelheid } 12',
+            steps: ["$f'(t) = 12\\cos(4t)$", 'De grootste waarde van $|12\\cos(4t)|$ is $12$'],
+          },
         ],
       },
       {
@@ -305,6 +366,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f(t) = 20\\cos(t - \\varphi)$, dus $f'(t)$ wordt hoogstens $20$",
             ],
           },
+          {
+            problem: 'f(t) = 3\\cos(2t) + 4\\sin(2t)',
+            answer: '\\text{grootste snelheid } 10',
+            steps: ['$R = \\sqrt{9 + 16} = 5$ en $\\omega = 2$', 'Grootste snelheid $R|\\omega| = 10$'],
+          },
         ],
         notes: [
           'Dit is een beweging over een rechte lijn. In het vlak, met een aparte $x(t)$ en $y(t)$, geldt deze formule niet.',
@@ -321,6 +387,18 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         title: 'Soorten stijgen en dalen',
         notes: [
           'Kijk eerst naar het teken van $f\'(x)$, daarna naar het teken van $f\'\'(x)$.',
+        ],
+        examples: [
+          {
+            problem: 'f(x) = x^3 \\text{ in } x = 1',
+            answer: '\\text{toenemend stijgend}',
+            steps: ["$f'(1) = 3 > 0$", "$f''(1) = 6 > 0$", 'Positief en positief: toenemend stijgend'],
+          },
+          {
+            problem: 'f(x) = -x^2 \\text{ in } x = 1',
+            answer: '\\text{toenemend dalend}',
+            steps: ["$f'(1) = -2 < 0$", "$f''(x) = -2 < 0$", 'Negatief en negatief: toenemend dalend'],
+          },
         ],
         table: {
           headers: ['Eerste afgeleide', 'Tweede afgeleide', 'De grafiek is'],
@@ -346,6 +424,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f''(1) = 0$ en $f''$ wisselt daar van negatief naar positief",
             ],
           },
+          {
+            problem: 'f(x) = x^3',
+            answer: 'buigpunt bij $x = 0$',
+            steps: ["$f''(x) = 6x$", "$f''(0) = 0$ en $f''$ wisselt van teken"],
+          },
         ],
         notes: [
           'In een buigpunt gaat de grafiek over van de ene soort stijgen of dalen naar de andere. Dan wisselt $f\'\'$ van teken.',
@@ -369,6 +452,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f''(-1) = -6 < 0$: maximum. $f''(1) = 6 > 0$: minimum",
             ],
           },
+          {
+            problem: 'f(x) = x^2 + 2',
+            answer: 'minimum bij $x = 0$',
+            steps: ["$f'(x) = 2x = 0$ geeft $x = 0$", "$f''(x) = 2 > 0$, dus een minimum"],
+          },
         ],
       },
       {
@@ -377,6 +465,18 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         formula: 'OA^{2} = x_A^{2} + y_A^{2}',
         notes: [
           'Voor twee toppen $A$ en $B$ stel je $OA^2 = OB^2$. Dan hoef je de wortel niet te trekken.',
+        ],
+        examples: [
+          {
+            problem: 'f(x) = 4 - x^2',
+            answer: 'OA = 4',
+            steps: ["$f'(x) = -2x = 0$ geeft de top $(0, 4)$", '$OA = \\sqrt{0 + 16} = 4$'],
+          },
+          {
+            problem: 'f(x) = x^2 - 1',
+            answer: 'OA = 1',
+            steps: ['De top is $(0, -1)$', '$OA = \\sqrt{0 + 1} = 1$'],
+          },
         ],
       },
       {
@@ -398,6 +498,14 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "Het verschil is $63{,}43^{\\circ}$. Dat is kleiner dan $90^{\\circ}$, dus de hoek is $63{,}4^{\\circ}$.",
             ],
           },
+          {
+            problem: 'f(x) = x \\text{ en } y = 0 \\text{ in } (0, 0)',
+            answer: '45^{\\circ}',
+            steps: [
+              "$f'(x) = 1$, dus $\\alpha = 45^{\\circ}$. De $x$-as heeft helling $0$.",
+              'Het verschil is $45^{\\circ}$. Dat is kleiner dan $90^{\\circ}$.',
+            ],
+          },
         ],
         notes: [
           'De hoek tussen twee grafieken in een snijpunt is de hoek tussen de raaklijnen daar.',
@@ -417,6 +525,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f(1) = 1$ en $g(1) = 1$. Ze snijden elkaar en hebben dezelfde helling.",
             ],
           },
+          {
+            problem: 'f(x) = x^2 + 1 \\text{ en } g(x) = 2x',
+            answer: '\\text{raakpunt } (1, 2)',
+            steps: ["$f'(x) = 2x$ en $g'(x) = 2$, dus $x = 1$", '$f(1) = 2$ en $g(1) = 2$'],
+          },
         ],
         notes: [
           'Eerst de hellingen gelijkstellen, dan controleren of de grafieken daar ook echt samenkomen.',
@@ -434,6 +547,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f'(x) = 2x$ en $g'(x) = -1$. Het product is $-1$ bij $x = \\dfrac{1}{2}$.",
               "Daar zijn $f$ en $g$ allebei $\\dfrac{1}{4}$.",
             ],
+          },
+          {
+            problem: 'f(x) = x \\text{ en } g(x) = -x + 2',
+            answer: '\\text{loodrecht in } (1, 1)',
+            steps: ["$f'(x) \\cdot g'(x) = 1 \\cdot -1 = -1$", 'Ze snijden bij $x = 1$, en daar is $y = 1$'],
           },
         ],
         notes: [
@@ -459,6 +577,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "Stap 3. $f''(x) = -2 < 0$, dus een grootste waarde. $f(5) = 25$.",
             ],
           },
+          {
+            problem: 'f(x) = x^2 - 4x + 7',
+            answer: '\\text{kleinst } 3 \\text{ bij } x = 2',
+            steps: ["$f'(x) = 2x - 4 = 0$ geeft $x = 2$", "$f''(x) = 2 > 0$, dus een kleinste waarde. $f(2) = 3$"],
+          },
         ],
         notes: [
           'Een oplossing van $f\'(x) = 0$ telt alleen mee als die in het domein ligt.',
@@ -477,6 +600,15 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$h(x) = 4 - x^2 - x$",
               "$h'(x) = -2x - 1 = 0$ geeft $x = -\\dfrac{1}{2}$",
               "$h''(-\\dfrac{1}{2}) = -2 < 0$ en $h(-\\dfrac{1}{2}) = \\dfrac{17}{4}$",
+            ],
+          },
+          {
+            problem: 'g(x) = x + 5 \\text{ boven } f(x) = x^2',
+            answer: '\\text{grootste afstand } \\dfrac{21}{4} \\text{ bij } x = \\dfrac{1}{2}',
+            steps: [
+              '$h(x) = x + 5 - x^2$',
+              "$h'(x) = 1 - 2x = 0$ geeft $x = \\dfrac{1}{2}$",
+              "$h(\\dfrac{1}{2}) = \\dfrac{21}{4}$ en $h'' = -2 < 0$",
             ],
           },
         ],
@@ -500,6 +632,14 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
               "$f'(x) = 1 - \\dfrac{4}{x^2}$",
               "Stel $f'(x) = 0$. Dan is $x^2 = 4$. Omdat $x > 0$ neem je $x = 2$.",
               "$f''(x) = \\dfrac{8}{x^3} > 0$ voor $x > 0$, dus een kleinste waarde. $f(2) = 4$.",
+            ],
+          },
+          {
+            problem: 'f(x) = 2x + \\dfrac{8}{x} \\text{ met } x > 0',
+            answer: '\\text{kleinst } 8 \\text{ bij } x = 2',
+            steps: [
+              "$f'(x) = 2 - \\dfrac{8}{x^2} = 0$ geeft $x = 2$",
+              '$f(2) = 4 + 4 = 8$. De tweede afgeleide is positief voor $x > 0$',
             ],
           },
         ],

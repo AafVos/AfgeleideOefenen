@@ -22,6 +22,9 @@ type Labels = {
   expandSidebar: string
   exampleLabel: string
   detailsLabel: string
+  showSteps: string
+  answerLabel: string
+  practiceSelf: string
 }
 
 const desktopQuery = '(min-width: 1024px)'
@@ -212,9 +215,9 @@ export function TheorieClient({
                   </h2>
                   <Link
                     href={`/oefenen?chapter=${encodeURIComponent(ch.slug)}` as '/oefenen'}
-                    className="text-sm font-medium text-accent underline-offset-2 hover:underline"
+                    className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
                   >
-                    {ch.practiceLabel}
+                    {labels.practiceSelf}
                   </Link>
                 </div>
 
@@ -228,6 +231,8 @@ export function TheorieClient({
                       onToggle={() => toggleCard(`${ch.slug}/${card.id}`)}
                       exampleLabel={labels.exampleLabel}
                       detailsLabel={labels.detailsLabel}
+                      showSteps={labels.showSteps}
+                      answerLabel={labels.answerLabel}
                     />
                   ))}
                 </div>
@@ -247,6 +252,8 @@ function TheoryCard({
   onToggle,
   exampleLabel,
   detailsLabel,
+  showSteps,
+  answerLabel,
 }: {
   chapterSlug: string
   card: OverviewCard
@@ -254,8 +261,11 @@ function TheoryCard({
   onToggle: () => void
   exampleLabel: string
   detailsLabel: string
+  showSteps: string
+  answerLabel: string
 }) {
-  const expandable = (card.examples?.length ?? 0) > 0 || (card.notes?.length ?? 0) > 0
+  const hasNotes = (card.notes?.length ?? 0) > 0
+  const voorbeelden = (card.examples ?? []).slice(0, 3)
 
   // `min-w-0` op de kaart: zonder dat rekt een brede formule het rastervakje
   // op tot buiten het scherm, want een vakje is standaard minstens zo breed
@@ -265,7 +275,7 @@ function TheoryCard({
       id={`kaart-${chapterSlug}-${card.id}`}
       className="flex min-w-0 scroll-mt-4 flex-col rounded-xl border border-border bg-surface"
     >
-      {expandable ? (
+      {hasNotes ? (
         <button
           type="button"
           onClick={onToggle}
@@ -331,7 +341,48 @@ function TheoryCard({
           </div>
         )}
 
-        {expandable && (
+        {voorbeelden.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
+              {exampleLabel}
+            </p>
+            <ul className="space-y-2">
+              {voorbeelden.map((ex, i) => (
+                <li
+                  key={i}
+                  className="overflow-x-auto rounded-lg border border-border bg-surface-2/60 px-3 py-2.5 text-sm"
+                >
+                  <TeX tex={ex.problem} />
+                  {ex.steps && ex.steps.length > 0 && (
+                    <details className="mt-2 border-t border-border pt-2">
+                      <summary className="min-h-11 cursor-pointer py-2 font-medium text-accent">
+                        {showSteps}
+                      </summary>
+                      <ol className="mt-1 space-y-1">
+                        {ex.steps.map((s, si) => (
+                          <li key={si} className="flex items-start gap-2">
+                            <span className="min-w-[1.1rem] shrink-0 font-semibold tabular-nums text-accent">
+                              {si + 1}.
+                            </span>
+                            <span className="min-w-0">
+                              <RichMath source={s} />
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                  )}
+                  <p className="mt-2 border-t border-border pt-2">
+                    <span className="text-text-muted">{answerLabel}: </span>
+                    <TeX tex={ex.answer} />
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {hasNotes && (
           <div
             className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
               open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
@@ -339,38 +390,6 @@ function TheoryCard({
           >
             <div className="min-h-0 overflow-hidden">
               <div className="space-y-3 pt-1">
-                {card.examples && card.examples.length > 0 && (
-                  <div>
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">
-                      {exampleLabel}
-                    </p>
-                    <ul className="space-y-2">
-                      {card.examples.map((ex, i) => (
-                        <li
-                          key={i}
-                          className="overflow-x-auto rounded-lg border border-border bg-surface-2/60 px-3 py-2.5 text-sm"
-                        >
-                          <TeX tex={`${ex.problem} \\implies ${ex.answer}`} />
-                          {ex.steps && ex.steps.length > 0 && (
-                            <ol className="mt-2 space-y-1 border-t border-border pt-2">
-                              {ex.steps.map((s, si) => (
-                                <li key={si} className="flex items-start gap-2">
-                                  <span className="min-w-[1.1rem] shrink-0 font-semibold tabular-nums text-accent">
-                                    {si + 1}.
-                                  </span>
-                                  <span className="min-w-0">
-                                    <RichMath source={s} />
-                                  </span>
-                                </li>
-                              ))}
-                            </ol>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 {card.notes && card.notes.length > 0 && (
                   <ul className="space-y-1 text-xs leading-relaxed text-text-muted">
                     {card.notes.map((note, i) => (
