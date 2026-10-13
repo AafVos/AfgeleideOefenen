@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { canoniek } from '@/lib/seo'
+import { getCurrentProfile } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
@@ -25,14 +26,12 @@ export default async function DashboardPage() {
 
   const t = await getTranslations('Dashboard')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const firstName =
-    profile?.display_name?.trim().split(/\s+/)[0]?.trim() || null
+  // Registreren bewaart de naam in `username`. Oudere profielen hebben
+  // alleen `display_name`; die kolom wordt bij aanmelden niet meer gevuld.
+  const profile = await getCurrentProfile()
+  const gekozenNaam = profile?.username?.trim()
+  const oudeNaam = profile?.display_name?.trim().split(/\s+/)[0]?.trim()
+  const firstName = gekozenNaam || oudeNaam || null
 
   // New tables
   const { data: chapters } = await supabase
