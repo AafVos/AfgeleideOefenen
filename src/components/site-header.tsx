@@ -7,6 +7,7 @@ import {
   getCurrentUser,
 } from '@/lib/supabase/request-cache'
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
+import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 import { MobileNav } from './mobile-nav'
 import { NavDropdown } from './nav-dropdown'
 import { UserMenu } from './user-menu'
@@ -83,13 +84,13 @@ export async function SiteHeader({ locale }: { locale: string }) {
 
   const oefenenItems = chapters.map((ch) => ({
     href: `/${locale}/oefenen?chapter=${encodeURIComponent(ch.slug)}`,
-    code: ch.slug.toUpperCase(),
+    code: hoofdstukCode(ch.slug),
     label: stripChapterCode(ch.title),
   }))
 
   const theorieItems = THEORY_OVERVIEW.map((ch) => ({
     href: `/${locale}/theorie#hoofdstuk-${ch.slug}`,
-    code: ch.slug.toUpperCase(),
+    code: hoofdstukCode(ch.slug),
     label: stripChapterCode(ch.title),
   }))
 
