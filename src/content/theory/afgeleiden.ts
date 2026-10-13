@@ -192,4 +192,73 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       },
     ],
   },
+  {
+    slug: 'h15',
+    title: 'H15 — Afgeleiden en primitieven',
+    cards: [
+      {
+        id: 'stijgen_dalen',
+        title: 'Soorten stijgen en dalen',
+        notes: [
+          'Kijk eerst naar het teken van $f\'(x)$, daarna naar het teken van $f\'\'(x)$.',
+        ],
+        table: {
+          headers: ['Eerste afgeleide', 'Tweede afgeleide', 'De grafiek is'],
+          rows: [
+            ["$f'(x) > 0$", "$f''(x) > 0$", 'toenemend stijgend'],
+            ["$f'(x) > 0$", "$f''(x) < 0$", 'afnemend stijgend'],
+            ["$f'(x) < 0$", "$f''(x) < 0$", 'toenemend dalend'],
+            ["$f'(x) < 0$", "$f''(x) > 0$", 'afnemend dalend'],
+          ],
+        },
+      },
+      {
+        id: 'buigpunt',
+        title: 'Buigpunt',
+        formula: "f''(x) = 0 \\text{ en } f'' \\text{ wisselt van teken}",
+        examples: [
+          {
+            problem: 'f(x) = x^3 - 3x^2 + x',
+            answer: 'buigpunt bij $x = 1$',
+            steps: [
+              "$f'(x) = 3x^2 - 6x + 1$",
+              "$f''(x) = 6x - 6$",
+              "$f''(1) = 0$ en $f''$ wisselt daar van negatief naar positief",
+            ],
+          },
+        ],
+        notes: [
+          'In een buigpunt gaat de grafiek over van de ene soort stijgen of dalen naar de andere. Dan wisselt $f\'\'$ van teken.',
+        ],
+      },
+      {
+        id: 'top_tweede',
+        title: 'Top met de tweede afgeleide',
+        formula: [
+          "f'(x) = 0",
+          "f''(x) < 0 \\implies \\text{maximum}",
+          "f''(x) > 0 \\implies \\text{minimum}",
+        ],
+        examples: [
+          {
+            problem: 'f(x) = x^3 - 3x',
+            answer: 'maximum bij $x = -1$, minimum bij $x = 1$',
+            steps: [
+              "$f'(x) = 3x^2 - 3$, dus $x = -1$ of $x = 1$",
+              "$f''(x) = 6x$",
+              "$f''(-1) = -6 < 0$: maximum. $f''(1) = 6 > 0$: minimum",
+            ],
+          },
+        ],
+      },
+      {
+        id: 'afstand_o',
+        title: 'Afstand van een top tot O',
+        formula: 'OA^{2} = x_A^{2} + y_A^{2}',
+        notes: [
+          'Voor twee toppen $A$ en $B$ stel je $OA^2 = OB^2$. Dan hoef je de wortel niet te trekken.',
+        ],
+      },
+    ],
+  },
 ]
