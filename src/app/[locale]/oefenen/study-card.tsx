@@ -26,6 +26,10 @@ import { FlagQuestionButton } from './flag-question'
 
 const MASTERY_THRESHOLD = 3
 
+function metVoorvoegsel(prefix: string, rest: string): string {
+  return prefix ? `${prefix} ${rest}` : rest
+}
+
 type Step = { id: string; step_order: number; step_description: string }
 
 /** Klein icoontje: er staat een uitlegvideo klaar over dit onderwerp. */
@@ -40,7 +44,7 @@ function IconVideo() {
 type StudyQuestion = {
   id: string
   latex_body: string | null
-  /** Tekst vóór het antwoordvak. Leeg: de pagina toont `f'(x) =`. */
+  /** Tekst vóór het antwoordvak. Leeg bij een kale som: `f'(x) =`. Leeg bij een verhaaltje: niets. */
   answer_prefix: string | null
   difficulty: 1 | 2 | 3
 }
@@ -256,9 +260,10 @@ export function StudyCard({
         {state.phase === 'input' && (
           <div className="mt-2 font-serif text-2xl leading-snug text-accent">
             <TeX
-              tex={`${prefix} ${
-                answer.trim() ? toLatexPreview(answer) : '\\ldots'
-              }`}
+              tex={metVoorvoegsel(
+                prefix,
+                answer.trim() ? toLatexPreview(answer) : '\\ldots',
+              )}
               displayMode
             />
           </div>
@@ -272,7 +277,7 @@ export function StudyCard({
                 </p>
                 <div className="mt-1 font-serif text-2xl leading-snug text-accent-2">
                   <TeX
-                    tex={`${prefix} ${toLatexPreview(state.userAnswer)}`}
+                    tex={metVoorvoegsel(prefix, toLatexPreview(state.userAnswer))}
                   />
                 </div>
               </div>
@@ -284,9 +289,12 @@ export function StudyCard({
                 </p>
                 <div className="mt-1 font-serif text-2xl leading-snug text-accent">
                   <TeX
-                    tex={`${prefix} ${(
-                      state.latexCorrectAnswer ?? state.correctAnswer
-                    ).replaceAll('$', '')}`}
+                    tex={metVoorvoegsel(
+                      prefix,
+                      (
+                        state.latexCorrectAnswer ?? state.correctAnswer
+                      ).replaceAll('$', ''),
+                    )}
                   />
                 </div>
               </div>
