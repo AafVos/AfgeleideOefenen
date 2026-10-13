@@ -488,7 +488,7 @@ export function ConfigForm({
       <ErrorBanner>{error}</ErrorBanner>
 
       <div className="flex items-center gap-3">
-        <Button onClick={submit} disabled={!canSubmit || pending}>
+        <Button onClick={submit} disabled={!canSubmit || pending} className="min-h-11 px-5">
           {pending ? t('startPending') : t('startLabel')}
         </Button>
         <span className="text-sm text-text-muted">
