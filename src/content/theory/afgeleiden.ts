@@ -24,6 +24,8 @@ export type OverviewCard = {
    * losse regel kan op een telefoon wél afbreken, een gathered-blok niet.
    */
   formula?: string | string[]
+  /** Eigen uitlegpagina, bijvoorbeeld `/theorie/kettingregel`. */
+  uitlegPad?: string
   examples?: OverviewExample[] // problem → answer
   table?: OverviewTable
   notes?: string[] // kleine bullets onderaan; mogen `$...$` bevatten
@@ -123,6 +125,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'kettingregel',
         title: 'De kettingregel',
+        uitlegPad: '/theorie/kettingregel',
         formula: "f\\bigl(g(x)\\bigr)' = f'\\bigl(g(x)\\bigr) \\cdot g'(x)",
         examples: [
           { problem: 'f(x) = (4x+3)^3', answer: "f'(x) = 12(4x+3)^2", steps: ['Binnenste: $g(x) = 4x+3$, dus $g\'(x) = 4$', 'Buitenste macht 3: $3(4x+3)^2 \\cdot 4 = 12(4x+3)^2$'] },
