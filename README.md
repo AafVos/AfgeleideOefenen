@@ -208,20 +208,24 @@ Settings**.
 
 ```
 .
-├── idea.md                         # Volledige bouwopdracht (bron van waarheid)
+├── idea.md                         # Oorspronkelijke bouwopdracht; hoofdstuk 3 is de huidige tabellen
 ├── src/
-│   ├── app/                        # Next.js App Router pagina's
-│   ├── lib/
-│   │   └── supabase/
-│   │       ├── client.ts           # Browser Supabase client
-│   │       ├── server.ts           # Server + service-role client
-│   │       ├── middleware.ts       # Session refresh + admin guard (helper)
-│   │       └── types.ts            # Database TypeScript types
-│   └── middleware.ts               # Sessie en taalcode (edge, ook voor Workers)
+│   ├── app/[locale]/               # Pagina's voor de leerling, onder /nl
+│   ├── app/admin/                  # Beheer: onderwerpen, opgaven, accounts, meldingen
+│   ├── app/api/webhooks/           # Welkomstmail en seintje bij een nieuw account
+│   ├── app/auth/                   # Terugkeer na de link in de mail
+│   ├── components/                 # Knoppen, menu, formules, wiskundetoetsenbord
+│   ├── content/theory/             # Theorietekst in de code
+│   ├── i18n/                       # Taal: alleen Nederlands
+│   ├── lib/                        # Oefenen, nakijken, mail, database
+│   └── middleware.ts               # Sessie en taalcode
+├── messages/nl.json                # De Nederlandse zinnen
 ├── supabase/
-│   ├── migrations/
-│   │   └── 0001_init.sql           # Schema uit sectie 3
-│   └── seed.sql                    # Seed data uit sectie 4 + 13
+│   ├── migrations/                 # Databasewijzigingen, op volgorde
+│   ├── email-templates/            # Mails van Supabase: bevestigen en wachtwoord
+│   └── seed.sql                    # Alleen de vaste testopgaven
+├── e2e/                            # Weg van een leerling in de browser
+├── scripts/                        # Hulpjes voor controles
 └── .env.local.example
 ```
 
