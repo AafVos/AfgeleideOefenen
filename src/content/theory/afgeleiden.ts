@@ -73,9 +73,13 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       },
       {
         id: 'productregel',
-        title: 'Productregel',
-        formula:
-          "f(x) = g(x) \\cdot h(x) \\implies f'(x) = g'(x)h(x) + g(x)h'(x)",
+        title: 'De productregel',
+        uitlegPad: '/theorie/productregel',
+        // Zelfde letters als de uitlegpagina: f de hele functie, g de eerste factor, h de tweede.
+        formula: [
+          'f(x) = g(x) \\cdot h(x)',
+          "f'(x) = g'(x) \\cdot h(x) + g(x) \\cdot h'(x)",
+        ],
         examples: [
           {
             problem: 'f(x) = (x^2-4)(x^3+2x)',
