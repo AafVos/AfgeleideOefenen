@@ -83,6 +83,18 @@ Zo valt het op als iemand iets in het Supabase-dashboard heeft veranderd zonder
   opgeschreven; het hele verschil zie je met `npx supabase config diff` op je
   eigen computer.
 
+## Elke ochtend: wat is er samen live gegaan?
+
+`.github/workflows/dagelijkse-release.yml` maakt elke ochtend (en met de hand
+vanaf het tabblad Actions) een GitHub Release met de datum als tag, bijvoorbeeld
+`v2026-10-13`. In de tekst staan de titels van wat er sinds de vorige release
+op `main` is gemerged.
+
+Elke merge op `main` blijft meteen live. Er komt geen versienummer in
+`package.json`. Is er niets nieuws, dan komt er geen release. De eerste keer,
+als er nog geen datum-release is, staan alleen de pull requests van de
+afgelopen 24 uur erin, en de tag op de huidige `main` is daarna het beginpunt.
+
 ## De e2e-tests: een echte browser door de site
 
 In `e2e/` staan Playwright-tests die de weg van een leerling nalopen:
