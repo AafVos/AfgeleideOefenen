@@ -114,6 +114,52 @@ describe('answersMatch', () => {
     expect(answersMatch('2x', '2')).toBe(false)
     expect(answersMatch('2m', '2')).toBe(false)
   })
+
+  // Raaklijn: y = 2x - 1, y=2x-1, y = -1 + 2x en 2x - 1 zijn dezelfde lijn.
+  // Dit gaat zonder de lijst van andere schrijfwijzen en zonder de AI-controle.
+  it('rekent een lijn hetzelfde, ook met y = en de termen andersom', () => {
+    expect(answersMatch('y = 2x - 1', '2x - 1')).toBe(true)
+    expect(answersMatch('y=2x-1', '2x - 1')).toBe(true)
+    expect(answersMatch('y = -1 + 2x', '2x - 1')).toBe(true)
+    expect(answersMatch('2x - 1', '2x - 1')).toBe(true)
+    expect(answersMatch('-1 + 2x', '2x - 1')).toBe(true)
+    expect(answersMatch('2x + -1', '2x - 1')).toBe(true)
+    expect(answersMatch('Y = 2X - 1', '2x - 1')).toBe(true)
+    expect(answersMatch('3 - 3x', '-3x + 3')).toBe(true)
+    expect(answersMatch('y = 3 - 3x', '-3x + 3')).toBe(true)
+    expect(answersMatch('-1 - 3x', '-3x - 1')).toBe(true)
+    expect(answersMatch('1 + x', 'x + 1')).toBe(true)
+    expect(answersMatch('y = 1 + x', 'x + 1')).toBe(true)
+    expect(answersMatch('pi - x', '-x + pi')).toBe(true)
+    expect(answersMatch('y = \\pi - x', '-x + pi')).toBe(true)
+    expect(answersMatch('1x - 1', 'x - 1')).toBe(true)
+    expect(answersMatch('2x + 3x - 1', '5x - 1')).toBe(true)
+    expect(answersMatch('x/2 + 1', '1 + (1/2)x')).toBe(true)
+    expect(answersMatch('y = (1)/(2)x + 1', 'x/2 + 1')).toBe(true)
+    expect(answersMatch('(5/2)x - 1', '2,5x - 1')).toBe(true)
+    expect(answersMatch('2,5x - 1', '2.5x - 1')).toBe(true)
+    expect(answersMatch('2x/3 + 1', '1 + (2)/(3)x')).toBe(true)
+    expect(answersMatch('(-1) + 2x', '2x - 1')).toBe(true)
+    expect(answersMatch('y = 2', '2')).toBe(true)
+  })
+
+  it('rekent een andere lijn of een macht fout', () => {
+    expect(answersMatch('2x + 1', '2x - 1')).toBe(false)
+    expect(answersMatch('2x - 2', '2x - 1')).toBe(false)
+    expect(answersMatch('x - 1', '2x - 1')).toBe(false)
+    expect(answersMatch('y = 3x - 1', '2x - 1')).toBe(false)
+    expect(answersMatch('-2x + 1', '2x - 1')).toBe(false)
+    expect(answersMatch('1 - 2x', '2x - 1')).toBe(false)
+    expect(answersMatch('2x^2 - 1', '2x - 1')).toBe(false)
+    expect(answersMatch('2 + 3x^2', '3x^2 + 2')).toBe(false)
+    expect(answersMatch('2(x - 1)', '2x - 2')).toBe(false)
+    expect(answersMatch('0,33x', '(1/3)x')).toBe(false)
+    // 5/2x toont de site als een breuk met 2x onder de streep.
+    expect(answersMatch('5/2x - 1', '2,5x - 1')).toBe(false)
+    expect(answersMatch('y = 2', '2x')).toBe(false)
+    expect(answersMatch('y = 2x', '2')).toBe(false)
+    expect(answersMatch('', '2x - 1')).toBe(false)
+  })
 })
 
 // =====================================================================
