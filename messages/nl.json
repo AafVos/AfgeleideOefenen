@@ -219,7 +219,7 @@
     "errorGeneric": "Er ging iets mis bij het opslaan van je wachtwoord. Probeer het opnieuw."
   },
   "Dashboard": {
-    "title": "Dashboard",
+    "title": "Voortgang",
     "greetingWithName": "Hoi {name}",
     "progressTitle": "Jouw voortgang",
     "statMastered": "Beheerst",
@@ -391,7 +391,7 @@
     "continueTest": "Doorgaan",
     "viewResult": "Resultaat bekijken",
     "newTest": "Nieuwe toets",
-    "toDashboard": "Naar dashboard",
+    "toDashboard": "Naar voortgang",
     "viewDetails": "Bekijk uitwerking",
     "finishedHeadlinePerfect": "Perfect, alles goed!",
     "finishedHeadlineGreat": "Sterk gedaan!",
