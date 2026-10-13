@@ -171,7 +171,7 @@ zodra hij één keer gebruikt is.
   "Botsende letters" hierboven). Nooit stilzwijgend twee betekenissen voor
   dezelfde letter op één pagina.
 - **In beeld altijd mét variabele** (`g(x) = 5`), terwijl de stem de letters
-  kaal uitspreekt ("u is vijf").
+  kaal uitspreekt ("g is vijf").
 - **Groen = het deel dat af is, terracotta = het deel dat nog werk kost.** De
   chip die naar een volgende regel wijst, krijgt de kleur van het deel waar hij
   over gaat.

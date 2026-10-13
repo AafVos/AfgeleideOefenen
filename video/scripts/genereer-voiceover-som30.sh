@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Genereert de voice-over voor de video "Uitleg bij som 30" via ElevenLabs.
+# De fragmenten hieronder zeggen nog u en v. Het beeld gebruikt f, g en h.
+# Niet opnieuw genereren zonder akkoord: dat kost ElevenLabs-tegoed.
 # Gebruik: ELEVENLABS_API_KEY in video/.env, dan: bash scripts/genereer-voiceover-som30.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
