@@ -193,6 +193,126 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
     ],
   },
   {
+    slug: 'beweging',
+    title: 'Beweging',
+    cards: [
+      {
+        id: 'snelheid_vlak',
+        title: 'Snelheid in het vlak',
+        formula: [
+          "x'(t),\\ y'(t)",
+          "\\text{snelheid} = \\sqrt{\\left(x'(t)\\right)^2 + \\left(y'(t)\\right)^2}",
+        ],
+        examples: [
+          {
+            problem: 'x(t) = 8t,\\ y(t) = 15t',
+            answer: '\\text{snelheid } 17',
+            steps: [
+              "$x'(t) = 8$ en $y'(t) = 15$",
+              'De snelheid is $\\sqrt{8^2 + 15^2} = \\sqrt{289} = 17$',
+            ],
+          },
+        ],
+        notes: [
+          'De snelheid is de lengte van de snelheidsvector. Die is nooit negatief.',
+        ],
+      },
+      {
+        id: 'versnelling_vlak',
+        title: 'Versnelling in het vlak',
+        formula: [
+          "x''(t),\\ y''(t)",
+          "\\text{grootte} = \\sqrt{\\left(x''(t)\\right)^2 + \\left(y''(t)\\right)^2}",
+        ],
+        notes: [
+          'Differentieer de plaats twee keer. Daarna neem je weer de lengte.',
+        ],
+      },
+      {
+        id: 'kleinste_snelheid',
+        title: 'Kleinste snelheid',
+        formula: "x'(t)\\,x''(t) + y'(t)\\,y''(t) = 0",
+        examples: [
+          {
+            problem: 'x(t) = t,\\ y(t) = t^3 - 3t,\\ t \\geq 0',
+            answer: '\\text{kleinste snelheid } 1 \\text{ op } t = 1',
+            steps: [
+              "$x' = 1$, $x'' = 0$, $y' = 3t^2 - 3$, $y'' = 6t$",
+              'Het inproduct is $18t(t^2 - 1) = 0$, dus $t = 0$ of $t = 1$',
+              'Op $t = 1$ is de snelheid $1$. Op $t = 0$ is die $\\sqrt{10}$, groter',
+            ],
+          },
+        ],
+        notes: [
+          'Vergelijk de tijdstippen die je vindt. Het inproduct nul geeft een kleinste of een grootste snelheid.',
+        ],
+      },
+      {
+        id: 'cirkel',
+        title: 'Eenparige cirkelbeweging',
+        formula: [
+          'x(t) = R\\cos(\\omega t),\\ y(t) = R\\sin(\\omega t)',
+          '\\text{snelheid} = R|\\omega|',
+          '\\text{versnelling} = R\\omega^2',
+        ],
+        examples: [
+          {
+            problem: 'x(t) = 9\\cos(2t),\\ y(t) = 9\\sin(2t)',
+            answer: '\\text{snelheid } 18,\\ \\text{versnelling } 36',
+            steps: [
+              "$x'(t) = -18\\sin(2t)$ en $y'(t) = 18\\cos(2t)$",
+              'De lengte is $18$. Nog een keer differentiëren geeft lengte $36$',
+            ],
+          },
+        ],
+        notes: [
+          'De snelheid is constant. De versnelling wijst naar het middelpunt.',
+        ],
+      },
+      {
+        id: 'trilling',
+        title: 'Grootste snelheid van een trilling',
+        formula: [
+          'f(t) = A\\sin(\\omega t)',
+          "f'(t) = A\\omega\\cos(\\omega t)",
+          '\\text{grootste snelheid} = |A\\omega|',
+        ],
+        examples: [
+          {
+            problem: 'f(t) = 5\\sin(2t)',
+            answer: '\\text{grootste snelheid } 10',
+            steps: [
+              "$f'(t) = 10\\cos(2t)$",
+              'Een cosinus zit tussen $-1$ en $1$, dus de grootste $|f\'(t)|$ is $10$',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'som_sin_cos',
+        title: 'Som van sinus en cosinus',
+        formula: [
+          'f(t) = A\\cos(\\omega t) + B\\sin(\\omega t)',
+          'R = \\sqrt{A^2 + B^2}',
+          '\\text{grootste snelheid} = R|\\omega|',
+        ],
+        examples: [
+          {
+            problem: 'f(t) = 12\\cos(t) + 16\\sin(t)',
+            answer: '\\text{grootste snelheid } 20',
+            steps: [
+              '$R = \\sqrt{144 + 256} = 20$',
+              "$f(t) = 20\\cos(t - \\varphi)$, dus $f'(t)$ wordt hoogstens $20$",
+            ],
+          },
+        ],
+        notes: [
+          'Dit is een beweging over een rechte lijn. In het vlak, met een aparte $x(t)$ en $y(t)$, geldt deze formule niet.',
+        ],
+      },
+    ],
+  },
+  {
     slug: 'h15',
     title: 'H15 — Afgeleiden en primitieven',
     cards: [
