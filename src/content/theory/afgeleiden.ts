@@ -176,23 +176,24 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'gonio_kettingregel',
         title: 'Kettingregel met goniometrie',
+        // Zelfde letters als de kettingregel: f de hele functie, h de binnenste.
         formula: [
-          "f(x) = \\cos\\bigl(g(x)\\bigr) \\implies f'(x) = -g'(x) \\cdot \\sin\\bigl(g(x)\\bigr)",
-          "f(x) = \\sin\\bigl(g(x)\\bigr) \\implies f'(x) = g'(x) \\cdot \\cos\\bigl(g(x)\\bigr)",
+          "f(x) = \\cos\\bigl(h(x)\\bigr) \\implies f'(x) = -h'(x) \\cdot \\sin\\bigl(h(x)\\bigr)",
+          "f(x) = \\sin\\bigl(h(x)\\bigr) \\implies f'(x) = h'(x) \\cdot \\cos\\bigl(h(x)\\bigr)",
         ],
         examples: [
           {
             problem: 'f(x) = \\sin(3x^2)',
             answer: "f'(x) = 6x\\cos(3x^2)",
             steps: [
-              "Binnenste functie: $g(x) = 3x^2$, dus $g'(x) = 6x$",
-              "$f'(x) = g'(x) \\cdot \\cos\\bigl(g(x)\\bigr) = 6x\\cos(3x^2)$",
+              "Binnenste functie: $h(x) = 3x^2$, dus $h'(x) = 6x$",
+              "$f'(x) = h'(x) \\cdot \\cos\\bigl(h(x)\\bigr) = 6x\\cos(3x^2)$",
             ],
           },
           {
             problem: 'f(x) = \\cos(2x)',
             answer: "f'(x) = -2\\sin(2x)",
-            steps: ['Binnenste: $g(x) = 2x$, dus $g\'(x) = 2$', "$f'(x) = -g'(x)\\sin(2x) = -2\\sin(2x)$"],
+            steps: ['Binnenste: $h(x) = 2x$, dus $h\'(x) = 2$', "$f'(x) = -h'(x)\\sin(2x) = -2\\sin(2x)$"],
           },
         ],
       },
@@ -210,8 +211,8 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           "f(x) = g^x \\implies f'(x) = g^x \\cdot \\ln(g)",
         ],
         examples: [
-          { problem: 'f(x) = e^{g(x)}', answer: "f'(x) = g'(x) \\cdot e^{g(x)}", steps: ['Kettingregel: buitenste $e^{\\ldots}$ blijft staan', "Vermenigvuldig met de afgeleide van de exponent: $g'(x)$"] },
-          { problem: 'f(x) = e^{2x+3}', answer: "f'(x) = 2e^{2x+3}", steps: ["$g(x) = 2x+3,\\ g'(x) = 2$", "$f'(x) = 2 \\cdot e^{2x+3}$"] },
+          { problem: 'f(x) = e^{h(x)}', answer: "f'(x) = h'(x) \\cdot e^{h(x)}", steps: ['Kettingregel: buitenste $e^{\\ldots}$ blijft staan', "Vermenigvuldig met de afgeleide van de exponent: $h'(x)$"] },
+          { problem: 'f(x) = e^{2x+3}', answer: "f'(x) = 2e^{2x+3}", steps: ["$h(x) = 2x+3,\\ h'(x) = 2$", "$f'(x) = 2 \\cdot e^{2x+3}$"] },
           { problem: 'f(x) = 3^x', answer: "f'(x) = 3^x \\cdot \\ln(3)", steps: ['$g = 3$', "$f'(x) = 3^x \\cdot \\ln(3)$"] },
         ],
       },
@@ -220,9 +221,9 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         title: 'Logaritmes',
         formula: "f(x) = \\ln(x) \\implies f'(x) = \\dfrac{1}{x}",
         examples: [
-          { problem: 'f(x) = \\ln(g(x))', answer: "f'(x) = \\dfrac{g'(x)}{g(x)}", steps: ['Kettingregel: afgeleide van wat erin staat gedeeld door wat erin staat', "$f'(x) = \\dfrac{g'(x)}{g(x)}$"] },
+          { problem: 'f(x) = \\ln(h(x))', answer: "f'(x) = \\dfrac{h'(x)}{h(x)}", steps: ['Kettingregel: afgeleide van wat erin staat gedeeld door wat erin staat', "$f'(x) = \\dfrac{h'(x)}{h(x)}$"] },
           { problem: 'f(x) = {}^2\\!\\log(5x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['Schrijf ${}^2\\!\\log(5x) = {}^2\\!\\log(5) + {}^2\\!\\log(x)$', 'De constante valt weg. ${}^2\\!\\log(x)$ heeft afgeleide $\\dfrac{1}{x\\ln(2)}$'] },
-          { problem: 'f(x) = \\ln(x^2+1)', answer: "f'(x) = \\dfrac{2x}{x^2+1}", steps: ["$g(x) = x^2+1,\\ g'(x) = 2x$", "$f'(x) = \\dfrac{2x}{x^2+1}$"] },
+          { problem: 'f(x) = \\ln(x^2+1)', answer: "f'(x) = \\dfrac{2x}{x^2+1}", steps: ["$h(x) = x^2+1,\\ h'(x) = 2x$", "$f'(x) = \\dfrac{2x}{x^2+1}$"] },
           { problem: 'f(x) = {}^2\\!\\log(x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['De formule voor ${}^g\\!\\log(x)$ met $g = 2$', "$f'(x) = \\dfrac{1}{x\\ln(2)}$"] },
         ],
       },
