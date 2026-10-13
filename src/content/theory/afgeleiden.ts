@@ -320,6 +320,73 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           'Een verticale raaklijn heeft geen helling. Dan werkt het product $-1$ niet.',
         ],
       },
+      {
+        id: 'optimaliseren',
+        title: 'Grootste of kleinste waarde',
+        formula: [
+          "f'(x) = 0",
+          "f''(x) < 0 \\implies \\text{grootste waarde}",
+          "f''(x) > 0 \\implies \\text{kleinste waarde}",
+        ],
+        examples: [
+          {
+            problem: 'f(x) = 10x - x^2 \\text{ met } 0 < x < 10',
+            answer: '\\text{grootst } 25 \\text{ bij } x = 5',
+            steps: [
+              "Stap 0. Je zoekt de grootste waarde van $f$ op het gegeven domein.",
+              "Stap 1. $f'(x) = 10 - 2x$.",
+              "Stap 2. Stel $f'(x) = 0$. Dan is $x = 5$, en dat ligt in het domein.",
+              "Stap 3. $f''(x) = -2 < 0$, dus een grootste waarde. $f(5) = 25$.",
+            ],
+          },
+        ],
+        notes: [
+          'Een oplossing van $f\'(x) = 0$ telt alleen mee als die in het domein ligt.',
+          'Je mag ook naar het teken van $f\'$ kijken: plus daarna min is een grootste waarde, min daarna plus een kleinste.',
+        ],
+      },
+      {
+        id: 'afstand_tussen_grafieken',
+        title: 'Afstand tussen twee grafieken',
+        formula: 'h(x) = g(x) - f(x)',
+        examples: [
+          {
+            problem: 'g(x) = 4 - x^2 \\text{ boven } f(x) = x',
+            answer: '\\text{grootste afstand } \\dfrac{17}{4} \\text{ bij } x = -\\dfrac{1}{2}',
+            steps: [
+              "$h(x) = 4 - x^2 - x$",
+              "$h'(x) = -2x - 1 = 0$ geeft $x = -\\dfrac{1}{2}$",
+              "$h''(-\\dfrac{1}{2}) = -2 < 0$ en $h(-\\dfrac{1}{2}) = \\dfrac{17}{4}$",
+            ],
+          },
+        ],
+        notes: [
+          'Trek de onderste grafiek van de bovenste af. Zo blijft de afstand positief.',
+        ],
+      },
+      {
+        id: 'kosten_ax_b_over_x',
+        title: 'Kosten van de vorm ax + b/x',
+        formula: [
+          "f(x) = ax + \\dfrac{b}{x} \\text{ met } x > 0",
+          "f'(x) = a - \\dfrac{b}{x^2}",
+          "x = \\sqrt{\\dfrac{b}{a}}",
+        ],
+        examples: [
+          {
+            problem: 'f(x) = x + \\dfrac{4}{x} \\text{ met } x > 0',
+            answer: '\\text{kleinst } 4 \\text{ bij } x = 2',
+            steps: [
+              "$f'(x) = 1 - \\dfrac{4}{x^2}$",
+              "Stel $f'(x) = 0$. Dan is $x^2 = 4$. Omdat $x > 0$ neem je $x = 2$.",
+              "$f''(x) = \\dfrac{8}{x^3} > 0$ voor $x > 0$, dus een kleinste waarde. $f(2) = 4$.",
+            ],
+          },
+        ],
+        notes: [
+          'Bij $x > 0$ laat je de negatieve oplossing van $x^2 = \\dfrac{b}{a}$ weg.',
+        ],
+      },
     ],
   },
 ]
