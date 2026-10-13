@@ -55,10 +55,13 @@ npm install
 ### 2. Supabase project opzetten
 
 1. Maak een gratis project aan op [supabase.com](https://supabase.com).
-2. Open in het dashboard **SQL Editor** en draai de volgende bestanden in
-   deze volgorde:
-   1. [`supabase/migrations/0001_init.sql`](./supabase/migrations/0001_init.sql) — schema + RLS
-   2. [`supabase/seed.sql`](./supabase/seed.sql) — topics, clusters, root causes, startvragen
+2. Zet de database klaar met **alle** bestanden in
+   [`supabase/migrations/`](./supabase/migrations/), op bestandsnaam. Dat doet
+   de Supabase-CLI (`npx supabase db push` tegen dat project). Twee losse
+   bestanden in de SQL-editor laten de rest liggen: de latere migraties
+   horen er net zo bij.
+   [`supabase/seed.sql`](./supabase/seed.sql) hoort hier niet bij. Dat zijn
+   alleen vaste testopgaven voor een lokale database.
 3. Onder **Authentication → Providers** is "Email" standaard aan. Dat is
    voldoende voor Fase 1 van de bouwopdracht.
 
@@ -307,8 +310,10 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
    van Resend en een afzender op een bij Resend geverifieerd domein. Zonder
    deze stap laat Supabase maar een paar bevestigingsmails per uur door — zie
    [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen).
-8. **Migraties draaien**: in de Supabase SQL Editor beide files draaien:
-   `0001_init.sql`, `0002_question_flags.sql` en daarna `seed.sql`.
+8. **Database bijwerken**: alle bestanden in `supabase/migrations/`, op
+   bestandsnaam, via `npx supabase db push` tegen het echte project. Niet
+   twee losse bestanden in de SQL-editor plakken, en `seed.sql` niet
+   meedraaien: dat bestand is alleen voor de lokale testdatabase.
 9. **Gemini API-key** onder Google AI Studio: zet een HTTP-referrer
    restriction op `https://afgeleideoefenen.nl/*` zodat hij niet misbruikt
    wordt als hij lekt.
