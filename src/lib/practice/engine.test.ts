@@ -110,6 +110,13 @@ describe('answersMatch', () => {
     expect(answersMatch('24/e^2 stuks', '24/e^2')).toBe(true)
     expect(answersMatch('20/e liter', '20/e')).toBe(true)
     expect(answersMatch('3/e gram per dag', '3/e')).toBe(true)
+    expect(answersMatch('15/e milligram', '15/e')).toBe(true)
+    expect(answersMatch('15/e milligrammen', '15/e')).toBe(true)
+    expect(answersMatch('1 milligram per liter', '1')).toBe(true)
+    expect(answersMatch('1 milligram/liter', '1')).toBe(true)
+    expect(answersMatch('1 milligram per kubieke meter', '1')).toBe(true)
+    expect(answersMatch('t = 1 milligram per kubieke meter', '1')).toBe(true)
+    expect(answersMatch('6/e milligram per liter', '6/e')).toBe(true)
   })
 
   it('rekent een fout getal fout, ook met voorvoegsel of eenheid', () => {
@@ -121,6 +128,9 @@ describe('answersMatch', () => {
     expect(answersMatch('6 m/s', '5')).toBe(false)
     expect(answersMatch('13 euro', '12')).toBe(false)
     expect(answersMatch('4 meter per seconde per seconde', '5')).toBe(false)
+    expect(answersMatch('16/e milligram', '15/e')).toBe(false)
+    expect(answersMatch('2 milligram per liter', '1')).toBe(false)
+    expect(answersMatch('2 milligram per kubieke meter', '1')).toBe(false)
   })
 
   it('rekent 0,33 niet gelijk aan 1/3', () => {
