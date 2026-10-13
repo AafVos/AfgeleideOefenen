@@ -138,6 +138,14 @@ describe('answersMatch', () => {
     expect(answersMatch('0.33', '1/3')).toBe(false)
   })
 
+  it('rekent een komma en een punt als hetzelfde getal', () => {
+    expect(answersMatch('0,2', '0.2')).toBe(true)
+    expect(answersMatch('0.2', '0,2')).toBe(true)
+    expect(answersMatch('1,8x^2 - 2,6x', '1.8x^2 - 2.6x')).toBe(true)
+    expect(answersMatch('1.8x^2 - 2.6x', '1,8x^2 - 2,6x')).toBe(true)
+    expect(answersMatch('1,8x^2 - 2,7x', '1,8x^2 - 2,6x')).toBe(false)
+  })
+
   // De breukknop zet haakjes neer. Die vorm is niet vanzelf gelijk aan 3/2.
   it('rekent de breukknop en een precies kommagetal goed als ze erbij staan', () => {
     const anderhalf = ['(3)/(2)', '(3)/2', '1,5', '1.5']
