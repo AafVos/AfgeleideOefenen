@@ -403,6 +403,15 @@ function TheoryCard({
             </div>
           </div>
         )}
+
+        {card.uitlegPad && (
+          <Link
+            href={card.uitlegPad as '/theorie'}
+            className="inline-flex min-h-11 items-center self-start text-sm font-medium text-accent underline underline-offset-2"
+          >
+            Lees de hele uitleg
+          </Link>
+        )}
       </div>
     </article>
   )
