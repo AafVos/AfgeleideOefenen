@@ -6,15 +6,78 @@ export const MASTERY_THRESHOLD = 3
 // Normalisatie (sectie 5.3)
 // =====================================================================
 /**
- * Eenheid achter een getal, zoals `2 seconden` of `2 meter`.
- * Langste vorm eerst, anders blijft van `seconden` een losse `n` over.
- * Alleen als er een cijfer direct voor staat, zodat `2x` geen eenheid verliest.
+ * Woorden die een leerling achter een getal mag zetten.
+ * Gesorteerd op lengte, anders blijft van `seconden` een losse `n` over.
  */
-const EENHEID_ACHTER_GETAL =
-  /(\d)(?:seconden|seconde|minuten|minuut|centimeters|centimeter|kilometers|kilometer|millimeters|millimeter|meters|meter|uren|uur|graden|procent|liters|liter)\.?$/
+const EENHEID_WOORDEN = [
+  'millimeters',
+  'millimeter',
+  'centimeters',
+  'centimeter',
+  'kilometers',
+  'kilometer',
+  'kilogrammen',
+  'kilogram',
+  'seconden',
+  'seconde',
+  'minuten',
+  'minuut',
+  'grammen',
+  'celsius',
+  'graden',
+  'procent',
+  'maanden',
+  'meters',
+  'meter',
+  'liters',
+  'liter',
+  'weken',
+  'dagen',
+  'dozen',
+  'stuks',
+  'gram',
+  'euro',
+  'uren',
+  'kilo',
+  'maand',
+  'week',
+  'doos',
+  'uur',
+  'dag',
+  'stuk',
+].sort((a, b) => b.length - a.length || a.localeCompare(b))
+
+const EENHEID_WOORD = EENHEID_WOORDEN.join('|')
+
+/**
+ * Eenheid achter een getal, zoals `2 seconden`, `5 meter per seconde`,
+ * `5 meter per seconde per seconde` of `12 euro`.
+ * `per` of `/` mag tussen de woorden, en `graden Celsius` mag aan elkaar
+ * (de spaties zijn dan al weg).
+ * `m/s` staat apart: een losse `m` is geen eenheid, zodat `2m` blijft `2m`.
+ */
+const EENHEID_ACHTER_GETAL = new RegExp(
+  `(?:(?:${EENHEID_WOORD})(?:(?:per|/)?(?:${EENHEID_WOORD}))*|m/s(?:\\^2|²|2)?)\\.?$`,
+)
+
+/**
+ * Haalt een eenheid achter het antwoord weg.
+ * Alleen als er een cijfer direct voor staat, of de constante `e`
+ * (`20/e liter`). Zo verliest `2x` geen letter en blijft `parameter` heel.
+ */
+function haalEenheidWeg(s: string): string {
+  const gevonden = EENHEID_ACHTER_GETAL.exec(s)
+  if (!gevonden || gevonden.index === 0) return s
+  const ervoor = s[gevonden.index - 1]
+  const daarvoor = gevonden.index >= 2 ? s[gevonden.index - 2] : ''
+  const nietEenLetter = /[^a-z]/.test(ervoor)
+  const losseE = ervoor === 'e' && (gevonden.index === 1 || /[^a-z]/.test(daarvoor))
+  if (!nietEenLetter && !losseE) return s
+  return s.slice(0, gevonden.index)
+}
 
 export function normalizeAnswer(raw: string): string {
-  return raw
+  const zonderOpmaak = raw
     .toLowerCase()
     .replace(/\s+/g, '')
     .replace(/\*/g, '')
@@ -30,7 +93,7 @@ export function normalizeAnswer(raw: string): string {
     // Het opgeslagen antwoord blijft het kale getal of de kale uitdrukking.
     // 0,33 blijft 0,33. Een andere termvolgorde van een lijn staat hieronder.
     .replace(/^[txhy]=/, '')
-    .replace(EENHEID_ACHTER_GETAL, '$1')
+  return haalEenheidWeg(zonderOpmaak)
 }
 
 /**
