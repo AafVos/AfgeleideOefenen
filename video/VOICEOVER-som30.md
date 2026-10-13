@@ -18,8 +18,7 @@ De opgave: **k(x) = 5 − 3(x⁴ − x)(x + 1)** (boek H2, opgave 53d).
 - **Slot** — eerst het antwoord terugkoppelen als `h′(x)`, daarna
   `k′(x) = g′(x) − h′(x)`.
 - **In beeld altijd mét `(x)`** (`g(x) = 5`). De stem spreekt de letters kaal
-  uit. De bestaande fragmenten zeggen nog "u" en "v"; die zijn niet opnieuw
-  gegenereerd.
+  uit: "g is vijf", "de afgeleide van h".
 - De factor 3 gaat mee naar binnen bij de eerste factor: `(3x⁴ − 3x)(x + 1)`.
   Zo blijft het bij twee factoren en is er geen extra regel nodig.
 
