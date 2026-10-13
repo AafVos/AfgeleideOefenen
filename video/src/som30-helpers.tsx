@@ -33,8 +33,8 @@ export function Opgave({ fontSize = 76 }: { fontSize?: number }) {
   )
 }
 
-/** v(x) na het naar binnen halen van de 3: (3x⁴ − 3x)(x + 1) */
-export function VHerschreven() {
+/** (3x⁴ − 3x)·(x + 1), nadat de 3 naar binnen is gehaald. */
+export function ProductHerschreven() {
   return (
     <span>
       (3

@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useCurrentFrame } from 'remotion'
 
 import { theme } from './theme'
-import { FnX, Opgave, VHerschreven, Xp } from './som30-helpers'
+import { FnX, Opgave, ProductHerschreven, Xp } from './som30-helpers'
 import { FactorLabel, Fn, RegelKaart, sceneTitelStijl } from './scenes-regels'
 import {
   AafCorner,
@@ -50,6 +50,19 @@ function StapLabel({ children }: { children: ReactNode }) {
 }
 
 const rijStijl: CSSProperties = { display: 'flex', alignItems: 'center', gap: 40, width: 1180 }
+
+/** De somregel, met de boekletters f, g en h. */
+function SomKaart({ fontSize = 38 }: { fontSize?: number }) {
+  return (
+    <RegelKaart fontSize={fontSize}>
+      <Fn naam="f" vanX /> = <Fn naam="g" vanX /> + <Fn naam="h" vanX />{' '}
+      <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
+      <span style={{ color: groen }}>
+        <Fn naam="g" accent vanX /> + <Fn naam="h" accent vanX />
+      </span>
+    </RegelKaart>
+  )
+}
 
 /* ── Scène 1 · H2 · #30 ──────────────────────────────────────────────────── */
 export function Som30Intro() {
@@ -104,13 +117,7 @@ export function Som30Analyse() {
       </Pop>
       {/* De somregel komt in beeld */}
       <FadeUp from={t(700)}>
-        <RegelKaart fontSize={40}>
-          <Fn naam="f" vanX /> = <Fn naam="u" vanX /> + <Fn naam="v" vanX />{' '}
-          <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
-          <span style={{ color: groen }}>
-            <Fn naam="u" accent vanX /> + <Fn naam="v" accent vanX />
-          </span>
-        </RegelKaart>
+        <SomKaart fontSize={40} />
       </FadeUp>
       <AafCorner pose={frame >= t(360) ? 'point' : 'idle'} poseFrame={frame - t(360)} />
     </Scene>
@@ -128,23 +135,17 @@ export function Som30Somregel() {
         </h2>
       </FadeUp>
       <FadeUp from={t(5)}>
-        <RegelKaart fontSize={38}>
-          <Fn naam="f" vanX /> = <Fn naam="u" vanX /> + <Fn naam="v" vanX />{' '}
-          <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
-          <span style={{ color: groen }}>
-            <Fn naam="u" accent vanX /> + <Fn naam="v" accent vanX />
-          </span>
-        </RegelKaart>
+        <SomKaart />
       </FadeUp>
-      {/* De som met u en v eronder gelabeld (de − splitst en blijft los) */}
+      {/* De som met g en h eronder gelabeld (de − splitst en blijft los) */}
       <FadeUp from={t(5)}>
         <div style={{ ...mathStyle, fontSize: 46, paddingBottom: 40 }}>
           <FnX naam="k" /> ={' '}
-          <FactorLabel label="u(x)" from={t(100)}>
+          <FactorLabel label="g(x)" from={t(100)}>
             <span>5</span>
           </FactorLabel>
           <span style={{ margin: '0 14px' }}>−</span>
-          <FactorLabel label="v(x)" from={t(100)}>
+          <FactorLabel label="h(x)" from={t(100)}>
             <span>
               3(
               <Xp n={4} /> − <X />)(<X /> + 1)
@@ -156,29 +157,29 @@ export function Som30Somregel() {
       <div style={rijStijl}>
         <Pop from={t(20)}>
           <StapLabel>
-            Stap 1 · kies <em>u</em> en <em>v</em>
+            Stap 1 · kies <em>g</em> en <em>h</em>
           </StapLabel>
         </Pop>
         <FadeUp from={t(115)}>
           <div style={{ ...mathStyle, fontSize: 36 }}>
-            <FnX naam="u" /> = 5
+            <FnX naam="g" /> = 5
             <span style={{ ...captionStyle, fontSize: 28, margin: '0 24px' }}>en</span>
-            <FnX naam="v" /> = 3(
+            <FnX naam="h" /> = 3(
             <Xp n={4} /> − <X />)(<X /> + 1)
           </div>
         </FadeUp>
       </div>
-      {/* Stap 2: u′ direct, v herschrijven */}
+      {/* Stap 2: g′ direct, h herschrijven */}
       <div style={{ ...rijStijl, alignItems: 'flex-start' }}>
         <Pop from={t(330)}>
           <StapLabel>
-            Stap 2 · bereken <em>u</em>′ en <em>v</em>′
+            Stap 2 · bereken <em>g</em>′ en <em>h</em>′
           </StapLabel>
         </Pop>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <FadeUp from={t(390)}>
             <div style={{ ...mathStyle, fontSize: 36 }}>
-              <FnX naam="u" accent /> = <span style={{ color: groen }}>0</span>
+              <FnX naam="g" accent /> = <span style={{ color: groen }}>0</span>
               <span style={{ ...captionStyle, fontSize: 26, marginLeft: 24 }}>
                 (er zit geen <X /> in)
               </span>
@@ -186,7 +187,7 @@ export function Som30Somregel() {
           </FadeUp>
           <FadeUp from={t(490)}>
             <div style={{ ...mathStyle, fontSize: 36 }}>
-              <FnX naam="v" /> = 3(
+              <FnX naam="h" /> = 3(
               <Xp n={4} /> − <X />)(<X /> + 1)
             </div>
           </FadeUp>
@@ -195,9 +196,9 @@ export function Som30Somregel() {
           </FadeUp>
           <FadeUp from={t(620)}>
             <div style={{ ...mathStyle, fontSize: 36 }}>
-              <FnX naam="v" /> ={' '}
+              <FnX naam="h" /> ={' '}
               <span style={{ color: rood }}>
-                <VHerschreven />
+                <ProductHerschreven />
               </span>
             </div>
           </FadeUp>
@@ -221,20 +222,20 @@ export function Som30Somregel() {
   )
 }
 
-/* ── Scène 4 · De productregel: v′ uitrekenen met g en h ────────────── */
+/* ── Scène 4 · De productregel: f′ uitrekenen met een verse g en h ─── */
 export function Som30Productregel() {
   const frame = useCurrentFrame()
-  const formuleRegel: CSSProperties = { ...mathStyle, fontSize: 36 }
+  const formuleRegel: CSSProperties = { ...mathStyle, fontSize: 34 }
   return (
-    <Scene>
-      {/* Regel en onze v staan klaar zodra de scène begint */}
+    <Scene gap={18}>
+      {/* Regel en onze f staan klaar zodra de scène begint */}
       <FadeUp from={t(5)}>
         <h2 style={sceneTitelStijl}>
           De <span style={{ color: rood }}>productregel</span>
         </h2>
       </FadeUp>
       <FadeUp from={t(5)}>
-        <RegelKaart fontSize={38}>
+        <RegelKaart fontSize={34}>
           <Fn naam="f" vanX /> = <Fn naam="g" vanX /> · <Fn naam="h" vanX />{' '}
           <span style={{ color: groen }}>⟹</span> <Fn naam="f" accent vanX /> ={' '}
           <span style={{ color: groen }}>
@@ -243,11 +244,19 @@ export function Som30Productregel() {
           </span>
         </RegelKaart>
       </FadeUp>
-      <FadeUp from={t(5)}>
-        <div style={{ ...mathStyle, fontSize: 42 }}>
-          <FnX naam="v" /> = <VHerschreven />
-        </div>
-      </FadeUp>
+      {/* Deze pagina begint bij zijn eigen f: het deel dat we meenamen */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <FadeUp from={t(5)}>
+          <p style={{ ...captionStyle, fontSize: 24, margin: 0 }}>
+            de functie van de vorige pagina noemen we hier <em>f</em>
+          </p>
+        </FadeUp>
+        <FadeUp from={t(5)}>
+          <div style={{ ...mathStyle, fontSize: 38 }}>
+            <FnX naam="f" /> = <ProductHerschreven />
+          </div>
+        </FadeUp>
+      </div>
       {/* Stap 1 */}
       <div style={rijStijl}>
         <Pop from={t(85)}>
@@ -286,7 +295,7 @@ export function Som30Productregel() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <FadeUp from={t(530)}>
             <div style={formuleRegel}>
-              <FnX naam="v" accent /> ={' '}
+              <FnX naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
                 <FnX naam="g" accent /> · <FnX naam="h" /> + <FnX naam="g" /> ·{' '}
                 <FnX naam="h" accent />
@@ -295,7 +304,7 @@ export function Som30Productregel() {
           </FadeUp>
           <FadeUp from={t(745)}>
             <div style={formuleRegel}>
-              <FnX naam="v" accent /> ={' '}
+              <FnX naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
                 (12
                 <Xp n={3} /> − 3)
@@ -306,14 +315,14 @@ export function Som30Productregel() {
           </FadeUp>
           <FadeUp from={t(985)}>
             <div style={formuleRegel}>
-              <FnX naam="v" accent /> = 12
+              <FnX naam="f" accent /> = 12
               <Xp n={4} /> + 12
               <Xp n={3} /> − 3<X /> − 3 + 3<Xp n={4} /> − 3<X />
             </div>
           </FadeUp>
           <Pop from={t(1320)}>
             <div style={{ ...mathStyle, fontSize: 44 }}>
-              <FnX naam="v" accent /> ={' '}
+              <FnX naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
                 15
                 <Xp n={4} /> + 12
@@ -335,22 +344,30 @@ export function Som30Productregel() {
 export function Som30Samen() {
   const frame = useCurrentFrame()
   return (
-    <Scene>
+    <Scene gap={22}>
       <FadeUp from={t(10)}>
         <h2 style={sceneTitelStijl}>
           Voeg alles <span style={{ color: groen }}>samen</span>
         </h2>
       </FadeUp>
       <FadeUp from={t(25)}>
-        <Opgave fontSize={54} />
+        <Opgave fontSize={48} />
       </FadeUp>
-      <FadeUp from={t(80)}>
-        <div style={{ ...mathStyle, fontSize: 50 }}>
-          <FnX naam="k" accent /> = <FnX naam="u" accent /> − <FnX naam="v" accent />
+      {/* Koppel het antwoord van de vorige pagina terug aan h */}
+      <FadeUp from={t(70)}>
+        <div style={{ ...mathStyle, fontSize: 40 }}>
+          <FnX naam="h" accent /> = 15
+          <Xp n={4} /> + 12
+          <Xp n={3} /> − 6<X /> − 3
         </div>
       </FadeUp>
-      <FadeUp from={t(225)}>
+      <FadeUp from={t(160)}>
         <div style={{ ...mathStyle, fontSize: 46 }}>
+          <FnX naam="k" accent /> = <FnX naam="g" accent /> − <FnX naam="h" accent />
+        </div>
+      </FadeUp>
+      <FadeUp from={t(280)}>
+        <div style={{ ...mathStyle, fontSize: 42 }}>
           <FnX naam="k" accent /> = <span style={{ color: theme.textMuted }}>0</span> − (15
           <Xp n={4} /> + 12
           <Xp n={3} /> − 6<X /> − 3)
