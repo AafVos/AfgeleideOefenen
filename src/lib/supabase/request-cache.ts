@@ -26,6 +26,7 @@ export const getCurrentUser = cache(async () => {
 })
 
 export type CurrentProfile = {
+  display_name: string | null
   username: string | null
   role: string | null
   tour_seen_at: string | null
@@ -44,7 +45,7 @@ export const getCurrentProfile = cache(
     const supabase = await createClient()
     const { data } = await supabase
       .from('profiles')
-      .select('username, role, tour_seen_at')
+      .select('display_name, username, role, tour_seen_at')
       .eq('id', user.id)
       .maybeSingle()
 

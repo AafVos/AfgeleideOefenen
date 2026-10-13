@@ -26,10 +26,12 @@ export default async function DashboardPage() {
 
   const t = await getTranslations('Dashboard')
 
-  // De gebruikersnaam staat in `username`. `display_name` wordt nergens
-  // geschreven, dus daarop groeten liet iedereen „Jouw voortgang” zien.
+  // Registreren bewaart de naam in `username`. Oudere profielen hebben
+  // alleen `display_name`; die kolom wordt bij aanmelden niet meer gevuld.
   const profile = await getCurrentProfile()
-  const firstName = profile?.username?.trim() || null
+  const gekozenNaam = profile?.username?.trim()
+  const oudeNaam = profile?.display_name?.trim().split(/\s+/)[0]?.trim()
+  const firstName = gekozenNaam || oudeNaam || null
 
   // New tables
   const { data: chapters } = await supabase
