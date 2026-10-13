@@ -154,7 +154,7 @@ export default async function HomePage() {
                 ['topic8Title', 'topic8Body', '/theorie#kaart-h6-machten_herschrijven'],
                 ['topic2Title', 'topic2Body', '/theorie#kaart-h2-somregel'],
                 ['topic3Title', 'topic3Body', '/theorie/productregel'],
-                ['topic4Title', 'topic4Body', '/theorie#kaart-h2-quotientregel'],
+                ['topic4Title', 'topic4Body', '/theorie/quotientregel'],
                 ['topic5Title', 'topic5Body', '/theorie/kettingregel'],
                 ['topic6Title', 'topic6Body', '/theorie#hoofdstuk-h7'],
                 ['topic7Title', 'topic7Body', '/theorie#hoofdstuk-h9'],
