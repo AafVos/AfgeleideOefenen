@@ -22,9 +22,12 @@ describe('answerPrefix', () => {
     expect(answerPrefix('geen formule', null)).toBe("f'(x) =")
   })
 
-  it('laat een verhaaltje zonder voorvoegsel op f\'(x) = staan', () => {
+  it('zet bij een verhaaltje zonder voorvoegsel niets voor het getal', () => {
     expect(
       answerPrefix('De temperatuur is $T(t) = 3t^{2}$ na $t$ uur.', null),
-    ).toBe("f'(x) =")
+    ).toBe('')
+    expect(
+      answerPrefix('Hoe hoog is de bal na 2 seconden?', '  '),
+    ).toBe('')
   })
 })
