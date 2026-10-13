@@ -164,7 +164,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           </label>
 
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={!answer.trim()}>
+            <Button type="submit" disabled={!answer.trim()} className="min-h-11 px-5">
               {t('submit')}
             </Button>
             <span className="text-xs text-text-muted">{t('hint')}</span>
