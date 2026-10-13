@@ -47,6 +47,9 @@ export default async function TheoriePage() {
         expandSidebar: t('expandSidebar'),
         exampleLabel: t('example'),
         detailsLabel: t('detailsLabel'),
+        showSteps: t('showSteps'),
+        answerLabel: t('answerLabel'),
+        practiceSelf: t('practiceSelf'),
       }}
     />
   )
