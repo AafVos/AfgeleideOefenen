@@ -397,7 +397,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
   },
   {
     slug: 'h15',
-    title: 'H15 — Afgeleiden en primitieven',
+    title: 'H15 — Hellingen, raaklijnen en optimaliseren',
     cards: [
       {
         id: 'stijgen_dalen',
