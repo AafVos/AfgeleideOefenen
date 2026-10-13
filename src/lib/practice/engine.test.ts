@@ -71,7 +71,45 @@ describe('answersMatch', () => {
   it('rekent een eenheid achter het getal hetzelfde als het kale getal', () => {
     expect(answersMatch('2 seconden', '2')).toBe(true)
     expect(answersMatch('2 meter', '2')).toBe(true)
+    expect(answersMatch('2 liter', '2')).toBe(true)
+    expect(answersMatch('2 kilometer', '2')).toBe(true)
+    expect(answersMatch('2 centimeter', '2')).toBe(true)
+    expect(answersMatch('2 uur', '2')).toBe(true)
     expect(answersMatch('t = 2 seconden', '2')).toBe(true)
+  })
+
+  it('rekent snelheid en versnelling met de eenheid erbij goed', () => {
+    expect(answersMatch('5 meter per seconde', '5')).toBe(true)
+    expect(answersMatch('5 meters per seconde', '5')).toBe(true)
+    expect(answersMatch('5 m/s', '5')).toBe(true)
+    expect(answersMatch('5 M/S', '5')).toBe(true)
+    expect(answersMatch('5 m / s', '5')).toBe(true)
+    expect(answersMatch('5 meter/seconde', '5')).toBe(true)
+    expect(answersMatch('5 meter per seconde per seconde', '5')).toBe(true)
+    expect(answersMatch('5 m/s^2', '5')).toBe(true)
+    expect(answersMatch('5 m/s²', '5')).toBe(true)
+    expect(answersMatch('t = 5 meter per seconde', '5')).toBe(true)
+    expect(answersMatch('2 meter per uur', '2')).toBe(true)
+    expect(answersMatch('-4 meter per minuut', '-4')).toBe(true)
+    expect(answersMatch('3 graden per minuut', '3')).toBe(true)
+  })
+
+  it('rekent euro, gram, dozen en andere eenheden uit de vraag goed', () => {
+    expect(answersMatch('12 euro', '12')).toBe(true)
+    expect(answersMatch('32 gram', '32')).toBe(true)
+    expect(answersMatch('32 grammen', '32')).toBe(true)
+    expect(answersMatch('1 dozen', '1')).toBe(true)
+    expect(answersMatch('1 doos', '1')).toBe(true)
+    expect(answersMatch('50 kilo', '50')).toBe(true)
+    expect(answersMatch('50 kilogram', '50')).toBe(true)
+    expect(answersMatch('4 gram per dag', '4')).toBe(true)
+    expect(answersMatch('4 euro per stuk', '4')).toBe(true)
+    expect(answersMatch('15 graden Celsius', '15')).toBe(true)
+    expect(answersMatch('6 dagen', '6')).toBe(true)
+    expect(answersMatch('2 weken', '2')).toBe(true)
+    expect(answersMatch('24/e^2 stuks', '24/e^2')).toBe(true)
+    expect(answersMatch('20/e liter', '20/e')).toBe(true)
+    expect(answersMatch('3/e gram per dag', '3/e')).toBe(true)
   })
 
   it('rekent een fout getal fout, ook met voorvoegsel of eenheid', () => {
@@ -79,6 +117,10 @@ describe('answersMatch', () => {
     expect(answersMatch('t = 3', '2')).toBe(false)
     expect(answersMatch('3 seconden', '2')).toBe(false)
     expect(answersMatch('h = 4', '2')).toBe(false)
+    expect(answersMatch('6 meter per seconde', '5')).toBe(false)
+    expect(answersMatch('6 m/s', '5')).toBe(false)
+    expect(answersMatch('13 euro', '12')).toBe(false)
+    expect(answersMatch('4 meter per seconde per seconde', '5')).toBe(false)
   })
 
   it('rekent 0,33 niet gelijk aan 1/3', () => {
@@ -113,6 +155,9 @@ describe('answersMatch', () => {
     expect(answersMatch("f'(x) = 2", '2')).toBe(false)
     expect(answersMatch('2x', '2')).toBe(false)
     expect(answersMatch('2m', '2')).toBe(false)
+    expect(answersMatch('5ms', '5')).toBe(false)
+    expect(answersMatch('parameter', 'para')).toBe(false)
+    expect(answersMatch('2x meter', '2x')).toBe(false)
   })
 
   // Raaklijn: y = 2x - 1, y=2x-1, y = -1 + 2x en 2x - 1 zijn dezelfde lijn.
