@@ -155,7 +155,7 @@ export function Som30Somregel() {
       </FadeUp>
       {/* Stap 1 */}
       <div style={rijStijl}>
-        <Pop from={t(20)}>
+        <Pop from={t(8)}>
           <StapLabel>
             Stap 1 · kies <em>g</em> en <em>h</em>
           </StapLabel>
@@ -177,7 +177,7 @@ export function Som30Somregel() {
           </StapLabel>
         </Pop>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <FadeUp from={t(390)}>
+          <FadeUp from={t(405)}>
             <div style={{ ...mathStyle, fontSize: 36 }}>
               <FnX naam="g" accent /> = <span style={{ color: groen }}>0</span>
               <span style={{ ...captionStyle, fontSize: 26, marginLeft: 24 }}>
@@ -185,16 +185,16 @@ export function Som30Somregel() {
               </span>
             </div>
           </FadeUp>
-          <FadeUp from={t(490)}>
+          <FadeUp from={t(505)}>
             <div style={{ ...mathStyle, fontSize: 36 }}>
               <FnX naam="h" /> = 3(
               <Xp n={4} /> − <X />)(<X /> + 1)
             </div>
           </FadeUp>
-          <FadeUp from={t(590)}>
+          <FadeUp from={t(610)}>
             <div style={{ ...captionStyle, fontSize: 30, textAlign: 'left' }}>↓</div>
           </FadeUp>
-          <FadeUp from={t(620)}>
+          <FadeUp from={t(635)}>
             <div style={{ ...mathStyle, fontSize: 36 }}>
               <FnX naam="h" /> ={' '}
               <span style={{ color: rood }}>
@@ -202,21 +202,21 @@ export function Som30Somregel() {
               </span>
             </div>
           </FadeUp>
-          <FadeUp from={t(750)}>
+          <FadeUp from={t(760)}>
             <p style={{ ...captionStyle, fontSize: 26, margin: 0, textAlign: 'left' }}>
               handig: haal de 3 naar binnen, dan zie je twee losse factoren staan
             </p>
           </FadeUp>
         </div>
       </div>
-      <Pop from={t(980)}>
+      <Pop from={t(1045)}>
         <Chip color={rood} bg={theme.accent2Light}>
           Productregel!
         </Chip>
       </Pop>
       <AafCorner
-        pose={frame >= t(390) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
-        poseFrame={frame >= t(390) ? frame - t(390) : frame - t(30)}
+        pose={frame >= t(405) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
+        poseFrame={frame >= t(405) ? frame - t(405) : frame - t(30)}
       />
     </Scene>
   )
@@ -259,12 +259,12 @@ export function Som30Productregel() {
       </div>
       {/* Stap 1 */}
       <div style={rijStijl}>
-        <Pop from={t(85)}>
+        <Pop from={t(280)}>
           <StapLabel>
             Stap 1 · kies <em>g</em> en <em>h</em>
           </StapLabel>
         </Pop>
-        <FadeUp from={t(115)}>
+        <FadeUp from={t(305)}>
           <div style={{ ...mathStyle, fontSize: 36 }}>
             <FnX naam="g" /> = 3<Xp n={4} /> − 3<X />
             <span style={{ ...captionStyle, fontSize: 28, margin: '0 24px' }}>en</span>
@@ -274,12 +274,12 @@ export function Som30Productregel() {
       </div>
       {/* Stap 2 */}
       <div style={rijStijl}>
-        <Pop from={t(250)}>
+        <Pop from={t(410)}>
           <StapLabel>
             Stap 2 · bereken <em>g</em>′ en <em>h</em>′
           </StapLabel>
         </Pop>
-        <FadeUp from={t(280)}>
+        <FadeUp from={t(445)}>
           <div style={{ ...mathStyle, fontSize: 36, color: groen }}>
             <FnX naam="g" accent /> = 12<Xp n={3} /> − 3
             <span style={{ ...captionStyle, fontSize: 28, margin: '0 24px' }}>en</span>
@@ -289,11 +289,11 @@ export function Som30Productregel() {
       </div>
       {/* Stap 3: formule opschrijven, invullen, haakjes wegwerken, uitkomst */}
       <div style={{ ...rijStijl, alignItems: 'flex-start' }}>
-        <Pop from={t(465)}>
+        <Pop from={t(605)}>
           <StapLabel>Stap 3 · vul de formule in</StapLabel>
         </Pop>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <FadeUp from={t(530)}>
+          <FadeUp from={t(685)}>
             <div style={formuleRegel}>
               <FnX naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
@@ -302,7 +302,7 @@ export function Som30Productregel() {
               </span>
             </div>
           </FadeUp>
-          <FadeUp from={t(745)}>
+          <FadeUp from={t(920)}>
             <div style={formuleRegel}>
               <FnX naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
@@ -313,14 +313,14 @@ export function Som30Productregel() {
               <Xp n={4} /> − 3<X />) · <span style={{ color: groen }}>1</span>
             </div>
           </FadeUp>
-          <FadeUp from={t(985)}>
+          <FadeUp from={t(1225)}>
             <div style={formuleRegel}>
               <FnX naam="f" accent /> = 12
               <Xp n={4} /> + 12
               <Xp n={3} /> − 3<X /> − 3 + 3<Xp n={4} /> − 3<X />
             </div>
           </FadeUp>
-          <Pop from={t(1320)}>
+          <Pop from={t(1545)}>
             <div style={{ ...mathStyle, fontSize: 44 }}>
               <FnX naam="f" accent /> ={' '}
               <span style={{ color: groen }}>
@@ -333,8 +333,8 @@ export function Som30Productregel() {
         </div>
       </div>
       <AafCorner
-        pose={frame >= t(280) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
-        poseFrame={frame >= t(280) ? frame - t(280) : frame - t(30)}
+        pose={frame >= t(445) ? 'nod' : frame >= t(30) ? 'point' : 'idle'}
+        poseFrame={frame >= t(445) ? frame - t(445) : frame - t(30)}
       />
     </Scene>
   )
@@ -354,31 +354,31 @@ export function Som30Samen() {
         <Opgave fontSize={48} />
       </FadeUp>
       {/* Koppel het antwoord van de vorige pagina terug aan h */}
-      <FadeUp from={t(70)}>
+      <FadeUp from={t(105)}>
         <div style={{ ...mathStyle, fontSize: 40 }}>
           <FnX naam="h" accent /> = 15
           <Xp n={4} /> + 12
           <Xp n={3} /> − 6<X /> − 3
         </div>
       </FadeUp>
-      <FadeUp from={t(160)}>
+      <FadeUp from={t(300)}>
         <div style={{ ...mathStyle, fontSize: 46 }}>
           <FnX naam="k" accent /> = <FnX naam="g" accent /> − <FnX naam="h" accent />
         </div>
       </FadeUp>
-      <FadeUp from={t(280)}>
+      <FadeUp from={t(420)}>
         <div style={{ ...mathStyle, fontSize: 42 }}>
           <FnX naam="k" accent /> = <span style={{ color: theme.textMuted }}>0</span> − (15
           <Xp n={4} /> + 12
           <Xp n={3} /> − 6<X /> − 3)
         </div>
       </FadeUp>
-      <FadeUp from={t(455)}>
+      <FadeUp from={t(645)}>
         <p style={{ ...captionStyle, fontSize: 26, margin: 0 }}>
           de min gaat over álle termen heen
         </p>
       </FadeUp>
-      <Pop from={t(560)}>
+      <Pop from={t(750)}>
         <div style={{ ...mathStyle, fontSize: 58 }}>
           <FnX naam="k" accent /> ={' '}
           <span style={{ color: groen }}>
@@ -388,7 +388,7 @@ export function Som30Samen() {
           </span>
         </div>
       </Pop>
-      <AafCorner pose={frame >= t(585) ? 'jump' : 'idle'} poseFrame={frame - t(585)} />
+      <AafCorner pose={frame >= t(770) ? 'jump' : 'idle'} poseFrame={frame - t(770)} />
     </Scene>
   )
 }
