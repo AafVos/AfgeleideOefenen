@@ -1,0 +1,64 @@
+# Elke ochtend een GitHub Release met de datum, en daarin de titels van de
+# pull requests die sinds de vorige release op main zijn gemerged.
+#
+# Elke merge op main blijft meteen live. Deze workflow verandert de site niet
+# en zet geen versienummer in package.json. Hij maakt alleen achteraf zichtbaar
+# wat er samen naar buiten is gegaan.
+#
+# Geen nieuwe commits → geen release, en de run blijft groen. Is er die dag al
+# een datum-tag, dan doet een tweede run niets.
+name: Dagelijkse release
+
+on:
+  # Elke ochtend om 05:00 UTC — dat is 07:00 Nederlandse tijd in de zomer,
+  # 06:00 in de winter. Zelfde moment als het dashboard vergelijken.
+  schedule:
+    - cron: "0 5 * * *"
+  # Met de hand, vanaf het tabblad Actions.
+  workflow_dispatch:
+  # Op een pull request alleen een droogloop, zodat je ziet wat de tekst zou
+  # worden zonder dat er een release ontstaat.
+  pull_request:
+    paths:
+      - .github/workflows/dagelijkse-release.yml
+      - scripts/dagelijkse-release.sh
+
+# Een release mag niet halverwege worden afgebroken door een tweede start.
+concurrency:
+  group: dagelijkse-release-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  proef:
+    name: Proef van de dagelijkse release
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Tonen wat de release zou worden
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/dagelijkse-release.sh --droog
+
+  release:
+    name: Dagelijkse release
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Release aanmaken
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/dagelijkse-release.sh
