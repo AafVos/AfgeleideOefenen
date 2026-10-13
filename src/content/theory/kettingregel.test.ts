@@ -55,5 +55,9 @@ describe('kettingregel-pagina', () => {
       (card) => card.id === 'kettingregel',
     )
     expect(kaart?.uitlegPad).toBe(KETTINGREGEL_PAD)
+    expect(kaart?.formula).toEqual([...KETTINGREGEL_FORMULE])
+    const stappen = (kaart?.examples ?? []).flatMap((voorbeeld) => voorbeeld.steps ?? []).join(' ')
+    expect(stappen).toContain('h(x)')
+    expect(stappen).not.toMatch(/\$g\(x\)/)
   })
 })
