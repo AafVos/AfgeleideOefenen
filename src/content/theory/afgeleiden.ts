@@ -259,6 +259,67 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           'Voor twee toppen $A$ en $B$ stel je $OA^2 = OB^2$. Dan hoef je de wortel niet te trekken.',
         ],
       },
+      {
+        id: 'hoek_grafieken',
+        title: 'Hoek tussen twee grafieken',
+        formula: [
+          "\\tan(\\alpha) = f'(x)",
+          "\\tan(\\beta) = g'(x)",
+          "|\\alpha - \\beta|",
+          "\\text{groter dan } 90^{\\circ}?\\ \\text{dan } 180^{\\circ} - |\\alpha - \\beta|",
+        ],
+        examples: [
+          {
+            problem: 'f(x) = x^2 \\text{ en } y = 1 \\text{ in } (1, 1)',
+            answer: '63{,}4^{\\circ}',
+            steps: [
+              "$f'(x) = 2x$, dus in $(1, 1)$ is de helling $2$. De horizontale lijn heeft helling $0$.",
+              "$\\tan(\\alpha) = 2$ geeft $\\alpha \\approx 63{,}43^{\\circ}$. $\\tan(\\beta) = 0$ geeft $\\beta = 0^{\\circ}$.",
+              "Het verschil is $63{,}43^{\\circ}$. Dat is kleiner dan $90^{\\circ}$, dus de hoek is $63{,}4^{\\circ}$.",
+            ],
+          },
+        ],
+        notes: [
+          'De hoek tussen twee grafieken in een snijpunt is de hoek tussen de raaklijnen daar.',
+          'Zet je rekenmachine op graden. Een richtingshoek ligt tussen $-90^{\\circ}$ en $90^{\\circ}$.',
+        ],
+      },
+      {
+        id: 'grafieken_raken',
+        title: 'Grafieken die elkaar raken',
+        formula: ["f(x) = g(x)", "f'(x) = g'(x)"],
+        examples: [
+          {
+            problem: 'f(x) = x^2 \\text{ en } g(x) = 2x - 1',
+            answer: '\\text{raakpunt } (1, 1)',
+            steps: [
+              "$f'(x) = 2x$ en $g'(x) = 2$. Gelijkstellen geeft $x = 1$.",
+              "$f(1) = 1$ en $g(1) = 1$. Ze snijden elkaar en hebben dezelfde helling.",
+            ],
+          },
+        ],
+        notes: [
+          'Eerst de hellingen gelijkstellen, dan controleren of de grafieken daar ook echt samenkomen.',
+        ],
+      },
+      {
+        id: 'loodrecht_snijden',
+        title: 'Loodrecht snijdende grafieken',
+        formula: ["f(x) = g(x)", "f'(x) \\cdot g'(x) = -1"],
+        examples: [
+          {
+            problem: 'f(x) = x^2 \\text{ en } g(x) = -x + \\dfrac{3}{4}',
+            answer: '\\text{loodrecht in } \\left(\\dfrac{1}{2}, \\dfrac{1}{4}\\right)',
+            steps: [
+              "$f'(x) = 2x$ en $g'(x) = -1$. Het product is $-1$ bij $x = \\dfrac{1}{2}$.",
+              "Daar zijn $f$ en $g$ allebei $\\dfrac{1}{4}$.",
+            ],
+          },
+        ],
+        notes: [
+          'Een verticale raaklijn heeft geen helling. Dan werkt het product $-1$ niet.',
+        ],
+      },
     ],
   },
 ]
