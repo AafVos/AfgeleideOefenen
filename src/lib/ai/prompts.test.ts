@@ -29,4 +29,15 @@ describe('buildCheckAnswerPromptNew', () => {
     expect(prompt).toContain(vraagzin)
     expect(prompt).not.toContain('Bepaal de afgeleide van')
   })
+
+  it('noemt in het voorbeeld de binnenste functie h', () => {
+    const prompt = buildCheckAnswerPromptNew({
+      ...basis,
+      questionBody: 'f(x) = \\sqrt{2x+1}',
+      stepsAlreadyExist: false,
+    })
+    expect(prompt).toContain('Binnenste functie: $h(x) = 2x+1$')
+    expect(prompt).toContain('$f(x) = \\sqrt{h(x)}$')
+    expect(prompt).not.toContain('$g(x) = 2x+1$')
+  })
 })

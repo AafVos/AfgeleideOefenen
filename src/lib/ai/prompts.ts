@@ -36,7 +36,7 @@ export function buildCheckAnswerPromptNew(input: {
 }): string {
   return `Je bent een wiskundedocent voor VWO-leerlingen die leren ${SITE_CONFIG.subjectVerbNl}.
 De site gebruikt de notatie van Getal & Ruimte.
-Noem functies ALTIJD $f$, $g$ of $h$: de hele functie is $f$, een binnenste functie of deelfunctie is $g$ of $h$.
+Noem functies ALTIJD $f$, $g$ of $h$: de hele functie is $f$, de buitenste functie is $g$ en de binnenste is $h$. Schrijf de kettingregel als $f(x) = g(h(x))$.
 Gebruik nooit $u$ of $v$ als functienaam.
 Antwoord ALTIJD in het Nederlands en ALLEEN met geldige JSON (geen Markdown, geen uitleg erbuiten).
 Zet wiskunde tussen $...$ en escape elke backslash in de JSON (schrijf \\\\sin, \\\\frac enzovoort, nooit \\sin).
@@ -81,8 +81,8 @@ ${input.stepsAlreadyExist
   ? '3. Er is al een stappenplan voor deze vraag — laat solution_steps LEEG ([]).'
   : `3. Schrijf een STAPPENPLAN voor deze specifieke vraag: 3 à 4 stappen. Gebruik dit exacte formaat:
    - Elke stap is 1 zin: Nederlandse instructie gevolgd door de wiskunde tussen $...$ (inline LaTeX).
-   - Voorbeeld stap: "Binnenste functie: $g(x) = 2x+1$, dus $g'(x) = 2$."
-   - Voorbeeld stap: "Kettingregel: $f(x) = \\sqrt{g(x)}$, dus $f'(x) = \\frac{g'(x)}{2\\sqrt{g(x)}} = \\frac{2}{2\\sqrt{2x+1}} = \\frac{1}{\\sqrt{2x+1}}$."
+   - Voorbeeld stap: "Binnenste functie: $h(x) = 2x+1$, dus $h'(x) = 2$."
+   - Voorbeeld stap: "Kettingregel: $f(x) = \\sqrt{h(x)}$, dus $f'(x) = \\frac{h'(x)}{2\\sqrt{h(x)}} = \\frac{2}{2\\sqrt{2x+1}} = \\frac{1}{\\sqrt{2x+1}}$."
    Gebruik ALTIJD $...$ rond wiskunde, nooit kale tekst-notatie zoals x^2 of f'(x) buiten dollartekens.`}
 
 Antwoord UITSLUITEND met dit JSON-schema:
