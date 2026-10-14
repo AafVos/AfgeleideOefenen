@@ -129,7 +129,7 @@
     "practiceSelf": "Zelf oefenen",
     "step": "Stap {n}",
     "noTheory": "Nog geen theorie voor dit onderdeel, alleen oefenvragen.",
-    "chapterLabel": "Hoofdstuk",
+    "chapterLabel": "Hoofdstukken",
     "collapseSidebar": "Zijbalk inklappen",
     "expandSidebar": "Zijbalk uitklappen",
     "detailsLabel": "Uitleg en voorbeelden"
@@ -312,7 +312,7 @@
     "title": "Oefenen",
     "h1": "Oefenen",
     "topicLabel": "Onderwerp",
-    "chapterLabel": "Hoofdstuk",
+    "chapterLabel": "Hoofdstukken",
     "difficultyHint": "Kies een opgave om te beginnen",
     "easy": "Makkelijk",
     "medium": "Gemiddeld",
