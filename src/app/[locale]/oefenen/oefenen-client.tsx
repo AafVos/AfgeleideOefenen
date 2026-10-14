@@ -338,8 +338,15 @@ export function OefenenClient({
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
+            className={
+              sidebarOpen
+                ? 'inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text'
+                : 'inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md px-3 text-text-muted hover:bg-surface-2 hover:text-text lg:size-11 lg:w-11 lg:px-0'
+            }
           >
+            {!sidebarOpen && (
+              <span className="text-sm font-medium text-text lg:hidden">{labels.chapterLabel}</span>
+            )}
             <svg
               viewBox="0 0 24 24"
               className={`size-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`}
