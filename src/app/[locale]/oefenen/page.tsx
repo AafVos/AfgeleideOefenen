@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import {
   loadAllTopics,
   loadClustersForTopics,
+  loadLaatsteClusterId,
   loadParagraphs,
   loadTheoryBlocks,
   loadTilesForClusters,
@@ -10,6 +11,7 @@ import {
   type ClusterInfo,
 } from '@/lib/practice/chapter-overview'
 import {
+  ankerNaLaatsteOefening,
   clusterIdsVoorSelectie,
   losSelectieOp,
   oefenIndeling,
@@ -191,7 +193,10 @@ async function BlokPagina({ searchParams }: PageProps) {
         allClusters.filter((cl) => cl.topic_id === topic.id).map((cl) => cl.id),
       ),
   )
-  const allTiles = await loadTilesForClusters(supabase, allClusterIds)
+  const [allTiles, laatsteClusterId] = await Promise.all([
+    loadTilesForClusters(supabase, allClusterIds),
+    loadLaatsteClusterId(supabase),
+  ])
 
   const data = {
     chapters,
@@ -202,6 +207,8 @@ async function BlokPagina({ searchParams }: PageProps) {
     tiles: allTiles,
   }
   const selectie = losSelectieOp(adres, data)
+  const adresLeeg = !adres.blok && !adres.chapter && !adres.topic && !adres.cluster
+  const startBij = adresLeeg ? ankerNaLaatsteOefening(laatsteClusterId, data) : null
   const scope = new Set(
     selectie ? clusterIdsVoorSelectie(selectie, allTopics, allClusters) : [],
   )
@@ -221,6 +228,7 @@ async function BlokPagina({ searchParams }: PageProps) {
       adres={adres}
       allTiles={allTiles}
       question={question}
+      startBij={startBij}
       labels={{
         chapterLabel: t('chapterLabel'),
         h1: t('h1'),

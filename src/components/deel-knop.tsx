@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { deelLink } from '@/lib/deel-link'
 
 /** Op een telefoon het deelmenu, anders de link naar het klembord. */
-export function DeelKnop() {
+export function DeelKnop({ compact = false }: { compact?: boolean }) {
   const [melding, setMelding] = useState<string | null>(null)
 
   async function deel() {
@@ -33,11 +33,15 @@ export function DeelKnop() {
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className={compact ? 'flex flex-col items-end gap-2' : 'flex flex-col items-start gap-2'}>
       <button
         type="button"
         onClick={() => void deel()}
-        className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+        className={
+          compact
+            ? 'inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm text-text hover:bg-surface-2'
+            : 'inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2'
+        }
       >
         Stuur naar een klasgenoot
       </button>

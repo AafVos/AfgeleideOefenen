@@ -83,13 +83,38 @@ export type Kopje = {
   sub: { id: string; label: string; clusterId: string }[]
 }
 
+type TegelVerwijzing = { clusterId: string; verhaal?: boolean }
+
 type IndelingData = {
   chapters: ChapterInfo[]
   paragraphs: ParagraphInfo[]
   blocks: TheoryBlockInfo[]
   topics: TopicInfo[]
   clusters: ClusterInfo[]
-  tiles: { clusterId: string }[]
+  tiles: TegelVerwijzing[]
+}
+
+export type OverzichtBlok = {
+  id: string
+  slug: string
+  letter: string
+  title: string
+  kopjes: Kopje[]
+}
+
+export type OverzichtParagraaf = {
+  id: string
+  slug: string
+  label: string
+  title: string
+  blokken: OverzichtBlok[]
+}
+
+export type OverzichtHoofdstuk = {
+  chapter: ChapterInfo
+  paragrafen: OverzichtParagraaf[]
+  /** Hoofdstuk zonder boekparagrafen: de soorten sommen direct eronder. */
+  kopjes: Kopje[]
 }
 
 const legeGroep: Groep = { topicSlug: null, clusterSlug: null }
@@ -117,7 +142,7 @@ export function vergelijkHoofdstukVolgorde(
 export function blokIdsMetOpgaven(
   topics: TopicInfo[],
   clusters: ClusterInfo[],
-  tiles: { clusterId: string }[],
+  tiles: TegelVerwijzing[],
 ): Set<string> {
   const topicById = new Map(topics.map((t) => [t.id, t]))
   const clusterById = new Map(clusters.map((c) => [c.id, c]))
@@ -175,6 +200,69 @@ export function bouwBlokBoom(data: IndelingData): BlokBoom {
     })
   }
   return { hoofdstukken, oudeOpgaven: [] }
+}
+
+/**
+ * Alles wat rechts op de oefenpagina onder elkaar staat.
+ * Een theorieblok zonder opgaven blijft weg; de zijbalk toont die wel.
+ */
+export function bouwOefenOverzicht(data: IndelingData): OverzichtHoofdstuk[] {
+  const boom = bouwBlokBoom(data)
+  const hoofdstukken: OverzichtHoofdstuk[] = []
+  for (const h of boom.hoofdstukken) {
+    if (h.paragrafen.length === 0) {
+      const kopjes = kopjesVoorSelectie(
+        { soort: 'hoofdstuk', chapter: h.chapter, groep: legeGroep },
+        data.topics,
+        data.clusters,
+        data.tiles,
+      )
+      if (kopjes.length === 0) continue
+      hoofdstukken.push({ chapter: h.chapter, paragrafen: [], kopjes })
+      continue
+    }
+    const paragrafen: OverzichtParagraaf[] = []
+    for (const p of h.paragrafen) {
+      const blokken: OverzichtBlok[] = []
+      for (const node of p.blokken) {
+        if (!node.heeftOpgaven) continue
+        const block = data.blocks.find((b) => b.id === node.id)
+        const paragraph = data.paragraphs.find((x) => x.id === p.id)
+        if (!block || !paragraph) continue
+        const kopjes = kopjesVoorSelectie(
+          {
+            soort: 'blok',
+            blok: block,
+            paragraph,
+            chapter: h.chapter,
+            groep: legeGroep,
+          },
+          data.topics,
+          data.clusters,
+          data.tiles,
+        )
+        if (kopjes.length === 0) continue
+        blokken.push({
+          id: block.id,
+          slug: block.slug,
+          letter: block.letter,
+          title: block.title,
+          kopjes,
+        })
+      }
+      if (blokken.length === 0) continue
+      paragrafen.push({
+        id: p.id,
+        slug: p.slug,
+        label: p.label,
+        title: p.title,
+        blokken,
+      })
+    }
+    if (paragrafen.length === 0) continue
+    hoofdstukken.push({ chapter: h.chapter, paragrafen, kopjes: [] })
+  }
+  return hoofdstukken
 }
 
 /** De oude zijbalk: hoofdstuk, onderwerp, en daaronder de soorten sommen. */
@@ -350,11 +438,49 @@ export function clusterIdsVoorSelectie(
  * leerling de naam van het onderwerp, terwijl de som bij een ander blok
  * hoort.
  */
+function clusterIsVerhaal(clusterId: string, tiles: TegelVerwijzing[]): boolean {
+  const vanDeze = tiles.filter((t) => t.clusterId === clusterId)
+  if (vanDeze.length === 0) return false
+  const aantal = vanDeze.filter((t) => t.verhaal).length
+  return aantal * 2 >= vanDeze.length
+}
+
+/** Gewone sommen eerst, verhaaltjes en toepassingen erachter. */
+function verhaalAchteraan(kopjes: Kopje[], tiles: TegelVerwijzing[]): Kopje[] {
+  if (!tiles.some((t) => t.verhaal)) return kopjes
+  const gewoon: Kopje[] = []
+  const later: Kopje[] = []
+  for (const kop of kopjes) {
+    const regulier = kop.sub.filter((s) => !clusterIsVerhaal(s.clusterId, tiles))
+    const verhaal = kop.sub.filter((s) => clusterIsVerhaal(s.clusterId, tiles))
+    if (verhaal.length === 0) {
+      gewoon.push(kop)
+      continue
+    }
+    if (regulier.length === 0) {
+      later.push(kop)
+      continue
+    }
+    gewoon.push({
+      ...kop,
+      sub: regulier.map((s) => (regulier.length === 1 ? { ...s, label: '' } : s)),
+    })
+    for (const sub of verhaal) {
+      later.push({
+        id: `verhaal-${sub.id}`,
+        label: sub.label || kop.label,
+        sub: [{ ...sub, label: '' }],
+      })
+    }
+  }
+  return [...gewoon, ...later]
+}
+
 export function kopjesVoorSelectie(
   selectie: Selectie,
   topics: TopicInfo[],
   clusters: ClusterInfo[],
-  tiles: { clusterId: string }[],
+  tiles: TegelVerwijzing[],
 ): Kopje[] {
   const metTegels = new Set(tiles.map((t) => t.clusterId))
   const topicById = new Map(topics.map((t) => [t.id, t]))
@@ -379,7 +505,7 @@ export function kopjesVoorSelectie(
         kopjes.push({
           id: `soort-${topic.slug}-${cluster.slug}`,
           label: cluster.title,
-          sub: [{ id: `groep-${cluster.slug}`, label: '', clusterId: cluster.id }],
+          sub: [{ id: `groep-${topic.slug}-${cluster.slug}`, label: '', clusterId: cluster.id }],
         })
       }
       return
@@ -388,7 +514,7 @@ export function kopjesVoorSelectie(
       id: `onderwerp-${topic.slug}`,
       label: topic.title,
       sub: groep.map((cluster) => ({
-        id: `groep-${cluster.slug}`,
+        id: `groep-${topic.slug}-${cluster.slug}`,
         label: groep.length > 1 ? cluster.title : '',
         clusterId: cluster.id,
       })),
@@ -405,7 +531,56 @@ export function kopjesVoorSelectie(
     groep.push(cluster)
   }
   plaats()
-  return kopjes
+  return verhaalAchteraan(kopjes, tiles)
+}
+
+/**
+ * Waar de pagina naartoe scrolt bij een adres. Zonder parameters: nergens,
+ * de leerling begint bovenaan. Een hoofdstuk blijft het hoofdstuk, ook als
+ * het eerste blok met opgaven een verhaaltje is.
+ */
+export function ankerUitAdres(adres: Adres, selectie: Selectie | null): string | null {
+  const leeg = !adres.blok && !adres.chapter && !adres.topic && !adres.cluster
+  if (leeg) return null
+  if (adres.cluster && selectie?.groep.topicSlug && selectie.groep.clusterSlug) {
+    return `groep-${selectie.groep.topicSlug}-${selectie.groep.clusterSlug}`
+  }
+  if (adres.topic && selectie?.groep.topicSlug) return `onderwerp-${selectie.groep.topicSlug}`
+  if (adres.blok) return `blok-${adres.blok}`
+  if (adres.chapter) return `hoofdstuk-${adres.chapter}`
+  return null
+}
+
+/**
+ * Waar een leerling die al geoefend heeft uitkomt, als het adres leeg is.
+ * Een blok met alleen verhaaltjes slaan we over: dan het hoofdstuk, zodat
+ * de gewone sommen bovenaan staan.
+ */
+export function ankerNaLaatsteOefening(
+  clusterId: string | null,
+  data: IndelingData,
+): string | null {
+  if (!clusterId) return null
+  const cluster = data.clusters.find((c) => c.id === clusterId)
+  if (!cluster) return null
+  const topic = data.topics.find((t) => t.id === cluster.topic_id)
+  if (!topic) return null
+  const chapter = data.chapters.find((c) => c.id === topic.chapter_id)
+  if (!chapter) return null
+  const blockId = blokIdVanSoort(cluster, topic)
+  if (!blockId) return `hoofdstuk-${chapter.slug}`
+  const block = data.blocks.find((b) => b.id === blockId)
+  if (!block) return `hoofdstuk-${chapter.slug}`
+
+  const topicById = new Map(data.topics.map((t) => [t.id, t]))
+  const metTegels = new Set(data.tiles.map((t) => t.clusterId))
+  const soorten = data.clusters.filter(
+    (c) => blokIdVanSoort(c, topicById.get(c.topic_id)) === blockId && metTegels.has(c.id),
+  )
+  const alleenVerhaal =
+    soorten.length > 0 && soorten.every((c) => clusterIsVerhaal(c.id, data.tiles))
+  if (alleenVerhaal) return `hoofdstuk-${chapter.slug}`
+  return `blok-${block.slug}`
 }
 
 export function queryVoorSelectie(selectie: Selectie, questionId?: string): string {
