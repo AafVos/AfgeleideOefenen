@@ -26,6 +26,16 @@ describe('answersMatch', () => {
     expect(answersMatch('3·x', '3x')).toBe(true)
   })
 
+  it('rekent een maal-teken tussen twee cijfers niet als niets', () => {
+    expect(answersMatch('2*4(4x-3)', '24(4x-3)')).toBe(false)
+    expect(answersMatch('2·4(4x-3)', '24(4x-3)')).toBe(false)
+    expect(answersMatch('2 \\cdot 4(4x - 3)', '24(4x-3)')).toBe(false)
+    expect(answersMatch('22(2x-5)', '2 \\cdot 2(2x - 5)')).toBe(false)
+    expect(answersMatch('2*4(4x-3)', '2·4(4x-3)')).toBe(true)
+    expect(answersMatch('2*2(2x-5)', '2 \\cdot 2(2x - 5)')).toBe(true)
+    expect(answersMatch('2 \\cdot 2(2x - 5)', '2·2(2x-5)')).toBe(true)
+  })
+
   it('rekent haakjes om een simpele exponent goed', () => {
     expect(answersMatch('x^(-1)', 'x^-1')).toBe(true)
     expect(answersMatch('e^(x)', 'e^x')).toBe(true)
