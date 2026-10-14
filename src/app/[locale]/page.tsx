@@ -226,7 +226,7 @@ export default async function HomePage() {
 function Feature({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-5">
-      <h3 className="font-serif text-xl text-text">{title}</h3>
+      <h2 className="font-serif text-xl text-text">{title}</h2>
       <p className="mt-2 text-sm leading-relaxed text-text-muted">{body}</p>
     </div>
   )
