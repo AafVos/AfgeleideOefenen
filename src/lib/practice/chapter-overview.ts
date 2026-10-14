@@ -18,6 +18,25 @@ export type TopicInfo = {
   title: string
   chapter_id: string
   order_index: number
+  theory_block_id: string | null
+}
+
+export type ParagraphInfo = {
+  id: string
+  chapter_id: string
+  slug: string
+  label: string
+  title: string
+  order_index: number
+}
+
+export type TheoryBlockInfo = {
+  id: string
+  paragraph_id: string
+  slug: string
+  letter: string
+  title: string
+  order_index: number
 }
 
 export type ClusterInfo = {
@@ -67,10 +86,28 @@ export async function loadChapters(db: DB): Promise<ChapterInfo[]> {
 export async function loadAllTopics(db: DB): Promise<TopicInfo[]> {
   const { data, error } = await db
     .from('topics_new')
-    .select('id, slug, title, chapter_id, order_index')
+    .select('id, slug, title, chapter_id, order_index, theory_block_id')
     .order('order_index')
   if (error) throw new Error(error.message)
   return (data ?? []) as TopicInfo[]
+}
+
+export async function loadParagraphs(db: DB): Promise<ParagraphInfo[]> {
+  const { data, error } = await db
+    .from('paragraphs')
+    .select('id, chapter_id, slug, label, title, order_index')
+    .order('order_index')
+  if (error) throw new Error(error.message)
+  return (data ?? []) as ParagraphInfo[]
+}
+
+export async function loadTheoryBlocks(db: DB): Promise<TheoryBlockInfo[]> {
+  const { data, error } = await db
+    .from('theory_blocks')
+    .select('id, paragraph_id, slug, letter, title, order_index')
+    .order('order_index')
+  if (error) throw new Error(error.message)
+  return (data ?? []) as TheoryBlockInfo[]
 }
 
 export async function loadClustersForTopics(
