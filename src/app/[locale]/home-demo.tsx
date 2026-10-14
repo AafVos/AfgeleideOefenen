@@ -186,7 +186,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
             <button
               type="button"
               onClick={retry}
-              className="rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white"
+              className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white"
             >
               {t('tryAnother')}
             </button>
@@ -240,7 +240,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
             <button
               type="button"
               onClick={retry}
-              className="rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white"
+              className="inline-flex min-h-11 items-center rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white"
             >
               {t('tryAgain')}
             </button>

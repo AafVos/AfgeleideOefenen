@@ -407,14 +407,14 @@ export function StudyCard({
               : t('streakBody', { streak: state.streak, remaining: MASTERY_THRESHOLD - state.streak })}
           </p>
           <div className="mt-4 flex items-center gap-2">
-            <Button onClick={next} disabled={pending}>
+            <Button onClick={next} disabled={pending} className="min-h-11 px-5">
               {pending ? t('navigating') : t('nextQuestion')}
             </Button>
             <button
               type="button"
               onClick={retry}
               disabled={pending}
-              className="rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
             >
               {t('retryButton')}
             </button>
