@@ -3,10 +3,11 @@
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
+import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
 import { Link } from '@/i18n/navigation'
 import { cn } from '@/components/ui'
 
-import type { DashboardIndeling } from '@/lib/dashboard/indeling'
+import { weegClusters, type DashboardIndeling } from '@/lib/dashboard/indeling'
 
 import { ChapterBlock, NieuwHoofdstukBlock, type ChapterData } from './topic-block'
 
@@ -56,6 +57,15 @@ export function DashboardGrid({
   }, 0)
   const pctOverall = total > 0 ? Math.round((weightedProgress / total) * 100) : 0
   const pctAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
+  const hoofdstukBeheerst = blokIndeling
+    ? blokIndeling.hoofdstukken.some((chapter) => {
+        const { mastered, total } = weegClusters(chapter.clusters)
+        return total > 0 && mastered === total
+      })
+    : chapterData.some((chapter) => {
+        const clusters = chapter.topics.flatMap((onderwerp) => onderwerp.clusters)
+        return clusters.length > 0 && clusters.every((cluster) => cluster.isKnown)
+      })
 
   return (
     <>
@@ -78,6 +88,15 @@ export function DashboardGrid({
             value={String(totalAnswered)}
             sub={t('statAnsweredSub')}
             tone="neutral"
+          />
+        </div>
+      )}
+
+      {hoofdstukBeheerst && (
+        <div className="mb-5 rounded-xl border border-border bg-surface px-4 py-3">
+          <IntegraalVerwijzing
+            tekst={t('integraal')}
+            className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
           />
         </div>
       )}
