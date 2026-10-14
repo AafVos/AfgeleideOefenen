@@ -783,6 +783,7 @@ function BlokWeergave({
   const [inBeeld, setInBeeld] = useState<string | null>(() => ankerUitAdres(adresVanServer, null))
   const [geopendLand, setGeopendLand] = useState<string | null>(null)
   const mainScrollRef = useRef<HTMLDivElement | null>(null)
+  const paginaRef = useRef<HTMLDivElement | null>(null)
 
   const [openHoofdstukken, setOpenHoofdstukken] = useState<Set<string>>(
     () => new Set(selectie ? [selectie.chapter.id] : []),
@@ -919,6 +920,11 @@ function BlokWeergave({
     setInBeeld(landAnker)
     openVoorAnker(landAnker)
   }
+
+  // Pas na het aankoppelen, zodat een klik niet op een dode knop landt.
+  useEffect(() => {
+    paginaRef.current?.setAttribute('data-hydrated', 'ja')
+  }, [])
 
   useEffect(() => {
     if (!landAnker || question) return
@@ -1202,7 +1208,10 @@ function BlokWeergave({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
+    <div
+      ref={paginaRef}
+      className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden"
+    >
       <aside
         className={cn(
           'nice-scrollbar hidden border-border bg-surface lg:block lg:h-full lg:border-r',

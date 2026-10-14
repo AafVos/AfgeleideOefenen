@@ -14,6 +14,7 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
   page,
 }) => {
   await page.goto('/nl/oefenen?chapter=h2')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
 
   await expect(page.locator('#hoofdstuk-h2')).toBeVisible()
   await expect(page.locator('#blok-h2-1d')).toBeAttached()
@@ -34,11 +35,16 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     expect(Math.abs((titelVak?.y ?? 0) - (deelVak?.y ?? 0))).toBeLessThan(20)
     const zijbalk = page.locator('aside')
     await zijbalk.getByRole('button', { name: /2\.3/ }).click()
+    await expect(zijbalk.getByRole('button', { name: /2\.3/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
     await zijbalk.getByRole('button', { name: /Differentiëren/ }).click()
   } else {
     await page.getByRole('button', { name: /H2 –/ }).click()
     const menu = page.getByRole('dialog')
     await menu.getByRole('button', { name: /2\.3/ }).click()
+    await expect(menu.getByRole('button', { name: /2\.3/ })).toHaveAttribute('aria-expanded', 'true')
     await menu.getByRole('button', { name: /Differentiëren/ }).click()
   }
 
