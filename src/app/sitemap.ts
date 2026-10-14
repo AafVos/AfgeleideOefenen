@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 
+import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { EXTREME_WAARDEN_PAD } from '@/content/theory/extreme-waarden'
 import { KETTINGREGEL_PAD } from '@/content/theory/kettingregel'
 import { MACHTSREGEL_PAD } from '@/content/theory/machtsregel'
@@ -84,6 +85,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${SITE_URL}/${TAAL}${EXTREME_WAARDEN_PAD}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/${TAAL}${EXAMENTRAINING_PAD}`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.7,

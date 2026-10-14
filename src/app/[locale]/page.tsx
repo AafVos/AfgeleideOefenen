@@ -3,6 +3,7 @@ import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
 import { SITE_CONFIG } from '@/config/site'
+import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
@@ -173,6 +174,18 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-text-muted">
+            {t.rich('examTraining', {
+              link: (chunks) => (
+                <Link
+                  href={EXAMENTRAINING_PAD}
+                  className="font-medium text-accent underline-offset-2 hover:underline"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
         </section>
 
         <section className="mt-20">
