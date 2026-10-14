@@ -95,6 +95,10 @@ export function normalizeAnswer(raw: string): string {
   const zonderOpmaak = raw
     .toLowerCase()
     .replace(/\s+/g, '')
+    // Een maal-teken tussen twee cijfers is een vermenigvuldiging.
+    // 2*4, 2·4 en 2\cdot4 worden 2×4, en zijn dus niet hetzelfde als 24.
+    // Naast een letter mag het teken wel weg: 3*x is 3x.
+    .replace(/(\d)(?:\*|·|\\cdot)(?=\d)/g, '$1×')
     .replace(/\*/g, '')
     .replace(/·/g, '')
     // ^(5), ^(-1), ^(x) → ^5, ^-1, ^x — alleen simpele exponenten, zodat
