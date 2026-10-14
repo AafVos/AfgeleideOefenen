@@ -135,7 +135,7 @@ function PasswordField({
         <button
           type="button"
           onClick={onToggle}
-          className="shrink-0 rounded-md border border-border px-3 py-2 text-xs font-medium text-text-muted hover:bg-surface-2 hover:text-text"
+          className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border px-3 text-xs font-medium text-text-muted hover:bg-surface-2 hover:text-text"
         >
           {toggleLabel}
         </button>
