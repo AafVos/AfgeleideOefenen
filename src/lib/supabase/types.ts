@@ -22,7 +22,7 @@ export type Database = {
           grade: Grade | null
           display_name: string | null
           tour_seen_at: string | null
-          /** Alleen docent, youtube, klas of forum. Migratie 0057. */
+          /** Alleen docent, youtube, klas, forum of proberen. Migratie 0057 en 0060. */
           herkomst: string | null
           created_at: string
         }
