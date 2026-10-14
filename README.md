@@ -283,7 +283,7 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
 
 1. **Fundament** — scaffolding + Supabase + admin CRUD ✓
 2. **Leerlogica** — oefenpagina, vraag­selectie, mastery tracking ✓
-3. **AI laag** — Gemini-integratie, fout­type­detectie, vraag­generatie ✓
+3. **AI-laag** — Gemini-integratie en fouttype-detectie ✓. Vragen genereren is nog niet gebouwd.
 4. **Polish** — wiskundig toetsenbord, mobiel, extra statistieken ✓
 
 ---
@@ -332,4 +332,4 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
 
 ## Licentie
 
-Privéproject — nog geen open-source licentie toegevoegd.
+De code staat openbaar op GitHub. Er is nog geen open-source-licentie gekozen.
