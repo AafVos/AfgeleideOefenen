@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { routing } from '@/i18n/routing'
 import { updateSession } from '@/lib/supabase/middleware'
+import { oudVideoAdres } from '@/lib/videos'
 
 const TAAL = routing.defaultLocale
 
@@ -21,6 +22,14 @@ const ZONDER_TAALCODE = [
 // is wat Cloudflare aan kan en wat Vercel ook gewoon blijft draaien.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Video's die vroeger op het somnummer stonden. Eén sprong naar het nieuwe adres.
+  const nieuwVideoAdres = oudVideoAdres(pathname)
+  if (nieuwVideoAdres) {
+    const url = request.nextUrl.clone()
+    url.pathname = nieuwVideoAdres
+    return NextResponse.redirect(url, 308)
+  }
 
   // De site was ooit ook Engels. Oude /en-adressen blijven werken: ze gaan
   // permanent naar dezelfde pagina onder /nl.

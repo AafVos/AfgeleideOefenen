@@ -234,12 +234,38 @@ jobs:
       # uit; dat scheelt meer dan `start -x`, want uitgezette onderdelen
       # worden ook niet gedownload. De config van je eigen computer blijft
       # ongemoeid: dit draait alleen hier.
+      #
+      # De beelden komen eerst van ghcr.io, het register van GitHub zelf.
+      # public.ecr.aws weigert pulls vanaf deze runners ("toomanyrequests:
+      # Rate exceeded", soms "Data limit exceeded"): de runners delen één
+      # uitgaand adres en dat register telt anonieme pulls heel krap.
+      # De CLI probeert dat register eerst en valt pas daarna terug. Die
+      # eerste pogingen kunnen de vier minuten van deze stap opmaken,
+      # waarna de tests niet eens starten. Mislukt het ophalen via ghcr,
+      # dan één keer de gewone volgorde. Een fout in een migratie is geen
+      # ophaalfout en krijgt die tweede poging niet.
       - name: Lokale Supabase starten
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
         timeout-minutes: 4
         run: |
           node scripts/ci-supabase-kaal.mjs
-          npx supabase start -x imgproxy,postgres-meta
+          log=$(mktemp)
+          starten() {
+            npx supabase start -x imgproxy,postgres-meta 2>&1 | tee "$log"
+            return "${PIPESTATUS[0]}"
+          }
+
+          code=0
+          SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io starten || code=$?
+          if [ "$code" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -qE 'toomanyrequests|Rate exceeded|Data limit exceeded|manifest unknown|failed to pull docker image' "$log"; then
+            echo "::warning::Ophalen via ghcr.io liep vast; nog een keer via de gewone registers."
+            starten
+            exit $?
+          fi
+          exit "$code"
 
       # Sinds AFG-108 loopt hier ook de weg van een nieuwe leerling doorheen:
       # registreren, de mail ophalen, bevestigen, wachtwoord vergeten. Dat

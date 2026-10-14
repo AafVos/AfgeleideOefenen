@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import sitemap from '@/app/sitemap'
-import { getUitlegVideo, getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
+import {
+  getUitlegVideo,
+  getUitlegVideos,
+  losVideoSlugOp,
+  oudVideoAdres,
+  uitlegVideoPad,
+} from '@/lib/videos'
 
 describe('uitlegvideo-adressen', () => {
   it('geeft elke video een eigen pad', () => {
@@ -34,6 +40,34 @@ describe('uitlegvideo-adressen', () => {
   it('kent een onbekende video niet', () => {
     expect(getUitlegVideo('bestaat-niet')).toBeNull()
     expect(getUitlegVideo('  ')).toBeNull()
+  })
+
+  it('stuurt de oude somnummers door naar een titel met de regel', () => {
+    expect(losVideoSlugOp('som-29')).toBe('productregel-bij-een-kwadraat')
+    expect(losVideoSlugOp('som-30')).toBe('productregel-bij-twee-polynomen')
+    expect(losVideoSlugOp('som-34')).toBe('quotientregel-bij-een-breuk')
+    expect(oudVideoAdres('/nl/uitleg-videos/som-29')).toBe(
+      '/nl/uitleg-videos/productregel-bij-een-kwadraat',
+    )
+    expect(oudVideoAdres('/uitleg-videos/som-30')).toBe(
+      '/nl/uitleg-videos/productregel-bij-twee-polynomen',
+    )
+    expect(oudVideoAdres('/en/uitleg-videos/som-34/')).toBe(
+      '/nl/uitleg-videos/quotientregel-bij-een-breuk',
+    )
+    expect(oudVideoAdres('/nl/uitleg-videos/quotientregel')).toBeNull()
+
+    for (const slug of [
+      'productregel-bij-een-kwadraat',
+      'productregel-bij-twee-polynomen',
+      'quotientregel-bij-een-breuk',
+    ]) {
+      const video = getUitlegVideo(slug)
+      expect(video?.title.toLowerCase()).toMatch(/productregel|quotiëntregel/)
+      expect(`${video?.title} ${video?.description} ${video?.slug}`).not.toMatch(
+        /som\s*\d|#\d+|H\d|hoofdstuk/i,
+      )
+    }
   })
 
   it('zet elke video in de sitemap', () => {
