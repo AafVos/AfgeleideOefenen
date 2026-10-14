@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation'
 import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 
-import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
+import { bestemmingNaInloggen } from '@/lib/auth/bestemming'
+import { bevestigingsRedirect } from '@/lib/auth/bevestigingslink'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
@@ -73,7 +74,7 @@ export async function loginAction(
 
   const locale = await getLocale()
   revalidatePath('/', 'layout')
-  redirect(`/${locale}/dashboard`)
+  redirect(await bestemmingNaInloggen(supabase, formData.get('naar'), locale))
 }
 
 function authErrorKey(msg: string): LoginErrorKey {
@@ -91,6 +92,7 @@ function authErrorKey(msg: string): LoginErrorKey {
 
 export async function resendConfirmationAction(
   email: string,
+  gekozenPad?: string,
 ): Promise<{ ok: boolean }> {
   const supabase = await createClient()
   const locale = await getLocale()
@@ -100,9 +102,9 @@ export async function resendConfirmationAction(
     options: {
       // Dezelfde bestemming als bij het registreren. Laat je dit weg, dan
       // valt Supabase terug op de voorpagina van de site en komt de leerling
-      // na het bevestigen op de homepage terecht in plaats van op de
-      // inlogpagina met "Je account is bevestigd!".
-      emailRedirectTo: `${await bepaalAanvraagAdres()}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
+      // na het bevestigen op de homepage terecht. Een gekozen soort som
+      // gaat mee; een ander pad niet.
+      emailRedirectTo: await bevestigingsRedirect(gekozenPad, locale),
     },
   })
   if (error) {
