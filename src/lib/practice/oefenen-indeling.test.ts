@@ -173,7 +173,12 @@ describe('indeling per theorieblok', () => {
     const h = bouwBlokBoom(data).hoofdstukken.find((node) => node.chapter.slug === 'h2')!
     const leeg = h.paragrafen.find((p) => p.slug === 'h2-5')!.blokken.find((b) => b.slug === 'h2-5a')
     expect(leeg?.heeftOpgaven).toBe(false)
+    expect(leeg?.aantalOpgaven).toBe(0)
     expect(leeg?.title).toBe('Grafieken tekenen met GeoGebra')
+    const product = h.paragrafen
+      .find((p) => p.slug === 'h2-4')!
+      .blokken.find((b) => b.slug === 'h2-4a')
+    expect(product?.aantalOpgaven).toBe(2)
   })
 
   it('opent een hoofdstuk zonder paragraaf met de onderwerpen als kopjes', () => {

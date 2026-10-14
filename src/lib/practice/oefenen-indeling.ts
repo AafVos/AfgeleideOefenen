@@ -50,6 +50,8 @@ export type BlokNode = {
   letter: string
   title: string
   heeftOpgaven: boolean
+  /** Aantal opgaven, zodat de zijbalk laat zien wat je kunt aanklikken. */
+  aantalOpgaven: number
 }
 
 export type ParagraafNode = {
@@ -139,25 +141,38 @@ export function vergelijkHoofdstukVolgorde(
   return a.slug.localeCompare(b.slug, 'nl')
 }
 
+function aantalOpgavenPerBlok(
+  topics: TopicInfo[],
+  clusters: ClusterInfo[],
+  tiles: TegelVerwijzing[],
+): Map<string, number> {
+  const topicById = new Map(topics.map((t) => [t.id, t]))
+  const clusterById = new Map(clusters.map((c) => [c.id, c]))
+  const aantallen = new Map<string, number>()
+  for (const tile of tiles) {
+    const cluster = clusterById.get(tile.clusterId)
+    if (!cluster) continue
+    const blockId = blokIdVanSoort(cluster, topicById.get(cluster.topic_id))
+    if (!blockId) continue
+    aantallen.set(blockId, (aantallen.get(blockId) ?? 0) + 1)
+  }
+  return aantallen
+}
+
 export function blokIdsMetOpgaven(
   topics: TopicInfo[],
   clusters: ClusterInfo[],
   tiles: TegelVerwijzing[],
 ): Set<string> {
-  const topicById = new Map(topics.map((t) => [t.id, t]))
-  const clusterById = new Map(clusters.map((c) => [c.id, c]))
   const ids = new Set<string>()
-  for (const tile of tiles) {
-    const cluster = clusterById.get(tile.clusterId)
-    if (!cluster) continue
-    const blockId = blokIdVanSoort(cluster, topicById.get(cluster.topic_id))
-    if (blockId) ids.add(blockId)
+  for (const [id, aantal] of aantalOpgavenPerBlok(topics, clusters, tiles)) {
+    if (aantal > 0) ids.add(id)
   }
   return ids
 }
 
 export function bouwBlokBoom(data: IndelingData): BlokBoom {
-  const metOpgaven = blokIdsMetOpgaven(data.topics, data.clusters, data.tiles)
+  const aantallen = aantalOpgavenPerBlok(data.topics, data.clusters, data.tiles)
   const paragraphsByChapter = new Map<string, ParagraphInfo[]>()
   for (const p of [...data.paragraphs].sort((a, b) => a.order_index - b.order_index)) {
     const arr = paragraphsByChapter.get(p.chapter_id) ?? []
@@ -193,7 +208,8 @@ export function bouwBlokBoom(data: IndelingData): BlokBoom {
             slug: b.slug,
             letter: b.letter,
             title: b.title,
-            heeftOpgaven: metOpgaven.has(b.id),
+            heeftOpgaven: (aantallen.get(b.id) ?? 0) > 0,
+            aantalOpgaven: aantallen.get(b.id) ?? 0,
           })),
         }))
         .filter((p) => p.blokken.length > 0),
