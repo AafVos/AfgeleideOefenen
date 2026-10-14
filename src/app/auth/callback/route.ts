@@ -1,10 +1,16 @@
 import { after, NextResponse, type NextRequest } from 'next/server'
 
 import { bestemmingNaBevestigen } from '@/lib/auth/bestemming'
-import { veiligOefenpad } from '@/lib/auth/oefenpad'
+import { oefenpadUitAdres, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
+
+function metOefenpad(url: URL, nextParam: string | null) {
+  const pad = oefenpadUitAdres(nextParam)
+  if (pad) url.searchParams.set('naar', pad)
+  return url
+}
 
 function inlogMetMail(origin: string, mail: string, oefenpad: string | null) {
   const url = new URL('/nl/inloggen', origin)
@@ -84,7 +90,7 @@ export async function GET(request: NextRequest) {
   // gebruikt. Stuur naar de pagina waar je een nieuwe link kunt aanvragen,
   // zodat het formulier meteen onder de melding staat.
   if (searchParams.has('error') || searchParams.has('error_code')) {
-    const url = new URL('/nl/wachtwoord-vergeten', origin)
+    const url = metOefenpad(new URL('/nl/wachtwoord-vergeten', origin), nextParam)
     url.searchParams.set('mail', 'verlopen')
     return NextResponse.redirect(url)
   }
@@ -97,7 +103,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const url = new URL('/nl/inloggen', origin)
+  const url = metOefenpad(new URL('/nl/inloggen', origin), nextParam)
   url.searchParams.set('error', 'auth_callback_failed')
   return NextResponse.redirect(url)
 }

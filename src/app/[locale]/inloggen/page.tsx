@@ -72,7 +72,7 @@ export default async function LoginPage({
         </Link>
       </p>
       <p className="mt-2 text-center text-sm text-text-muted">
-        <Link href="/wachtwoord-vergeten" className="text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/wachtwoord-vergeten', oefenpad)} className="text-accent hover:underline">
           {t('forgotPassword')}
         </Link>
       </p>

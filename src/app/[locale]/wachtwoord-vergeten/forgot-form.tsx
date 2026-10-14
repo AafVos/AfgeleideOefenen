@@ -8,7 +8,7 @@ import { forgotPasswordAction, type ForgotState } from './actions'
 
 const initial: ForgotState = { sent: false, errorKey: null }
 
-export function ForgotForm() {
+export function ForgotForm({ oefenpad = null }: { oefenpad?: string | null }) {
   const t = useTranslations('ForgotPassword')
   const [state, action] = useActionState(forgotPasswordAction, initial)
 
@@ -22,6 +22,7 @@ export function ForgotForm() {
 
   return (
     <form action={action} className="space-y-5">
+      {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       {state.errorKey && (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
           {t(state.errorKey)}
