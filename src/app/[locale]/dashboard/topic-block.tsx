@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { Link } from '@/i18n/navigation'
+import { KlikLink } from '@/components/klik-link'
 
 import { cn } from '@/components/ui'
 import {
@@ -119,12 +119,13 @@ export function ChapterBlock({
                       tPct === 100 ? 'bg-accent' : 'bg-border',
                     )}
                   />
-                  <Link
+                  <KlikLink
                     href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}`}
+                    bezigTekst="Oefenen openen"
                     className="min-w-0 flex-1 truncate text-text hover:text-accent hover:underline"
                   >
                     {topic.title}
-                  </Link>
+                  </KlikLink>
                   <span className="shrink-0 tabular-nums text-xs text-text-muted">
                     {tMastered}/{tTotal}
                   </span>
@@ -206,12 +207,13 @@ function OnderwerpRegel({ onderwerp }: { onderwerp: OnderwerpRij }) {
         <span
           className={cn('size-1.5 shrink-0 rounded-full', pct === 100 ? 'bg-accent' : 'bg-border')}
         />
-        <Link
+        <KlikLink
           href={hrefVoorOnderwerp(onderwerp.chapterSlug, onderwerp.slug)}
+          bezigTekst="Oefenen openen"
           className="min-w-0 flex-1 break-words text-text hover:text-accent hover:underline"
         >
           {onderwerp.title}
-        </Link>
+        </KlikLink>
         <VoortgangCijfers clusters={onderwerp.clusters} />
       </div>
       <ReeksZinnen clusters={onderwerp.clusters} inspringen="pl-5" />
@@ -292,8 +294,9 @@ export function NieuwHoofdstukBlock({
                   {paragraaf.blokken.map((blok) =>
                     blok.heeftOpgaven ? (
                       <li key={blok.id}>
-                        <Link
+                        <KlikLink
                           href={hrefVoorBlok(blok.slug)}
+                          bezigTekst="Oefenen openen"
                           className="group flex min-h-11 items-center gap-3 py-2 pl-12 pr-4 text-sm text-text hover:text-accent"
                         >
                           <span className="shrink-0 font-mono text-text-muted">{blok.letter}</span>
@@ -301,7 +304,7 @@ export function NieuwHoofdstukBlock({
                             {blok.title}
                           </span>
                           <VoortgangCijfers clusters={blok.clusters} />
-                        </Link>
+                        </KlikLink>
                         <ReeksZinnen clusters={blok.clusters} inspringen="pl-16" />
                       </li>
                     ) : (

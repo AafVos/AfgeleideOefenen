@@ -26,23 +26,40 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const user = await requireUser()
 
-  const t = await getTranslations('Dashboard')
+  // Activiteit uit session_answers_new. De balkjes gaan over de laatste
+  // 14 dagen; "Dagen op rij", "Goed beantwoord" en "Vragen" gaan over
+  // alles wat de leerling ooit gedaan heeft.
+  // De dagen lopen van middernacht tot middernacht in Nederlandse tijd.
+  const vandaag = dagSleutel(new Date())
+  const veertienDagen = laatsteDagen(vandaag, 14)
 
-  // Registreren bewaart de naam in `username`. Oudere profielen hebben
-  // alleen `display_name`; die kolom wordt bij aanmelden niet meer gevuld.
-  const profile = await getCurrentProfile()
-  const gekozenNaam = profile?.username?.trim()
-  const oudeNaam = profile?.display_name?.trim().split(/\s+/)[0]?.trim()
-  const firstName = gekozenNaam || oudeNaam || null
+  // "Ik weet het niet" staat met een lege is_correct in de database: de
+  // leerling heeft de opgave niet beantwoord, dus die telt hier nergens mee
+  // en trekt het percentage goed niet omlaag (zie AFG-102).
+  const beantwoord = () =>
+    supabase
+      .from('session_answers_new')
+      .select('answered_at, user_sessions_new!inner(user_id)')
+      .eq('user_sessions_new.user_id', user.id)
+      .not('is_correct', 'is', null)
 
   const [
+    t,
+    profile,
     { data: chapters },
     { data: topics },
     { data: paragraphs },
     { data: blocks },
     { data: clusters },
     { data: progressRows },
+    tellingPerDag,
+    antwoordTotaal,
+    goedTotaal,
   ] = await Promise.all([
+    getTranslations('Dashboard'),
+    // Registreren bewaart de naam in `username`. Oudere profielen hebben
+    // alleen `display_name`; die kolom wordt bij aanmelden niet meer gevuld.
+    getCurrentProfile(),
     supabase.from('chapters').select('id, slug, title, order_index').order('order_index'),
     supabase
       .from('topics_new')
@@ -64,26 +81,6 @@ export default async function DashboardPage() {
       .from('user_progress_new')
       .select('cluster_id, status, total_answered, total_correct, correct_streak')
       .eq('user_id', user.id),
-  ])
-
-  // Activiteit uit session_answers_new. De balkjes gaan over de laatste
-  // 14 dagen; "Dagen op rij", "Goed beantwoord" en "Vragen" gaan over
-  // alles wat de leerling ooit gedaan heeft.
-  // De dagen lopen van middernacht tot middernacht in Nederlandse tijd.
-  const vandaag = dagSleutel(new Date())
-  const veertienDagen = laatsteDagen(vandaag, 14)
-
-  // "Ik weet het niet" staat met een lege is_correct in de database: de
-  // leerling heeft de opgave niet beantwoord, dus die telt hier nergens mee
-  // en trekt het percentage goed niet omlaag (zie AFG-102).
-  const beantwoord = () =>
-    supabase
-      .from('session_answers_new')
-      .select('answered_at, user_sessions_new!inner(user_id)')
-      .eq('user_sessions_new.user_id', user.id)
-      .not('is_correct', 'is', null)
-
-  const [tellingPerDag, antwoordTotaal, goedTotaal] = await Promise.all([
     telOefendagen(
       (van, tot) =>
         beantwoord()
@@ -107,6 +104,10 @@ export default async function DashboardPage() {
       .eq('user_sessions_new.user_id', user.id)
       .eq('is_correct', true),
   ])
+
+  const gekozenNaam = profile?.username?.trim()
+  const oudeNaam = profile?.display_name?.trim().split(/\s+/)[0]?.trim()
+  const firstName = gekozenNaam || oudeNaam || null
 
   const totalAnswered = antwoordTotaal.count ?? 0
   const totalCorrect = goedTotaal.count ?? 0

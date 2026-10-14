@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { DeelKnop } from '@/components/deel-knop'
+import { KlikLink } from '@/components/klik-link'
 import { Link, useRouter } from '@/i18n/navigation'
 import { Card, cn } from '@/components/ui'
 import type {
@@ -673,10 +674,11 @@ function OnderwerpWeergave({
                             ? `${baseHref}&q=${encodeURIComponent(q.questionId)}`
                             : `${chapterHref(g.chapter.slug)}&q=${encodeURIComponent(q.questionId)}`
                           return (
-                            <Link
+                            <KlikLink
                               key={q.questionId}
                               href={href as '/oefenen'}
                               prefetch={false}
+                              bezigTekst="Opgave openen"
                               aria-current={active ? 'page' : undefined}
                               aria-label={`${g.chapter.title} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
                               className={cn(
@@ -698,7 +700,7 @@ function OnderwerpWeergave({
                               )}
                             >
                               {q.ordinal}
-                            </Link>
+                            </KlikLink>
                           )
                         })}
                       </div>
@@ -1388,10 +1390,11 @@ function BlokWeergave({
                   {tiles.map((q) => {
                     const active = q.questionId === question.id
                     return (
-                      <Link
+                      <KlikLink
                         key={q.questionId}
                         href={`${baseHref}&q=${encodeURIComponent(q.questionId)}` as '/oefenen'}
                         prefetch={false}
+                        bezigTekst="Opgave openen"
                         aria-current={active ? 'page' : undefined}
                         aria-label={`${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
                         className={cn(
@@ -1412,7 +1415,7 @@ function BlokWeergave({
                         )}
                       >
                         {q.ordinal}
-                      </Link>
+                      </KlikLink>
                     )
                   })}
                 </div>

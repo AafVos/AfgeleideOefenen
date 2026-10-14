@@ -352,7 +352,15 @@ export type Database = {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      laatste_antwoord_per_vraag: {
+        Args: Record<string, never>
+        Returns: Array<{
+          question_id: string
+          is_correct: boolean
+        }>
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }
