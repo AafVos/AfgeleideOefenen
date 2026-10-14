@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
@@ -50,6 +50,35 @@ function splitTitle(title: string): { code: string | null; short: string } {
   return m ? { code: m[1]!, short: m[2]! } : { code: null, short: title }
 }
 
+/**
+ * `#hoofdstuk-h7` of `#kaart-h2-machtsregel` → welk hoofdstuk (en welke kaart).
+ * De losse links in de kop en op de startpagina gebruiken deze ankers.
+ */
+function leesAnker(
+  hash: string,
+  chapters: TheorieChapter[],
+): { slug: string; kaartId: string | null } | null {
+  let raw = hash.startsWith('#') ? hash.slice(1) : hash
+  if (!raw) return null
+  try {
+    raw = decodeURIComponent(raw)
+  } catch {
+    return null
+  }
+  if (raw.startsWith('hoofdstuk-')) {
+    const slug = raw.slice('hoofdstuk-'.length)
+    return chapters.some((ch) => ch.slug === slug) ? { slug, kaartId: null } : null
+  }
+  if (raw.startsWith('kaart-')) {
+    const rest = raw.slice('kaart-'.length)
+    const chapter = chapters.find((ch) => rest.startsWith(`${ch.slug}-`))
+    if (!chapter) return null
+    const kaartId = rest.slice(chapter.slug.length + 1)
+    return chapter.cards.some((card) => card.id === kaartId) ? { slug: chapter.slug, kaartId } : null
+  }
+  return null
+}
+
 export function TheorieClient({
   chapters,
   labels,
@@ -63,7 +92,14 @@ export function TheorieClient({
   const sidebarOpen = sidebarChoice ?? isDesktop
   const [activeSlug, setActiveSlug] = useState<string | null>(chapters[0]?.slug ?? null)
   const [openCards, setOpenCards] = useState<Set<string>>(new Set())
-  const mainScrollRef = useRef<HTMLDivElement | null>(null)
+  const chaptersRef = useRef(chapters)
+  const activeRef = useRef(activeSlug)
+  const pendingScroll = useRef<string | null>(null)
+
+  useEffect(() => {
+    chaptersRef.current = chapters
+    activeRef.current = activeSlug
+  })
 
   function toggleCard(key: string) {
     setOpenCards((prev) => {
@@ -74,23 +110,82 @@ export function TheorieClient({
     })
   }
 
-  function scrollToId(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const toonHoofdstuk = useCallback((slug: string, elementId: string | null) => {
+    if (!window.matchMedia(desktopQuery).matches) setSidebarChoice(false)
+    if (slug !== activeRef.current) {
+      pendingScroll.current = elementId
+      setActiveSlug(slug)
+      return
+    }
+    if (elementId) {
+      document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [])
+
+  const pasAnkerToe = useCallback((hash: string) => {
+    const anker = leesAnker(hash, chaptersRef.current)
+    if (!anker) {
+      // Terug naar het adres zonder anker: weer het eerste hoofdstuk.
+      const eerste = chaptersRef.current[0]?.slug
+      if (!hash && eerste && eerste !== activeRef.current) {
+        pendingScroll.current = `hoofdstuk-${eerste}`
+        setActiveSlug(eerste)
+      }
+      return
+    }
+    const elementId = anker.kaartId
+      ? `kaart-${anker.slug}-${anker.kaartId}`
+      : `hoofdstuk-${anker.slug}`
+    toonHoofdstuk(anker.slug, elementId)
+  }, [toonHoofdstuk])
+
+  function zetAnker(hash: string) {
+    const url = `${window.location.pathname}${window.location.search}${hash}`
+    if (window.location.hash !== hash) history.pushState(null, '', url)
+    pasAnkerToe(hash)
   }
 
-  // Scroll-spy: markeer het hoofdstuk dat in beeld is
-  function handleMainScroll() {
-    const root = mainScrollRef.current
-    if (!root) return
-    const rootTop = root.getBoundingClientRect().top
-    let current: string | null = null
-    for (const ch of chapters) {
-      const el = document.getElementById(`hoofdstuk-${ch.slug}`)
-      if (!el) continue
-      if (el.getBoundingClientRect().top - rootTop <= 140) current = ch.slug
+  // Ankers uit de kop en de startpagina (`#hoofdstuk-…`, `#kaart-…`).
+  // Next.js zet een hash vaak via pushState, en dat geeft geen hashchange.
+  useEffect(() => {
+    function vanuitUrl() {
+      pasAnkerToe(window.location.hash)
     }
-    if (current && current !== activeSlug) setActiveSlug(current)
-  }
+    function bijKlik(event: MouseEvent) {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const link = target.closest('a')
+      if (!link) return
+      let url: URL
+      try {
+        url = new URL(link.href, window.location.href)
+      } catch {
+        return
+      }
+      if (url.pathname !== window.location.pathname || !url.hash) return
+      pasAnkerToe(url.hash)
+    }
+    vanuitUrl()
+    window.addEventListener('hashchange', vanuitUrl)
+    window.addEventListener('popstate', vanuitUrl)
+    document.addEventListener('click', bijKlik, true)
+    return () => {
+      window.removeEventListener('hashchange', vanuitUrl)
+      window.removeEventListener('popstate', vanuitUrl)
+      document.removeEventListener('click', bijKlik, true)
+    }
+  }, [pasAnkerToe])
+
+  useEffect(() => {
+    const id = pendingScroll.current
+    if (!id) return
+    const el = document.getElementById(id)
+    if (!el) return
+    pendingScroll.current = null
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [activeSlug])
+
+  const chapter = chapters.find((ch) => ch.slug === activeSlug) ?? chapters[0]
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
@@ -142,14 +237,11 @@ export function TheorieClient({
                 <li key={ch.slug}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setActiveSlug(ch.slug)
-                      scrollToId(`hoofdstuk-${ch.slug}`)
-                    }}
+                    onClick={() => zetAnker(`#hoofdstuk-${ch.slug}`)}
                     className={
                       active
-                        ? 'flex w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
-                        : 'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
+                        ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
+                        : 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
                     }
                   >
                     <span className="truncate text-left">
@@ -169,8 +261,8 @@ export function TheorieClient({
                         <li key={card.id}>
                           <button
                             type="button"
-                            onClick={() => scrollToId(`kaart-${ch.slug}-${card.id}`)}
-                            className="flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text"
+                            onClick={() => zetAnker(`#kaart-${ch.slug}-${card.id}`)}
+                            className="flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text"
                           >
                             <span className="size-1.5 shrink-0 rounded-full bg-border" />
                             <span className="truncate text-left">{card.title}</span>
@@ -187,60 +279,101 @@ export function TheorieClient({
       </aside>
 
       {/* ── Content ─────────────────────────────────────────────────── */}
-      <div
-        ref={mainScrollRef}
-        onScroll={handleMainScroll}
-        className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
-      >
+      <div className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
 
-          {chapters.map((ch) => {
-            const { code, short } = splitTitle(ch.title)
-            return (
-              <section
-                key={ch.slug}
-                id={`hoofdstuk-${ch.slug}`}
-                className="scroll-mt-4"
-              >
-                <div className="mt-20 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3 first:mt-0">
-                  <h2 className="font-serif text-2xl text-text">
-                    {code && (
-                      <>
-                        <span className="font-mono font-semibold">{code}</span>
-                        {' – '}
-                      </>
-                    )}
-                    {short}
-                  </h2>
-                  <Link
-                    href={`/oefenen?chapter=${encodeURIComponent(ch.slug)}` as '/oefenen'}
-                    className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
-                  >
-                    {labels.practiceSelf}
-                  </Link>
-                </div>
-
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  {ch.cards.map((card) => (
-                    <TheoryCard
-                      key={card.id}
-                      chapterSlug={ch.slug}
-                      card={card}
-                      open={openCards.has(`${ch.slug}/${card.id}`)}
-                      onToggle={() => toggleCard(`${ch.slug}/${card.id}`)}
-                      exampleLabel={labels.exampleLabel}
-                      detailsLabel={labels.detailsLabel}
-                      showSteps={labels.showSteps}
-                      answerLabel={labels.answerLabel}
-                    />
-                  ))}
-                </div>
-              </section>
-            )
-          })}
+          {chapter && (
+            <ChapterSection
+              chapter={chapter}
+              openCards={openCards}
+              onToggle={toggleCard}
+              labels={labels}
+            />
+          )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function ChapterSection({
+  chapter,
+  openCards,
+  onToggle,
+  labels,
+}: {
+  chapter: TheorieChapter
+  openCards: Set<string>
+  onToggle: (key: string) => void
+  labels: Labels
+}) {
+  const { code, short } = splitTitle(chapter.title)
+  return (
+    <section id={`hoofdstuk-${chapter.slug}`} className="scroll-mt-16 lg:scroll-mt-4">
+      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
+        <h2 className="font-serif text-2xl text-text">
+          {code && (
+            <>
+              <span className="font-mono font-semibold">{code}</span>
+              {' – '}
+            </>
+          )}
+          {short}
+        </h2>
+        <Link
+          href={`/oefenen?chapter=${encodeURIComponent(chapter.slug)}` as '/oefenen'}
+          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
+        >
+          {labels.practiceSelf}
+        </Link>
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        {chapter.cards.map((card) => (
+          <TheoryCard
+            key={card.id}
+            chapterSlug={chapter.slug}
+            card={card}
+            open={openCards.has(`${chapter.slug}/${card.id}`)}
+            onToggle={() => onToggle(`${chapter.slug}/${card.id}`)}
+            exampleLabel={labels.exampleLabel}
+            detailsLabel={labels.detailsLabel}
+            showSteps={labels.showSteps}
+            answerLabel={labels.answerLabel}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function ExampleSteps({ steps, label }: { steps: string[]; label: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="mt-2 border-t border-border pt-2">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((nu) => !nu)}
+        className="min-h-11 py-2 text-left font-medium text-accent"
+      >
+        {label}
+      </button>
+      {open && (
+        <ol className="mt-1 space-y-1">
+          {steps.map((stap, si) => (
+            <li key={si} className="flex items-start gap-2">
+              <span className="min-w-[1.1rem] shrink-0 font-semibold tabular-nums text-accent">
+                {si + 1}.
+              </span>
+              <span className="min-w-0">
+                <RichMath source={stap} />
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   )
 }
@@ -273,7 +406,7 @@ function TheoryCard({
   return (
     <article
       id={`kaart-${chapterSlug}-${card.id}`}
-      className="flex min-w-0 scroll-mt-4 flex-col rounded-xl border border-border bg-surface"
+      className="flex min-w-0 scroll-mt-16 flex-col rounded-xl border border-border bg-surface lg:scroll-mt-4"
     >
       {hasNotes ? (
         <button
@@ -354,23 +487,7 @@ function TheoryCard({
                 >
                   <TeX tex={ex.problem} />
                   {ex.steps && ex.steps.length > 0 && (
-                    <details className="mt-2 border-t border-border pt-2">
-                      <summary className="min-h-11 cursor-pointer py-2 font-medium text-accent">
-                        {showSteps}
-                      </summary>
-                      <ol className="mt-1 space-y-1">
-                        {ex.steps.map((s, si) => (
-                          <li key={si} className="flex items-start gap-2">
-                            <span className="min-w-[1.1rem] shrink-0 font-semibold tabular-nums text-accent">
-                              {si + 1}.
-                            </span>
-                            <span className="min-w-0">
-                              <RichMath source={s} />
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                    </details>
+                    <ExampleSteps steps={ex.steps} label={showSteps} />
                   )}
                   <p className="mt-2 border-t border-border pt-2">
                     <span className="text-text-muted">{answerLabel}: </span>
@@ -382,26 +499,14 @@ function TheoryCard({
           </div>
         )}
 
-        {hasNotes && (
-          <div
-            className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
-              open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-            }`}
-          >
-            <div className="min-h-0 overflow-hidden">
-              <div className="space-y-3 pt-1">
-                {card.notes && card.notes.length > 0 && (
-                  <ul className="space-y-1 text-xs leading-relaxed text-text-muted">
-                    {card.notes.map((note, i) => (
-                      <li key={i}>
-                        <RichMath source={note} />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
+        {hasNotes && open && card.notes && (
+          <ul className="space-y-1 pt-1 text-xs leading-relaxed text-text-muted">
+            {card.notes.map((note, i) => (
+              <li key={i}>
+                <RichMath source={note} />
+              </li>
+            ))}
+          </ul>
         )}
 
         {card.uitlegPad && (
