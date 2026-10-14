@@ -2,7 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
-import { veiligOefenpad } from '@/lib/auth/oefenpad'
+import { hrefMetOefenpad, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { leesHerkomst } from '@/lib/herkomst'
 import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
@@ -49,7 +49,7 @@ export default async function SignupPage({
       </div>
 
       <p className="mt-2 text-center text-sm text-text-muted">
-        <Link href="/wachtwoord-vergeten" className="text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/wachtwoord-vergeten', oefenpad)} className="text-accent hover:underline">
           {t('forgotPassword')}
         </Link>
       </p>

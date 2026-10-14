@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
+import { bestemmingNaInloggen } from '@/lib/auth/bestemming'
 import { createClient } from '@/lib/supabase/server'
 
 /** Sleutels uit de `NewPassword`-teksten; het formulier vertaalt ze. */
@@ -29,5 +30,5 @@ export async function newPasswordAction(
   }
 
   const locale = await getLocale()
-  redirect(`/${locale}/dashboard`)
+  redirect(await bestemmingNaInloggen(supabase, formData.get('naar'), locale))
 }

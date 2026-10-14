@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { hrefMetOefenpad, inlogAdres, padMetTaal, veiligOefenpad } from './oefenpad'
+import {
+  hrefMetOefenpad,
+  inlogAdres,
+  oefenpadUitAdres,
+  padMetTaal,
+  resetVolgende,
+  veiligOefenpad,
+} from './oefenpad'
 
 describe('veiligOefenpad', () => {
   it('houdt een oefenpad met hoofdstuk en onderwerp', () => {
@@ -54,6 +61,52 @@ describe('hrefMetOefenpad', () => {
 
   it('laat de link zoals hij is als er geen pad is', () => {
     expect(hrefMetOefenpad('/inloggen', null)).toBe('/inloggen')
+    expect(hrefMetOefenpad('/wachtwoord-vergeten', null)).toBe('/wachtwoord-vergeten')
+  })
+
+  it('hangt het pad ook aan wachtwoord vergeten', () => {
+    expect(hrefMetOefenpad('/wachtwoord-vergeten', '/oefenen?chapter=h2&topic=h2_termsgewijs')).toBe(
+      '/wachtwoord-vergeten?naar=%2Foefenen%3Fchapter%3Dh2%26topic%3Dh2_termsgewijs',
+    )
+  })
+})
+
+const PAD = '/oefenen?chapter=h2&topic=h2_termsgewijs'
+
+describe('resetVolgende', () => {
+  it('zet het oefenpad gecodeerd in de resetlink, zodat een & blijft staan', () => {
+    const next = resetVolgende(PAD)
+    expect(next).toBe(
+      '/wachtwoord-opnieuw?naar=%2Foefenen%3Fchapter%3Dh2%26topic%3Dh2_termsgewijs',
+    )
+
+    const callback = new URL(
+      `https://afgeleideoefenen.nl/auth/callback?next=${encodeURIComponent(next)}`,
+    )
+    const terug = callback.searchParams.get('next')
+    const landing = new URL(`https://afgeleideoefenen.nl/nl${terug}`)
+    expect(landing.pathname).toBe('/nl/wachtwoord-opnieuw')
+    expect(landing.searchParams.get('naar')).toBe(PAD)
+    expect(oefenpadUitAdres(terug)).toBe(PAD)
+  })
+
+  it('laat een ander pad weg', () => {
+    expect(resetVolgende('/dashboard')).toBe('/wachtwoord-opnieuw')
+    expect(resetVolgende('https://evil.example/oefenen')).toBe('/wachtwoord-opnieuw')
+    expect(resetVolgende(null)).toBe('/wachtwoord-opnieuw')
+  })
+})
+
+describe('oefenpadUitAdres', () => {
+  it('leest het pad uit de resetpagina en uit het pad zelf', () => {
+    expect(oefenpadUitAdres(`/wachtwoord-opnieuw?naar=${encodeURIComponent(PAD)}`)).toBe(PAD)
+    expect(oefenpadUitAdres(PAD)).toBe(PAD)
+  })
+
+  it('weigert een adres buiten de site', () => {
+    expect(oefenpadUitAdres('/wachtwoord-opnieuw?naar=https://evil.example/oefenen')).toBeNull()
+    expect(oefenpadUitAdres('//evil.example/oefenen')).toBeNull()
+    expect(oefenpadUitAdres('/wachtwoord-opnieuw')).toBeNull()
   })
 })
 

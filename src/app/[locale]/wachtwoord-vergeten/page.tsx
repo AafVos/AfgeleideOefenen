@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { Link } from '@/i18n/navigation'
+import { hrefMetOefenpad, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { canoniek } from '@/lib/seo'
 
 import { ForgotForm } from './forgot-form'
@@ -21,11 +22,12 @@ export async function generateMetadata({
 export default async function WachtwoordVergetenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mail?: string }>
+  searchParams: Promise<{ mail?: string; naar?: string | string[] }>
 }) {
   const t = await getTranslations('ForgotPassword')
-  const { mail } = await searchParams
+  const { mail, naar } = await searchParams
   const linkVerlopen = mail === 'verlopen'
+  const oefenpad = veiligOefenpad(naar)
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
@@ -42,9 +44,9 @@ export default async function WachtwoordVergetenPage({
             {t('linkVerlopen')}
           </p>
         )}
-        <ForgotForm />
+        <ForgotForm oefenpad={oefenpad} />
         <Link
-          href="/inloggen"
+          href={hrefMetOefenpad('/inloggen', oefenpad)}
           className="block text-center text-sm text-text-muted underline-offset-2 hover:underline"
         >
           {t('backToLogin')}
