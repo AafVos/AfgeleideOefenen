@@ -122,15 +122,21 @@ export default async function HomePage() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#regels"
+              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
+            >
+              {t('ctaRegel')}
+            </a>
             <Link
               href="/registreren"
-              className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
+              className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
               {t('ctaRegister')}
             </Link>
             <Link
               href="/inloggen"
-              className="rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
               {t('ctaLogin')}
             </Link>
@@ -144,16 +150,10 @@ export default async function HomePage() {
           </p>
         </section>
 
-        <HomeDemo />
-
-        <section className="mt-20 grid gap-6 sm:grid-cols-3">
-          <Feature title={t('feature1Title')} body={t('feature1Body')} />
-          <Feature title={t('feature2Title')} body={t('feature2Body')} />
-          <Feature title={t('feature3Title')} body={t('feature3Body')} />
-        </section>
-
-        <section className="mt-20">
-          <h2 className="font-serif text-3xl text-text">{t('topicsH2')}</h2>
+        <section id="regels" className="mt-16 scroll-mt-6">
+          <p className="text-lg text-text">{t('zoekzin')}</p>
+          <p className="mt-2 text-text-muted">{t('toetsweek')}</p>
+          <h2 className="mt-6 font-serif text-3xl text-text">{t('topicsH2')}</h2>
           <p className="mt-3 text-text-muted">{t('topicsIntro')}</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {(
@@ -193,6 +193,14 @@ export default async function HomePage() {
               ),
             })}
           </p>
+        </section>
+
+        <HomeDemo />
+
+        <section className="mt-20 grid gap-6 sm:grid-cols-3">
+          <Feature title={t('feature1Title')} body={t('feature1Body')} />
+          <Feature title={t('feature2Title')} body={t('feature2Body')} />
+          <Feature title={t('feature3Title')} body={t('feature3Body')} />
         </section>
 
         <section className="mt-20">
