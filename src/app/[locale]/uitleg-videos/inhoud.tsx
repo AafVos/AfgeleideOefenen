@@ -83,6 +83,7 @@ export async function UitlegVideosInhoud({
       loginHref={`/${locale}/inloggen`}
       registerHref={`/${locale}/registreren`}
       oefenHref={`/${locale}/oefenen`}
+      videoAlsKop={slug !== null}
       labels={{
         h1: t('h1'),
         intro: t('intro'),
