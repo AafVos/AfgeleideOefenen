@@ -43,13 +43,44 @@ export function padMetTaal(pad: string, taal = 'nl'): string {
   return `/${taal}${pad.startsWith('/') ? pad : `/${pad}`}`
 }
 
-/** Link naar inloggen of registreren, met het oefenpad eraan als dat er is. */
+/** Link naar inloggen, registreren of wachtwoord vergeten, met het oefenpad eraan als dat er is. */
 export function hrefMetOefenpad(
-  basis: '/inloggen' | '/registreren',
+  basis: '/inloggen' | '/registreren' | '/wachtwoord-vergeten',
   pad: string | null,
 ): string {
   if (!pad) return basis
   return `${basis}?${OEFENPAD_PARAM}=${encodeURIComponent(pad)}`
+}
+
+/**
+ * De `next` in de resetmail: de pagina voor een nieuw wachtwoord.
+ * Het oefenpad zit gecodeerd in de query, zodat een `&` in het pad
+ * niet uit de link valt. Een ander pad gaat niet mee.
+ */
+export function resetVolgende(ruwPad: unknown): string {
+  const pad = veiligOefenpad(ruwPad)
+  if (!pad) return '/wachtwoord-opnieuw'
+  return `/wachtwoord-opnieuw?${OEFENPAD_PARAM}=${encodeURIComponent(pad)}`
+}
+
+/**
+ * Het oefenpad uit een adres. Dat kan het pad zelf zijn (`/oefenen?…`)
+ * of de resetpagina met `naar` in de query.
+ */
+export function oefenpadUitAdres(ruw: unknown): string | null {
+  const direct = veiligOefenpad(ruw)
+  if (direct) return direct
+  const waarde = Array.isArray(ruw) ? ruw[0] : ruw
+  if (typeof waarde !== 'string') return null
+  const tekst = waarde.trim()
+  if (!tekst.startsWith('/') || tekst.startsWith('//') || tekst.includes('\\')) return null
+  try {
+    const url = new URL(tekst, HERKOMST)
+    if (url.origin !== HERKOMST) return null
+    return veiligOefenpad(url.searchParams.get(OEFENPAD_PARAM))
+  } catch {
+    return null
+  }
 }
 
 /**

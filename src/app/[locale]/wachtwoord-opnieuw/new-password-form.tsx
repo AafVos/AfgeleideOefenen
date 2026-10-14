@@ -8,13 +8,14 @@ import { newPasswordAction, type NewPasswordState } from './actions'
 
 const initial: NewPasswordState = { errorKey: null }
 
-export function NewPasswordForm() {
+export function NewPasswordForm({ oefenpad = null }: { oefenpad?: string | null }) {
   const t = useTranslations('NewPassword')
   const [state, action] = useActionState(newPasswordAction, initial)
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <form action={action} className="space-y-5">
+      {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       {state.errorKey && (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
           {t(state.errorKey)}
