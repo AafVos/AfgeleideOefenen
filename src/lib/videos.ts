@@ -76,10 +76,10 @@ const VIDEOS: UitlegVideo[] = [
     theoriePad: '/theorie/productregel',
   },
   {
-    slug: 'som-29',
-    title: 'Uitleg bij #29 (H2)',
+    slug: 'productregel-bij-een-kwadraat',
+    title: 'Productregel bij een kwadraat',
     description:
-      'Hoofdstuk 2, som 29: m(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat. Op verzoek!',
+      'm(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat.',
     uitleg: {
       leer: 'Je leert eerst naar de buitenste schil kijken. Hier staat een min tussen twee delen, dus je begint met de somregel. Het tweede deel is een kwadraat: dat is twee keer dezelfde factor, dus daar gebruik je de productregel.',
       regel: [
@@ -104,10 +104,10 @@ const VIDEOS: UitlegVideo[] = [
     ],
   },
   {
-    slug: 'som-30',
-    title: 'Uitleg bij #30 (H2)',
+    slug: 'productregel-bij-twee-polynomen',
+    title: 'Productregel bij twee polynomen',
     description:
-      'Hoofdstuk 2, som 30: k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel. Op verzoek!',
+      'k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel.',
     uitleg: {
       leer: 'Je leert een verschil differentiëren waarvan het tweede deel een product is. Een getal zonder x heeft afgeleide nul. De factor 3 haal je naar binnen, zodat je twee factoren ziet. De min aan het eind gaat over elke term.',
       regel: [
@@ -133,10 +133,10 @@ const VIDEOS: UitlegVideo[] = [
     ],
   },
   {
-    slug: 'som-34',
-    title: 'Uitleg bij #34 (H2)',
+    slug: 'quotientregel-bij-een-breuk',
+    title: 'Quotiëntregel bij een breuk',
     description:
-      'Hoofdstuk 2, som 34: f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel. Op verzoek!',
+      'f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel.',
     uitleg: {
       leer: 'Je leert een eenvoudige breuk differentiëren. De teller noem je g en de noemer h. Er is maar één regel nodig. De noemer van het antwoord laat je staan als een kwadraat.',
       regel: [
@@ -226,11 +226,43 @@ export function getUitlegVideos(): UitlegVideo[] {
   return VIDEOS
 }
 
+/** Oude adressen die het somnummer noemden. Blijven werken en sturen door. */
+const OUDE_SLUGS: Record<string, string> = {
+  'som-29': 'productregel-bij-een-kwadraat',
+  'som-30': 'productregel-bij-twee-polynomen',
+  'som-34': 'quotientregel-bij-een-breuk',
+}
+
 /** Eén video op slug, of null als die naam niet bestaat. */
 export function getUitlegVideo(slug: string): UitlegVideo | null {
   const schoon = slug.trim()
   if (!schoon) return null
   return VIDEOS.find((v) => v.slug === schoon) ?? null
+}
+
+/**
+ * Huidige slug, of de nieuwe slug als dit een oud adres is.
+ * Onbekend → null.
+ */
+export function losVideoSlugOp(slug: string): string | null {
+  const schoon = slug.trim()
+  if (!schoon) return null
+  if (getUitlegVideo(schoon)) return schoon
+  return OUDE_SLUGS[schoon] ?? null
+}
+
+/**
+ * Permanent pad voor een oud video-adres, met taalcode.
+ * `som-29` onder `/`, `/nl` of `/en` → `/nl/uitleg-videos/productregel-bij-een-kwadraat`.
+ * Iets anders → null.
+ */
+export function oudVideoAdres(pathname: string): string | null {
+  const match = pathname.match(
+    /^\/(?:nl|en)\/uitleg-videos\/(som-29|som-30|som-34)\/?$|^\/uitleg-videos\/(som-29|som-30|som-34)\/?$/,
+  )
+  const oud = match?.[1] ?? match?.[2]
+  if (!oud) return null
+  return `/nl${uitlegVideoPad(OUDE_SLUGS[oud])}`
 }
 
 /**
