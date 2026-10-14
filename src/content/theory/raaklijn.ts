@@ -7,7 +7,7 @@
 
 export const RAAKLIJN_PAD = '/theorie/raaklijn'
 
-export const RAAKLIJN_TITEL = 'De raaklijn'
+export const RAAKLIJN_TITEL = 'Raaklijn oefenen'
 
 export const RAAKLIJN_OMSCHRIJVING =
   'Uitleg van de raaklijn voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'

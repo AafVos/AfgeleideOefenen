@@ -15,7 +15,7 @@ import {
 describe('machtsregel-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(MACHTSREGEL_PAD).toBe('/theorie/machtsregel')
-    expect(MACHTSREGEL_TITEL).toBe('De machtsregel')
+    expect(MACHTSREGEL_TITEL).toBe('Machtsregel oefenen')
     expect(MACHTSREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(MACHTSREGEL_OMSCHRIJVING).not.toMatch(/\b(power rule|derivative)\b/i)
   })

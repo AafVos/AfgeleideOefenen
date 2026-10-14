@@ -7,7 +7,7 @@
 
 export const MACHTSREGEL_PAD = '/theorie/machtsregel'
 
-export const MACHTSREGEL_TITEL = 'De machtsregel'
+export const MACHTSREGEL_TITEL = 'Machtsregel oefenen'
 
 export const MACHTSREGEL_OMSCHRIJVING =
   'Uitleg van de machtsregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'

@@ -15,7 +15,7 @@ import {
 describe('somregel-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(SOMREGEL_PAD).toBe('/theorie/somregel')
-    expect(SOMREGEL_TITEL).toBe('De somregel')
+    expect(SOMREGEL_TITEL).toBe('Somregel oefenen')
     expect(SOMREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(SOMREGEL_OMSCHRIJVING).not.toMatch(/\b(sum rule|derivative)\b/i)
   })
