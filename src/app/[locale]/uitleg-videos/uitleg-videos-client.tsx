@@ -228,6 +228,7 @@ export function UitlegVideosClient({
   loginHref,
   registerHref,
   oefenHref,
+  videoAlsKop,
   labels,
 }: {
   videos: VideoItem[]
@@ -237,6 +238,8 @@ export function UitlegVideosClient({
   loginHref: string
   registerHref: string
   oefenHref: string
+  /** Op een videopagina is de videotitel de enige hoofdkop. Het overzicht houdt "Uitlegvideo's". */
+  videoAlsKop: boolean
   labels: Labels
 }) {
   const active = videos.find((v) => v.slug === activeSlug) ?? null
@@ -276,12 +279,15 @@ export function UitlegVideosClient({
     }, 600)
   }
 
+  const kop = videoAlsKop && active ? active.title : labels.h1
+  const intro = videoAlsKop && active ? active.description : labels.intro
+
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-serif text-3xl text-text sm:text-4xl">{labels.h1}</h1>
-          <p className="mt-2 max-w-2xl text-text-muted">{labels.intro}</p>
+          <h1 className="font-serif text-3xl text-text sm:text-4xl">{kop}</h1>
+          <p className="mt-2 max-w-2xl text-text-muted">{intro}</p>
         </div>
         <div className="shrink-0 rounded-2xl border border-border bg-surface-2 p-4 sm:max-w-64">
           <p className="font-serif text-base text-text">{labels.askTitle}</p>
@@ -314,15 +320,19 @@ export function UitlegVideosClient({
               src={active.src}
               controls
               preload="metadata"
+              aria-label={active.title}
               className="aspect-video w-full rounded-2xl border border-border bg-surface-2 shadow-sm"
             />
           ) : null}
-          {active ? (
+          {active && !videoAlsKop ? (
             <div className="mt-3">
               <h2 className="font-serif text-xl text-text">{active.title}</h2>
               <p className="mt-1 text-sm text-text-muted">{active.description}</p>
               <VideoUitlegBlok uitleg={active.uitleg} labels={labels} />
             </div>
+          ) : null}
+          {active && videoAlsKop ? (
+            <VideoUitlegBlok uitleg={active.uitleg} labels={labels} />
           ) : null}
         </div>
 
@@ -402,7 +412,7 @@ export function UitlegVideosClient({
           </div>
         )}
       </section>
-    </main>
+    </div>
   )
 }
 
