@@ -15,7 +15,7 @@ import {
 describe('kettingregel-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(KETTINGREGEL_PAD).toBe('/theorie/kettingregel')
-    expect(KETTINGREGEL_TITEL).toBe('De kettingregel')
+    expect(KETTINGREGEL_TITEL).toBe('Kettingregel oefenen')
     expect(KETTINGREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(KETTINGREGEL_OMSCHRIJVING).not.toMatch(/\b(chain rule|derivative)\b/i)
   })

@@ -7,7 +7,7 @@
 
 export const QUOTIENTREGEL_PAD = '/theorie/quotientregel'
 
-export const QUOTIENTREGEL_TITEL = 'De quotiëntregel'
+export const QUOTIENTREGEL_TITEL = 'Quotiëntregel oefenen'
 
 export const QUOTIENTREGEL_OMSCHRIJVING =
   'Uitleg van de quotiëntregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'
