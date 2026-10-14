@@ -150,9 +150,9 @@ export default async function HomePage() {
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {(
               [
-                ['topic1Title', 'topic1Body', '/theorie#kaart-h2-machtsregel'],
+                ['topic1Title', 'topic1Body', '/theorie/machtsregel'],
                 ['topic8Title', 'topic8Body', '/theorie#kaart-h6-machten_herschrijven'],
-                ['topic2Title', 'topic2Body', '/theorie#kaart-h2-somregel'],
+                ['topic2Title', 'topic2Body', '/theorie/somregel'],
                 ['topic3Title', 'topic3Body', '/theorie/productregel'],
                 ['topic4Title', 'topic4Body', '/theorie/quotientregel'],
                 ['topic5Title', 'topic5Body', '/theorie/kettingregel'],
