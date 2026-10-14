@@ -17,7 +17,8 @@
     "videos": "Uitlegvideo's"
   },
   "Footer": {
-    "privacy": "Privacyverklaring"
+    "privacy": "Privacyverklaring",
+    "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl"
   },
   "Home": {
     "eyebrow": "Wiskunde B · VWO 4 / 5 / 6",
@@ -29,6 +30,7 @@
     "ctaRegister": "Gratis account aanmaken",
     "ctaLogin": "Inloggen",
     "tagline": "Volledig gratis · Geen reclame · Volgt Getal & Ruimte",
+    "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl",
     "feature1Title": "Meteen oefenen",
     "feature1Body": "Je leert afgeleiden door ze te maken. Bij elke fout zie je waar het misging.",
     "feature2Title": "Jij kiest",
@@ -236,6 +238,7 @@
     "startButton": "Begin met oefenen",
     "startWhere": "Je begint bij {chapter} — {topic}. Je kunt hieronder ook zelf iets anders kiezen.",
     "nogGeenOpgaven": "nog geen opgaven",
+    "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl",
     "activityTitle": "Afgelopen 14 dagen",
     "activityStart": "14 dagen geleden",
     "activityEnd": "vandaag"

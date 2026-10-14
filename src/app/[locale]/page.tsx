@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
@@ -135,6 +136,12 @@ export default async function HomePage() {
             </Link>
           </div>
           <p className="mt-3 text-sm text-text-muted">{t('tagline')}</p>
+          <p className="mt-4">
+            <IntegraalVerwijzing
+              tekst={t('integraal')}
+              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+            />
+          </p>
         </section>
 
         <HomeDemo />
