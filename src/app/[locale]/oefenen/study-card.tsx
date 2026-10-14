@@ -142,27 +142,6 @@ export function StudyCard({
     })
   }
 
-  function handleBackspace() {
-    const el = inputRef.current
-    const start = el?.selectionStart ?? answer.length
-    const end = el?.selectionEnd ?? answer.length
-    if (start === end && start === 0) return
-    const nextStart = start === end ? start - 1 : start
-    const value = answer.slice(0, nextStart) + answer.slice(end)
-    setAnswer(value)
-    requestAnimationFrame(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.setSelectionRange(nextStart, nextStart)
-      }
-    })
-  }
-
-  function handleClear() {
-    setAnswer('')
-    requestAnimationFrame(() => inputRef.current?.focus())
-  }
-
   function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!answer.trim() || state.phase !== 'input') return
@@ -338,12 +317,7 @@ export function StudyCard({
                   autoCorrect="off"
                   spellCheck={false}
                 />
-                <MathKeyboard
-                  onInsert={handleKey}
-                  onBackspace={handleBackspace}
-                  onClear={handleClear}
-                  disabled={pending}
-                />
+                <MathKeyboard onInsert={handleKey} disabled={pending} />
               </label>
 
               <ErrorBanner>{state.error}</ErrorBanner>
