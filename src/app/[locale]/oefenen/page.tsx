@@ -1,13 +1,16 @@
 import { getTranslations } from 'next-intl/server'
 
 import {
+  clusterIdsOpVolgorde,
+  loadAllClusters,
+  loadAlleVragen,
   loadAllTopics,
-  loadClustersForTopics,
-  loadLaatsteClusterId,
+  loadLaatsteAntwoorden,
+  loadLaatsteVraagId,
   loadParagraphs,
-  loadTheoryBlocks,
-  loadTilesForClusters,
   loadQuestionNew,
+  loadTheoryBlocks,
+  naarTegels,
   type ClusterInfo,
 } from '@/lib/practice/chapter-overview'
 import {
@@ -72,16 +75,23 @@ async function OnderwerpPagina({ searchParams }: PageProps) {
   const clusterParam = params.cluster?.trim() ?? null
   const qParam = params.q?.trim() ?? null
 
-  const [t, visibleChapters, allTopics] = await Promise.all([
+  const [
+    t,
+    visibleChapters,
+    allTopics,
+    allClusters,
+    vragen,
+    laatsteAntwoorden,
+    questionGeladen,
+  ] = await Promise.all([
     getTranslations('FreeExercise'),
     getChapters(),
     loadAllTopics(supabase),
+    loadAllClusters(supabase),
+    loadAlleVragen(supabase),
+    loadLaatsteAntwoorden(supabase),
+    qParam ? loadQuestionNew(supabase, qParam) : null,
   ])
-
-  const allClusters = await loadClustersForTopics(
-    supabase,
-    allTopics.map((topic) => topic.id),
-  )
 
   const activeChapter =
     (chapterParam ? visibleChapters.find((c) => c.slug === chapterParam) : null) ??
@@ -114,12 +124,12 @@ async function OnderwerpPagina({ searchParams }: PageProps) {
       ? topicClusters.map((c) => c.id)
       : chapterTopics.flatMap((topic) => (clustersByTopic.get(topic.id) ?? []).map((c) => c.id))
 
-  const allClusterIdsOrdered = visibleChapters.flatMap((ch) =>
-    allTopics
-      .filter((topic) => topic.chapter_id === ch.id)
-      .flatMap((topic) => (clustersByTopic.get(topic.id) ?? []).map((c) => c.id)),
+  const allClusterIdsOrdered = clusterIdsOpVolgorde(
+    visibleChapters,
+    allTopics,
+    allClusters,
   )
-  const allTiles = await loadTilesForClusters(supabase, allClusterIdsOrdered)
+  const allTiles = naarTegels(vragen, allClusterIdsOrdered, laatsteAntwoorden)
 
   const tileClusterIdSet = new Set(tileClusterIds)
   const initialTiles = allTiles
@@ -127,8 +137,7 @@ async function OnderwerpPagina({ searchParams }: PageProps) {
     .map((tile, i) => ({ ...tile, ordinal: i + 1 }))
 
   const validQuestionIds = new Set(initialTiles.map((tile) => tile.questionId))
-  const question =
-    qParam && validQuestionIds.has(qParam) ? await loadQuestionNew(supabase, qParam) : null
+  const question = qParam && validQuestionIds.has(qParam) ? questionGeladen : null
 
   return (
     <OefenenClient
@@ -174,29 +183,34 @@ async function BlokPagina({ searchParams }: PageProps) {
   }
   const qParam = params.q?.trim() ?? null
 
-  const [t, chapters, allTopics, paragraphs, blocks] = await Promise.all([
+  const [
+    t,
+    chapters,
+    allTopics,
+    paragraphs,
+    blocks,
+    allClusters,
+    vragen,
+    laatsteAntwoorden,
+    laatsteVraagId,
+    questionGeladen,
+  ] = await Promise.all([
     getTranslations('FreeExercise'),
     getChapters(),
     loadAllTopics(supabase),
     loadParagraphs(supabase),
     loadTheoryBlocks(supabase),
+    loadAllClusters(supabase),
+    loadAlleVragen(supabase),
+    loadLaatsteAntwoorden(supabase),
+    loadLaatsteVraagId(supabase),
+    qParam ? loadQuestionNew(supabase, qParam) : null,
   ])
 
-  const allClusters = await loadClustersForTopics(
-    supabase,
-    allTopics.map((topic) => topic.id),
-  )
-  const allClusterIds = chapters.flatMap((ch) =>
-    allTopics
-      .filter((topic) => topic.chapter_id === ch.id)
-      .flatMap((topic) =>
-        allClusters.filter((cl) => cl.topic_id === topic.id).map((cl) => cl.id),
-      ),
-  )
-  const [allTiles, laatsteClusterId] = await Promise.all([
-    loadTilesForClusters(supabase, allClusterIds),
-    loadLaatsteClusterId(supabase),
-  ])
+  const allClusterIds = clusterIdsOpVolgorde(chapters, allTopics, allClusters)
+  const allTiles = naarTegels(vragen, allClusterIds, laatsteAntwoorden)
+  const laatsteClusterId =
+    vragen.find((vraag) => vraag.id === laatsteVraagId)?.cluster_id ?? null
 
   const data = {
     chapters,
@@ -213,8 +227,10 @@ async function BlokPagina({ searchParams }: PageProps) {
     selectie ? clusterIdsVoorSelectie(selectie, allTopics, allClusters) : [],
   )
   const question =
-    qParam && allTiles.some((tile) => tile.questionId === qParam && scope.has(tile.clusterId))
-      ? await loadQuestionNew(supabase, qParam)
+    qParam &&
+    questionGeladen &&
+    allTiles.some((tile) => tile.questionId === qParam && scope.has(tile.clusterId))
+      ? questionGeladen
       : null
 
   return (
