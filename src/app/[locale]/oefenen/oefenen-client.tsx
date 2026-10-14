@@ -572,6 +572,9 @@ export function OefenenClient({
                     question={question}
                     steps={question.steps}
                     nextHref={nextHref}
+                    clusterName={
+                      allClusters.find((c) => c.id === question.cluster_id)?.title
+                    }
                     video={getVideoForCluster(question.cluster_id)}
                     questionNumber={
                       chapterGroups

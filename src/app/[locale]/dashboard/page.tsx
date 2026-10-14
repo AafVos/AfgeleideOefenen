@@ -51,7 +51,7 @@ export default async function DashboardPage() {
 
   const { data: progressRows } = await supabase
     .from('user_progress_new')
-    .select('cluster_id, status, total_answered, total_correct')
+    .select('cluster_id, status, total_answered, total_correct, correct_streak')
     .eq('user_id', user.id)
 
   const progressByCluster = new Map(
@@ -138,6 +138,7 @@ export default async function DashboardPage() {
           totalAnswered: progress?.total_answered ?? 0,
           totalCorrect: progress?.total_correct ?? 0,
           isKnown: progress?.status === 'mastered',
+          correctStreak: progress?.correct_streak ?? 0,
         }
       })
     topicDataById.set(topic.id, {
