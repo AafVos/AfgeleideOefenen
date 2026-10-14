@@ -1,4 +1,4 @@
-import { vergelijkHoofdstukVolgorde } from '@/lib/practice/oefenen-indeling'
+import { blokIdVanSoort, vergelijkHoofdstukVolgorde } from '@/lib/practice/oefenen-indeling'
 
 /**
  * Voortgang op het dashboard.
@@ -119,6 +119,7 @@ type ClusterInvoer = {
   title: string
   topic_id: string
   order_index: number
+  theory_block_id?: string | null
 }
 
 export function weegClusters(clusters: ClusterVoortgang[]) {
@@ -180,16 +181,6 @@ export function bouwDashboardIndeling(input: {
       .map((cluster) => clusterVan(cluster, voortgang))
   }
 
-  function onderwerpRij(topic: OnderwerpInvoer, chapterSlug: string): OnderwerpRij {
-    return {
-      id: topic.id,
-      slug: topic.slug,
-      title: topic.title,
-      chapterSlug,
-      clusters: clustersVan(topic.id),
-    }
-  }
-
   const hoofdstukken: NieuwHoofdstuk[] = []
 
   for (const chapter of [...input.chapters].sort(vergelijkHoofdstukVolgorde)) {
@@ -202,14 +193,20 @@ export function bouwDashboardIndeling(input: {
       .filter((p) => p.chapter_id === chapter.id)
       .sort((a, b) => a.order_index - b.order_index)
 
-    const blokVan = (topic: OnderwerpInvoer): BlokInvoer | null => {
-      if (!topic.theory_block_id) return null
-      const block = blockById.get(topic.theory_block_id)
+    const blokInHoofdstuk = (blockId: string | null | undefined): string | null => {
+      if (!blockId) return null
+      const block = blockById.get(blockId)
       if (!block) return null
       const paragraph = paragraphById.get(block.paragraph_id)
       if (!paragraph || paragraph.chapter_id !== chapter.id) return null
-      return block
+      return block.id
     }
+
+    const blokVanSoort = (cluster: ClusterInvoer, topic: OnderwerpInvoer): string | null =>
+      blokInHoofdstuk(blokIdVanSoort(cluster, topic))
+
+    const voortgangVan = (lijst: ClusterInvoer[]): ClusterVoortgang[] =>
+      lijst.map((cluster) => clusterVan(cluster, voortgang))
 
     const paragrafen: ParagraafRij[] = paragraphs
       .map((paragraph) => ({
@@ -220,15 +217,18 @@ export function bouwDashboardIndeling(input: {
           .filter((block) => block.paragraph_id === paragraph.id)
           .sort((a, b) => a.order_index - b.order_index)
           .map((block) => {
-            const vanBlok = topics.filter((topic) => blokVan(topic)?.id === block.id)
-            const clusters = vanBlok.flatMap((topic) => clustersVan(topic.id))
+            const clusters = topics.flatMap((topic) =>
+              (clustersPerTopic.get(topic.id) ?? [])
+                .filter((cluster) => blokVanSoort(cluster, topic) === block.id)
+                .sort((a, b) => a.order_index - b.order_index),
+            )
             return {
               id: block.id,
               slug: block.slug,
               letter: block.letter,
               title: block.title,
               heeftOpgaven: clusters.length > 0,
-              clusters,
+              clusters: voortgangVan(clusters),
             }
           }),
       }))
@@ -240,9 +240,23 @@ export function bouwDashboardIndeling(input: {
       title: chapter.title,
       paragrafen,
       clusters: topics.flatMap((topic) => clustersVan(topic.id)),
-      losseOnderwerpen: topics
-        .filter((topic) => !blokVan(topic))
-        .map((topic) => onderwerpRij(topic, chapter.slug)),
+      losseOnderwerpen: topics.flatMap((topic) => {
+        if (blokInHoofdstuk(topic.theory_block_id)) return []
+        const vanTopic = clustersPerTopic.get(topic.id) ?? []
+        const zonderBlok = vanTopic.filter((cluster) => !blokVanSoort(cluster, topic))
+        if (vanTopic.length > 0 && zonderBlok.length === 0) return []
+        return [
+          {
+            id: topic.id,
+            slug: topic.slug,
+            title: topic.title,
+            chapterSlug: chapter.slug,
+            clusters: voortgangVan(
+              [...zonderBlok].sort((a, b) => a.order_index - b.order_index),
+            ),
+          },
+        ]
+      }),
     })
   }
 

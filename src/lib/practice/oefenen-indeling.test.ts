@@ -79,6 +79,14 @@ const blokLeeg: TheoryBlockInfo = {
   title: 'Grafieken tekenen met GeoGebra',
   order_index: 1,
 }
+const blokSnelheid: TheoryBlockInfo = {
+  id: 'b-snelheid',
+  paragraph_id: 'p24',
+  slug: 'h2-4e',
+  letter: 'E',
+  title: 'Snelheid en afgeleide',
+  order_index: 5,
+}
 
 function topic(
   slug: string,
@@ -101,8 +109,21 @@ const product = topic('h2_productregel', 'Productregel', 'c2', 'b-product', 1)
 const quotient = topic('h2_quotientregel', 'Quotiëntregel', 'c2', 'b-quotient', 2)
 const snelheid = topic('beweging_snelheid', 'Snelheid', 'cb', null, 1)
 
-function cluster(slug: string, title: string, topicId: string, order: number): ClusterInfo {
-  return { id: `c-${slug}`, slug, title, topic_id: topicId, order_index: order }
+function cluster(
+  slug: string,
+  title: string,
+  topicId: string,
+  order: number,
+  blockId: string | null = null,
+): ClusterInfo {
+  return {
+    id: `c-${slug}`,
+    slug,
+    title,
+    topic_id: topicId,
+    order_index: order,
+    theory_block_id: blockId,
+  }
 }
 
 const clusters: ClusterInfo[] = [
@@ -122,7 +143,7 @@ const tiles = [
 const data = {
   chapters: [h16, beweging, h2],
   paragraphs: [p25, p24],
-  blocks: [blokLeeg, blokQuotient, blokProduct],
+  blocks: [blokLeeg, blokSnelheid, blokQuotient, blokProduct],
   topics: [quotient, snelheid, product],
   clusters,
   tiles,
@@ -187,6 +208,55 @@ describe('indeling per theorieblok', () => {
     expect(sel.blok.slug).toBe('h2-4b')
     expect(sel.paragraph.label).toBe('2.4')
     expect(sel.groep.topicSlug).toBe('h2_quotientregel')
+  })
+
+  it('zet een soort som met een eigen blok niet bij het onderwerp', () => {
+    const gesplitst = {
+      ...data,
+      clusters: [
+        ...clusters,
+        cluster('snelheid', 'Snelheid', product.id, 3, 'b-snelheid'),
+      ],
+      tiles: [...tiles, { clusterId: 'c-snelheid' }],
+    }
+    const boom = bouwBlokBoom(gesplitst)
+    const blokken = boom.hoofdstukken
+      .find((h) => h.chapter.slug === 'h2')!
+      .paragrafen.find((p) => p.slug === 'h2-4')!.blokken
+    expect(blokken.find((b) => b.slug === 'h2-4e')?.heeftOpgaven).toBe(true)
+
+    const bijProduct = losSelectieOp(
+      { blok: 'h2-4a', topic: null, cluster: null, chapter: null },
+      gesplitst,
+    )
+    const bijSnelheid = losSelectieOp(
+      { blok: 'h2-4e', topic: null, cluster: null, chapter: null },
+      gesplitst,
+    )
+    const productKopjes = kopjesVoorSelectie(
+      bijProduct!,
+      gesplitst.topics,
+      gesplitst.clusters,
+      gesplitst.tiles,
+    )
+    const snelheidKopjes = kopjesVoorSelectie(
+      bijSnelheid!,
+      gesplitst.topics,
+      gesplitst.clusters,
+      gesplitst.tiles,
+    )
+    expect(productKopjes.map((k) => k.label)).toEqual(['Twee polynomen', 'Kwadraat'])
+    expect(productKopjes.some((k) => k.label === 'Snelheid')).toBe(false)
+    expect(snelheidKopjes.map((k) => k.label)).toEqual(['Snelheid'])
+
+    const viaSoort = losSelectieOp(
+      { blok: null, topic: null, cluster: 'snelheid', chapter: null },
+      gesplitst,
+    )
+    expect(viaSoort?.soort).toBe('blok')
+    if (viaSoort?.soort !== 'blok') return
+    expect(viaSoort.blok.slug).toBe('h2-4e')
+    expect(viaSoort.groep.topicSlug).toBe('h2_productregel')
   })
 
   it('opent een oude soort-som-link op hetzelfde blok en die groep', () => {

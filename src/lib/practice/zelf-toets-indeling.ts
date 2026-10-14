@@ -1,4 +1,5 @@
 import {
+  blokIdVanSoort,
   oefenIndeling,
   vergelijkHoofdstukVolgorde,
   type OefenIndeling,
@@ -101,6 +102,7 @@ type OnderwerpInvoer = {
 type ClusterInvoer = ToetsCluster & {
   topic_id: string
   order_index: number
+  theory_block_id?: string | null
 }
 
 export type ZelfToetsIndelingInvoer = {
@@ -148,13 +150,13 @@ export function bouwZelfToetsBoom(data: ZelfToetsIndelingInvoer): ToetsHoofdstuk
       .filter((p) => p.chapter_id === chapter.id)
       .sort((a, b) => a.order_index - b.order_index)
 
-    const blokVan = (topic: OnderwerpInvoer): BlokInvoer | null => {
-      if (!topic.theory_block_id) return null
-      const block = blockById.get(topic.theory_block_id)
+    const blokInHoofdstuk = (blockId: string | null | undefined): string | null => {
+      if (!blockId) return null
+      const block = blockById.get(blockId)
       if (!block) return null
       const paragraph = paragraphById.get(block.paragraph_id)
       if (!paragraph || paragraph.chapter_id !== chapter.id) return null
-      return block
+      return block.id
     }
 
     const paragrafen: ToetsParagraaf[] = paragraphs
@@ -166,8 +168,20 @@ export function bouwZelfToetsBoom(data: ZelfToetsIndelingInvoer): ToetsHoofdstuk
           .filter((block) => block.paragraph_id === paragraph.id)
           .sort((a, b) => a.order_index - b.order_index)
           .map((block) => {
-            const vanBlok = topics.filter((topic) => blokVan(topic)?.id === block.id)
-            const onderwerpen = vanBlok.map((topic) => onderwerpVan(topic, data.clusters))
+            const vanBlok = data.clusters.filter((cluster) => {
+              const topic = topics.find((item) => item.id === cluster.topic_id)
+              if (!topic) return false
+              return blokInHoofdstuk(blokIdVanSoort(cluster, topic)) === block.id
+            })
+            const onderwerpIds = topics
+              .filter((topic) => vanBlok.some((cluster) => cluster.topic_id === topic.id))
+              .map((topic) => topic.id)
+            const onderwerpen = onderwerpIds.map((id) =>
+              onderwerpVan(
+                topics.find((topic) => topic.id === id)!,
+                vanBlok,
+              ),
+            )
             const clusters = onderwerpen.flatMap((onderwerp) => onderwerp.clusters)
             return {
               id: block.id,
@@ -188,9 +202,15 @@ export function bouwZelfToetsBoom(data: ZelfToetsIndelingInvoer): ToetsHoofdstuk
       slug: chapter.slug,
       title: chapter.title,
       paragrafen,
-      losseOnderwerpen: topics
-        .filter((topic) => !blokVan(topic))
-        .map((topic) => onderwerpVan(topic, data.clusters)),
+      losseOnderwerpen: topics.flatMap((topic) => {
+        if (blokInHoofdstuk(topic.theory_block_id)) return []
+        const vanTopic = data.clusters.filter((cluster) => cluster.topic_id === topic.id)
+        const zonderBlok = vanTopic.filter(
+          (cluster) => !blokInHoofdstuk(blokIdVanSoort(cluster, topic)),
+        )
+        if (vanTopic.length > 0 && zonderBlok.length === 0) return []
+        return [onderwerpVan(topic, zonderBlok)]
+      }),
     })
   }
 

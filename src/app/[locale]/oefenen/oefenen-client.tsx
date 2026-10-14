@@ -816,7 +816,9 @@ function BlokWeergave({
 
   const sections: TileSection[] = useMemo(() => {
     if (!selectie) return []
-    return kopjesVoorSelectie(selectie, allTopics, allClusters, tiles).map((kop) => ({
+    // Alle tegels, niet alleen die van dit blok. Anders denkt de kop dat
+    // het onderwerp hier compleet is, terwijl een soort som ernaast hangt.
+    return kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState).map((kop) => ({
       id: kop.id,
       label: kop.label,
       subSections: kop.sub.map((sub) => ({
@@ -825,7 +827,7 @@ function BlokWeergave({
         tiles: tiles.filter((t) => t.clusterId === sub.clusterId),
       })),
     }))
-  }, [selectie, allTopics, allClusters, tiles])
+  }, [selectie, allTopics, allClusters, allTilesState, tiles])
 
   const baseHref = selectie ? `/oefenen?${queryVoorSelectie(selectie)}` : '/oefenen'
   const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1

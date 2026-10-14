@@ -94,6 +94,17 @@ type IndelingData = {
 
 const legeGroep: Groep = { topicSlug: null, clusterSlug: null }
 
+/**
+ * Een soort som hangt aan zijn eigen theorieblok als dat gezet is.
+ * Anders aan het blok van het onderwerp.
+ */
+export function blokIdVanSoort(
+  cluster: { theory_block_id?: string | null },
+  topic: { theory_block_id?: string | null } | undefined,
+): string | null {
+  return cluster.theory_block_id ?? topic?.theory_block_id ?? null
+}
+
 /** Zelfde volgorde als het boek. Bij een gelijke volgorde beslist de slug. */
 export function vergelijkHoofdstukVolgorde(
   a: { order_index: number; slug: string },
@@ -109,12 +120,13 @@ export function blokIdsMetOpgaven(
   tiles: { clusterId: string }[],
 ): Set<string> {
   const topicById = new Map(topics.map((t) => [t.id, t]))
-  const topicIdByCluster = new Map(clusters.map((c) => [c.id, c.topic_id]))
+  const clusterById = new Map(clusters.map((c) => [c.id, c]))
   const ids = new Set<string>()
   for (const tile of tiles) {
-    const topicId = topicIdByCluster.get(tile.clusterId)
-    const topic = topicId ? topicById.get(topicId) : undefined
-    if (topic?.theory_block_id) ids.add(topic.theory_block_id)
+    const cluster = clusterById.get(tile.clusterId)
+    if (!cluster) continue
+    const blockId = blokIdVanSoort(cluster, topicById.get(cluster.topic_id))
+    if (blockId) ids.add(blockId)
   }
   return ids
 }
@@ -222,10 +234,14 @@ export function losSelectieOp(adres: Adres, data: IndelingData): Selectie | null
   const topicBySlug = new Map(data.topics.map((t) => [t.slug, t]))
   const clusterBySlug = new Map(data.clusters.map((c) => [c.slug, c]))
 
-  const vanTopic = (topic: TopicInfo, clusterSlug: string | null): Selectie | null => {
+  const vanTopic = (
+    topic: TopicInfo,
+    clusterSlug: string | null,
+    blockId: string | null,
+  ): Selectie | null => {
     const groep: Groep = { topicSlug: topic.slug, clusterSlug }
-    if (topic.theory_block_id) {
-      const block = data.blocks.find((b) => b.id === topic.theory_block_id)
+    if (blockId) {
+      const block = data.blocks.find((b) => b.id === blockId)
       const pad = block ? padVanBlok(block, data) : null
       if (pad) return { soort: 'blok', ...pad, groep }
     }
@@ -237,8 +253,8 @@ export function losSelectieOp(adres: Adres, data: IndelingData): Selectie | null
   if (adres.cluster) {
     const cluster = clusterBySlug.get(adres.cluster)
     const topic = cluster ? data.topics.find((t) => t.id === cluster.topic_id) : undefined
-    if (topic) {
-      const sel = vanTopic(topic, cluster!.slug)
+    if (cluster && topic) {
+      const sel = vanTopic(topic, cluster.slug, blokIdVanSoort(cluster, topic))
       if (sel) return sel
     }
   }
@@ -246,7 +262,7 @@ export function losSelectieOp(adres: Adres, data: IndelingData): Selectie | null
   if (adres.topic) {
     const topic = topicBySlug.get(adres.topic)
     if (topic) {
-      const sel = vanTopic(topic, null)
+      const sel = vanTopic(topic, null, topic.theory_block_id)
       if (sel) return sel
     }
   }
@@ -276,12 +292,35 @@ export function losSelectieOp(adres: Adres, data: IndelingData): Selectie | null
   return null
 }
 
-function onderwerpenVan(selectie: Selectie, topics: TopicInfo[]): TopicInfo[] {
-  const van =
-    selectie.soort === 'blok'
-      ? topics.filter((t) => t.theory_block_id === selectie.blok.id)
-      : topics.filter((t) => t.chapter_id === selectie.chapter.id)
-  return [...van].sort((a, b) => a.order_index - b.order_index)
+function volgordeVanSoort(
+  a: ClusterInfo,
+  b: ClusterInfo,
+  topicById: Map<string, TopicInfo>,
+): number {
+  const ta = topicById.get(a.topic_id)?.order_index ?? 0
+  const tb = topicById.get(b.topic_id)?.order_index ?? 0
+  if (ta !== tb) return ta - tb
+  return a.order_index - b.order_index
+}
+
+/** Soorten sommen die bij deze keuze horen, in boekvolgorde. */
+function soortenVoorSelectie(
+  selectie: Selectie,
+  topics: TopicInfo[],
+  clusters: ClusterInfo[],
+): ClusterInfo[] {
+  const topicById = new Map(topics.map((t) => [t.id, t]))
+  if (selectie.soort === 'hoofdstuk') {
+    const topicIds = new Set(
+      topics.filter((t) => t.chapter_id === selectie.chapter.id).map((t) => t.id),
+    )
+    return clusters
+      .filter((c) => topicIds.has(c.topic_id))
+      .sort((a, b) => volgordeVanSoort(a, b, topicById))
+  }
+  return clusters
+    .filter((c) => blokIdVanSoort(c, topicById.get(c.topic_id)) === selectie.blok.id)
+    .sort((a, b) => volgordeVanSoort(a, b, topicById))
 }
 
 export function clusterIdsVoorSelectie(
@@ -289,17 +328,16 @@ export function clusterIdsVoorSelectie(
   topics: TopicInfo[],
   clusters: ClusterInfo[],
 ): string[] {
-  const ids: string[] = []
-  for (const topic of onderwerpenVan(selectie, topics)) {
-    const vanTopic = clusters
-      .filter((c) => c.topic_id === topic.id)
-      .sort((a, b) => a.order_index - b.order_index)
-    for (const cl of vanTopic) ids.push(cl.id)
-  }
-  return ids
+  return soortenVoorSelectie(selectie, topics, clusters).map((c) => c.id)
 }
 
-/** Kopjes boven de tegels: het onderwerp, en daaronder de soort som. */
+/**
+ * Kopjes boven de tegels. Hangen alle soorten van een onderwerp aan dit
+ * blok, dan is het onderwerp de kop en de soort de regel eronder. Hangt
+ * maar een deel hier, dan is de soort zelf de kop. Anders ziet een
+ * leerling de naam van het onderwerp, terwijl de som bij een ander blok
+ * hoort.
+ */
 export function kopjesVoorSelectie(
   selectie: Selectie,
   topics: TopicInfo[],
@@ -307,22 +345,54 @@ export function kopjesVoorSelectie(
   tiles: { clusterId: string }[],
 ): Kopje[] {
   const metTegels = new Set(tiles.map((t) => t.clusterId))
+  const topicById = new Map(topics.map((t) => [t.id, t]))
+  const aantalMetTegels = new Map<string, number>()
+  for (const cluster of clusters) {
+    if (!metTegels.has(cluster.id)) continue
+    aantalMetTegels.set(cluster.topic_id, (aantalMetTegels.get(cluster.topic_id) ?? 0) + 1)
+  }
+
   const kopjes: Kopje[] = []
-  for (const topic of onderwerpenVan(selectie, topics)) {
-    const groepen = clusters
-      .filter((c) => c.topic_id === topic.id && metTegels.has(c.id))
-      .sort((a, b) => a.order_index - b.order_index)
-    if (groepen.length === 0) continue
+  let topicId: string | null = null
+  let groep: ClusterInfo[] = []
+
+  const plaats = () => {
+    if (!topicId || groep.length === 0) return
+    const topic = topicById.get(topicId)
+    if (!topic) return
+    const alles = aantalMetTegels.get(topicId) ?? groep.length
+    const deels = groep.length < alles
+    if (deels) {
+      for (const cluster of groep) {
+        kopjes.push({
+          id: `soort-${topic.slug}-${cluster.slug}`,
+          label: cluster.title,
+          sub: [{ id: `groep-${cluster.slug}`, label: '', clusterId: cluster.id }],
+        })
+      }
+      return
+    }
     kopjes.push({
       id: `onderwerp-${topic.slug}`,
       label: topic.title,
-      sub: groepen.map((c) => ({
-        id: `groep-${c.slug}`,
-        label: groepen.length > 1 ? c.title : '',
-        clusterId: c.id,
+      sub: groep.map((cluster) => ({
+        id: `groep-${cluster.slug}`,
+        label: groep.length > 1 ? cluster.title : '',
+        clusterId: cluster.id,
       })),
     })
   }
+
+  for (const cluster of soortenVoorSelectie(selectie, topics, clusters)) {
+    if (!metTegels.has(cluster.id)) continue
+    if (cluster.topic_id !== topicId) {
+      plaats()
+      topicId = cluster.topic_id
+      groep = []
+    }
+    groep.push(cluster)
+  }
+  plaats()
   return kopjes
 }
 
