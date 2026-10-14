@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
-import { Badge, Button, Card, Input } from '@/components/ui'
+import { Button, Card, Input } from '@/components/ui'
 
 import { createTopic } from './actions'
 
@@ -11,7 +11,6 @@ type TopicRow = {
   title: string
   chapter_id: string
   order_index: number
-  is_unlocked_by_default: boolean
   topic_clusters_new: Array<{ count: number }>
 }
 
@@ -22,7 +21,7 @@ export default async function TopicsPage() {
     supabase
       .from('topics_new')
       .select(
-        'id, slug, title, chapter_id, order_index, is_unlocked_by_default, topic_clusters_new(count)',
+        'id, slug, title, chapter_id, order_index, topic_clusters_new(count)',
       )
       .order('order_index', { ascending: true })
       .returns<TopicRow[]>(),
@@ -53,7 +52,6 @@ export default async function TopicsPage() {
               <th className="px-4 py-2 font-medium">Hoofdstuk</th>
               <th className="px-4 py-2 font-medium">Slug</th>
               <th className="px-4 py-2 font-medium">Clusters</th>
-              <th className="px-4 py-2 font-medium">Toegang</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
@@ -71,13 +69,6 @@ export default async function TopicsPage() {
                 <td className="px-4 py-2">
                   {t.topic_clusters_new?.[0]?.count ?? 0}
                 </td>
-                <td className="px-4 py-2">
-                  {t.is_unlocked_by_default ? (
-                    <Badge tone="accent">Open</Badge>
-                  ) : (
-                    <Badge>Op slot</Badge>
-                  )}
-                </td>
                 <td className="px-4 py-2 text-right">
                   <Link
                     href={`/admin/topics/${t.id}`}
@@ -91,7 +82,7 @@ export default async function TopicsPage() {
             {!topics?.length && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-4 py-8 text-center text-text-muted"
                 >
                   Nog geen topics. Voeg er hieronder een toe.
@@ -138,14 +129,6 @@ export default async function TopicsPage() {
             defaultValue={99}
             min={0}
           />
-          <label className="flex items-center gap-2 self-end pb-2 text-sm text-text">
-            <input
-              type="checkbox"
-              name="is_unlocked_by_default"
-              className="size-4 rounded border-border"
-            />
-            Direct beschikbaar voor nieuwe studenten
-          </label>
           <div className="sm:col-span-2">
             <Button type="submit">Toevoegen</Button>
           </div>

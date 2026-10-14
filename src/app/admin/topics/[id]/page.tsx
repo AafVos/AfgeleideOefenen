@@ -98,15 +98,6 @@ export default async function TopicEditPage({
             defaultValue={topic.order_index}
             min={0}
           />
-          <label className="flex items-center gap-2 self-end pb-2 text-sm text-text">
-            <input
-              type="checkbox"
-              name="is_unlocked_by_default"
-              defaultChecked={topic.is_unlocked_by_default}
-              className="size-4 rounded border-border"
-            />
-            Direct beschikbaar voor nieuwe studenten
-          </label>
           <div className="flex gap-2 sm:col-span-2">
             <Button type="submit">Opslaan</Button>
           </div>
