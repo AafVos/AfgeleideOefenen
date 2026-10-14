@@ -493,6 +493,13 @@
     "ctaTheorie": "Theorie bekijken",
     "ctaHome": "Naar de startpagina"
   },
+  "ErrorPage": {
+    "eyebrow": "Er ging iets mis",
+    "h1": "Deze pagina doet het even niet",
+    "lead": "Dat ligt aan ons, niet aan jou. Probeer het opnieuw, of ga verder met oefenen.",
+    "ctaRetry": "Opnieuw proberen",
+    "ctaOefenen": "Verder oefenen"
+  },
   "Privacy": {
     "title": "Privacyverklaring",
     "description": "Wat afgeleideoefenen.nl bewaart: je account, je antwoorden, mails, foto's bij een video-verzoek, en hoe lang dat blijft staan.",
