@@ -21,13 +21,15 @@ const groen = theme.accent
 const min = theme.accent2
 
 /** 15 frames aanloop + gemeten audio + 30 frames uitloop. */
-export const MACHT_DUREN = [145, 121, 121, 126, 126, 119]
-export const KETTING_DUREN = [142, 332, 173, 113, 171, 134]
-export const PRODUCT_DUREN = [133, 156, 158, 145, 148, 109, 135]
-export const QUOTIENT_DUREN = [138, 141, 148, 219, 259, 131]
-export const WORTEL_DUREN = [152, 221, 137, 133, 116]
+/** Eerste getal is de vraag; daarna de oude fragmenten, ongewijzigd. */
+export const MACHT_DUREN = [119, 145, 121, 121, 126, 126, 119]
+export const KETTING_DUREN = [134, 142, 332, 173, 113, 171, 134]
+export const PRODUCT_DUREN = [151, 133, 156, 158, 145, 148, 109, 135]
+export const QUOTIENT_DUREN = [135, 138, 141, 148, 219, 259, 131]
+export const WORTEL_DUREN = [99, 152, 221, 137, 133, 116]
 
 const MACHT_TEKST = [
+  'Hoe differentieer je 3x⁴?',
   'De machtsregel: een macht van x.',
   'f(x) = 3x⁴',
   'Haal de macht naar voren, en haal er één af.',
@@ -36,6 +38,7 @@ const MACHT_TEKST = [
   'Oefen het zelf op afgeleideoefenen.nl.',
 ]
 const KETTING_TEKST = [
+  'Hoe differentieer je (2x + 1)³?',
   'Een functie in een functie: de kettingregel.',
   'f(x) = (2x + 1)³. Binnenkant h, buitenkant g.',
   'Eerst de buitenkant: 3(2x + 1)².',
@@ -44,6 +47,7 @@ const KETTING_TEKST = [
   'Oefen de kettingregel op afgeleideoefenen.nl.',
 ]
 const PRODUCT_TEKST = [
+  'Hoe differentieer je x² · (3x + 1)?',
   'Twee functies keer elkaar: de productregel.',
   'f(x) = x² · (3x + 1)',
   'g(x) = x² en h(x) = 3x + 1.',
@@ -53,6 +57,7 @@ const PRODUCT_TEKST = [
   'Oefen de productregel op afgeleideoefenen.nl.',
 ]
 const QUOTIENT_TEKST = [
+  'Hoe differentieer je x / (x + 1)?',
   'Een breuk van twee functies: de quotiëntregel.',
   'f(x) = x / (x + 1)',
   'g is de teller. h is de noemer.',
@@ -61,6 +66,7 @@ const QUOTIENT_TEKST = [
   'Oefen de quotiëntregel op afgeleideoefenen.nl.',
 ]
 const WORTEL_TEKST = [
+  'Hoe differentieer je √x?',
   'De afgeleide van een wortel. Eerst als macht.',
   '√x = x tot de macht ½. Voor x > 0.',
   'Een half, keer x tot de macht −½.',
@@ -78,11 +84,13 @@ function Kader({
   duren,
   teksten,
   titel,
+  vraag,
   children,
 }: {
   duren: number[]
   teksten: string[]
   titel: ReactNode
+  vraag: ReactNode
   children: (beat: number) => ReactNode
 }) {
   const frame = useCurrentFrame()
@@ -91,12 +99,14 @@ function Kader({
   const einde = beat === duren.length - 1
   return (
     <ShortShell
-      titel={einde ? undefined : titel}
+      titel={beat > 0 && !einde ? titel : undefined}
       caption={teksten[beat]}
       pose={poseVoor(beat, duren.length - 1)}
       poseFrame={lokaal}
     >
-      {einde ? (
+      {beat === 0 ? (
+        <FadeUp from={8}>{vraag}</FadeUp>
+      ) : einde ? (
         <FadeUp from={beatStart(duren, beat)}>
           <Eindbeeld />
         </FadeUp>
@@ -146,11 +156,17 @@ export function MachtShort() {
             De <span style={{ color: groen }}>machtsregel</span>
           </>
         }
+        vraag={
+          <Formule groot>
+            <FnX naam="f" /> = 3
+            <XTot n="4" />
+          </Formule>
+        }
       >
         {(beat) => (
           <>
-            {beat >= 2 && (
-              <FadeUp from={verschijn(MACHT_DUREN, 2, beat)}>
+            {beat >= 3 && (
+              <FadeUp from={verschijn(MACHT_DUREN, 3, beat)}>
                 <KorteKaart>
                   <FnX naam="f" /> = <em>a</em>
                   <XTot n={<em>n</em>} /> <span style={{ color: groen }}>⟹</span> <FnX naam="f" accent /> ={' '}
@@ -161,24 +177,24 @@ export function MachtShort() {
                 </KorteKaart>
               </FadeUp>
             )}
-            {beat >= 1 && beat < 4 && (
-              <FadeUp from={verschijn(MACHT_DUREN, 1, beat)}>
+            {beat >= 2 && beat < 5 && (
+              <FadeUp from={verschijn(MACHT_DUREN, 2, beat)}>
                 <Formule>
                   <FnX naam="f" /> = 3
                   <XTot n="4" />
                 </Formule>
               </FadeUp>
             )}
-            {beat === 3 && (
-              <FadeUp from={verschijn(MACHT_DUREN, 3, beat)}>
+            {beat === 4 && (
+              <FadeUp from={verschijn(MACHT_DUREN, 4, beat)}>
                 <Formule>
                   4 · 3 = 12
                   <span style={{ color: theme.textMuted }}> en </span>4 − 1 = 3
                 </Formule>
               </FadeUp>
             )}
-            {beat === 4 && (
-              <FadeUp from={verschijn(MACHT_DUREN, 4, beat)}>
+            {beat === 5 && (
+              <FadeUp from={verschijn(MACHT_DUREN, 5, beat)}>
                 <Formule groot kleur={groen}>
                   <FnX naam="f" accent /> = 12
                   <XTot n="3" />
@@ -204,11 +220,18 @@ export function KettingShort() {
             De <span style={{ color: groen }}>kettingregel</span>
           </>
         }
+        vraag={
+          <Formule groot>
+            <Haakje3>
+              <TweeXPlusEen />
+            </Haakje3>
+          </Formule>
+        }
       >
         {(beat) => (
           <>
-            {beat >= 2 && beat < 5 && (
-              <FadeUp from={verschijn(KETTING_DUREN, 2, beat)}>
+            {beat >= 3 && beat < 6 && (
+              <FadeUp from={verschijn(KETTING_DUREN, 3, beat)}>
                 <KorteKaart>
                   <FnX naam="f" /> = <em>g</em>(<em>h</em>(<X />))
                   <br />
@@ -216,29 +239,29 @@ export function KettingShort() {
                 </KorteKaart>
               </FadeUp>
             )}
-            {beat === 1 && (
+            {beat === 2 && (
               <>
-                <FadeUp from={verschijn(KETTING_DUREN, 1, beat)}>
+                <FadeUp from={verschijn(KETTING_DUREN, 2, beat)}>
                   <Formule>
                     <FnX naam="f" /> = <Haakje3><TweeXPlusEen /></Haakje3>
                   </Formule>
                 </FadeUp>
-                <FadeUp from={beatStart(KETTING_DUREN, 1) + 90}>
+                <FadeUp from={beatStart(KETTING_DUREN, 2) + 90}>
                   <Formule>
                     <span style={{ color: groen }}>
                       <em>h</em>(<X />) = <TweeXPlusEen />
                     </span>
                   </Formule>
                 </FadeUp>
-                <FadeUp from={beatStart(KETTING_DUREN, 1) + 160}>
+                <FadeUp from={beatStart(KETTING_DUREN, 2) + 160}>
                   <Formule>
                     <em>g</em> is de derde macht
                   </Formule>
                 </FadeUp>
               </>
             )}
-            {beat === 2 && (
-              <FadeUp from={verschijn(KETTING_DUREN, 2, beat)}>
+            {beat === 3 && (
+              <FadeUp from={verschijn(KETTING_DUREN, 3, beat)}>
                 <Formule>
                   3
                   <Haakje2>
@@ -247,8 +270,8 @@ export function KettingShort() {
                 </Formule>
               </FadeUp>
             )}
-            {beat === 3 && (
-              <FadeUp from={verschijn(KETTING_DUREN, 3, beat)}>
+            {beat === 4 && (
+              <FadeUp from={verschijn(KETTING_DUREN, 4, beat)}>
                 <Formule>
                   3
                   <Haakje2>
@@ -258,8 +281,8 @@ export function KettingShort() {
                 </Formule>
               </FadeUp>
             )}
-            {beat === 4 && (
-              <FadeUp from={verschijn(KETTING_DUREN, 4, beat)}>
+            {beat === 5 && (
+              <FadeUp from={verschijn(KETTING_DUREN, 5, beat)}>
                 <Formule groot kleur={groen}>
                   <FnX naam="f" accent /> = 6
                   <Haakje2>
@@ -287,25 +310,30 @@ export function ProductShort() {
             De <span style={{ color: min }}>productregel</span>
           </>
         }
+        vraag={
+          <Formule groot>
+            <XTot n="2" /> · (3<X /> + 1)
+          </Formule>
+        }
       >
         {(beat) => (
           <>
-            {beat >= 1 && beat < 6 && (
-              <FadeUp from={verschijn(PRODUCT_DUREN, 1, beat)}>
+            {beat >= 2 && beat < 7 && (
+              <FadeUp from={verschijn(PRODUCT_DUREN, 2, beat)}>
                 <KorteKaart>
                   <FnX naam="f" accent /> = <em>g</em>′(<X />)·<em>h</em>(<X />) + <em>g</em>(<X />)·<em>h</em>′(<X />)
                 </KorteKaart>
               </FadeUp>
             )}
-            {beat === 1 && (
-              <FadeUp from={verschijn(PRODUCT_DUREN, 1, beat)}>
+            {beat === 2 && (
+              <FadeUp from={verschijn(PRODUCT_DUREN, 2, beat)}>
                 <Formule>
                   <FnX naam="f" /> = <XTot n="2" /> · (3<X /> + 1)
                 </Formule>
               </FadeUp>
             )}
-            {beat === 2 && (
-              <FadeUp from={verschijn(PRODUCT_DUREN, 2, beat)}>
+            {beat === 3 && (
+              <FadeUp from={verschijn(PRODUCT_DUREN, 3, beat)}>
                 <Formule>
                   <em>g</em>(<X />) = <XTot n="2" />
                   <span style={{ color: theme.textMuted }}> · </span>
@@ -313,8 +341,8 @@ export function ProductShort() {
                 </Formule>
               </FadeUp>
             )}
-            {beat === 3 && (
-              <FadeUp from={verschijn(PRODUCT_DUREN, 3, beat)}>
+            {beat === 4 && (
+              <FadeUp from={verschijn(PRODUCT_DUREN, 4, beat)}>
                 <Formule kleur={groen}>
                   <em>g</em>′(<X />) = 2<X />
                   <span style={{ color: theme.textMuted }}> · </span>
@@ -322,15 +350,18 @@ export function ProductShort() {
                 </Formule>
               </FadeUp>
             )}
-            {beat === 4 && (
-              <FadeUp from={verschijn(PRODUCT_DUREN, 4, beat)}>
+            {beat === 5 && (
+              <FadeUp from={verschijn(PRODUCT_DUREN, 5, beat)}>
                 <Formule>
-                  2<X /> · (3<X /> + 1) + <XTot n="2" /> · 3
+                  2<X /> · (3<X /> + 1)
+                </Formule>
+                <Formule>
+                  + <XTot n="2" /> · 3
                 </Formule>
               </FadeUp>
             )}
-            {beat === 5 && (
-              <FadeUp from={verschijn(PRODUCT_DUREN, 5, beat)}>
+            {beat === 6 && (
+              <FadeUp from={verschijn(PRODUCT_DUREN, 6, beat)}>
                 <Formule groot kleur={groen}>
                   <FnX naam="f" accent /> = 9
                   <XTot n="2" /> + 2<X />
@@ -356,11 +387,16 @@ export function QuotientShort() {
             De <span style={{ color: groen }}>quotiëntregel</span>
           </>
         }
+        vraag={
+          <Formule groot>
+            <Breuk teller={<X />} noemer={<span><X /> + 1</span>} />
+          </Formule>
+        }
       >
         {(beat) => (
           <>
-            {beat >= 1 && beat < 5 && (
-              <FadeUp from={verschijn(QUOTIENT_DUREN, 1, beat)}>
+            {beat >= 2 && beat < 6 && (
+              <FadeUp from={verschijn(QUOTIENT_DUREN, 2, beat)}>
                 <KorteKaart>
                   <FnX naam="f" accent /> ={' '}
                   <Breuk
@@ -378,24 +414,24 @@ export function QuotientShort() {
                 </KorteKaart>
               </FadeUp>
             )}
-            {(beat === 1 || beat === 2) && (
-              <FadeUp from={verschijn(QUOTIENT_DUREN, 1, beat)}>
+            {(beat === 2 || beat === 3) && (
+              <FadeUp from={verschijn(QUOTIENT_DUREN, 2, beat)}>
                 <Formule>
                   <FnX naam="f" /> ={' '}
                   <Breuk
                     teller={
                       <span>
                         <X />
-                        {beat >= 2 && (
-                          <span style={{ display: 'block', fontSize: 32, color: groen }}>g</span>
+                        {beat >= 3 && (
+                          <span style={{ display: 'block', fontSize: 64, color: groen }}>g</span>
                         )}
                       </span>
                     }
                     noemer={
                       <span>
                         <X /> + 1
-                        {beat >= 2 && (
-                          <span style={{ display: 'block', fontSize: 32, color: min }}>h</span>
+                        {beat >= 3 && (
+                          <span style={{ display: 'block', fontSize: 64, color: min }}>h</span>
                         )}
                       </span>
                     }
@@ -403,16 +439,16 @@ export function QuotientShort() {
                 </Formule>
               </FadeUp>
             )}
-            {beat === 3 && (
-              <FadeUp from={verschijn(QUOTIENT_DUREN, 3, beat)}>
+            {beat === 4 && (
+              <FadeUp from={verschijn(QUOTIENT_DUREN, 4, beat)}>
                 <Formule>
                   (<X /> + 1) <span style={{ color: min }}>−</span> <X />{' '}
                   <span style={{ color: groen }}>= 1</span>
                 </Formule>
               </FadeUp>
             )}
-            {beat === 4 && (
-              <FadeUp from={verschijn(QUOTIENT_DUREN, 4, beat)}>
+            {beat === 5 && (
+              <FadeUp from={verschijn(QUOTIENT_DUREN, 5, beat)}>
                 <Formule groot kleur={groen}>
                   <FnX naam="f" accent /> ={' '}
                   <Breuk
@@ -446,11 +482,18 @@ export function WortelShort() {
             Afgeleide van een <span style={{ color: groen }}>wortel</span>
           </>
         }
+        vraag={
+          <Formule groot>
+            <Wortel>
+              <X />
+            </Wortel>
+          </Formule>
+        }
       >
         {(beat) => (
           <>
-            {beat >= 2 && beat < 4 && (
-              <FadeUp from={verschijn(WORTEL_DUREN, 2, beat)}>
+            {beat >= 3 && beat < 5 && (
+              <FadeUp from={verschijn(WORTEL_DUREN, 3, beat)}>
                 <KorteKaart>
                   <FnX naam="f" /> = <em>a</em>
                   <XTot n={<em>n</em>} /> <span style={{ color: groen }}>⟹</span> <FnX naam="f" accent /> ={' '}
@@ -459,22 +502,22 @@ export function WortelShort() {
                 </KorteKaart>
               </FadeUp>
             )}
-            {beat === 1 && (
-              <FadeUp from={verschijn(WORTEL_DUREN, 1, beat)}>
+            {beat === 2 && (
+              <FadeUp from={verschijn(WORTEL_DUREN, 2, beat)}>
                 <Formule>
                   <FnX naam="f" /> = <Wortel><X /></Wortel> = <XTot n="½" />
                 </Formule>
               </FadeUp>
             )}
-            {beat === 2 && (
-              <FadeUp from={verschijn(WORTEL_DUREN, 2, beat)}>
+            {beat === 3 && (
+              <FadeUp from={verschijn(WORTEL_DUREN, 3, beat)}>
                 <Formule>
                   <FnX naam="f" accent /> = ½ · <XTot n="−½" />
                 </Formule>
               </FadeUp>
             )}
-            {beat === 3 && (
-              <FadeUp from={verschijn(WORTEL_DUREN, 3, beat)}>
+            {beat === 4 && (
+              <FadeUp from={verschijn(WORTEL_DUREN, 4, beat)}>
                 <Formule groot kleur={groen}>
                   <FnX naam="f" accent /> ={' '}
                   <Breuk
