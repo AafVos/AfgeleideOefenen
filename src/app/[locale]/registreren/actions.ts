@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
-import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
+import { bestemmingNaBevestigen } from '@/lib/auth/bestemming'
+import { bevestigingsRedirect } from '@/lib/auth/bevestigingslink'
 import { leesHerkomst } from '@/lib/herkomst'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
@@ -65,8 +66,9 @@ export async function signupAction(
     email,
     password,
     options: {
-      // Na het bevestigen van de e-mail direct naar de inlogpagina
-      emailRedirectTo: `${await bepaalAanvraagAdres()}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
+      // Na het bevestigen: de eerste opgave, of de soort die de leerling
+      // al gekozen had. Een ander pad gaat niet mee.
+      emailRedirectTo: await bevestigingsRedirect(formData.get('naar'), locale),
       data: Object.keys(metadata).length > 0 ? metadata : undefined,
     },
   })
@@ -88,7 +90,8 @@ export async function signupAction(
   }
 
   revalidatePath('/', 'layout')
-  redirect(`/${locale}/oefenen`)
+  // Bevestigen staat uit: dezelfde bestemming als na de bevestigingsmail.
+  redirect(await bestemmingNaBevestigen(supabase, formData.get('naar')))
 }
 
 function authErrorKey(msg: string): SignupErrorKey {
