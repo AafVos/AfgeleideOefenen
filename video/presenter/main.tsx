@@ -115,7 +115,7 @@ function Presenter() {
           color: '#f0efe9',
         }}
       >
-        <button type="button" style={{ ...knopStijl, background: '#7a7870' }} onClick={vorige}>
+        <button type="button" style={{ ...knopStijl, background: '#716c68' }} onClick={vorige}>
           ← Vorige
         </button>
         <button type="button" style={knopStijl} onClick={volgende}>
@@ -131,7 +131,7 @@ function Presenter() {
           ) : null}
         </div>
       </div>
-      <p style={{ color: '#7a7870', fontSize: 13, margin: '0 4px' }}>
+      <p style={{ color: '#716c68', fontSize: 13, margin: '0 4px' }}>
         Geluid staat uit — jij praat. Neem per scène audio op (bijv. Spraakmemo's) terwijl je
         doorklikt; ←/→ werken ook.
       </p>
