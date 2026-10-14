@@ -134,7 +134,7 @@ FROM (VALUES
   ('h6_kettingregel', 'wortel_lineair', 5, 2, 'Pas de kettingregel toe: $f''(x) = -\tfrac{1}{2}(4x-1)^{-\frac{3}{2}} \cdot 4 = -2(4x-1)^{-\frac{3}{2}}$.'),
   ('h6_kettingregel', 'wortel_lineair', 5, 3, 'Schrijf terug: $f''(x) = -\dfrac{2}{(4x-1)\sqrt{4x-1}}$ (want $(4x-1)^{\frac{3}{2}} = (4x-1)\sqrt{4x-1}$).'),
   ('h6_kettingregel', 'wortel_lineair', 6, 1, 'Schrijf om: $5\sqrt{3x-2} = 5(3x-2)^{\frac{1}{2}}$. De $7$ heeft afgeleide $0$.'),
-  ('h6_kettingregel', 'wortel_lineair', 6, 2, 'Pas de kettingregel toe: $f''(x) = 5 \cdot \tfrac{1}{2}(3x-2)^{-\frac{1}{2}} \cdot 3 = \tfrac{15}{2}(3x-2)^{-\frac{1}{2}}$.'),
+  ('h6_kettingregel', 'wortel_lineair', 6, 2, 'Pas de kettingregel toe: $k''(x) = 5 \cdot \tfrac{1}{2}(3x-2)^{-\frac{1}{2}} \cdot 3 = \tfrac{15}{2}(3x-2)^{-\frac{1}{2}}$.'),
   ('h6_kettingregel', 'wortel_lineair', 6, 3, 'Schrijf terug: $k''(x) = \dfrac{7{,}5}{\sqrt{3x-2}}$.'),
   ('h6_kettingregel', 'wortel_polynoom', 1, 1, 'Schrijf om: $\sqrt{x^2+1} = (x^2+1)^{\frac{1}{2}}$. Herken $v(x) = x^2 + 1$.'),
   ('h6_kettingregel', 'wortel_polynoom', 1, 2, 'Bepaal $v''(x) = 2x$. Pas de kettingregel toe: $f''(x) = \tfrac{1}{2}(x^2+1)^{-\frac{1}{2}} \cdot 2x = x(x^2+1)^{-\frac{1}{2}}$.'),
