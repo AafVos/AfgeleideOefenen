@@ -8,6 +8,7 @@ import { PRODUCTREGEL_PAD } from '@/content/theory/productregel'
 import { QUOTIENTREGEL_PAD } from '@/content/theory/quotientregel'
 import { RAAKLIJN_PAD } from '@/content/theory/raaklijn'
 import { SOMREGEL_PAD } from '@/content/theory/somregel'
+import { getVoorbeelden, voorbeeldPad } from '@/content/voorbeelden'
 import { routing } from '@/i18n/routing'
 import { SITE_URL } from '@/lib/seo'
 import { getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
@@ -106,6 +107,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
+    })),
+    ...getVoorbeelden().map((voorbeeld) => ({
+      url: `${SITE_URL}/${TAAL}${voorbeeldPad(voorbeeld.slug)}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
   ]
 }
