@@ -13,7 +13,6 @@ export async function createTopic(formData: FormData) {
   const title = (formData.get('title') ?? '').toString().trim()
   const chapter_id = (formData.get('chapter_id') ?? '').toString().trim()
   const order_index = Number(formData.get('order_index') ?? 0)
-  const is_unlocked_by_default = formData.get('is_unlocked_by_default') === 'on'
 
   if (!slug || !title) throw new Error('Slug en titel zijn verplicht.')
   if (!chapter_id) throw new Error('Kies een hoofdstuk.')
@@ -24,7 +23,6 @@ export async function createTopic(formData: FormData) {
     title,
     chapter_id,
     order_index,
-    is_unlocked_by_default,
   })
   if (error) throw new Error(error.message)
 
@@ -37,7 +35,6 @@ export async function updateTopic(id: string, formData: FormData) {
   const title = (formData.get('title') ?? '').toString().trim()
   const chapter_id = (formData.get('chapter_id') ?? '').toString().trim()
   const order_index = Number(formData.get('order_index') ?? 0)
-  const is_unlocked_by_default = formData.get('is_unlocked_by_default') === 'on'
 
   if (!slug || !title) throw new Error('Slug en titel zijn verplicht.')
   if (!chapter_id) throw new Error('Kies een hoofdstuk.')
@@ -45,7 +42,7 @@ export async function updateTopic(id: string, formData: FormData) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('topics_new')
-    .update({ slug, title, chapter_id, order_index, is_unlocked_by_default })
+    .update({ slug, title, chapter_id, order_index })
     .eq('id', id)
   if (error) throw new Error(error.message)
 
