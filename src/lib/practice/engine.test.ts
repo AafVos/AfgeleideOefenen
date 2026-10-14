@@ -223,6 +223,34 @@ describe('answersMatch', () => {
     expect(answersMatch('y = 2x', '2')).toBe(false)
     expect(answersMatch('', '2x - 1')).toBe(false)
   })
+
+  // Zes opgaven hadden LaTeX in het antwoordveld. Een leerling typt (1/2) en pi.
+  // Die vorm telt goed zonder de AI-controle. De breukknop, (1)/(2), blijft
+  // een aparte schrijfwijze: die staat bij de opgave, niet in deze regel.
+  it('rekent LaTeX-breuken en pi gelijk aan de gewone typwijze', () => {
+    expect(answersMatch('(1/2)cos(x)', '\\tfrac{1}{2}cos(x)')).toBe(true)
+    expect(answersMatch('8cos(2x-pi/4)', '8cos(2x - \\tfrac{1}{4}\\pi)')).toBe(true)
+    expect(answersMatch('-6sin(3x-pi/2)', '-6sin(3x - \\tfrac{1}{2}\\pi)')).toBe(true)
+    expect(answersMatch('-8sin((1/2)(x-1))', '-8sin(\\tfrac{1}{2}(x-1))')).toBe(true)
+    expect(answersMatch('15((1/2)x-4)^4', '15(\\tfrac{1}{2}x-4)^4')).toBe(true)
+    expect(
+      answersMatch('3(x-2)((1/2)x^2-2x)^2', '3(x-2)(\\tfrac{1}{2}x^2-2x)^2'),
+    ).toBe(true)
+
+    expect(answersMatch('8cos(2x-(1/4)pi)', '8cos(2x-pi/4)')).toBe(true)
+    expect(answersMatch('-6sin(3x-(1/2)pi)', '-6sin(3x-pi/2)')).toBe(true)
+
+    expect(answersMatch('cos(x)', '\\tfrac{1}{2}cos(x)')).toBe(false)
+    expect(answersMatch('(1)/(2)cos(x)', '\\tfrac{1}{2}cos(x)')).toBe(false)
+    expect(answersMatch('8cos(2x-pi/2)', '8cos(2x - \\tfrac{1}{4}\\pi)')).toBe(false)
+    expect(answersMatch('8sin(2x-pi/4)', '8cos(2x - \\tfrac{1}{4}\\pi)')).toBe(false)
+    expect(answersMatch('-6sin(3x-pi/4)', '-6sin(3x - \\tfrac{1}{2}\\pi)')).toBe(false)
+    expect(answersMatch('-8cos((1/2)(x-1))', '-8sin(\\tfrac{1}{2}(x-1))')).toBe(false)
+    expect(answersMatch('15((1/3)x-4)^4', '15(\\tfrac{1}{2}x-4)^4')).toBe(false)
+    expect(
+      answersMatch('3(x-3)((1/2)x^2-2x)^2', '3(x-2)(\\tfrac{1}{2}x^2-2x)^2'),
+    ).toBe(false)
+  })
 })
 
 // =====================================================================
