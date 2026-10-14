@@ -35,7 +35,18 @@ export async function updateUsernameAction(
     .update({ username })
     .eq('id', user.id)
 
-  if (error) return { error: error.message, success: null }
+  if (error) {
+    // De tekst van Postgres ("duplicate key value violates…") hoort niet op
+    // het scherm. Die gaat naar de serverlog; de leerling krijgt een zin.
+    console.error('[instellingen] gebruikersnaam opslaan mislukt:', error.message)
+    if (error.code === '23505' || /unique|duplicate key/i.test(error.message)) {
+      return {
+        error: 'Die gebruikersnaam is al in gebruik. Kies een andere.',
+        success: null,
+      }
+    }
+    return { error: 'Opslaan is niet gelukt. Probeer het nog eens.', success: null }
+  }
 
   revalidatePath('/', 'layout')
   return { error: null, success: 'Gebruikersnaam opgeslagen.', username }
@@ -67,13 +78,24 @@ export async function updatePasswordAction(
   const { error } = await supabase.auth.updateUser({ password })
 
   if (error) {
+    console.error('[instellingen] wachtwoord opslaan mislukt:', error.message)
     if (/same password|different from the old/i.test(error.message)) {
       return {
         error: 'Het nieuwe wachtwoord moet anders zijn dan je huidige wachtwoord.',
         success: null,
       }
     }
-    return { error: error.message, success: null }
+    // "Password should be…" en "weak password" zijn Engels van Supabase.
+    if (/password should be|weak password|easy to guess/i.test(error.message)) {
+      return {
+        error: 'Kies een sterker wachtwoord (minstens 8 tekens).',
+        success: null,
+      }
+    }
+    return {
+      error: 'Je wachtwoord is niet opgeslagen. Probeer het nog eens.',
+      success: null,
+    }
   }
 
   return { error: null, success: 'Wachtwoord gewijzigd.' }

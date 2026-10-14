@@ -27,7 +27,7 @@ type DbFout = {
 type AanmaakLog = DbFout & { questionCount: number }
 
 type QueryResult = {
-  data: { id: string } | VraagRij[] | null
+  data: { id: string } | VraagRij[] | Record<string, unknown> | null
   error: DbFout | null
   count?: number | null
 }
@@ -38,6 +38,7 @@ const db = vi.hoisted(() => ({
   deletedIds: [] as string[],
   logs: [] as AanmaakLog[],
   insertFailCount: 0,
+  antwoordFout: null as string | null,
   countFailCount: 0,
   countErrorCount: 0,
   deleteFailCount: 0,
@@ -51,6 +52,7 @@ function reset() {
   db.deletedIds = []
   db.logs = []
   db.insertFailCount = 0
+  db.antwoordFout = null
   db.countFailCount = 0
   db.countErrorCount = 0
   db.deleteFailCount = 0
@@ -120,6 +122,46 @@ function makeClient() {
         return { data: null, count: aantal, error: null }
       }
 
+      if (db.antwoordFout && table === 'user_sessions_new' && op === 'select') {
+        return {
+          data: {
+            id: filterWaarde,
+            user_id: userId,
+            session_type: 'custom_test',
+            ended_at: null,
+          },
+          error: null,
+        }
+      }
+      if (db.antwoordFout && table === 'custom_test_questions' && op === 'select') {
+        return { data: { question_id: 'q1' }, error: null }
+      }
+      if (db.antwoordFout && table === 'session_answers_new' && op === 'select') {
+        return { data: null, error: null }
+      }
+      if (db.antwoordFout && table === 'questions_new' && op === 'select') {
+        return {
+          data: {
+            id: 'q1',
+            answer: '6x',
+            latex_answer: '6x',
+            answer_alternatives: [],
+          },
+          error: null,
+        }
+      }
+      if (db.antwoordFout && table === 'session_answers_new' && op === 'insert') {
+        return {
+          data: null,
+          error: {
+            code: '23505',
+            message: db.antwoordFout,
+            details: null,
+            hint: null,
+          },
+        }
+      }
+
       return { data: null, error: null }
     }
 
@@ -179,7 +221,7 @@ vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
 }))
 
-const { createCustomTestAction } = await import('./actions')
+const { createCustomTestAction, submitCustomTestAnswerAction } = await import('./actions')
 
 const payload = {
   clusterIds: ['c1'],
@@ -333,5 +375,32 @@ describe('createCustomTestAction', () => {
     expect(db.sessions.map((sessie) => sessie.id)).toEqual(['s1', 's2'])
     expect(db.logs.map((regel) => regel.code)).toEqual(['23505', '42501'])
     expect(JSON.stringify(res)).not.toContain('permission denied')
+  })
+})
+
+describe('submitCustomTestAnswerAction', () => {
+  beforeEach(() => {
+    reset()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('zet een mislukte opslag om in een Nederlandse zin', async () => {
+    const ruw = 'duplicate key value violates unique constraint "session_answers_new_pkey"'
+    db.antwoordFout = ruw
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '6x')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('duplicate key')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain(
+      'session_answers_new_pkey',
+    )
   })
 })
