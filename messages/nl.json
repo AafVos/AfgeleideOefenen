@@ -17,18 +17,23 @@
     "videos": "Uitlegvideo's"
   },
   "Footer": {
-    "privacy": "Privacyverklaring"
+    "privacy": "Privacyverklaring",
+    "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl"
   },
   "Home": {
     "eyebrow": "Wiskunde B · VWO 4 / 5 / 6",
     "h1Start": "Afgeleide oefenen voor",
     "h1Accent": "wiskunde B",
-    "lead": "Oefenen met differentiëren op het VWO. Je begint meteen, kijkt elk antwoord direct na en bij een fout zie je stap voor stap waar het misging.",
+    "lead": "Oefenen met differentiëren op het VWO. Je kijkt elk antwoord direct na en bij een fout zie je stap voor stap waar het misging.",
+    "zoekzin": "Zoek je differentieren oefenen? Kies hieronder een regel.",
+    "toetsweek": "Toetsweek? Oefen de regel die je moet kennen.",
+    "ctaRegel": "Kies een regel",
     "subLead": "Er zijn twee manieren om te oefenen: <oefenen>per hoofdstuk</oefenen>, waarbij je zelf een onderwerp en een opgave kiest, en de <zelfToets>zelf-toets</zelfToets>, waarmee je jezelf overhoort over de onderwerpen die jij uitkiest. <howItWorks>Zo werkt het</howItWorks>.",
     "subLeadLink": "Zo werkt het",
     "ctaRegister": "Gratis account aanmaken",
     "ctaLogin": "Inloggen",
     "tagline": "Volledig gratis · Geen reclame · Volgt Getal & Ruimte",
+    "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl",
     "feature1Title": "Meteen oefenen",
     "feature1Body": "Je leert afgeleiden door ze te maken. Bij elke fout zie je waar het misging.",
     "feature2Title": "Jij kiest",
@@ -236,6 +241,7 @@
     "startButton": "Begin met oefenen",
     "startWhere": "Je begint bij {chapter} — {topic}. Je kunt hieronder ook zelf iets anders kiezen.",
     "nogGeenOpgaven": "nog geen opgaven",
+    "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl",
     "activityTitle": "Afgelopen 14 dagen",
     "activityStart": "14 dagen geleden",
     "activityEnd": "vandaag"

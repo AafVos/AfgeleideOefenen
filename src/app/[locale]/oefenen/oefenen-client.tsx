@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { Link, useRouter } from '@/i18n/navigation'
 import { Card, cn } from '@/components/ui'
 import type {
@@ -519,6 +520,9 @@ function OnderwerpWeergave({
       >
         <div className="mx-auto max-w-6xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
+          <div className="mb-6">
+            <DeelKnop />
+          </div>
 
           {!question && chapterGroups.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
@@ -1085,6 +1089,9 @@ function BlokWeergave({
 
         <div className="mx-auto max-w-6xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
+          <div className="mb-6">
+            <DeelKnop />
+          </div>
 
           {!question && tiles.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>

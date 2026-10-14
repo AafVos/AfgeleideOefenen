@@ -259,6 +259,71 @@ describe('indeling per theorieblok', () => {
     expect(viaSoort.groep.topicSlug).toBe('h2_productregel')
   })
 
+  it('kiest bij dezelfde soortnaam de soort van het genoemde onderwerp', () => {
+    const h7: ChapterInfo = { ...h2, id: 'c7', slug: 'h7', title: 'Goniometrie', order_index: 7 }
+    const h9: ChapterInfo = { ...h2, id: 'c9', slug: 'h9', title: 'Exp', order_index: 9 }
+    const p7: ParagraphInfo = {
+      ...p24,
+      id: 'p7',
+      chapter_id: 'c7',
+      slug: 'h7-5',
+      label: '7.5',
+      title: 'Differentiëren',
+    }
+    const p9: ParagraphInfo = {
+      ...p24,
+      id: 'p9',
+      chapter_id: 'c9',
+      slug: 'h9-3',
+      label: '9.3',
+      title: 'E-machten',
+    }
+    const b7: TheoryBlockInfo = {
+      ...blokProduct,
+      id: 'b7',
+      paragraph_id: 'p7',
+      slug: 'h7-5a',
+      title: 'Goniometrie',
+    }
+    const b9: TheoryBlockInfo = {
+      ...blokProduct,
+      id: 'b9',
+      paragraph_id: 'p9',
+      slug: 'h9-3c',
+      title: 'E-machten',
+    }
+    const t7 = topic('h7_goniometrie_diff', 'Gonio', 'c7', 'b7', 1)
+    const t9 = topic('h9_e_machten', 'E-macht', 'c9', 'b9', 1)
+    const c7: ClusterInfo = { ...cluster('ketting_lineair', 'Lineair', t7.id, 1), id: 'c7-kl' }
+    const c9: ClusterInfo = { ...cluster('ketting_lineair', 'Lineair', t9.id, 1), id: 'c9-kl' }
+    const extra = {
+      chapters: [h7, h9],
+      paragraphs: [p7, p9],
+      blocks: [b7, b9],
+      topics: [t7, t9],
+      // De laatste wint in een kaart op slug. Zonder onderwerp kom je dus bij h7.
+      clusters: [c9, c7],
+      tiles: [{ clusterId: 'c7-kl' }, { clusterId: 'c9-kl' }],
+    }
+    const metOnderwerp = losSelectieOp(
+      { blok: null, topic: 'h9_e_machten', cluster: 'ketting_lineair', chapter: 'h9' },
+      extra,
+    )
+    expect(metOnderwerp?.soort).toBe('blok')
+    if (metOnderwerp?.soort !== 'blok') return
+    expect(metOnderwerp.blok.slug).toBe('h9-3c')
+    expect(metOnderwerp.groep.topicSlug).toBe('h9_e_machten')
+    expect(metOnderwerp.groep.clusterSlug).toBe('ketting_lineair')
+
+    const alleenSoort = losSelectieOp(
+      { blok: null, topic: null, cluster: 'ketting_lineair', chapter: null },
+      extra,
+    )
+    expect(alleenSoort?.soort).toBe('blok')
+    if (alleenSoort?.soort !== 'blok') return
+    expect(alleenSoort.blok.slug).toBe('h7-5a')
+  })
+
   it('opent een oude soort-som-link op hetzelfde blok en die groep', () => {
     const sel = losSelectieOp(
       { blok: null, topic: null, cluster: 'product_kwadraat', chapter: null },

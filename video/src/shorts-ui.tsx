@@ -4,7 +4,17 @@ import { AbsoluteFill, Sequence, Audio, staticFile } from 'remotion'
 import { Aaf, type AafPose } from './Aaf'
 import { theme } from './theme'
 
-/** Staand beeld voor een Short: 1080×1920. Logo, ondertitel, Aaf rechtsonder. */
+/**
+ * Staand beeld 1080×1920.
+ * YouTube dekt de bovenste 10% (zoekicoon), de onderste 20% (titel en kanaal)
+ * en de rechter 15% (knoppen). Ondertitel zit op 60–70% van de hoogte.
+ * Logo en Aaf blijven links daarvan, niets belangrijks onderaan of rechts.
+ */
+const HOOGTE = 1920
+const RECHTS_VRIJ = Math.round(1080 * 0.15) + 16
+const ONDERTITEL_TOP = Math.round(HOOGTE * 0.6)
+const ONDERTITEL_HOOG = Math.round(HOOGTE * 0.1)
+
 export function ShortShell({
   titel,
   caption,
@@ -23,10 +33,10 @@ export function ShortShell({
       <div
         style={{
           position: 'absolute',
-          top: 56,
-          right: 48,
+          top: Math.round(HOOGTE * 0.1) + 16,
+          left: 40,
           fontFamily: theme.fontSerif,
-          fontSize: 36,
+          fontSize: 40,
           color: theme.text,
         }}
       >
@@ -35,15 +45,15 @@ export function ShortShell({
       <div
         style={{
           position: 'absolute',
-          top: 140,
-          left: 48,
-          right: 48,
-          bottom: 300,
+          top: Math.round(HOOGTE * 0.1) + 88,
+          left: 36,
+          right: RECHTS_VRIJ,
+          bottom: HOOGTE - ONDERTITEL_TOP + 12,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 28,
+          gap: 22,
           textAlign: 'center',
         }}
       >
@@ -51,7 +61,7 @@ export function ShortShell({
           <h1
             style={{
               fontFamily: theme.fontSerif,
-              fontSize: 84,
+              fontSize: 72,
               lineHeight: 1.1,
               color: theme.text,
               margin: 0,
@@ -65,32 +75,33 @@ export function ShortShell({
       <div
         style={{
           position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          minHeight: 250,
+          left: 20,
+          right: RECHTS_VRIJ,
+          top: ONDERTITEL_TOP,
+          height: ONDERTITEL_HOOG,
           backgroundColor: theme.surface2,
+          borderRadius: 28,
           display: 'flex',
           alignItems: 'center',
-          padding: '28px 210px 40px 44px',
+          gap: 12,
+          padding: '12px 20px 12px 12px',
         }}
       >
+        <Aaf size={118} pose={pose} poseFrame={poseFrame} />
         <p
           style={{
             fontFamily: theme.fontSans,
-            fontSize: 48,
+            fontSize: 46,
             fontWeight: 700,
-            lineHeight: 1.25,
+            lineHeight: 1.2,
             color: theme.text,
             margin: 0,
             textAlign: 'left',
+            flex: 1,
           }}
         >
           {caption}
         </p>
-      </div>
-      <div style={{ position: 'absolute', right: 36, bottom: 28 }}>
-        <Aaf size={155} pose={pose} poseFrame={poseFrame} />
       </div>
     </AbsoluteFill>
   )
@@ -103,12 +114,12 @@ export function KorteKaart({ children }: { children: ReactNode }) {
       style={{
         backgroundColor: theme.accentLight,
         borderRadius: 28,
-        padding: '22px 32px',
+        padding: '28px 36px',
         fontFamily: theme.fontSerif,
-        fontSize: 42,
-        lineHeight: 1.35,
+        fontSize: 80,
+        lineHeight: 1.3,
         color: theme.text,
-        maxWidth: 960,
+        maxWidth: '100%',
       }}
     >
       {children}
@@ -129,7 +140,7 @@ export function Formule({
     <div
       style={{
         fontFamily: theme.fontSerif,
-        fontSize: groot ? 78 : 60,
+        fontSize: groot ? 148 : 116,
         lineHeight: 1.25,
         color: kleur ?? theme.text,
         display: 'flex',

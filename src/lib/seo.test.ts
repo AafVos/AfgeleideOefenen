@@ -11,6 +11,14 @@ describe('deelkaart', () => {
       url: adres,
       title: 'Regels',
       description: 'Kort',
+      images: [
+        {
+          url: '/og?titel=Regels',
+          width: 1200,
+          height: 630,
+          alt: 'Regels',
+        },
+      ],
     })
   })
 

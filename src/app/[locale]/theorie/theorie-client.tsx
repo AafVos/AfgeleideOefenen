@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
+import { DeelKnop } from '@/components/deel-knop'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { cn } from '@/components/ui'
@@ -289,6 +291,9 @@ export function TheorieClient({
       <div className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
+          <div className="mb-6">
+            <DeelKnop />
+          </div>
 
           {chapter && (
             <ChapterSection
@@ -328,12 +333,18 @@ function ChapterSection({
           )}
           {short}
         </h2>
-        <Link
-          href={`/oefenen?chapter=${encodeURIComponent(chapter.slug)}` as '/oefenen'}
-          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
-        >
-          {labels.practiceSelf}
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <ProbeerKnop
+            oefenen={`/oefenen?chapter=${encodeURIComponent(chapter.slug)}`}
+            className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
+          />
+          <Link
+            href={`/oefenen?chapter=${encodeURIComponent(chapter.slug)}` as '/oefenen'}
+            className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm text-text hover:bg-surface-2"
+          >
+            {labels.practiceSelf}
+          </Link>
+        </div>
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">

@@ -1,5 +1,11 @@
 /** Codes die een aanmeldlink mag meegeven. Iets anders slaan we niet op. */
-export const TOEGESTANE_HERKOMST = ['docent', 'youtube', 'klas', 'forum'] as const
+export const TOEGESTANE_HERKOMST = [
+  'docent',
+  'youtube',
+  'klas',
+  'forum',
+  'proberen',
+] as const
 
 export type Herkomst = (typeof TOEGESTANE_HERKOMST)[number]
 

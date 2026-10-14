@@ -7,7 +7,7 @@
 
 export const PRODUCTREGEL_PAD = '/theorie/productregel'
 
-export const PRODUCTREGEL_TITEL = 'De productregel'
+export const PRODUCTREGEL_TITEL = 'Productregel oefenen'
 
 export const PRODUCTREGEL_OMSCHRIJVING =
   'Uitleg van de productregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'

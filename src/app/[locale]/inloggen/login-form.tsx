@@ -8,7 +8,13 @@ import { loginAction, resendConfirmationAction, type LoginState } from './action
 
 const initialState: LoginState = { errorKey: null }
 
-export function LoginForm({ callbackError }: { callbackError?: string | null }) {
+export function LoginForm({
+  callbackError,
+  oefenpad = null,
+}: {
+  callbackError?: string | null
+  oefenpad?: string | null
+}) {
   const [state, formAction] = useActionState(loginAction, initialState)
   const t = useTranslations('Login')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,13 +27,14 @@ export function LoginForm({ callbackError }: { callbackError?: string | null }) 
       // Supabase weigert de mail bijvoorbeeld als er te snel achter elkaar om
       // gevraagd wordt. Alleen "verstuurd" tonen als er écht niets misging; de
       // Engelse tekst van Supabase zelf hoort niet op het scherm.
-      const { ok } = await resendConfirmationAction(state.unconfirmedEmail!)
+      const { ok } = await resendConfirmationAction(state.unconfirmedEmail!, oefenpad ?? undefined)
       setResendResult(ok ? 'gelukt' : 'mislukt')
     })
   }
 
   return (
     <form action={formAction} className="space-y-4">
+      {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
       <PasswordField
         label={t('passwordLabel')}

@@ -1,3 +1,5 @@
+import { DeelKnop } from '@/components/deel-knop'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 
 import {
@@ -72,15 +74,17 @@ export default function ExamentrainingPage() {
       <section className="mt-12">
         <h2 className="font-serif text-2xl text-text">De opgaven</h2>
         <p className="mt-3 text-text-muted">
-          De opgaven zelf staan achter de inlog. Maak een gratis account, of log in als je
-          er al een hebt. Daarna kies je het hoofdstuk Examentraining.
+          Je kunt hieronder drie sommen proberen zonder account. Om verder te oefenen
+          en je voortgang te bewaren maak je een gratis account, of log je in.
         </p>
       </section>
 
-      <div className="mt-12 flex flex-wrap gap-4">
+      <div className="mt-12 flex flex-wrap items-start gap-4">
+        <DeelKnop />
+        <ProbeerKnop oefenen={EXAMENTRAINING_OEFENEN} />
         <Link
           href={EXAMENTRAINING_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
+          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
         >
           Zelf oefenen
         </Link>

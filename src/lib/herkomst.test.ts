@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { leesHerkomst } from './herkomst'
 
 describe('leesHerkomst', () => {
-  it('bewaart de vier toegestane codes', () => {
+  it('bewaart de toegestane codes', () => {
     expect(leesHerkomst('docent')).toBe('docent')
     expect(leesHerkomst('youtube')).toBe('youtube')
     expect(leesHerkomst('klas')).toBe('klas')
     expect(leesHerkomst('forum')).toBe('forum')
+    expect(leesHerkomst('proberen')).toBe('proberen')
   })
 
   it('neemt hoofdletters en spaties weg', () => {
