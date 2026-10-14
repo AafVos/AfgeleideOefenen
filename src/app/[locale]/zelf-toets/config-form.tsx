@@ -41,7 +41,7 @@ function TriCheckbox({
       aria-checked={state === 'all' ? 'true' : state === 'some' ? 'mixed' : 'false'}
       aria-label={ariaLabel}
       onClick={onToggle}
-      className={`flex size-5 shrink-0 items-center justify-center rounded border transition ${
+      className={`flex size-11 shrink-0 items-center justify-center rounded border transition md:size-5 ${
         state === 'all'
           ? 'border-accent bg-accent text-white'
           : state === 'some'
@@ -259,11 +259,11 @@ export function ConfigForm({
             const chState = chapterState(ch.id)
             return (
               <li key={ch.id}>
-                <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-2">
+                <div className="flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-2 md:min-h-0">
                   <button
                     type="button"
                     onClick={() => toggleExpand(expandedChapters, setExpandedChapters, ch.id)}
-                    className="flex size-5 shrink-0 items-center justify-center text-text-muted hover:text-text"
+                    className="flex size-11 shrink-0 items-center justify-center text-text-muted hover:text-text md:size-5"
                     aria-label={chExpanded ? t('collapse') : t('expand')}
                     disabled={topics.length === 0}
                   >
@@ -308,8 +308,8 @@ export function ConfigForm({
                         const checked = selectedClusters.has(onlyCluster.id)
                         return (
                           <li key={tp.id}>
-                            <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-surface-2">
-                              <span className="size-5 shrink-0" />
+                            <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-surface-2 md:min-h-0">
+                              <span className="size-11 shrink-0 md:size-5" />
                               <TriCheckbox
                                 state={checked ? 'all' : 'none'}
                                 onToggle={() => toggleCluster(onlyCluster.id)}
@@ -326,11 +326,11 @@ export function ConfigForm({
 
                       return (
                         <li key={tp.id}>
-                          <div className="flex items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-surface-2">
+                          <div className="flex min-h-11 items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-surface-2 md:min-h-0">
                             <button
                               type="button"
                               onClick={() => toggleExpand(expandedTopics, setExpandedTopics, tp.id)}
-                              className="flex size-5 shrink-0 items-center justify-center text-text-muted hover:text-text"
+                              className="flex size-11 shrink-0 items-center justify-center text-text-muted hover:text-text md:size-5"
                               aria-label={tpExpanded ? t('collapse') : t('expand')}
                               disabled={clusters.length === 0}
                             >
@@ -358,8 +358,8 @@ export function ConfigForm({
                                 const checked = selectedClusters.has(cl.id)
                                 return (
                                   <li key={cl.id}>
-                                    <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-surface-2">
-                                      <span className="size-5 shrink-0" />
+                                    <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-surface-2 md:min-h-0">
+                                      <span className="size-11 shrink-0 md:size-5" />
                                       <TriCheckbox
                                         state={checked ? 'all' : 'none'}
                                         onToggle={() => toggleCluster(cl.id)}
