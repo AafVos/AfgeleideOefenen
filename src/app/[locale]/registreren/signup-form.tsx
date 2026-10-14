@@ -5,6 +5,8 @@ import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
+import type { Herkomst } from '@/lib/herkomst'
+
 import { signupAction, type SignupState } from './actions'
 import { resendConfirmationAction } from '../inloggen/actions'
 
@@ -12,7 +14,7 @@ const initialState: SignupState = { errorKey: null, noticeKey: null }
 
 const COOLDOWN_SECONDS = 60
 
-export function SignupForm() {
+export function SignupForm({ herkomst = null }: { herkomst?: Herkomst | null }) {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
   const [showPassword, setShowPassword] = useState(false)
@@ -103,6 +105,7 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="space-y-4">
+      {herkomst ? <input type="hidden" name="van" defaultValue={herkomst} /> : null}
       <Field
         label={t('usernameLabel')}
         name="username"

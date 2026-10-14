@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
 import { bepaalAanvraagAdres } from '@/lib/aanvraag-adres'
+import { leesHerkomst } from '@/lib/herkomst'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
 
@@ -52,13 +53,21 @@ export async function signupAction(
   const supabase = await createClient()
   const locale = await getLocale()
 
+  // Alleen een code uit de lijst. Een onbekende tekst, een naam of een
+  // adres gaat niet mee. We zetten hier geen cookie: de code staat alleen
+  // in dit formulier, meegestuurd vanaf de aanmeldpagina.
+  const herkomst = leesHerkomst(formData.get('van'))
+  const metadata: { username?: string; herkomst?: string } = {}
+  if (username) metadata.username = username
+  if (herkomst) metadata.herkomst = herkomst
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       // Na het bevestigen van de e-mail direct naar de inlogpagina
       emailRedirectTo: `${await bepaalAanvraagAdres()}/auth/callback?next=${encodeURIComponent(`/${locale}/inloggen`)}`,
-      data: username ? { username } : undefined,
+      data: Object.keys(metadata).length > 0 ? metadata : undefined,
     },
   })
 
