@@ -71,8 +71,21 @@ const raaklijn = topic('raaklijn', 'Raaklijn', 'c2', 'ba', 1)
 const helling = topic('helling', 'Helling', 'c2', 'ba', 2)
 const snelheid = topic('snelheid', 'Snelheid', 'cb', null, 1)
 
-function cluster(slug: string, title: string, topicId: string, order: number) {
-  return { id: `c-${slug}`, slug, title, topic_id: topicId, order_index: order }
+function cluster(
+  slug: string,
+  title: string,
+  topicId: string,
+  order: number,
+  blockId: string | null = null,
+) {
+  return {
+    id: `c-${slug}`,
+    slug,
+    title,
+    topic_id: topicId,
+    order_index: order,
+    theory_block_id: blockId,
+  }
 }
 
 const clusters = [
@@ -127,6 +140,39 @@ describe('zelf-toets per theorieblok', () => {
     expect(blok.clusters.find((item) => item.slug === 'vergelijking')?.id).toBe(
       'c-vergelijking',
     )
+  })
+
+  it('zet een soort som met een eigen blok bij dat blok', () => {
+    const snelheidBlok = {
+      id: 'be',
+      paragraph_id: 'p24',
+      slug: 'h2-4e',
+      letter: 'E',
+      title: 'Snelheid en afgeleide',
+      order_index: 5,
+    }
+    const soorten = metTellers([
+      ...clusters,
+      cluster('snelheid-som', 'Snelheid', raaklijn.id, 3, 'be'),
+    ])
+    const boom = bouwZelfToetsBoom({
+      ...data,
+      blocks: [...data.blocks, snelheidBlok],
+      clusters: soorten,
+    })
+    const blokken = boom
+      .find((h) => h.slug === 'h2')!
+      .paragrafen.find((p) => p.label === '2.4')!.blokken
+
+    expect(blokken.find((b) => b.slug === 'h2-4a')!.clusters.map((item) => item.slug)).toEqual([
+      'richting',
+      'vergelijking',
+      'helling',
+    ])
+    expect(blokken.find((b) => b.slug === 'h2-4e')!.clusters.map((item) => item.slug)).toEqual([
+      'snelheid-som',
+    ])
+    expect(blokken.find((b) => b.slug === 'h2-4e')!.heeftOpgaven).toBe(true)
   })
 
   it('houdt Beweging als onderwerpen en laat een leeg blok staan', () => {

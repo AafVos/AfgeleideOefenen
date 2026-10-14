@@ -147,6 +147,7 @@ export type Database = {
           slug: string
           title: string
           order_index: number
+          theory_block_id: string | null
         }
         Insert: {
           id?: string
@@ -154,6 +155,7 @@ export type Database = {
           slug: string
           title: string
           order_index: number
+          theory_block_id?: string | null
         }
         Update: Partial<Database['public']['Tables']['topic_clusters_new']['Insert']>
         Relationships: []
