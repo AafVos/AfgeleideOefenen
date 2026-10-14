@@ -14,14 +14,16 @@ import type {
   TopicInfo,
 } from '@/lib/practice/chapter-overview'
 import {
+  ankerUitAdres,
   bouwBlokBoom,
+  bouwOefenOverzicht,
   bouwOnderwerpBoom,
-  clusterIdsVoorSelectie,
   kopjesVoorSelectie,
   losSelectieOp,
   naamVanSelectie,
   queryVoorSelectie,
   type Adres,
+  type Kopje,
 } from '@/lib/practice/oefenen-indeling'
 
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
@@ -104,6 +106,31 @@ function buildClustersByTopic(clusters: ClusterInfo[]): Map<string, ClusterInfo[
 
 function sectionId(chapterSlug: string, topicSlug: string): string {
   return `sect-${chapterSlug}-${topicSlug}`
+}
+
+function tegelsVanKopjes(kopjes: Kopje[], alle: NewExerciseTile[]): NewExerciseTile[] {
+  const ids = kopjes.flatMap((kop) => kop.sub.map((sub) => sub.clusterId))
+  const rank = new Map(ids.map((id, i) => [id, i]))
+  return alle
+    .filter((t) => rank.has(t.clusterId))
+    .sort((a, b) => {
+      const verschil = (rank.get(a.clusterId) ?? 0) - (rank.get(b.clusterId) ?? 0)
+      if (verschil !== 0) return verschil
+      return a.difficulty - b.difficulty
+    })
+    .map((t, i) => ({ ...t, ordinal: i + 1 }))
+}
+
+function sectiesVan(kopjes: Kopje[], tegels: NewExerciseTile[]): TileSection[] {
+  return kopjes.map((kop) => ({
+    id: kop.id,
+    label: kop.label,
+    subSections: kop.sub.map((sub) => ({
+      id: sub.id,
+      label: sub.label,
+      tiles: tegels.filter((t) => t.clusterId === sub.clusterId),
+    })),
+  }))
 }
 
 function OnderwerpWeergave({
@@ -519,9 +546,9 @@ function OnderwerpWeergave({
         className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
       >
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <h1 className="sr-only">{labels.h1}</h1>
-          <div className="mb-6">
-            <DeelKnop />
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <h1 className="font-serif text-2xl text-text">{labels.h1}</h1>
+            <DeelKnop compact />
           </div>
 
           {!question && chapterGroups.length > 0 && (
@@ -708,6 +735,8 @@ type BlokProps = {
   adres: Adres
   allTiles: NewExerciseTile[]
   question: Question | null
+  /** Anker als het adres leeg is en de leerling al geoefend heeft. */
+  startBij: string | null
   labels: BlokLabels
 }
 
@@ -720,6 +749,7 @@ function BlokWeergave({
   adres: adresVanServer,
   allTiles,
   question,
+  startBij,
   labels,
 }: BlokProps) {
   const router = useRouter()
@@ -749,6 +779,10 @@ function BlokWeergave({
 
   const selectie = useMemo(() => losSelectieOp(adres, data), [adres, data])
   const boom = useMemo(() => bouwBlokBoom(data), [data])
+  const overzicht = useMemo(() => bouwOefenOverzicht(data), [data])
+  const [inBeeld, setInBeeld] = useState<string | null>(() => ankerUitAdres(adresVanServer, null))
+  const [geopendLand, setGeopendLand] = useState<string | null>(null)
+  const mainScrollRef = useRef<HTMLDivElement | null>(null)
 
   const [openHoofdstukken, setOpenHoofdstukken] = useState<Set<string>>(
     () => new Set(selectie ? [selectie.chapter.id] : []),
@@ -779,17 +813,23 @@ function BlokWeergave({
   useEffect(() => {
     function onPop() {
       const sp = new URLSearchParams(window.location.search)
-      setAdres({
+      const volgende = {
         blok: sp.get('blok'),
         topic: sp.get('topic'),
         cluster: sp.get('cluster'),
         chapter: sp.get('chapter'),
-      })
+      }
+      setAdres(volgende)
       setBoomOpen(false)
+      const id = ankerUitAdres(volgende, losSelectieOp(volgende, data))
+      if (id) {
+        setInBeeld(id)
+        document.getElementById(id)?.scrollIntoView({ block: 'start' })
+      }
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
-  }, [])
+  }, [data])
 
   useEffect(() => {
     if (!boomOpen) return
@@ -800,56 +840,127 @@ function BlokWeergave({
     return () => window.removeEventListener('keydown', onKey)
   }, [boomOpen])
 
-  useEffect(() => {
-    if (question || !selectie) return
-    const id = selectie.groep.clusterSlug
-      ? `groep-${selectie.groep.clusterSlug}`
-      : selectie.groep.topicSlug
-        ? `onderwerp-${selectie.groep.topicSlug}`
-        : null
-    if (!id) return
-    document.getElementById(id)?.scrollIntoView({ block: 'start' })
-  }, [selectie, question])
-
-  const tiles = useMemo(() => {
-    if (!selectie) return []
-    const ids = clusterIdsVoorSelectie(selectie, allTopics, allClusters)
-    const rank = new Map(ids.map((id, i) => [id, i]))
-    return allTilesState
-      .filter((t) => rank.has(t.clusterId))
-      .sort((a, b) => (rank.get(a.clusterId) ?? 0) - (rank.get(b.clusterId) ?? 0))
-      .map((t, i) => ({ ...t, ordinal: i + 1 }))
-  }, [selectie, allTopics, allClusters, allTilesState])
-
-  const sections: TileSection[] = useMemo(() => {
-    if (!selectie) return []
-    // Alle tegels, niet alleen die van dit blok. Anders denkt de kop dat
-    // het onderwerp hier compleet is, terwijl een soort som ernaast hangt.
-    return kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState).map((kop) => ({
-      id: kop.id,
-      label: kop.label,
-      subSections: kop.sub.map((sub) => ({
-        id: sub.id,
-        label: sub.label,
-        tiles: tiles.filter((t) => t.clusterId === sub.clusterId),
-      })),
-    }))
-  }, [selectie, allTopics, allClusters, allTilesState, tiles])
+  const vraagKopjes = useMemo(
+    () => (selectie ? kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState) : []),
+    [selectie, allTopics, allClusters, allTilesState],
+  )
+  const tiles = useMemo(
+    () => tegelsVanKopjes(vraagKopjes, allTilesState),
+    [vraagKopjes, allTilesState],
+  )
 
   const baseHref = selectie ? `/oefenen?${queryVoorSelectie(selectie)}` : '/oefenen'
   const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
   const nextTile = tiles.length ? (tiles[(currentIdx + 1) % tiles.length] ?? null) : null
   const nextHref = nextTile ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}` : baseHref
 
-  function gaNaar(volgende: Adres) {
-    const sel = losSelectieOp(volgende, data)
-    if (!sel) return
-    setBoomOpen(false)
-    const query = queryVoorSelectie(sel)
-    // Echte navigatie, zodat de terugknop van de browser het overzicht
-    // terugzet en niet de opgave laat staan.
-    router.push(`/oefenen?${query}` as '/oefenen')
+  function openVoorAnker(id: string) {
+    if (id.startsWith('blok-')) {
+      const slug = id.slice('blok-'.length)
+      for (const h of boom.hoofdstukken) {
+        for (const p of h.paragrafen) {
+          if (!p.blokken.some((b) => b.slug === slug)) continue
+          setOpenHoofdstukken((prev) => new Set(prev).add(h.chapter.id))
+          setOpenParagrafen((prev) => new Set(prev).add(p.id))
+          return
+        }
+      }
+    }
+    if (id.startsWith('hoofdstuk-')) {
+      const slug = id.slice('hoofdstuk-'.length)
+      const h = boom.hoofdstukken.find((node) => node.chapter.slug === slug)
+      if (h) setOpenHoofdstukken((prev) => new Set(prev).add(h.chapter.id))
+    }
+    if (id.startsWith('paragraaf-')) {
+      const slug = id.slice('paragraaf-'.length)
+      for (const h of boom.hoofdstukken) {
+        const p = h.paragrafen.find((node) => node.slug === slug)
+        if (!p) continue
+        setOpenHoofdstukken((prev) => new Set(prev).add(h.chapter.id))
+        setOpenParagrafen((prev) => new Set(prev).add(p.id))
+        return
+      }
+    }
   }
+
+  function queryVanAdres(volgend: Adres): string {
+    const sp = new URLSearchParams()
+    if (volgend.blok) sp.set('blok', volgend.blok)
+    else if (volgend.chapter) sp.set('chapter', volgend.chapter)
+    else if (volgend.topic) sp.set('topic', volgend.topic)
+    if (volgend.cluster) sp.set('cluster', volgend.cluster)
+    return sp.toString()
+  }
+
+  function scrollNaar(id: string, volgend: Adres | null, houdMenu = false) {
+    if (!houdMenu) setBoomOpen(false)
+    if (question && volgend) {
+      const query = queryVanAdres(volgend)
+      router.push((query ? `/oefenen?${query}` : '/oefenen') as '/oefenen')
+      return
+    }
+    if (volgend) {
+      setAdres(volgend)
+      const query = queryVanAdres(volgend)
+      const pad = window.location.pathname
+      const doel = query ? `${pad}?${query}` : pad
+      if (`${pad}${window.location.search}` !== doel) {
+        window.history.pushState(null, '', doel)
+      }
+    }
+    setInBeeld(id)
+    openVoorAnker(id)
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const landAnker = question ? null : (ankerUitAdres(adresVanServer, selectie) ?? startBij)
+  if (landAnker && landAnker !== geopendLand) {
+    setGeopendLand(landAnker)
+    setInBeeld(landAnker)
+    openVoorAnker(landAnker)
+  }
+
+  useEffect(() => {
+    if (!landAnker || question) return
+    document.getElementById(landAnker)?.scrollIntoView({ block: 'start' })
+  }, [landAnker, question])
+
+  useEffect(() => {
+    if (question) return
+    const root = mainScrollRef.current
+    function zichtbaar(): string | null {
+      const grens = root && root.scrollHeight > root.clientHeight + 8
+        ? root.getBoundingClientRect().top
+        : 0
+      let huidige: string | null = null
+      for (const h of overzicht) {
+        const hoofdstuk = document.getElementById(`hoofdstuk-${h.chapter.slug}`)
+        if (hoofdstuk && hoofdstuk.getBoundingClientRect().top - grens <= 80) {
+          huidige = `hoofdstuk-${h.chapter.slug}`
+        }
+        for (const p of h.paragrafen) {
+          for (const blok of p.blokken) {
+            const el = document.getElementById(`blok-${blok.slug}`)
+            if (el && el.getBoundingClientRect().top - grens <= 120) {
+              huidige = `blok-${blok.slug}`
+            }
+          }
+        }
+      }
+      return huidige
+    }
+    function onScroll() {
+      const id = zichtbaar()
+      if (!id) return
+      setInBeeld((prev) => (prev === id ? prev : id))
+    }
+    root?.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      root?.removeEventListener('scroll', onScroll)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [overzicht, question])
 
   function toggleInSet(set: Set<string>, id: string, update: (next: Set<string>) => void) {
     const next = new Set(set)
@@ -865,14 +976,13 @@ function BlokWeergave({
           {boom.hoofdstukken.map((h) => {
             const naam = hoofdstukNaam(h.chapter)
             if (h.paragrafen.length === 0) {
-              const actief =
-                selectie?.soort === 'hoofdstuk' && selectie.chapter.id === h.chapter.id
+              const actief = inBeeld === `hoofdstuk-${h.chapter.slug}`
               return (
                 <li key={h.chapter.id}>
                   <button
                     type="button"
                     onClick={() =>
-                      gaNaar({
+                      scrollNaar(`hoofdstuk-${h.chapter.slug}`, {
                         blok: null,
                         topic: null,
                         cluster: null,
@@ -896,9 +1006,15 @@ function BlokWeergave({
               <li key={h.chapter.id}>
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     toggleInSet(openHoofdstukken, h.chapter.id, setOpenHoofdstukken)
-                  }
+                    scrollNaar(`hoofdstuk-${h.chapter.slug}`, {
+                      blok: null,
+                      topic: null,
+                      cluster: null,
+                      chapter: h.chapter.slug,
+                    })
+                  }}
                   className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2"
                   aria-expanded={open}
                 >
@@ -913,9 +1029,26 @@ function BlokWeergave({
                         <li key={p.id}>
                           <button
                             type="button"
-                            onClick={() =>
+                            onClick={() => {
+                              const id = `paragraaf-${p.slug}`
+                              if (!pOpen) {
+                                setOpenParagrafen((prev) => new Set(prev).add(p.id))
+                              }
+                              if (document.getElementById(id) || question) {
+                                scrollNaar(
+                                  id,
+                                  {
+                                    blok: null,
+                                    topic: null,
+                                    cluster: null,
+                                    chapter: h.chapter.slug,
+                                  },
+                                  true,
+                                )
+                                return
+                              }
                               toggleInSet(openParagrafen, p.id, setOpenParagrafen)
-                            }
+                            }}
                             className="flex min-h-11 w-full items-center gap-2 rounded-md py-2 pl-7 pr-3 text-left text-sm text-text hover:bg-surface-2"
                             aria-expanded={pOpen}
                           >
@@ -932,7 +1065,7 @@ function BlokWeergave({
                                     <button
                                       type="button"
                                       onClick={() =>
-                                        gaNaar({
+                                        scrollNaar(`blok-${blok.slug}`, {
                                           blok: blok.slug,
                                           topic: null,
                                           cluster: null,
@@ -940,12 +1073,10 @@ function BlokWeergave({
                                         })
                                       }
                                       aria-current={
-                                        selectie?.soort === 'blok' && selectie.blok.id === blok.id
-                                          ? 'true'
-                                          : undefined
+                                        inBeeld === `blok-${blok.slug}` ? 'true' : undefined
                                       }
                                       className={
-                                        selectie?.soort === 'blok' && selectie.blok.id === blok.id
+                                        inBeeld === `blok-${blok.slug}`
                                           ? 'flex min-h-11 w-full items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm font-semibold text-accent'
                                           : 'flex min-h-11 w-full items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm text-text-muted hover:text-text'
                                       }
@@ -995,13 +1126,13 @@ function BlokWeergave({
             {oudeOpen && (
               <ul>
                 {boom.oudeOpgaven.map((ch) => {
-                  const actief = selectie?.soort === 'hoofdstuk' && selectie.chapter.id === ch.id
+                  const actief = inBeeld === `hoofdstuk-${ch.slug}`
                   return (
                     <li key={ch.id}>
                       <button
                         type="button"
                         onClick={() =>
-                          gaNaar({
+                          scrollNaar(`hoofdstuk-${ch.slug}`, {
                             blok: null,
                             topic: null,
                             cluster: null,
@@ -1028,12 +1159,47 @@ function BlokWeergave({
     )
   }
 
-  const kop =
-    selectie?.soort === 'blok'
+  function naamVanAnker(id: string | null): string {
+    if (!id) return labels.h1
+    if (id.startsWith('blok-')) {
+      const slug = id.slice('blok-'.length)
+      for (const h of overzicht) {
+        for (const p of h.paragrafen) {
+          const blok = p.blokken.find((b) => b.slug === slug)
+          if (blok) return `${p.label} ${blok.letter} · ${blok.title}`
+        }
+      }
+    }
+    if (id.startsWith('paragraaf-')) {
+      const slug = id.slice('paragraaf-'.length)
+      for (const h of overzicht) {
+        const p = h.paragrafen.find((node) => node.slug === slug)
+        if (p) return `${p.label} ${p.title}`
+      }
+    }
+    if (id.startsWith('hoofdstuk-')) {
+      const slug = id.slice('hoofdstuk-'.length)
+      const h = overzicht.find((node) => node.chapter.slug === slug)
+      if (h) return hoofdstukNaam(h.chapter)
+    }
+    return labels.h1
+  }
+
+  const kop = question
+    ? selectie?.soort === 'blok'
       ? naamVanSelectie(selectie)
       : selectie
         ? hoofdstukNaam(selectie.chapter)
         : labels.kiesOnderdeel
+    : naamVanAnker(inBeeld)
+
+  const tegelLabels = {
+    heading: labels.tilesHeading,
+    lastCorrect: labels.tileLastCorrect,
+    lastWrong: labels.tileLastWrong,
+    notTried: labels.tileNotTried,
+    exercise: labels.tileExercise,
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
@@ -1075,7 +1241,10 @@ function BlokWeergave({
         {sidebarOpen && <div className="mt-3">{boomLijst()}</div>}
       </aside>
 
-      <div className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto">
+      <div
+        ref={mainScrollRef}
+        className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
+      >
         <button
           type="button"
           onClick={() => setBoomOpen(true)}
@@ -1088,50 +1257,72 @@ function BlokWeergave({
         </button>
 
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <h1 className="sr-only">{labels.h1}</h1>
-          <div className="mb-6">
-            <DeelKnop />
-          </div>
+          {question ? (
+            <h1 className="sr-only">{labels.h1}</h1>
+          ) : (
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+              <h1 className="font-serif text-2xl text-text">{labels.h1}</h1>
+              <DeelKnop compact />
+            </div>
+          )}
 
-          {!question && tiles.length > 0 && (
+          {!question && overzicht.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
           )}
 
-          {!question && selectie && tiles.length > 0 && (
-            <section
-              id={
-                selectie.soort === 'hoofdstuk'
-                  ? `hoofdstuk-${selectie.chapter.slug}`
-                  : `blok-${selectie.blok.slug}`
-              }
-              className="scroll-mt-4"
-            >
-              <h2 className="mt-6 border-b border-border pb-3 font-serif text-2xl text-text">
-                {selectie.soort === 'blok' ? (
-                  <>
-                    <span className="font-mono font-semibold">
-                      {selectie.paragraph.label} {selectie.blok.letter}
-                    </span>
-                    {' – '}
-                    {selectie.blok.title}
-                  </>
-                ) : (
-                  hoofdstukNaam(selectie.chapter)
+          {!question && (
+            <div>
+            {overzicht.map((h) => (
+              <section
+                key={h.chapter.id}
+                id={`hoofdstuk-${h.chapter.slug}`}
+                className="mt-10 scroll-mt-28 first:mt-4 lg:scroll-mt-4"
+              >
+                <h2 className="border-b border-border pb-3 font-serif text-2xl text-text">
+                  {hoofdstukNaam(h.chapter)}
+                </h2>
+                {h.paragrafen.map((p) => (
+                  <div key={p.id} id={`paragraaf-${p.slug}`} className="scroll-mt-28 lg:scroll-mt-4">
+                    <h3 className="mt-8 font-serif text-xl text-text">
+                      <span className="font-mono font-semibold">{p.label}</span> {p.title}
+                    </h3>
+                    {p.blokken.map((blok) => {
+                      const tegels = tegelsVanKopjes(blok.kopjes, allTilesState)
+                      return (
+                        <div
+                          key={blok.id}
+                          id={`blok-${blok.slug}`}
+                          className="scroll-mt-28 lg:scroll-mt-4"
+                        >
+                          <h3 className="mt-6 font-serif text-lg text-text">
+                            <span className="font-mono font-semibold">
+                              {p.label} {blok.letter}
+                            </span>
+                            {' – '}
+                            {blok.title}
+                          </h3>
+                          <ExerciseTileGrid
+                            baseHref={`/oefenen?blok=${encodeURIComponent(blok.slug)}`}
+                            sections={sectiesVan(blok.kopjes, tegels)}
+                            activeQuestionId={null}
+                            labels={tegelLabels}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+                {h.kopjes.length > 0 && (
+                  <ExerciseTileGrid
+                    baseHref={`/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`}
+                    sections={sectiesVan(h.kopjes, tegelsVanKopjes(h.kopjes, allTilesState))}
+                    activeQuestionId={null}
+                    labels={tegelLabels}
+                  />
                 )}
-              </h2>
-              <ExerciseTileGrid
-                baseHref={baseHref}
-                sections={sections}
-                activeQuestionId={null}
-                labels={{
-                  heading: labels.tilesHeading,
-                  lastCorrect: labels.tileLastCorrect,
-                  lastWrong: labels.tileLastWrong,
-                  notTried: labels.tileNotTried,
-                  exercise: labels.tileExercise,
-                }}
-              />
-            </section>
+              </section>
+            ))}
+            </div>
           )}
 
           {question ? (
@@ -1218,11 +1409,9 @@ function BlokWeergave({
                 </div>
               </aside>
             </div>
-          ) : tiles.length === 0 ? (
+          ) : overzicht.length === 0 ? (
             <Card className="mt-8">
-              <p className="font-medium text-text">
-                {selectie?.soort === 'blok' ? labels.nogGeenOpgaven : labels.noExercises}
-              </p>
+              <p className="font-medium text-text">{labels.noExercises}</p>
             </Card>
           ) : null}
         </div>

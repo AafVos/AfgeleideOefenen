@@ -8,7 +8,10 @@ import type {
   TopicInfo,
 } from '@/lib/practice/chapter-overview'
 import {
+  ankerNaLaatsteOefening,
+  ankerUitAdres,
   bouwBlokBoom,
+  bouwOefenOverzicht,
   bouwOnderwerpBoom,
   kopjesVoorSelectie,
   losSelectieOp,
@@ -322,6 +325,53 @@ describe('indeling per theorieblok', () => {
     expect(alleenSoort?.soort).toBe('blok')
     if (alleenSoort?.soort !== 'blok') return
     expect(alleenSoort.blok.slug).toBe('h7-5a')
+  })
+
+  it('zet op de oefenpagina alle blokken met opgaven onder elkaar', () => {
+    const overzicht = bouwOefenOverzicht(data)
+    expect(overzicht.map((h) => h.chapter.slug)).toEqual(['h2', 'beweging'])
+    const h2overzicht = overzicht[0]!
+    expect(h2overzicht.paragrafen.map((p) => p.label)).toEqual(['2.4'])
+    expect(h2overzicht.paragrafen[0]!.blokken.map((b) => b.letter)).toEqual(['A', 'B'])
+    expect(overzicht[1]!.kopjes.map((k) => k.label)).toEqual(['Snelheid'])
+  })
+
+  it('zet verhaaltjes achter de gewone sommen van hetzelfde blok', () => {
+    const metVerhaal = {
+      ...data,
+      tiles: [
+        { clusterId: 'c-product_twee' },
+        { clusterId: 'c-product_kwadraat', verhaal: true },
+        { clusterId: 'c-quotient_breuk' },
+        { clusterId: 'c-beweging_snelheid_een' },
+      ],
+    }
+    const sel = losSelectieOp(
+      { blok: 'h2-4a', topic: null, cluster: null, chapter: null },
+      metVerhaal,
+    )
+    const kopjes = kopjesVoorSelectie(sel!, metVerhaal.topics, metVerhaal.clusters, metVerhaal.tiles)
+    expect(kopjes.map((k) => k.label)).toEqual(['Productregel', 'Kwadraat'])
+  })
+
+  it('scrolt een leeg adres niet naar een verhaaltjesblok', () => {
+    const leeg = { blok: null, topic: null, cluster: null, chapter: null }
+    expect(ankerUitAdres(leeg, losSelectieOp(leeg, data))).toBeNull()
+    expect(ankerUitAdres({ ...leeg, chapter: 'h2' }, null)).toBe('hoofdstuk-h2')
+    expect(ankerUitAdres({ ...leeg, blok: 'h2-4a' }, null)).toBe('blok-h2-4a')
+  })
+
+  it('komt na oefenen terug bij dat blok, behalve als het alleen verhaaltjes zijn', () => {
+    expect(ankerNaLaatsteOefening('c-product_twee', data)).toBe('blok-h2-4a')
+    expect(ankerNaLaatsteOefening('c-beweging_snelheid_een', data)).toBe('hoofdstuk-beweging')
+    const alleenVerhaal = {
+      ...data,
+      tiles: data.tiles.map((t) =>
+        t.clusterId.startsWith('c-product') ? { ...t, verhaal: true } : t,
+      ),
+    }
+    expect(ankerNaLaatsteOefening('c-product_twee', alleenVerhaal)).toBe('hoofdstuk-h2')
+    expect(ankerNaLaatsteOefening(null, data)).toBeNull()
   })
 
   it('opent een oude soort-som-link op hetzelfde blok en die groep', () => {
