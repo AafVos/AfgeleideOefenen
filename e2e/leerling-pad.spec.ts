@@ -35,7 +35,10 @@ test('een goed antwoord wordt goedgekeurd @telefoon', async ({ page }) => {
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   // Geen vast getal: deze test draait twee keer (computer én telefoon) op
   // dezelfde oefenleerling, dus de reeks staat de tweede keer een hoger.
-  await expect(page.getByText(/\d van de 3 goed op rij/)).toBeVisible()
+  // Bij twee goed op rij vervangt "nog één goed" de gewone reekszin.
+  await expect(
+    page.getByText(/\d van de 3 goed op rij|Nog één goed, dan beheers je/),
+  ).toBeVisible()
 })
 
 test('een fout antwoord wordt afgekeurd', async ({ page }) => {
@@ -91,7 +94,12 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
     })
     await geefAntwoord(page, opgave.antwoord)
 
-    if (i < opgaven.length - 1) {
+    if (i === 1) {
+      await expect(
+        page.getByText('Nog één goed, dan beheers je Drie goed op rij (e2e).'),
+      ).toBeVisible()
+      await expect(page.getByText('2 van de 3 goed op rij')).toBeHidden()
+    } else if (i < opgaven.length - 1) {
       await expect(page.getByText(`${i + 1} van de 3 goed op rij`)).toBeVisible()
     } else {
       await expect(page.getByText('Geweldig, onderdeel afgerond!')).toBeVisible()
