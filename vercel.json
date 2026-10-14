@@ -5,5 +5,8 @@
       "AFG-*": false,
       "afg-*": false
     }
-  }
+  },
+  "regions": [
+    "dub1"
+  ]
 }
