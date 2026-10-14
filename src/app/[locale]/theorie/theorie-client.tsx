@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { cn } from '@/components/ui'
@@ -289,6 +290,9 @@ export function TheorieClient({
       <div className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
+          <div className="mb-6">
+            <DeelKnop />
+          </div>
 
           {chapter && (
             <ChapterSection

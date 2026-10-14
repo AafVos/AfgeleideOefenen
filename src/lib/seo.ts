@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { SITE_CONFIG } from '@/config/site'
+import { DEELPLAATJE } from '@/lib/deelplaatje'
 
 /**
  * Het adres waar de site echt staat.
@@ -61,6 +62,19 @@ export function deelkaart(
 ): NonNullable<Metadata['openGraph']> {
   return {
     url: paginaAdres(locale, pad),
-    ...(inhoud ? { title: inhoud.title, description: inhoud.description } : {}),
+    ...(inhoud
+      ? {
+          title: inhoud.title,
+          description: inhoud.description,
+          images: [
+            {
+              url: `/og?titel=${encodeURIComponent(inhoud.title)}`,
+              width: DEELPLAATJE.width,
+              height: DEELPLAATJE.height,
+              alt: inhoud.title,
+            },
+          ],
+        }
+      : {}),
   }
 }

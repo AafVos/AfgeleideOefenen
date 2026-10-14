@@ -1,3 +1,4 @@
+import { DeelKnop } from '@/components/deel-knop'
 import { Link } from '@/i18n/navigation'
 
 import {
@@ -77,7 +78,8 @@ export default function ExamentrainingPage() {
         </p>
       </section>
 
-      <div className="mt-12 flex flex-wrap gap-4">
+      <div className="mt-12 flex flex-wrap items-start gap-4">
+        <DeelKnop />
         <Link
           href={EXAMENTRAINING_OEFENEN}
           className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
