@@ -1085,25 +1085,27 @@ function BlokWeergave({
                                       }
                                       className={
                                         inBeeld === `blok-${blok.slug}`
-                                          ? 'flex min-h-11 w-full items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm font-semibold text-accent'
-                                          : 'flex min-h-11 w-full items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm text-text-muted hover:text-text'
+                                          ? 'flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm font-semibold text-accent hover:bg-surface-2'
+                                          : 'flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm text-text hover:bg-surface-2'
                                       }
                                     >
                                       <span className="font-mono">{blok.letter}</span>
-                                      <span className="min-w-0 break-words">{blok.title}</span>
+                                      <span className="min-w-0 flex-1 break-words">{blok.title}</span>
+                                      <span className="shrink-0 tabular-nums text-xs text-text-muted">
+                                        {blok.aantalOpgaven}
+                                        <span className="sr-only"> opgaven</span>
+                                      </span>
                                     </button>
                                   </li>
                                 ) : (
                                   <li key={blok.id}>
                                     <div
                                       aria-disabled="true"
-                                      className="px-3 py-2 pl-12 text-sm text-text-muted/60"
+                                      className="cursor-default py-1 pl-12 pr-3 text-xs text-text-muted/50"
                                     >
                                       <span className="font-mono">{blok.letter}</span>{' '}
                                       <span className="break-words">{blok.title}</span>
-                                      <span className="mt-0.5 block text-xs">
-                                        {labels.nogGeenOpgaven}
-                                      </span>
+                                      <span className="sr-only">, {labels.nogGeenOpgaven}</span>
                                     </div>
                                   </li>
                                 ),

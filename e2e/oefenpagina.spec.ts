@@ -34,6 +34,13 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     const titelVak = await titel.boundingBox()
     expect(Math.abs((titelVak?.y ?? 0) - (deelVak?.y ?? 0))).toBeLessThan(20)
     const zijbalk = page.locator('aside')
+    const klikbaar = zijbalk.getByRole('button', { name: /Differentiequotiënten berekenen/ })
+    await expect(klikbaar).toContainText(/\d+/)
+    await expect(klikbaar).toHaveClass(/cursor-pointer/)
+    await zijbalk.getByRole('button', { name: /2\.5/ }).click()
+    const leeg = zijbalk.locator('[aria-disabled="true"]').filter({ hasText: 'Grafieken tekenen' })
+    await expect(leeg).toBeVisible()
+    await expect(leeg).toHaveClass(/text-xs/)
     await zijbalk.getByRole('button', { name: /2\.3/ }).click()
     await expect(zijbalk.getByRole('button', { name: /2\.3/ })).toHaveAttribute(
       'aria-expanded',
@@ -43,6 +50,12 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
   } else {
     await page.getByRole('button', { name: /H2 –/ }).click()
     const menu = page.getByRole('dialog')
+    const klikbaar = menu.getByRole('button', { name: /Differentiequotiënten berekenen/ })
+    await expect(klikbaar).toContainText(/\d+/)
+    await menu.getByRole('button', { name: /2\.5/ }).click()
+    await expect(
+      menu.locator('[aria-disabled="true"]').filter({ hasText: 'Grafieken tekenen' }),
+    ).toBeVisible()
     await menu.getByRole('button', { name: /2\.3/ }).click()
     await expect(menu.getByRole('button', { name: /2\.3/ })).toHaveAttribute('aria-expanded', 'true')
     await menu.getByRole('button', { name: /Differentiëren/ }).click()
