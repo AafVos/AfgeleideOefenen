@@ -15,7 +15,7 @@ import {
 describe('productregel-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(PRODUCTREGEL_PAD).toBe('/theorie/productregel')
-    expect(PRODUCTREGEL_TITEL).toBe('De productregel')
+    expect(PRODUCTREGEL_TITEL).toBe('Productregel oefenen')
     expect(PRODUCTREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(PRODUCTREGEL_OMSCHRIJVING).not.toMatch(/\b(product rule|derivative)\b/i)
   })

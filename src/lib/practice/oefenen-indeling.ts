@@ -251,8 +251,20 @@ export function losSelectieOp(adres: Adres, data: IndelingData): Selectie | null
   }
 
   if (adres.cluster) {
-    const cluster = clusterBySlug.get(adres.cluster)
-    const topic = cluster ? data.topics.find((t) => t.id === cluster.topic_id) : undefined
+    // Dezelfde soortnaam komt in twee hoofdstukken voor (bijvoorbeeld
+    // ketting_lineair bij sinus en bij de e-macht). Staat het onderwerp erbij,
+    // dan hoort de soort bij dat onderwerp.
+    const topicUitAdres = adres.topic ? topicBySlug.get(adres.topic) : undefined
+    const vanDitOnderwerp = topicUitAdres
+      ? data.clusters.find((c) => c.slug === adres.cluster && c.topic_id === topicUitAdres.id)
+      : undefined
+    const cluster = vanDitOnderwerp ?? clusterBySlug.get(adres.cluster)
+    const topic =
+      vanDitOnderwerp && topicUitAdres
+        ? topicUitAdres
+        : cluster
+          ? data.topics.find((t) => t.id === cluster.topic_id)
+          : undefined
     if (cluster && topic) {
       const sel = vanTopic(topic, cluster.slug, blokIdVanSoort(cluster, topic))
       if (sel) return sel

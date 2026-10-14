@@ -15,7 +15,7 @@ import {
 describe('quotientregel-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(QUOTIENTREGEL_PAD).toBe('/theorie/quotientregel')
-    expect(QUOTIENTREGEL_TITEL).toBe('De quotiëntregel')
+    expect(QUOTIENTREGEL_TITEL).toBe('Quotiëntregel oefenen')
     expect(QUOTIENTREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(QUOTIENTREGEL_OMSCHRIJVING).not.toMatch(/\b(quotient rule|derivative)\b/i)
   })
