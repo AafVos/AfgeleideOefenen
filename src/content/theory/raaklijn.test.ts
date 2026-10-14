@@ -15,7 +15,7 @@ import {
 describe('raaklijn-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(RAAKLIJN_PAD).toBe('/theorie/raaklijn')
-    expect(RAAKLIJN_TITEL).toBe('De raaklijn')
+    expect(RAAKLIJN_TITEL).toBe('Raaklijn oefenen')
     expect(RAAKLIJN_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(RAAKLIJN_OMSCHRIJVING).not.toMatch(/\b(tangent|derivative)\b/i)
   })

@@ -2,6 +2,8 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { veiligOefenpad } from '@/lib/auth/oefenpad'
+import { leesHerkomst } from '@/lib/herkomst'
 import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
@@ -17,7 +19,11 @@ export async function generateMetadata({
   return { title: t('title'), alternates: canoniek(locale, '/registreren') }
 }
 
-export default async function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ van?: string | string[]; naar?: string | string[] }>
+}) {
   const supabase = await createClient()
   const locale = await getLocale()
   const {
@@ -28,6 +34,9 @@ export default async function SignupPage() {
     redirect(`/${locale}/dashboard`)
   }
 
+  const { van, naar } = await searchParams
+  const herkomst = leesHerkomst(van)
+  const oefenpad = veiligOefenpad(naar)
   const t = await getTranslations('Register')
 
   return (
@@ -36,7 +45,7 @@ export default async function SignupPage() {
       <p className="mt-2 text-sm text-text-muted">{t('subtitle')}</p>
 
       <div className="mt-8 rounded-xl border border-border bg-surface p-6">
-        <SignupForm />
+        <SignupForm herkomst={herkomst} oefenpad={oefenpad} />
       </div>
 
       <p className="mt-2 text-center text-sm text-text-muted">

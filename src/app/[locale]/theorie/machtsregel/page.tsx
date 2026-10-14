@@ -1,3 +1,5 @@
+import { DeelKnop } from '@/components/deel-knop'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
@@ -90,10 +92,12 @@ export default function MachtsregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap gap-4">
+      <div className="mt-12 flex flex-wrap items-start gap-4">
+        <DeelKnop />
+        <ProbeerKnop oefenen={MACHTSREGEL_OEFENEN} />
         <Link
           href={MACHTSREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
+          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
         >
           Zelf oefenen
         </Link>

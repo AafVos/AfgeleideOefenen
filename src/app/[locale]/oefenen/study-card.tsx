@@ -17,6 +17,7 @@ import {
 } from '@/lib/practice/chapter-actions'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
 import { MASTERY_THRESHOLD } from '@/lib/practice/engine'
+import { nogEenGoedZin } from '@/lib/practice/nog-een-goed'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import { useTimeSpent } from '@/lib/practice/use-time-spent'
 import type { UitlegVideo } from '@/lib/videos'
@@ -50,7 +51,7 @@ type StudyQuestion = {
 
 type State =
   | { phase: 'input'; error: string | null }
-  | { phase: 'correct'; streak: number; mastered: boolean }
+  | { phase: 'correct'; streak: number; mastered: boolean; clusterName: string }
   | {
       phase: 'wrong'
       userAnswer: string
@@ -70,6 +71,7 @@ export function StudyCard({
   steps,
   nextHref,
   questionNumber,
+  clusterName,
   video,
   onAnswered,
 }: {
@@ -77,6 +79,8 @@ export function StudyCard({
   steps: Step[]
   nextHref?: string
   questionNumber?: number
+  /** Naam van de soort som, zoals die al op de site staat. */
+  clusterName?: string
   /** Uitlegvideo over dit onderwerp, als die er is. */
   video?: UitlegVideo | null
   onAnswered?: (questionId: string, isCorrect: boolean) => void
@@ -163,7 +167,12 @@ export function StudyCard({
       if (result.kind === 'correct') {
         onAnswered?.(question.id, true)
         setLastAttempt(submitted)
-        setState({ phase: 'correct', streak: result.streak, mastered: result.mastered })
+        setState({
+          phase: 'correct',
+          streak: result.streak,
+          mastered: result.mastered,
+          clusterName: result.clusterTitle,
+        })
         return
       }
       onAnswered?.(question.id, false)
@@ -378,7 +387,11 @@ export function StudyCard({
           <p className="mt-1 text-sm text-accent/80">
             {state.mastered
               ? t('masteredBody')
-              : t('streakBody', { streak: state.streak, remaining: MASTERY_THRESHOLD - state.streak })}
+              : (nogEenGoedZin(state.streak, state.clusterName || clusterName || '') ??
+                t('streakBody', {
+                  streak: state.streak,
+                  remaining: MASTERY_THRESHOLD - state.streak,
+                }))}
           </p>
           <div className="mt-4 flex items-center gap-2">
             <Button onClick={next} disabled={pending} className="min-h-11 px-5">

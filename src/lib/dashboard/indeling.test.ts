@@ -86,8 +86,15 @@ const extremen = topic('extremen', 'Extreme waarden', 'c2', 'bb', 3)
 const los = topic('los', 'Nog zonder blok', 'c2', null, 4)
 const snelheid = topic('snelheid', 'Snelheid', 'cb', null, 1)
 
-function cluster(slug: string, topicId: string, order: number) {
-  return { id: `c-${slug}`, slug, title: slug, topic_id: topicId, order_index: order }
+function cluster(slug: string, topicId: string, order: number, blockId: string | null = null) {
+  return {
+    id: `c-${slug}`,
+    slug,
+    title: slug,
+    topic_id: topicId,
+    order_index: order,
+    theory_block_id: blockId,
+  }
 }
 
 const clusters = [
@@ -122,13 +129,13 @@ const voortgang: VoortgangRij[] = [
   rij('c-snelheid', 'in_progress', 4, 2),
 ]
 
-function indeling() {
+function indeling(soorten: typeof clusters = clusters) {
   return bouwDashboardIndeling({
     chapters: [beweging, h2],
     paragraphs: [p25, p24],
     blocks: [blokLeeg, blokB, blokA],
     topics: [snelheid, los, extremen, helling, raaklijn],
-    clusters,
+    clusters: soorten,
     voortgang,
   })
 }
@@ -163,6 +170,25 @@ describe('dashboard per theorieblok', () => {
     // Het hoofdstuk telt het losse onderwerp erbij: 2,5 / 5 = 50%.
     expect(weegClusters(boek.clusters).pct).toBe(50)
     expect(hrefVoorBlok(blok.slug)).toBe('/oefenen?blok=h2-4a')
+  })
+
+  it('telt een soort som met een eigen blok bij dat blok', () => {
+    const metEigenBlok = indeling([
+      ...clusters,
+      cluster('snelheid-h2', raaklijn.id, 3, 'bb'),
+    ])
+    const boek = metEigenBlok.hoofdstukken.find((h) => h.slug === 'h2')!
+    const paragraaf = boek.paragrafen.find((p) => p.label === '2.4')!
+    const blokA = paragraaf.blokken.find((b) => b.letter === 'A')!
+    const blokB = paragraaf.blokken.find((b) => b.letter === 'B')!
+
+    expect(blokA.clusters.map((c) => c.id)).toEqual([
+      'c-raaklijn-a',
+      'c-raaklijn-b',
+      'c-helling',
+    ])
+    expect(blokB.clusters.map((c) => c.id)).toEqual(['c-snelheid-h2', 'c-extremen'])
+    expect(boek.clusters.map((c) => c.id)).toContain('c-snelheid-h2')
   })
 
   it('laat een blok zonder sommen zien, maar niet als link', () => {

@@ -7,7 +7,7 @@
 
 export const EXTREME_WAARDEN_PAD = '/theorie/extreme-waarden'
 
-export const EXTREME_WAARDEN_TITEL = 'Extreme waarden'
+export const EXTREME_WAARDEN_TITEL = 'Extreme waarden oefenen'
 
 export const EXTREME_WAARDEN_OMSCHRIJVING =
   'Uitleg van extreme waarden voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'

@@ -64,6 +64,18 @@ const EENHEID_ACHTER_GETAL = new RegExp(
 )
 
 /**
+ * Zet LaTeX in een opgeslagen antwoord om naar wat een leerling typt.
+ * `\tfrac{1}{2}` wordt `(1/2)`, `\pi` wordt `pi`, en `(1/4)pi` wordt `pi/4`.
+ * Alleen een breuk van losse cijfers, zodat een andere formule heel blijft.
+ */
+function latexNaarTypwijze(s: string): string {
+  return s
+    .replace(/\\pi\b/g, 'pi')
+    .replace(/\\(?:t|d)?frac\{(\d+)\}\{(\d+)\}/g, '($1/$2)')
+    .replace(/\(1\/(\d+)\)pi(?![a-z0-9^])/g, 'pi/$1')
+}
+
+/**
  * Haalt een eenheid achter het antwoord weg.
  * Alleen als er een cijfer direct voor staat, of de constante `e`
  * (`20/e liter`). Zo verliest `2x` geen letter en blijft `parameter` heel.
@@ -83,6 +95,10 @@ export function normalizeAnswer(raw: string): string {
   const zonderOpmaak = raw
     .toLowerCase()
     .replace(/\s+/g, '')
+    // Een maal-teken tussen twee cijfers is een vermenigvuldiging.
+    // 2*4, 2·4 en 2\cdot4 worden 2×4, en zijn dus niet hetzelfde als 24.
+    // Naast een letter mag het teken wel weg: 3*x is 3x.
+    .replace(/(\d)(?:\*|·|\\cdot)(?=\d)/g, '$1×')
     .replace(/\*/g, '')
     .replace(/·/g, '')
     // ^(5), ^(-1), ^(x) → ^5, ^-1, ^x — alleen simpele exponenten, zodat
@@ -100,7 +116,7 @@ export function normalizeAnswer(raw: string): string {
     // Het opgeslagen antwoord blijft het kale getal of de kale uitdrukking.
     // Een andere termvolgorde van een lijn staat hieronder.
     .replace(/^[txhy]=/, '')
-  return haalEenheidWeg(zonderOpmaak)
+  return haalEenheidWeg(latexNaarTypwijze(zonderOpmaak))
 }
 
 /**

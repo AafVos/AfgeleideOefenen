@@ -217,6 +217,16 @@ where q.order_index = 1
 on conflict (question_id, step_order) do update
   set step_description = excluded.step_description;
 
+-- Stappenplan bij de drie proefsommen, zodat de proefroute zonder account
+-- de uitwerking kan laten zien. Alleen in deze lokale seed.
+insert into public.question_steps_new (question_id, step_order, step_description)
+select q.id, 1, 'Schrijf de macht naar voren. Die macht gaat er daarna één af.'
+from public.questions_new q
+join public.topic_clusters_new tc
+  on tc.id = q.cluster_id and tc.slug = 'e2e_rij'
+on conflict (question_id, step_order) do update
+  set step_description = excluded.step_description;
+
 -- =====================================================================
 -- De welkomstmail-webhook, lokaal
 -- =====================================================================

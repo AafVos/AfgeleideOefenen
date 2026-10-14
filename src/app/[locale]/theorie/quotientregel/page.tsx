@@ -1,3 +1,5 @@
+import { DeelKnop } from '@/components/deel-knop'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
@@ -34,9 +36,9 @@ export default function QuotientregelPage() {
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{QUOTIENTREGEL_TITEL}</h1>
       <p className="mt-6 text-lg text-text-muted">
-        Je gebruikt de quotiëntregel als de ene functie door de andere gedeeld wordt. In de
-        teller van de afgeleide staat een min. De noemer laat je staan als het kwadraat van de
-        noemer.
+        Je gebruikt de quotiëntregel (zonder trema: quotientregel) als de ene functie door de
+        andere gedeeld wordt. In de teller van de afgeleide staat een min. De noemer laat je
+        staan als het kwadraat van de noemer.
       </p>
       <p className="mt-3 text-text-muted">
         <RichMath source="$f$ is de functie die je differentieert. $g$ is de teller, $h$ de noemer. Die volgorde ligt vast." />
@@ -91,10 +93,12 @@ export default function QuotientregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap gap-4">
+      <div className="mt-12 flex flex-wrap items-start gap-4">
+        <DeelKnop />
+        <ProbeerKnop oefenen={QUOTIENTREGEL_OEFENEN} />
         <Link
           href={QUOTIENTREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
+          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
         >
           Zelf oefenen
         </Link>

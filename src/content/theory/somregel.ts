@@ -7,7 +7,7 @@
 
 export const SOMREGEL_PAD = '/theorie/somregel'
 
-export const SOMREGEL_TITEL = 'De somregel'
+export const SOMREGEL_TITEL = 'Somregel oefenen'
 
 export const SOMREGEL_OMSCHRIJVING =
   'Uitleg van de somregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'

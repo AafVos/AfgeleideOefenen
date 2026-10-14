@@ -56,11 +56,14 @@ export default async function schoneStart() {
     )
   }
 
-  // Het onderwerp "Uitwerking (e2e)" heeft een vast stappenplan uit de seed;
-  // dat moet blijven staan, want de knop "Ik weet het niet" laat het zien.
-  const uitwerkingTopicId = (topics ?? []).find(
-    (t) => t.slug === 'e2e_uitwerking',
-  )?.id
+  // Deze onderwerpen hebben een vast stappenplan uit de seed. Dat moet
+  // blijven staan: "Ik weet het niet" en de proef zonder account laten het
+  // zien. De andere stappen komen van de AI-controle en horen weg.
+  const behoudStappen = new Set(
+    (topics ?? [])
+      .filter((t) => t.slug === 'e2e_uitwerking' || t.slug === 'e2e_beheersen')
+      .map((t) => t.id),
+  )
 
   const { data: vragen, error: vraagError } = await db
     .from('questions_new')
@@ -69,7 +72,7 @@ export default async function schoneStart() {
   if (vraagError) throw new Error(vraagError.message)
   const vraagIds = (vragen ?? []).map((q) => q.id)
   const vraagIdsMetAiStappen = (vragen ?? [])
-    .filter((q) => q.topic_id !== uitwerkingTopicId)
+    .filter((q) => !behoudStappen.has(q.topic_id))
     .map((q) => q.id)
 
   // Voortgang van de testleerling weg (sessies nemen hun antwoorden mee).

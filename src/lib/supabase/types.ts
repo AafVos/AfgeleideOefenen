@@ -22,6 +22,8 @@ export type Database = {
           grade: Grade | null
           display_name: string | null
           tour_seen_at: string | null
+          /** Alleen docent, youtube, klas, forum of proberen. Migratie 0057 en 0060. */
+          herkomst: string | null
           created_at: string
         }
         Insert: {
@@ -31,6 +33,7 @@ export type Database = {
           grade?: Grade | null
           display_name?: string | null
           tour_seen_at?: string | null
+          herkomst?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
@@ -147,6 +150,7 @@ export type Database = {
           slug: string
           title: string
           order_index: number
+          theory_block_id: string | null
         }
         Insert: {
           id?: string
@@ -154,6 +158,7 @@ export type Database = {
           slug: string
           title: string
           order_index: number
+          theory_block_id?: string | null
         }
         Update: Partial<Database['public']['Tables']['topic_clusters_new']['Insert']>
         Relationships: []

@@ -7,7 +7,7 @@
 
 export const KETTINGREGEL_PAD = '/theorie/kettingregel'
 
-export const KETTINGREGEL_TITEL = 'De kettingregel'
+export const KETTINGREGEL_TITEL = 'Kettingregel oefenen'
 
 export const KETTINGREGEL_OMSCHRIJVING =
   'Uitleg van de kettingregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'

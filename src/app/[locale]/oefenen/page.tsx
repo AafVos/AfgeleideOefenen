@@ -14,7 +14,8 @@ import {
   losSelectieOp,
   oefenIndeling,
 } from '@/lib/practice/oefenen-indeling'
-import { canoniek } from '@/lib/seo'
+import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
+import { canoniek, deelkaart } from '@/lib/seo'
 import { getChapters } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
@@ -23,12 +24,25 @@ import { OefenenClient } from './oefenen-client'
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>
+  searchParams?: Promise<{ chapter?: string }>
 }) {
   const { locale } = await params
+  const chapter = (await searchParams)?.chapter?.trim()
+  const hoofdstuk = THEORY_OVERVIEW.find((item) => item.slug === chapter)
   const t = await getTranslations({ locale, namespace: 'FreeExercise' })
-  return { title: t('title'), alternates: canoniek(locale, '/oefenen') }
+  const title = hoofdstuk?.title ?? t('title')
+  const description = hoofdstuk
+    ? `Oefen ${hoofdstuk.title} voor wiskunde B. Gratis, met uitleg bij elke fout.`
+    : 'Differentiëren oefenen per hoofdstuk, met uitleg bij elke fout.'
+  return {
+    title,
+    description,
+    alternates: canoniek(locale, '/oefenen'),
+    openGraph: deelkaart(locale, '/oefenen', { title, description }),
+  }
 }
 
 type PageProps = {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { Link, useRouter } from '@/i18n/navigation'
 import { Card, cn } from '@/components/ui'
 import type {
@@ -519,6 +520,9 @@ function OnderwerpWeergave({
       >
         <div className="mx-auto max-w-6xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
+          <div className="mb-6">
+            <DeelKnop />
+          </div>
 
           {!question && chapterGroups.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
@@ -588,6 +592,9 @@ function OnderwerpWeergave({
                     question={question}
                     steps={question.steps}
                     nextHref={nextHref}
+                    clusterName={
+                      allClusters.find((c) => c.id === question.cluster_id)?.title
+                    }
                     video={getVideoForCluster(question.cluster_id)}
                     questionNumber={
                       chapterGroups
@@ -816,7 +823,9 @@ function BlokWeergave({
 
   const sections: TileSection[] = useMemo(() => {
     if (!selectie) return []
-    return kopjesVoorSelectie(selectie, allTopics, allClusters, tiles).map((kop) => ({
+    // Alle tegels, niet alleen die van dit blok. Anders denkt de kop dat
+    // het onderwerp hier compleet is, terwijl een soort som ernaast hangt.
+    return kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState).map((kop) => ({
       id: kop.id,
       label: kop.label,
       subSections: kop.sub.map((sub) => ({
@@ -825,7 +834,7 @@ function BlokWeergave({
         tiles: tiles.filter((t) => t.clusterId === sub.clusterId),
       })),
     }))
-  }, [selectie, allTopics, allClusters, tiles])
+  }, [selectie, allTopics, allClusters, allTilesState, tiles])
 
   const baseHref = selectie ? `/oefenen?${queryVoorSelectie(selectie)}` : '/oefenen'
   const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
@@ -1080,6 +1089,9 @@ function BlokWeergave({
 
         <div className="mx-auto max-w-6xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
+          <div className="mb-6">
+            <DeelKnop />
+          </div>
 
           {!question && tiles.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>

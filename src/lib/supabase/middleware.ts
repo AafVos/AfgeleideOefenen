@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { routing } from '@/i18n/routing'
+import { inlogAdres } from '@/lib/auth/oefenpad'
 
 import type { Database } from './types'
 
@@ -74,9 +75,12 @@ export async function updateSession(request: NextRequest) {
 
   const naarInloggen = () => {
     const url = request.nextUrl.clone()
-    url.pathname = `/${TAAL}/inloggen`
-    // De zoekwoorden van de oefenpagina horen niet op het inlogscherm thuis.
-    url.search = ''
+    // Alleen een pad dat met /oefenen begint blijft bewaard, als één
+    // parameter. Zoekwoorden van de som horen niet los op het inlogscherm,
+    // en een ander pad (dashboard, instellingen) ook niet.
+    const doel = new URL(inlogAdres(padZonderTaal, request.nextUrl.search), request.url)
+    url.pathname = doel.pathname
+    url.search = doel.search
     return NextResponse.redirect(url)
   }
 

@@ -5,6 +5,9 @@ import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
+import { hrefMetOefenpad } from '@/lib/auth/oefenpad'
+import type { Herkomst } from '@/lib/herkomst'
+
 import { signupAction, type SignupState } from './actions'
 import { resendConfirmationAction } from '../inloggen/actions'
 
@@ -12,7 +15,13 @@ const initialState: SignupState = { errorKey: null, noticeKey: null }
 
 const COOLDOWN_SECONDS = 60
 
-export function SignupForm() {
+export function SignupForm({
+  herkomst = null,
+  oefenpad = null,
+}: {
+  herkomst?: Herkomst | null
+  oefenpad?: string | null
+}) {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
   const [showPassword, setShowPassword] = useState(false)
@@ -47,7 +56,7 @@ export function SignupForm() {
   function handleResend() {
     if (!state.email) return
     startResend(async () => {
-      const { ok } = await resendConfirmationAction(state.email!)
+      const { ok } = await resendConfirmationAction(state.email!, oefenpad ?? undefined)
       setResendStatus(ok ? 'success' : 'error')
       startCooldown()
     })
@@ -92,7 +101,7 @@ export function SignupForm() {
         </div>
 
         <Link
-          href="/inloggen"
+          href={hrefMetOefenpad('/inloggen', oefenpad)}
           className="block w-full rounded-md bg-accent px-4 py-2.5 text-center font-medium text-white shadow-sm transition hover:bg-accent/90"
         >
           {t('toLoginLabel')}
@@ -103,6 +112,8 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="space-y-4">
+      {herkomst ? <input type="hidden" name="van" defaultValue={herkomst} /> : null}
+      {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
         label={t('usernameLabel')}
         name="username"
@@ -151,7 +162,7 @@ export function SignupForm() {
 
       <p className="pt-1 text-center text-sm text-text-muted">
         {t('hasAccount')}{' '}
-        <Link href="/inloggen" className="font-medium text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/inloggen', oefenpad)} className="font-medium text-accent hover:underline">
           {t('loginLink')}
         </Link>
       </p>

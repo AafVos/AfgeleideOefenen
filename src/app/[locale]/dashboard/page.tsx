@@ -58,11 +58,11 @@ export default async function DashboardPage() {
       .order('order_index'),
     supabase
       .from('topic_clusters_new')
-      .select('id, title, slug, topic_id, order_index')
+      .select('id, title, slug, topic_id, order_index, theory_block_id')
       .order('order_index'),
     supabase
       .from('user_progress_new')
-      .select('cluster_id, status, total_answered, total_correct')
+      .select('cluster_id, status, total_answered, total_correct, correct_streak')
       .eq('user_id', user.id),
   ])
 

@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { hrefMetOefenpad, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { canoniek } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
@@ -29,7 +30,7 @@ export async function generateMetadata({
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; mail?: string }>
+  searchParams: Promise<{ error?: string; mail?: string; naar?: string }>
 }) {
   const supabase = await createClient()
   const locale = await getLocale()
@@ -42,7 +43,8 @@ export default async function LoginPage({
   }
 
   const t = await getTranslations('Login')
-  const { error, mail } = await searchParams
+  const { error, mail, naar } = await searchParams
+  const oefenpad = veiligOefenpad(naar)
   const callbackError = error === 'auth_callback_failed' ? t('callbackError') : null
   // Hoe het afliep met de bevestigingslink; `/auth/callback` zet dit.
   const bevestigingsmail = leesMail(mail)
@@ -60,12 +62,12 @@ export default async function LoginPage({
       )}
 
       <div className="mt-8 rounded-xl border border-border bg-surface p-6">
-        <LoginForm callbackError={callbackError} />
+        <LoginForm callbackError={callbackError} oefenpad={oefenpad} />
       </div>
 
       <p className="mt-6 text-center text-sm text-text-muted">
         {t('noAccount')}{' '}
-        <Link href="/registreren" className="font-medium text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/registreren', oefenpad)} className="font-medium text-accent hover:underline">
           {t('registerLink')}
         </Link>
       </p>

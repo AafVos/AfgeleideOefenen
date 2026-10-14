@@ -27,12 +27,21 @@ function vangOpslag(plek: string, e: unknown): { kind: 'error'; message: string 
   return { kind: 'error', message: OPSLAAN_MISLUKT }
 }
 
+async function clusterTitel(db: DB, clusterId: string): Promise<string> {
+  const { data } = await db
+    .from('topic_clusters_new')
+    .select('title')
+    .eq('id', clusterId)
+    .maybeSingle()
+  return data?.title?.trim() ?? ''
+}
+
 function isDubbeleRij(error: { code?: string; message?: string }): boolean {
   return error.code === '23505' || /unique|duplicate key/i.test(error.message ?? '')
 }
 
 export type StudyResult =
-  | { kind: 'correct'; streak: number; mastered: boolean }
+  | { kind: 'correct'; streak: number; mastered: boolean; clusterTitle: string }
   | {
       kind: 'incorrect'
       answerId: string
@@ -152,6 +161,7 @@ export async function submitStudyAnswerAction(
         kind: 'correct',
         streak: progress.correct_streak,
         mastered: progress.status === 'mastered',
+        clusterTitle: await clusterTitel(supabase, question.cluster_id),
       }
     }
 
@@ -191,6 +201,7 @@ export async function submitStudyAnswerAction(
         kind: 'correct',
         streak: progress.correct_streak,
         mastered: progress.status === 'mastered',
+        clusterTitle: await clusterTitel(supabase, question.cluster_id),
       }
     }
 

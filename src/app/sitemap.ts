@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 
+import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { EXTREME_WAARDEN_PAD } from '@/content/theory/extreme-waarden'
 import { KETTINGREGEL_PAD } from '@/content/theory/kettingregel'
 import { MACHTSREGEL_PAD } from '@/content/theory/machtsregel'
@@ -7,6 +8,7 @@ import { PRODUCTREGEL_PAD } from '@/content/theory/productregel'
 import { QUOTIENTREGEL_PAD } from '@/content/theory/quotientregel'
 import { RAAKLIJN_PAD } from '@/content/theory/raaklijn'
 import { SOMREGEL_PAD } from '@/content/theory/somregel'
+import { getVoorbeelden, voorbeeldPad } from '@/content/voorbeelden'
 import { routing } from '@/i18n/routing'
 import { SITE_URL } from '@/lib/seo'
 import { getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
@@ -89,6 +91,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: `${SITE_URL}/${TAAL}${EXAMENTRAINING_PAD}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${SITE_URL}/${TAAL}/uitleg-videos`,
       lastModified: now,
       changeFrequency: 'monthly',
@@ -99,6 +107,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
+    })),
+    ...getVoorbeelden().map((voorbeeld) => ({
+      url: `${SITE_URL}/${TAAL}${voorbeeldPad(voorbeeld.slug)}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
   ]
 }
