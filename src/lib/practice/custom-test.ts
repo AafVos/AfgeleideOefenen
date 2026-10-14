@@ -32,6 +32,25 @@ export type ConfigTopic = {
   title: string
   chapter_id: string
   order_index: number
+  theory_block_id: string | null
+}
+
+export type ConfigParagraph = {
+  id: string
+  chapter_id: string
+  slug: string
+  label: string
+  title: string
+  order_index: number
+}
+
+export type ConfigBlock = {
+  id: string
+  paragraph_id: string
+  slug: string
+  letter: string
+  title: string
+  order_index: number
 }
 
 export type ConfigCluster = {
@@ -40,6 +59,7 @@ export type ConfigCluster = {
   title: string
   topic_id: string
   order_index: number
+  theory_block_id: string | null
   questionCount: number
   newCount: number
   wrongCount: number
@@ -49,27 +69,38 @@ export type ConfigData = {
   chapters: ConfigChapter[]
   topics: ConfigTopic[]
   clusters: ConfigCluster[]
+  paragraphs: ConfigParagraph[]
+  blocks: ConfigBlock[]
 }
 
 export async function loadConfigData(db: DB, userId: string): Promise<ConfigData> {
-  const [{ data: chapters }, { data: topics }, { data: clusters }, { data: questions }] =
-    await Promise.all([
-      db
-        .from('chapters')
-        .select('id, slug, title, order_index')
-        .order('order_index'),
-      db
-        .from('topics_new')
-        .select('id, slug, title, chapter_id, order_index')
-        .order('order_index'),
-      db
-        .from('topic_clusters_new')
-        .select('id, slug, title, topic_id, order_index')
-        .order('order_index'),
-      db
-        .from('questions_new')
-        .select('id, cluster_id'),
-    ])
+  const [
+    { data: chapters },
+    { data: topics },
+    { data: paragraphs },
+    { data: blocks },
+    { data: clusters },
+    { data: questions },
+  ] = await Promise.all([
+    db.from('chapters').select('id, slug, title, order_index').order('order_index'),
+    db
+      .from('topics_new')
+      .select('id, slug, title, chapter_id, order_index, theory_block_id')
+      .order('order_index'),
+    db
+      .from('paragraphs')
+      .select('id, chapter_id, slug, label, title, order_index')
+      .order('order_index'),
+    db
+      .from('theory_blocks')
+      .select('id, paragraph_id, slug, letter, title, order_index')
+      .order('order_index'),
+    db
+      .from('topic_clusters_new')
+      .select('id, slug, title, topic_id, order_index, theory_block_id')
+      .order('order_index'),
+    db.from('questions_new').select('id, cluster_id'),
+  ])
 
   // Build cluster → question IDs map
   const questionsByCluster = new Map<string, string[]>()
@@ -111,6 +142,7 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
       title: c.title,
       topic_id: c.topic_id,
       order_index: c.order_index,
+      theory_block_id: c.theory_block_id,
       questionCount: qIds.length,
       newCount,
       wrongCount,
@@ -121,6 +153,8 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
     chapters: (chapters ?? []) as ConfigChapter[],
     topics: (topics ?? []) as ConfigTopic[],
     clusters: enrichedClusters,
+    paragraphs: paragraphs ?? [],
+    blocks: blocks ?? [],
   }
 }
 
@@ -239,6 +273,7 @@ export type ResultBreakdown = {
     chapterSlug: string
     topicSlug: string
     clusterSlug: string
+    blockSlug: string
     total: number
     correct: number
     items: Array<{
@@ -294,24 +329,37 @@ export async function loadTestResults(
 
   const { data: clusters } = await db
     .from('topic_clusters_new')
-    .select('id, slug, title, topic_id')
+    .select('id, slug, title, topic_id, theory_block_id')
     .in('id', clusterIds.length ? clusterIds : ['__none__'])
 
   const topicIds = Array.from(new Set((clusters ?? []).map((c) => c.topic_id)))
   const { data: topics } = await db
     .from('topics_new')
-    .select('id, slug, title, chapter_id')
+    .select('id, slug, title, chapter_id, theory_block_id')
     .in('id', topicIds.length ? topicIds : ['__none__'])
 
   const chapterIds = Array.from(new Set((topics ?? []).map((t) => t.chapter_id)))
-  const { data: chapters } = await db
-    .from('chapters')
-    .select('id, slug')
-    .in('id', chapterIds.length ? chapterIds : ['__none__'])
+  const blockIds = Array.from(
+    new Set(
+      [...(topics ?? []).map((t) => t.theory_block_id), ...(clusters ?? []).map((c) => c.theory_block_id)]
+        .filter((id): id is string => Boolean(id)),
+    ),
+  )
+  const [{ data: chapters }, { data: blocks }] = await Promise.all([
+    db
+      .from('chapters')
+      .select('id, slug')
+      .in('id', chapterIds.length ? chapterIds : ['__none__']),
+    db
+      .from('theory_blocks')
+      .select('id, slug')
+      .in('id', blockIds.length ? blockIds : ['__none__']),
+  ])
 
   const clusterById = new Map((clusters ?? []).map((c) => [c.id, c]))
   const topicById = new Map((topics ?? []).map((t) => [t.id, t]))
   const chapterById = new Map((chapters ?? []).map((c) => [c.id, c]))
+  const blockById = new Map((blocks ?? []).map((b) => [b.id, b]))
   const questionById = new Map((questions ?? []).map((q) => [q.id, q]))
   const answerByQuestion = new Map((answers ?? []).map((a) => [a.question_id, a]))
 
@@ -326,6 +374,8 @@ export async function loadTestResults(
     const cluster = clusterById.get(q.cluster_id)
     const topic = cluster ? topicById.get(cluster.topic_id) : null
     const chapter = topic ? chapterById.get(topic.chapter_id) : null
+    const blockId = cluster?.theory_block_id ?? topic?.theory_block_id ?? null
+    const block = blockId ? blockById.get(blockId) : null
     const a = answerByQuestion.get(tq.question_id)
     const isCorrect = a?.is_correct === true
 
@@ -341,6 +391,7 @@ export async function loadTestResults(
         chapterSlug: chapter?.slug ?? '',
         topicSlug: topic?.slug ?? '',
         clusterSlug: cluster?.slug ?? '',
+        blockSlug: block?.slug ?? '',
         total: 0,
         correct: 0,
         items: [],

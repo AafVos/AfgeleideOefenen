@@ -12,7 +12,8 @@
     "render:som34": "remotion render Som34 out/som-34.mp4",
     "presenter": "vite --open",
     "render:quotient": "remotion render Quotientregel out/quotientregel.mp4",
-    "render:herschrijven": "remotion render Herschrijven out/machten-herschrijven.mp4"
+    "render:herschrijven": "remotion render Herschrijven out/machten-herschrijven.mp4",
+    "render:shorts": "bash scripts/render-shorts.sh"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",

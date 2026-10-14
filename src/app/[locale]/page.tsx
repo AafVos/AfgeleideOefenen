@@ -3,6 +3,7 @@ import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
 import { SITE_CONFIG } from '@/config/site'
+import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
@@ -150,9 +151,9 @@ export default async function HomePage() {
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {(
               [
-                ['topic1Title', 'topic1Body', '/theorie#kaart-h2-machtsregel'],
+                ['topic1Title', 'topic1Body', '/theorie/machtsregel'],
                 ['topic8Title', 'topic8Body', '/theorie#kaart-h6-machten_herschrijven'],
-                ['topic2Title', 'topic2Body', '/theorie#kaart-h2-somregel'],
+                ['topic2Title', 'topic2Body', '/theorie/somregel'],
                 ['topic3Title', 'topic3Body', '/theorie/productregel'],
                 ['topic4Title', 'topic4Body', '/theorie/quotientregel'],
                 ['topic5Title', 'topic5Body', '/theorie/kettingregel'],
@@ -173,6 +174,18 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-text-muted">
+            {t.rich('examTraining', {
+              link: (chunks) => (
+                <Link
+                  href={EXAMENTRAINING_PAD}
+                  className="font-medium text-accent underline-offset-2 hover:underline"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
         </section>
 
         <section className="mt-20">

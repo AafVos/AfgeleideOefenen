@@ -45,7 +45,8 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'machtsregel',
         title: 'Machtsregel',
-        formula: "f(x) = ax^n \\implies f'(x) = n \\cdot ax^{n-1}",
+        uitlegPad: '/theorie/machtsregel',
+        formula: ['f(x) = ax^n', "f'(x) = n \\cdot a \\, x^{n-1}"],
         examples: [
           { problem: 'f(x) = 3x^4', answer: "f'(x) = 12x^3", steps: ['$n = 4$, $a = 3$', "$f'(x) = 4 \\cdot 3 \\cdot x^{4-1} = 12x^3$"] },
           { problem: 'f(x) = 7', answer: "f'(x) = 0", steps: ['Constante: $n = 0$', "$f'(x) = 0$"] },
@@ -54,7 +55,8 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'somregel',
         title: 'Somregel',
-        formula: "f(x) = g(x) + h(x) \\implies f'(x) = g'(x) + h'(x)",
+        uitlegPad: '/theorie/somregel',
+        formula: ['f(x) = g(x) + h(x)', "f'(x) = g'(x) + h'(x)"],
         examples: [
           {
             problem: 'f(x) = x^3 + 5x^2',
@@ -400,6 +402,33 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
     title: 'H15 — Hellingen, raaklijnen en optimaliseren',
     cards: [
       {
+        id: 'raaklijn',
+        title: 'De raaklijn',
+        uitlegPad: '/theorie/raaklijn',
+        formula: [
+          "\\text{helling in } x = a \\text{ is } f'(a)",
+          "y = f(a) + f'(a)\\,(x - a)",
+        ],
+        examples: [
+          {
+            problem: 'f(x) = x^2 \\text{ in } x = 3',
+            answer: 'y = 6x - 9',
+            steps: [
+              "$f(3) = 9$ en $f'(x) = 2x$, dus $f'(3) = 6$",
+              '$y = 9 + 6(x - 3) = 6x - 9$',
+            ],
+          },
+          {
+            problem: 'f(x) = x^3 \\text{ in } x = 1',
+            answer: 'y = 3x - 2',
+            steps: [
+              "$f(1) = 1$ en $f'(x) = 3x^2$, dus $f'(1) = 3$",
+              '$y = 1 + 3(x - 1) = 3x - 2$',
+            ],
+          },
+        ],
+      },
+      {
         id: 'stijgen_dalen',
         title: 'Soorten stijgen en dalen',
         notes: [
@@ -454,6 +483,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
       {
         id: 'top_tweede',
         title: 'Top met de tweede afgeleide',
+        uitlegPad: '/theorie/extreme-waarden',
         formula: [
           "f'(x) = 0",
           "f''(x) < 0 \\implies \\text{maximum}",

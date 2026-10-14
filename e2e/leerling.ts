@@ -62,6 +62,7 @@ export function testDatabase(): SupabaseClient {
 
 /** Het testhoofdstuk uit de seed. */
 export const TESTHOOFDSTUK = {
+  slug: 'e2e',
   titel: 'Testhoofdstuk voor de e2e-tests',
   anker: '#hoofdstuk-e2e',
 }
@@ -135,39 +136,29 @@ export async function sluitRondleiding(page: Page) {
 }
 
 /**
- * Klik via het oefenoverzicht naar een opgave: hoofdstuk → onderwerp →
- * soort som → tegel. `onderwerp` mag weg als het onderwerp maar één soort
- * som heeft; in de zijbalk staat dan alleen die soort som.
+ * Open een opgave in het testhoofdstuk.
+ *
+ * Dat hoofdstuk heeft geen boekparagrafen, dus de pagina toont alle tegels
+ * onder elkaar, genummerd over het hele hoofdstuk. `onderwerp` en `soortSom`
+ * blijven in de aanroep staan zodat een test laat zien wélke som hij maakt;
+ * de tegel zelf zoek je op nummer.
  */
 export async function kiesOpgave(
   page: Page,
   opgave: { onderwerp?: string; soortSom: string; nummer: number },
 ) {
-  await page.goto('/nl/oefenen')
+  await page.goto(`/nl/oefenen?chapter=${TESTHOOFDSTUK.slug}`)
 
-  const zijbalk = page.getByRole('complementary').first()
-  const hoofdstuk = zijbalk.getByRole('button', { name: TESTHOOFDSTUK.titel })
-  // Op een telefoon begint de lijst dicht, zodat de opgave in beeld staat.
-  if (!(await hoofdstuk.isVisible())) {
-    await zijbalk.getByRole('button', { name: 'Zijbalk uitklappen' }).click()
-  }
-  const soortSom = zijbalk.getByRole('button', { name: opgave.soortSom })
-
-  if (opgave.onderwerp) {
-    const onderwerp = zijbalk.getByRole('button', { name: opgave.onderwerp })
-    await klikTot(hoofdstuk, onderwerp)
-    await klikTot(onderwerp, soortSom)
-  } else {
-    await klikTot(hoofdstuk, soortSom)
-  }
-  await soortSom.click()
-
-  await page
+  const tegel = page
     .locator(TESTHOOFDSTUK.anker)
     .getByRole('link', { name: new RegExp(`^Opgave ${opgave.nummer}\\.`) })
-    .click()
 
-  await expect(nakijkKnop(page)).toBeVisible()
+  // De eerste klik kan aankomen voordat de pagina klaarstaat; die doet dan
+  // niets. Dat overkomt een leerling met een trage verbinding ook.
+  await expect(async () => {
+    await tegel.click()
+    await expect(nakijkKnop(page)).toBeVisible({ timeout: 3_000 })
+  }).toPass({ timeout: 60_000, intervals: [500, 1_000, 2_000] })
 }
 
 /**

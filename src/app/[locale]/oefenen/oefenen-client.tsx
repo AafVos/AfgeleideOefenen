@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { Link, useRouter } from '@/i18n/navigation'
 import { Card, cn } from '@/components/ui'
@@ -8,8 +8,20 @@ import type {
   ChapterInfo,
   ClusterInfo,
   NewExerciseTile,
+  ParagraphInfo,
+  TheoryBlockInfo,
   TopicInfo,
 } from '@/lib/practice/chapter-overview'
+import {
+  bouwBlokBoom,
+  bouwOnderwerpBoom,
+  clusterIdsVoorSelectie,
+  kopjesVoorSelectie,
+  losSelectieOp,
+  naamVanSelectie,
+  queryVoorSelectie,
+  type Adres,
+} from '@/lib/practice/oefenen-indeling'
 
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 import { getVideoForCluster } from '@/lib/videos'
@@ -66,6 +78,7 @@ type Labels = {
 }
 
 type Props = {
+  indeling: 'onderwerp'
   chapters: ChapterInfo[]
   allTopics: TopicInfo[]
   allClusters: ClusterInfo[]
@@ -92,7 +105,7 @@ function sectionId(chapterSlug: string, topicSlug: string): string {
   return `sect-${chapterSlug}-${topicSlug}`
 }
 
-export function OefenenClient({
+function OnderwerpWeergave({
   chapters,
   allTopics,
   allClusters,
@@ -106,6 +119,10 @@ export function OefenenClient({
 }: Props) {
   const router = useRouter()
   const clustersByTopic = useMemo(() => buildClustersByTopic(allClusters), [allClusters])
+  const onderwerpBoom = useMemo(
+    () => bouwOnderwerpBoom(chapters, allTopics, allClusters),
+    [chapters, allTopics, allClusters],
+  )
 
   const initChapter = useMemo(
     () =>
@@ -364,10 +381,9 @@ export function OefenenClient({
         </div>
         {sidebarOpen && (
         <ul className="mt-3 space-y-0.5">
-          {chapters.map((ch) => {
+          {onderwerpBoom.map(({ chapter: ch, onderwerpen: chTopics }) => {
             const chActive = ch.id === selectedChapter?.id
             const chOpen = isChapterExpanded(ch.id)
-            const chTopics = allTopics.filter((tp) => tp.chapter_id === ch.id)
             return (
               <li key={ch.id}>
                 <button
@@ -407,7 +423,7 @@ export function OefenenClient({
                   <ul className="mb-1 mt-0.5">
                     {chTopics.map((tp) => {
                       const tpActive = tp.id === selectedTopic?.id
-                      const tpClusters = clustersByTopic.get(tp.id) ?? []
+                      const tpClusters = tp.clusters
 
                       if (tpClusters.length === 1) {
                         const onlyCluster = tpClusters[0]!
@@ -669,4 +685,584 @@ export function OefenenClient({
       </div>
     </div>
   )
+}
+
+type BlokLabels = Labels & {
+  oudeOpgaven: string
+  nogGeenOpgaven: string
+  kiesOnderdeel: string
+  sluiten: string
+}
+
+type BlokProps = {
+  indeling: 'blok'
+  chapters: ChapterInfo[]
+  paragraphs: ParagraphInfo[]
+  blocks: TheoryBlockInfo[]
+  allTopics: TopicInfo[]
+  allClusters: ClusterInfo[]
+  adres: Adres
+  allTiles: NewExerciseTile[]
+  question: Question | null
+  labels: BlokLabels
+}
+
+function BlokWeergave({
+  chapters,
+  paragraphs,
+  blocks,
+  allTopics,
+  allClusters,
+  adres: adresVanServer,
+  allTiles,
+  question,
+  labels,
+}: BlokProps) {
+  const router = useRouter()
+  const [adres, setAdres] = useState(adresVanServer)
+  const [allTilesState, setAllTilesState] = useState(allTiles)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [boomOpen, setBoomOpen] = useState(false)
+
+  const data = useMemo(
+    () => ({
+      chapters,
+      paragraphs,
+      blocks,
+      topics: allTopics,
+      clusters: allClusters,
+      tiles: allTilesState,
+    }),
+    [chapters, paragraphs, blocks, allTopics, allClusters, allTilesState],
+  )
+
+  const urlKey = `${adresVanServer.blok ?? ''}|${adresVanServer.topic ?? ''}|${adresVanServer.cluster ?? ''}|${adresVanServer.chapter ?? ''}`
+  const [syncedUrlKey, setSyncedUrlKey] = useState(urlKey)
+  if (urlKey !== syncedUrlKey) {
+    setSyncedUrlKey(urlKey)
+    setAdres(adresVanServer)
+  }
+
+  const selectie = useMemo(() => losSelectieOp(adres, data), [adres, data])
+  const boom = useMemo(() => bouwBlokBoom(data), [data])
+
+  const [openHoofdstukken, setOpenHoofdstukken] = useState<Set<string>>(
+    () => new Set(selectie ? [selectie.chapter.id] : []),
+  )
+  const [openParagrafen, setOpenParagrafen] = useState<Set<string>>(
+    () => new Set(selectie?.soort === 'blok' ? [selectie.paragraph.id] : []),
+  )
+  const [oudeOpen, setOudeOpen] = useState(selectie?.soort === 'hoofdstuk')
+
+  const padSleutel = selectie
+    ? selectie.soort === 'blok'
+      ? selectie.blok.id
+      : selectie.chapter.id
+    : ''
+  const [openPad, setOpenPad] = useState(padSleutel)
+  if (padSleutel !== openPad) {
+    setOpenPad(padSleutel)
+    if (selectie) {
+      setOpenHoofdstukken((prev) => new Set(prev).add(selectie.chapter.id))
+      if (selectie.soort === 'blok') {
+        setOpenParagrafen((prev) => new Set(prev).add(selectie.paragraph.id))
+      } else {
+        setOudeOpen(true)
+      }
+    }
+  }
+
+  useEffect(() => {
+    function onPop() {
+      const sp = new URLSearchParams(window.location.search)
+      setAdres({
+        blok: sp.get('blok'),
+        topic: sp.get('topic'),
+        cluster: sp.get('cluster'),
+        chapter: sp.get('chapter'),
+      })
+      setBoomOpen(false)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  useEffect(() => {
+    if (!boomOpen) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') setBoomOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [boomOpen])
+
+  useEffect(() => {
+    if (question || !selectie) return
+    const id = selectie.groep.clusterSlug
+      ? `groep-${selectie.groep.clusterSlug}`
+      : selectie.groep.topicSlug
+        ? `onderwerp-${selectie.groep.topicSlug}`
+        : null
+    if (!id) return
+    document.getElementById(id)?.scrollIntoView({ block: 'start' })
+  }, [selectie, question])
+
+  const tiles = useMemo(() => {
+    if (!selectie) return []
+    const ids = clusterIdsVoorSelectie(selectie, allTopics, allClusters)
+    const rank = new Map(ids.map((id, i) => [id, i]))
+    return allTilesState
+      .filter((t) => rank.has(t.clusterId))
+      .sort((a, b) => (rank.get(a.clusterId) ?? 0) - (rank.get(b.clusterId) ?? 0))
+      .map((t, i) => ({ ...t, ordinal: i + 1 }))
+  }, [selectie, allTopics, allClusters, allTilesState])
+
+  const sections: TileSection[] = useMemo(() => {
+    if (!selectie) return []
+    // Alle tegels, niet alleen die van dit blok. Anders denkt de kop dat
+    // het onderwerp hier compleet is, terwijl een soort som ernaast hangt.
+    return kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState).map((kop) => ({
+      id: kop.id,
+      label: kop.label,
+      subSections: kop.sub.map((sub) => ({
+        id: sub.id,
+        label: sub.label,
+        tiles: tiles.filter((t) => t.clusterId === sub.clusterId),
+      })),
+    }))
+  }, [selectie, allTopics, allClusters, allTilesState, tiles])
+
+  const baseHref = selectie ? `/oefenen?${queryVoorSelectie(selectie)}` : '/oefenen'
+  const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
+  const nextTile = tiles.length ? (tiles[(currentIdx + 1) % tiles.length] ?? null) : null
+  const nextHref = nextTile ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}` : baseHref
+
+  function gaNaar(volgende: Adres) {
+    const sel = losSelectieOp(volgende, data)
+    if (!sel) return
+    setBoomOpen(false)
+    const query = queryVoorSelectie(sel)
+    // Echte navigatie, zodat de terugknop van de browser het overzicht
+    // terugzet en niet de opgave laat staan.
+    router.push(`/oefenen?${query}` as '/oefenen')
+  }
+
+  function toggleInSet(set: Set<string>, id: string, update: (next: Set<string>) => void) {
+    const next = new Set(set)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    update(next)
+  }
+
+  function boomLijst() {
+    return (
+      <div>
+        <ul className="space-y-0.5">
+          {boom.hoofdstukken.map((h) => {
+            const naam = hoofdstukNaam(h.chapter)
+            if (h.paragrafen.length === 0) {
+              const actief =
+                selectie?.soort === 'hoofdstuk' && selectie.chapter.id === h.chapter.id
+              return (
+                <li key={h.chapter.id}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      gaNaar({
+                        blok: null,
+                        topic: null,
+                        cluster: null,
+                        chapter: h.chapter.slug,
+                      })
+                    }
+                    aria-current={actief ? 'true' : undefined}
+                    className={
+                      actief
+                        ? 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-semibold text-accent'
+                        : 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2'
+                    }
+                  >
+                    <span className="min-w-0 break-words">{naam}</span>
+                  </button>
+                </li>
+              )
+            }
+            const open = openHoofdstukken.has(h.chapter.id)
+            return (
+              <li key={h.chapter.id}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    toggleInSet(openHoofdstukken, h.chapter.id, setOpenHoofdstukken)
+                  }
+                  className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2"
+                  aria-expanded={open}
+                >
+                  <Chevron open={open} />
+                  <span className="min-w-0 break-words">{naam}</span>
+                </button>
+                {open && (
+                  <ul className="mb-1">
+                    {h.paragrafen.map((p) => {
+                      const pOpen = openParagrafen.has(p.id)
+                      return (
+                        <li key={p.id}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              toggleInSet(openParagrafen, p.id, setOpenParagrafen)
+                            }
+                            className="flex min-h-11 w-full items-center gap-2 rounded-md py-2 pl-7 pr-3 text-left text-sm text-text hover:bg-surface-2"
+                            aria-expanded={pOpen}
+                          >
+                            <Chevron open={pOpen} />
+                            <span className="min-w-0 break-words">
+                              <span className="font-mono font-semibold">{p.label}</span> {p.title}
+                            </span>
+                          </button>
+                          {pOpen && (
+                            <ul>
+                              {p.blokken.map((blok) =>
+                                blok.heeftOpgaven ? (
+                                  <li key={blok.id}>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        gaNaar({
+                                          blok: blok.slug,
+                                          topic: null,
+                                          cluster: null,
+                                          chapter: null,
+                                        })
+                                      }
+                                      aria-current={
+                                        selectie?.soort === 'blok' && selectie.blok.id === blok.id
+                                          ? 'true'
+                                          : undefined
+                                      }
+                                      className={
+                                        selectie?.soort === 'blok' && selectie.blok.id === blok.id
+                                          ? 'flex min-h-11 w-full items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm font-semibold text-accent'
+                                          : 'flex min-h-11 w-full items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm text-text-muted hover:text-text'
+                                      }
+                                    >
+                                      <span className="font-mono">{blok.letter}</span>
+                                      <span className="min-w-0 break-words">{blok.title}</span>
+                                    </button>
+                                  </li>
+                                ) : (
+                                  <li key={blok.id}>
+                                    <div
+                                      aria-disabled="true"
+                                      className="px-3 py-2 pl-12 text-sm text-text-muted/60"
+                                    >
+                                      <span className="font-mono">{blok.letter}</span>{' '}
+                                      <span className="break-words">{blok.title}</span>
+                                      <span className="mt-0.5 block text-xs">
+                                        {labels.nogGeenOpgaven}
+                                      </span>
+                                    </div>
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+
+        {boom.oudeOpgaven.length > 0 && (
+          <div className="mt-4 border-t border-border pt-3">
+            <button
+              type="button"
+              onClick={() => setOudeOpen((v) => !v)}
+              className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2"
+              aria-expanded={oudeOpen}
+            >
+              <Chevron open={oudeOpen} />
+              <span>{labels.oudeOpgaven}</span>
+            </button>
+            {oudeOpen && (
+              <ul>
+                {boom.oudeOpgaven.map((ch) => {
+                  const actief = selectie?.soort === 'hoofdstuk' && selectie.chapter.id === ch.id
+                  return (
+                    <li key={ch.id}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          gaNaar({
+                            blok: null,
+                            topic: null,
+                            cluster: null,
+                            chapter: ch.slug,
+                          })
+                        }
+                        aria-current={actief ? 'true' : undefined}
+                        className={
+                          actief
+                            ? 'flex min-h-11 w-full items-start rounded-md py-2 pl-9 pr-3 text-left text-sm font-semibold text-accent'
+                            : 'flex min-h-11 w-full items-start rounded-md py-2 pl-9 pr-3 text-left text-sm text-text-muted hover:text-text'
+                        }
+                      >
+                        <span className="min-w-0 break-words">{hoofdstukNaam(ch)}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const kop =
+    selectie?.soort === 'blok'
+      ? naamVanSelectie(selectie)
+      : selectie
+        ? hoofdstukNaam(selectie.chapter)
+        : labels.kiesOnderdeel
+
+  return (
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
+      <aside
+        className={cn(
+          'nice-scrollbar hidden border-border bg-surface lg:block lg:h-full lg:border-r',
+          sidebarOpen ? 'lg:w-80 lg:overflow-y-auto lg:p-4 lg:py-8' : 'lg:w-12 lg:py-4',
+        )}
+      >
+        <div className={sidebarOpen ? 'flex items-center justify-between gap-2' : 'flex justify-center'}>
+          {sidebarOpen && (
+            <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+              {labels.chapterLabel}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen((v) => !v)}
+            aria-expanded={sidebarOpen}
+            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`size-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="m11 17-5-5 5-5" />
+              <path d="m18 17-5-5 5-5" />
+            </svg>
+          </button>
+        </div>
+        {sidebarOpen && <div className="mt-3">{boomLijst()}</div>}
+      </aside>
+
+      <div className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto">
+        <button
+          type="button"
+          onClick={() => setBoomOpen(true)}
+          className="sticky top-14 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium lg:hidden"
+        >
+          <span className="min-w-0 truncate">{kop}</span>
+          <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="currentColor" aria-hidden>
+            <path d="M7 10l5 5 5-5H7z" />
+          </svg>
+        </button>
+
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <h1 className="sr-only">{labels.h1}</h1>
+
+          {!question && tiles.length > 0 && (
+            <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
+          )}
+
+          {!question && selectie && tiles.length > 0 && (
+            <section
+              id={
+                selectie.soort === 'hoofdstuk'
+                  ? `hoofdstuk-${selectie.chapter.slug}`
+                  : `blok-${selectie.blok.slug}`
+              }
+              className="scroll-mt-4"
+            >
+              <h2 className="mt-6 border-b border-border pb-3 font-serif text-2xl text-text">
+                {selectie.soort === 'blok' ? (
+                  <>
+                    <span className="font-mono font-semibold">
+                      {selectie.paragraph.label} {selectie.blok.letter}
+                    </span>
+                    {' – '}
+                    {selectie.blok.title}
+                  </>
+                ) : (
+                  hoofdstukNaam(selectie.chapter)
+                )}
+              </h2>
+              <ExerciseTileGrid
+                baseHref={baseHref}
+                sections={sections}
+                activeQuestionId={null}
+                labels={{
+                  heading: labels.tilesHeading,
+                  lastCorrect: labels.tileLastCorrect,
+                  lastWrong: labels.tileLastWrong,
+                  notTried: labels.tileNotTried,
+                  exercise: labels.tileExercise,
+                }}
+              />
+            </section>
+          )}
+
+          {question ? (
+            <div className="mt-8 flex flex-col gap-8 lg:flex-row">
+              <div className="min-w-0 flex-1">
+                <div className="mx-auto max-w-3xl">
+                  <div className="mb-5">
+                    <Link
+                      href={baseHref as '/oefenen'}
+                      aria-label={labels.backToAll}
+                      title={labels.backToAll}
+                      className="inline-flex size-11 items-center text-text-muted transition hover:-translate-x-0.5 hover:text-text"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="size-7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M19 12H5" />
+                        <path d="m12 19-7-7 7-7" />
+                      </svg>
+                    </Link>
+                  </div>
+                  <StudyCard
+                    key={question.id}
+                    question={question}
+                    steps={question.steps}
+                    nextHref={nextHref}
+                    video={getVideoForCluster(question.cluster_id)}
+                    questionNumber={
+                      tiles.find((t) => t.questionId === question.id)?.ordinal ??
+                      (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
+                    }
+                    onAnswered={(questionId, isCorrect) => {
+                      setAllTilesState((prev) =>
+                        prev.map((t) =>
+                          t.questionId === questionId ? { ...t, lastCorrect: isCorrect } : t,
+                        ),
+                      )
+                    }}
+                  />
+                </div>
+              </div>
+              <aside className="shrink-0 lg:sticky lg:top-0 lg:w-64 lg:self-start">
+                <p className="text-xs font-medium uppercase tracking-wider text-text-muted">
+                  {labels.questionsNav}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {tiles.map((q) => {
+                    const active = q.questionId === question.id
+                    return (
+                      <Link
+                        key={q.questionId}
+                        href={`${baseHref}&q=${encodeURIComponent(q.questionId)}` as '/oefenen'}
+                        prefetch={false}
+                        aria-current={active ? 'page' : undefined}
+                        aria-label={`${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
+                        className={cn(
+                          'flex size-11 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
+                          active && 'ring-2 ring-offset-1 ring-offset-[var(--color-bg)]',
+                          active &&
+                            (q.lastCorrect === true
+                              ? 'ring-emerald-500/80'
+                              : q.lastCorrect === false
+                                ? 'ring-rose-500/80'
+                                : 'ring-neutral-400'),
+                          q.lastCorrect === true &&
+                            'border-emerald-300/70 bg-emerald-50 text-emerald-900 hover:border-emerald-400',
+                          q.lastCorrect === false &&
+                            'border-rose-300/70 bg-rose-50/90 text-rose-900 hover:border-rose-400',
+                          q.lastCorrect == null &&
+                            'border-border bg-surface text-text-muted hover:bg-surface-2 hover:text-text',
+                        )}
+                      >
+                        {q.ordinal}
+                      </Link>
+                    )
+                  })}
+                </div>
+              </aside>
+            </div>
+          ) : tiles.length === 0 ? (
+            <Card className="mt-8">
+              <p className="font-medium text-text">
+                {selectie?.soort === 'blok' ? labels.nogGeenOpgaven : labels.noExercises}
+              </p>
+            </Card>
+          ) : null}
+        </div>
+      </div>
+
+      {boomOpen && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-surface lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label={labels.kiesOnderdeel}
+        >
+          <div className="flex items-center justify-between border-b border-border px-4">
+            <p className="text-sm font-medium">{labels.kiesOnderdeel}</p>
+            <button
+              type="button"
+              onClick={() => setBoomOpen(false)}
+              className="min-h-11 px-3 text-sm font-medium text-text"
+            >
+              {labels.sluiten}
+            </button>
+          </div>
+          <div className="nice-scrollbar flex-1 overflow-y-auto p-4">{boomLijst()}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function hoofdstukNaam(chapter: { slug: string; title: string }): string {
+  return `${hoofdstukCode(chapter.slug)} – ${chapter.title}`
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`size-3 shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M8 5l8 7-8 7V5z" />
+    </svg>
+  )
+}
+
+export function OefenenClient(props: (Props & { indeling: 'onderwerp' }) | BlokProps) {
+  if (props.indeling === 'blok') return <BlokWeergave {...props} />
+  return <OnderwerpWeergave {...props} />
 }
