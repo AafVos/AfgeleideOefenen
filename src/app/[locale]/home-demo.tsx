@@ -95,27 +95,6 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
     })
   }
 
-  function handleBackspace() {
-    const el = inputRef.current
-    const start = el?.selectionStart ?? answer.length
-    const end = el?.selectionEnd ?? answer.length
-    if (start === end && start === 0) return
-    const nextStart = start === end ? start - 1 : start
-    const value = answer.slice(0, nextStart) + answer.slice(end)
-    setAnswer(value)
-    requestAnimationFrame(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.setSelectionRange(nextStart, nextStart)
-      }
-    })
-  }
-
-  function handleClear() {
-    setAnswer('')
-    requestAnimationFrame(() => inputRef.current?.focus())
-  }
-
   const tone = q.difficulty === 1 ? 'accent' : q.difficulty === 2 ? 'warn' : 'danger'
 
   return (
@@ -156,11 +135,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
               autoCorrect="off"
               spellCheck={false}
             />
-            <MathKeyboard
-              onInsert={handleKey}
-              onBackspace={handleBackspace}
-              onClear={handleClear}
-            />
+            <MathKeyboard onInsert={handleKey} />
           </label>
 
           <div className="flex items-center gap-3">
