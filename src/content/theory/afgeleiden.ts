@@ -213,12 +213,12 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         title: 'E-machten',
         formula: [
           "f(x) = e^x \\implies f'(x) = e^x",
-          "f(x) = g^x \\implies f'(x) = g^x \\cdot \\ln(g)",
+          "f(x) = a^x \\implies f'(x) = a^x \\cdot \\ln(a)",
         ],
         examples: [
           { problem: 'f(x) = e^{h(x)}', answer: "f'(x) = h'(x) \\cdot e^{h(x)}", steps: ['Kettingregel: buitenste $e^{\\ldots}$ blijft staan', "Vermenigvuldig met de afgeleide van de exponent: $h'(x)$"] },
           { problem: 'f(x) = e^{2x+3}', answer: "f'(x) = 2e^{2x+3}", steps: ["$h(x) = 2x+3,\\ h'(x) = 2$", "$f'(x) = 2 \\cdot e^{2x+3}$"] },
-          { problem: 'f(x) = 3^x', answer: "f'(x) = 3^x \\cdot \\ln(3)", steps: ['$g = 3$', "$f'(x) = 3^x \\cdot \\ln(3)$"] },
+          { problem: 'f(x) = 3^x', answer: "f'(x) = 3^x \\cdot \\ln(3)", steps: ['$a = 3$', "$f'(x) = 3^x \\cdot \\ln(3)$"] },
         ],
       },
       {
@@ -229,7 +229,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           { problem: 'f(x) = \\ln(h(x))', answer: "f'(x) = \\dfrac{h'(x)}{h(x)}", steps: ['Kettingregel: afgeleide van wat erin staat gedeeld door wat erin staat', "$f'(x) = \\dfrac{h'(x)}{h(x)}$"] },
           { problem: 'f(x) = {}^2\\!\\log(5x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['Schrijf ${}^2\\!\\log(5x) = {}^2\\!\\log(5) + {}^2\\!\\log(x)$', 'De constante valt weg. ${}^2\\!\\log(x)$ heeft afgeleide $\\dfrac{1}{x\\ln(2)}$'] },
           { problem: 'f(x) = \\ln(x^2+1)', answer: "f'(x) = \\dfrac{2x}{x^2+1}", steps: ["$h(x) = x^2+1,\\ h'(x) = 2x$", "$f'(x) = \\dfrac{2x}{x^2+1}$"] },
-          { problem: 'f(x) = {}^2\\!\\log(x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['De formule voor ${}^g\\!\\log(x)$ met $g = 2$', "$f'(x) = \\dfrac{1}{x\\ln(2)}$"] },
+          { problem: 'f(x) = {}^2\\!\\log(x)', answer: "f'(x) = \\dfrac{1}{x\\ln(2)}", steps: ['De formule voor ${}^a\\!\\log(x)$ met $a = 2$', "$f'(x) = \\dfrac{1}{x\\ln(2)}$"] },
         ],
       },
     ],

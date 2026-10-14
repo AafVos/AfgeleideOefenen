@@ -8,8 +8,9 @@ import { Math as TeX, RichMath } from '@/components/math'
 import { Badge, Button } from '@/components/ui'
 import { Link } from '@/i18n/navigation'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
+import { proefsomKlopt, type Proefsom } from '@/lib/practice/proefsom'
 
-type Difficulty = 'easy' | 'medium' | 'hard'
+type Difficulty = Proefsom
 
 type State =
   | { phase: 'input'; error: string | null }
@@ -18,43 +19,22 @@ type State =
 
 type QuestionConfig = {
   difficulty: 1 | 2 | 3
-  accepted: string[]
   correctLatex: string
 }
 
 const QUESTIONS: Record<Difficulty, QuestionConfig> = {
   easy: {
     difficulty: 1,
-    accepted: ['6x+5', '5+6x'],
     correctLatex: '6x + 5',
   },
   medium: {
     difficulty: 2,
-    accepted: ['3cos(3x)', '3cos3x'],
     correctLatex: '3\\cos(3x)',
   },
   hard: {
     difficulty: 3,
-    accepted: [
-      '2xe^x+x^2e^x',
-      'x^2e^x+2xe^x',
-      '(x^2+2x)e^x',
-      '(2x+x^2)e^x',
-      'x(x+2)e^x',
-      '(x+2)xe^x',
-    ],
     correctLatex: '(x^2 + 2x)e^x',
   },
-}
-
-function normalize(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\s+/g, '')
-    .replace(/\*/g, '')
-    .replace(/·/g, '')
-    .replace(/\\cdot/g, '')
-    .replace(/\^{(\d+)}/g, '^$1')
 }
 
 function DemoCard({ difficulty }: { difficulty: Difficulty }) {
@@ -67,8 +47,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
   function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!answer.trim() || state.phase !== 'input') return
-    const norm = normalize(answer)
-    if (q.accepted.some((a) => normalize(a) === norm)) {
+    if (proefsomKlopt(difficulty, answer)) {
       setState({ phase: 'correct' })
     } else {
       setState({ phase: 'wrong', studentAnswer: answer })
@@ -93,27 +72,6 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
         inputRef.current.setSelectionRange(caret, caret)
       }
     })
-  }
-
-  function handleBackspace() {
-    const el = inputRef.current
-    const start = el?.selectionStart ?? answer.length
-    const end = el?.selectionEnd ?? answer.length
-    if (start === end && start === 0) return
-    const nextStart = start === end ? start - 1 : start
-    const value = answer.slice(0, nextStart) + answer.slice(end)
-    setAnswer(value)
-    requestAnimationFrame(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.setSelectionRange(nextStart, nextStart)
-      }
-    })
-  }
-
-  function handleClear() {
-    setAnswer('')
-    requestAnimationFrame(() => inputRef.current?.focus())
   }
 
   const tone = q.difficulty === 1 ? 'accent' : q.difficulty === 2 ? 'warn' : 'danger'
@@ -156,11 +114,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
               autoCorrect="off"
               spellCheck={false}
             />
-            <MathKeyboard
-              onInsert={handleKey}
-              onBackspace={handleBackspace}
-              onClear={handleClear}
-            />
+            <MathKeyboard onInsert={handleKey} />
           </label>
 
           <div className="flex items-center gap-3">
