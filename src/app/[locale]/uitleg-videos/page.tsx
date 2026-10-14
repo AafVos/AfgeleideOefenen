@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { permanentRedirect } from 'next/navigation'
 
 import { canoniek, deelkaart } from '@/lib/seo'
-import { getUitlegVideo, uitlegVideoPad } from '@/lib/videos'
+import { losVideoSlugOp, uitlegVideoPad } from '@/lib/videos'
 
 import { UitlegVideosInhoud } from './inhoud'
 
@@ -24,8 +24,9 @@ function leesVideoParam(video: string | string[] | undefined): string | undefine
  */
 function stuurOudeVideolinkDoor(locale: string, video: string | string[] | undefined) {
   const slug = leesVideoParam(video)
-  if (!slug || !getUitlegVideo(slug)) return
-  permanentRedirect(`/${locale}${uitlegVideoPad(slug)}`)
+  const huidig = slug ? losVideoSlugOp(slug) : null
+  if (!huidig) return
+  permanentRedirect(`/${locale}${uitlegVideoPad(huidig)}`)
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps) {
