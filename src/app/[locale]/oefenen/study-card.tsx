@@ -16,6 +16,7 @@ import {
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
+import { MASTERY_THRESHOLD } from '@/lib/practice/engine'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import { useTimeSpent } from '@/lib/practice/use-time-spent'
 import type { UitlegVideo } from '@/lib/videos'
@@ -23,8 +24,6 @@ import type { UitlegVideo } from '@/lib/videos'
 import { MathKeyboard } from '@/components/math-keyboard'
 
 import { FlagQuestionButton } from './flag-question'
-
-const MASTERY_THRESHOLD = 3
 
 function metVoorvoegsel(prefix: string, rest: string): string {
   return prefix ? `${prefix} ${rest}` : rest
