@@ -205,13 +205,25 @@ export function BlokBoom({
     const open = openBlocks.has(blok.id)
     const meerdere = blok.clusters.length > 1
     const metKop = blok.onderwerpen.filter((onderwerp) => onderwerp.clusters.length > 0)
+    if (!blok.heeftOpgaven) {
+      return (
+        <li key={blok.id}>
+          <div className="min-h-11 rounded-md px-2 py-1 text-sm text-text-muted md:flex md:min-h-0 md:items-center md:gap-2">
+            <span className="hidden shrink-0 md:block md:size-5" />
+            <span className="hidden shrink-0 md:block md:size-5" />
+            <span className="mr-1 font-mono md:mr-0 md:shrink-0">{blok.letter}</span>
+            <span className="break-words md:min-w-0 md:flex-1">{blok.title}</span>
+            <span className="mt-0.5 block text-xs md:mt-0 md:ml-auto md:shrink-0">
+              {t('nogGeenOpgaven')}
+            </span>
+          </div>
+        </li>
+      )
+    }
+
     return (
       <li key={blok.id}>
-        <div
-          className={`flex min-h-11 items-center gap-2 rounded-md px-2 py-1 text-sm md:min-h-0 ${
-            blok.heeftOpgaven ? 'hover:bg-surface-2' : 'text-text-muted'
-          }`}
-        >
+        <div className="flex min-h-11 items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-surface-2 md:min-h-0">
           {meerdere ? (
             <ExpandButton
               open={open}
@@ -221,22 +233,14 @@ export function BlokBoom({
           ) : (
             <span className="size-11 shrink-0 md:size-5" />
           )}
-          {blok.heeftOpgaven ? (
-            <TriCheckbox
-              state={staatVan(ids)}
-              onToggle={() => toggleIds(ids)}
-              ariaLabel={blok.naam}
-            />
-          ) : (
-            <span className="size-11 shrink-0 md:size-5" />
-          )}
+          <TriCheckbox
+            state={staatVan(ids)}
+            onToggle={() => toggleIds(ids)}
+            ariaLabel={blok.naam}
+          />
           <span className="shrink-0 font-mono text-text-muted">{blok.letter}</span>
           <span className="min-w-0 flex-1 break-words">{blok.title}</span>
-          {blok.heeftOpgaven ? (
-            <span className="shrink-0 tabular-nums text-text-muted">{aantal(blok.clusters)}</span>
-          ) : (
-            <span className="shrink-0 text-xs">{t('nogGeenOpgaven')}</span>
-          )}
+          <span className="shrink-0 tabular-nums text-text-muted">{aantal(blok.clusters)}</span>
         </div>
         {open && meerdere && (
           <ul className="ml-7 space-y-0.5 border-l border-border pl-2">
