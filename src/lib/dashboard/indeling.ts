@@ -13,9 +13,11 @@ import { blokIdVanSoort, vergelijkHoofdstukVolgorde } from '@/lib/practice/oefen
 
 export type ClusterVoortgang = {
   id: string
+  title: string
   totalAnswered: number
   totalCorrect: number
   isKnown: boolean
+  correctStreak: number
 }
 
 export type VoortgangRij = {
@@ -23,6 +25,7 @@ export type VoortgangRij = {
   status: string | null
   total_answered: number | null
   total_correct: number | null
+  correct_streak?: number | null
 }
 
 export type BlokRij = {
@@ -149,9 +152,11 @@ function clusterVan(
   const rij = voortgang.get(cluster.id)
   return {
     id: cluster.id,
+    title: cluster.title,
     totalAnswered: rij?.total_answered ?? 0,
     totalCorrect: rij?.total_correct ?? 0,
     isKnown: rij?.status === 'mastered',
+    correctStreak: rij?.correct_streak ?? 0,
   }
 }
 
