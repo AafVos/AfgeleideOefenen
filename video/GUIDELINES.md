@@ -235,3 +235,16 @@ zodra hij één keer gebruikt is.
 - Publiceren: mp4 uploaden naar de publieke Supabase Storage-bucket `videos`
   (prod) en een blokje toevoegen in `src/lib/videos.ts` van de app, inclusief
   cluster-id's voor de oefenvraagtegels.
+
+## YouTube Shorts (9:16)
+
+Korte filmpjes voor integraaloefenen.nl. Zelfde poppetje, dezelfde kleuren,
+dezelfde stem Pauline. Wat afwijkt van een liggende uitlegvideo:
+
+- **1080×1920**, 20–50 seconden, één regel of één soort som.
+- Letters groot genoeg voor een telefoon. De ondertitel staat in beeld, want
+  veel mensen kijken zonder geluid.
+- Hoeklogo en eindbeeld noemen **integraaloefenen.nl**.
+- Eigen voorbeelden, nagekeken door terug te differentiëren. Geen boekopgaven.
+- Code: `src/shorts.tsx`, `src/short-ui.tsx`, stem via
+  `scripts/genereer-voiceover-shorts.sh`. Render: `npm run render:shorts`.

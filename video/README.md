@@ -17,6 +17,7 @@ DM Sans/DM Serif en het kleurenpalet uit `globals.css`.
 | `npm run render:som29` | Rendert "Uitleg bij som 29" naar `out/som-29.mp4`. |
 | `npm run render:som30` | Rendert "Uitleg bij som 30" naar `out/som-30.mp4`. |
 | `npm run render:herschrijven` | Rendert "Machten en wortels herschrijven" naar `out/machten-herschrijven.mp4`. |
+| `npm run render:shorts` | Rendert de vijf staande Shorts (1080×1920) naar `out/shorts/`. |
 | `npm run still -- --frame=200 out/still.png` | Rendert één frame als afbeelding. |
 | `npm run presenter` | Opent de presenter: klik zelf per animatiestap door de video (voor eigen voice-over inspreken). Kies de video met `?video=som30` in de URL; zie `VOICEOVER-som29.md` / `VOICEOVER-som30.md`. |
 
