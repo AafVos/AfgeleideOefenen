@@ -1,6 +1,18 @@
 import { Composition } from 'remotion'
 
 import { HERSCHRIJVEN_DUUR, HerschrijvenVideo } from './HerschrijvenVideo'
+import {
+  KETTING_DUUR,
+  KettingShort,
+  MACHT_DUUR,
+  MachtShort,
+  PRODUCT_DUUR,
+  ProductShort,
+  QUOTIENT_DUUR as QUOTIENT_SHORT_DUUR,
+  QuotientShort,
+  WORTEL_DUUR,
+  WortelShort,
+} from './shorts-scenes'
 import { QUOTIENT_DUUR, QuotientVideo } from './QuotientVideo'
 import { RegelsVideo } from './RegelsVideo'
 import { SOM29_DUUR, Som29Video } from './Som29Video'
@@ -67,6 +79,46 @@ export function RemotionRoot() {
         fps={30}
         width={1920}
         height={1080}
+      />
+      <Composition
+        id="ShortMacht"
+        component={MachtShort}
+        durationInFrames={MACHT_DUUR}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="ShortKetting"
+        component={KettingShort}
+        durationInFrames={KETTING_DUUR}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="ShortProduct"
+        component={ProductShort}
+        durationInFrames={PRODUCT_DUUR}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="ShortQuotient"
+        component={QuotientShort}
+        durationInFrames={QUOTIENT_SHORT_DUUR}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="ShortWortel"
+        component={WortelShort}
+        durationInFrames={WORTEL_DUUR}
+        fps={30}
+        width={1080}
+        height={1920}
       />
       {shortComposities.map((short) => (
         <Composition

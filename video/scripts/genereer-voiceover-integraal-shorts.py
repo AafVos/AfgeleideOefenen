@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stem Pauline (ElevenLabs) voor de vijf Shorts van integraaloefenen.
+"""Stem Pauline (ElevenLabs) voor de vijf integraal-Shorts.
 
 ELEVENLABS_API_KEY in de omgeving. Opnieuw genereren kost tegoed.
 SHORT=primitief BEATS=2 beperkt tot die fragmenten. FORCE=1 overschrijft mp3's.
@@ -105,7 +105,7 @@ def schrijf_duren(frames_per_short: dict[str, list[int]]) -> None:
     regels = [
         "/**",
         " * Frame-aantallen per beat (30 fps), inclusief aanloop en uitloop.",
-        " * Geschreven door scripts/genereer-voiceover-shorts.py. Niet met de hand",
+        " * Geschreven door scripts/genereer-voiceover-integraal-shorts.py. Niet met de hand",
         " * aanpassen: opnieuw genereren overschrijft dit bestand.",
         " * SHORT_LEAD blijft de stilte vóór de stem in shorts.tsx.",
         " */",

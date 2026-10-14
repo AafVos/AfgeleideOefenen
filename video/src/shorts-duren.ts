@@ -1,6 +1,6 @@
 /**
  * Frame-aantallen per beat (30 fps), inclusief aanloop en uitloop.
- * Geschreven door scripts/genereer-voiceover-shorts.py. Niet met de hand
+ * Geschreven door scripts/genereer-voiceover-integraal-shorts.py. Niet met de hand
  * aanpassen: opnieuw genereren overschrijft dit bestand.
  * SHORT_LEAD blijft de stilte vóór de stem in shorts.tsx.
  */

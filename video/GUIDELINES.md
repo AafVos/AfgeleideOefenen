@@ -232,6 +232,11 @@ zodra hij één keer gebruikt is.
 
 - Remotion, 1920×1080, 30 fps; per video een eigen scènebestand + compositie
   in `src/Root.tsx` (zie `README.md` voor de commando's).
+- **Shorts** zijn de uitzondering: 1080×1920, 30 fps, 20–50 seconden, één regel
+  met één voorbeeld. Zelfde stem, kleuren en poppetje. Eindbeeld is de
+  sitenaam. Voor differentiëren: `ShortMacht`, `ShortKetting`, `ShortProduct`,
+  `ShortQuotient` en `ShortWortel`. Voor integreren: `ShortPrimitief`,
+  `ShortSubstitutie`, `ShortPartieel`, `ShortOppervlakte` en `ShortArctan`.
 - Publiceren: mp4 uploaden naar de publieke Supabase Storage-bucket `videos`
   (prod) en een blokje toevoegen in `src/lib/videos.ts` van de app, inclusief
   cluster-id's voor de oefenvraagtegels.
@@ -247,4 +252,4 @@ dezelfde stem Pauline. Wat afwijkt van een liggende uitlegvideo:
 - Hoeklogo en eindbeeld noemen **integraaloefenen.nl**.
 - Eigen voorbeelden, nagekeken door terug te differentiëren. Geen boekopgaven.
 - Code: `src/shorts.tsx`, `src/short-ui.tsx`, stem via
-  `scripts/genereer-voiceover-shorts.sh`. Render: `npm run render:shorts`.
+  `scripts/genereer-voiceover-integraal-shorts.sh`. Render: `npm run render:shorts-integraal`.
