@@ -51,7 +51,7 @@ type StudyQuestion = {
 
 type State =
   | { phase: 'input'; error: string | null }
-  | { phase: 'correct'; streak: number; mastered: boolean }
+  | { phase: 'correct'; streak: number; mastered: boolean; clusterName: string }
   | {
       phase: 'wrong'
       userAnswer: string
@@ -167,7 +167,12 @@ export function StudyCard({
       if (result.kind === 'correct') {
         onAnswered?.(question.id, true)
         setLastAttempt(submitted)
-        setState({ phase: 'correct', streak: result.streak, mastered: result.mastered })
+        setState({
+          phase: 'correct',
+          streak: result.streak,
+          mastered: result.mastered,
+          clusterName: result.clusterTitle,
+        })
         return
       }
       onAnswered?.(question.id, false)
@@ -382,7 +387,7 @@ export function StudyCard({
           <p className="mt-1 text-sm text-accent/80">
             {state.mastered
               ? t('masteredBody')
-              : (nogEenGoedZin(state.streak, clusterName ?? '') ??
+              : (nogEenGoedZin(state.streak, state.clusterName || clusterName || '') ??
                 t('streakBody', {
                   streak: state.streak,
                   remaining: MASTERY_THRESHOLD - state.streak,
