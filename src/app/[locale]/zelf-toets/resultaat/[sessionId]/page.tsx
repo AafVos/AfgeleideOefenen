@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Card, cn } from '@/components/ui'
 import { loadTestResults } from '@/lib/practice/custom-test'
+import { linkNaToets } from '@/lib/practice/zelf-toets-indeling'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
@@ -133,7 +134,12 @@ export default async function ZelfToetsResultaatPage({
             {group.correct < group.total && group.chapterSlug && (
               <p className="mt-3 text-xs">
                 <Link
-                  href={`/oefenen?chapter=${encodeURIComponent(group.chapterSlug)}&topic=${encodeURIComponent(group.topicSlug)}&cluster=${encodeURIComponent(group.clusterSlug)}`}
+                  href={linkNaToets({
+                    blockSlug: group.blockSlug,
+                    chapterSlug: group.chapterSlug,
+                    topicSlug: group.topicSlug,
+                    clusterSlug: group.clusterSlug,
+                  })}
                   className="font-medium text-accent hover:underline"
                 >
                   {t('drillLink')} →

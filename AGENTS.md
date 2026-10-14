@@ -67,7 +67,8 @@ eigen indeling.
 
 De oude indeling per onderwerp staat uit. Om hem weer aan te zetten: in
 `src/lib/practice/oefenen-indeling.ts` laat `oefenIndeling()` `'onderwerp'`
-teruggeven in plaats van `'blok'`. Standaard is `'blok'`.
+teruggeven in plaats van `'blok'`. Standaard is `'blok'`. Dezelfde
+schakelaar geldt voor het dashboard en de zelf-toets.
 
 ## Migraties in de titel
 
