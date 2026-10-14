@@ -232,6 +232,10 @@ zodra hij één keer gebruikt is.
 
 - Remotion, 1920×1080, 30 fps; per video een eigen scènebestand + compositie
   in `src/Root.tsx` (zie `README.md` voor de commando's).
+- **Shorts** zijn de uitzondering: 1080×1920, 30 fps, 20–50 seconden, één regel
+  met één voorbeeld. Zelfde stem, kleuren en poppetje. Eindbeeld is de
+  sitenaam. Composities `ShortMacht`, `ShortKetting`, `ShortProduct`,
+  `ShortQuotient` en `ShortWortel`.
 - Publiceren: mp4 uploaden naar de publieke Supabase Storage-bucket `videos`
   (prod) en een blokje toevoegen in `src/lib/videos.ts` van de app, inclusief
   cluster-id's voor de oefenvraagtegels.
