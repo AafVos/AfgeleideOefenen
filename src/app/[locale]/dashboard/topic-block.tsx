@@ -15,7 +15,6 @@ export type ClusterData = {
   totalAnswered: number
   totalCorrect: number
   isKnown: boolean
-  isSkipped: boolean
 }
 
 export type TopicData = {
