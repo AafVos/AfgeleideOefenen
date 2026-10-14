@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { vraagIsToepassing } from '@/lib/practice/answer-prefix'
 import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
@@ -57,6 +58,8 @@ export type NewExerciseTile = {
   latex_body: string | null
   preview: string
   lastCorrect: boolean | null
+  /** Context of tekst vóór het antwoordvak: een verhaaltje of toepassing. */
+  verhaal: boolean
 }
 
 function stripForPreview(raw: string, maxLen: number): string {
@@ -133,7 +136,7 @@ export async function loadTilesForClusters(
   if (!clusterIds.length) return []
   const { data, error } = await db
     .from('questions_new')
-    .select('id, cluster_id, difficulty, order_index, latex_body')
+    .select('id, cluster_id, difficulty, order_index, latex_body, answer_prefix')
     .in('cluster_id', clusterIds)
   if (error) throw new Error(error.message)
 
@@ -180,7 +183,28 @@ export async function loadTilesForClusters(
     latex_body: q.latex_body,
     preview: stripForPreview(q.latex_body ?? '', 56),
     lastCorrect: lastCorrectByQuestionId.get(q.id) ?? null,
+    verhaal: vraagIsToepassing(q.latex_body, q.answer_prefix),
   }))
+}
+
+/** De soort som van de vraag die deze leerling het laatst beantwoordde. */
+export async function loadLaatsteClusterId(db: DB): Promise<string | null> {
+  const { data, error } = await db
+    .from('session_answers_new')
+    .select('question_id')
+    .order('answered_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!data) return null
+
+  const { data: vraag, error: qErr } = await db
+    .from('questions_new')
+    .select('cluster_id')
+    .eq('id', data.question_id)
+    .maybeSingle()
+  if (qErr) throw new Error(qErr.message)
+  return vraag?.cluster_id ?? null
 }
 
 export async function loadQuestionNew(
