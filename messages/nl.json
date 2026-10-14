@@ -483,7 +483,8 @@
     "chapterOther": "Overig",
     "learnTitle": "Wat je leert",
     "ruleTitle": "De regel",
-    "exampleTitle": "Een voorbeeld"
+    "exampleTitle": "Een voorbeeld",
+    "writtenLink": "Lees de geschreven uitleg"
   },
   "NotFound": {
     "eyebrow": "Fout 404",

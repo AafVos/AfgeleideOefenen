@@ -76,6 +76,7 @@ export async function UitlegVideosInhoud({
         soort: v.soort,
         chapter: v.chapter,
         hasPractice: v.clusterIds.length > 0,
+        theorieHref: v.theoriePad ? `/${locale}${v.theoriePad}` : null,
       }))}
       activeSlug={activeVideo?.slug ?? null}
       vragen={vragen}
@@ -120,6 +121,7 @@ export async function UitlegVideosInhoud({
         learnTitle: t('learnTitle'),
         ruleTitle: t('ruleTitle'),
         exampleTitle: t('exampleTitle'),
+        writtenLink: t('writtenLink'),
         askNoAccount: t('askNoAccount'),
         askLogin: t('askLogin'),
         askRegister: t('askRegister'),

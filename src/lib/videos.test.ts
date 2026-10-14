@@ -16,6 +16,8 @@ describe('uitlegvideo-adressen', () => {
   it('noemt de quotiëntregel bij naam', () => {
     expect(getUitlegVideo('quotientregel')?.title).toBe('De quotiëntregel')
     expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel')
+    expect(getUitlegVideo('quotientregel')?.theoriePad).toBe('/theorie/quotientregel')
+    expect(getUitlegVideo('somregel-of-productregel')?.theoriePad).toBe('/theorie/productregel')
   })
 
   it('zet bij elke video een eigen uitleg', () => {
