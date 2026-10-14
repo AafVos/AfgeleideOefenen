@@ -4,6 +4,7 @@ import {
   WEGWERP_WACHTWOORD,
   geefAntwoord,
   kiesOpgave,
+  TESTLEERLING,
   logIn,
   logUit,
   sluitRondleiding,
@@ -100,7 +101,9 @@ async function registreerEnBevestig(page: Page, opts?: { gebruikersnaam?: string
 
   const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
   await page.goto(linkUitMail(mail, VERIFY_PAD))
-  await expect(page).toHaveURL(/\/nl\/oefenen/)
+  // Meteen de eerste som, niet het hoofdstukkenmenu.
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  expect(new URL(page.url()).searchParams.get('q')).toBeTruthy()
 
   return email
 }
@@ -142,9 +145,10 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
   isNederlands(mail)
 
   // 4. Op de link klikken: de code wordt ingewisseld voor een sessie en je
-  //    landt direct ingelogd op de oefenpagina — geen inlogformulier.
+  //    landt direct op de eerste som — geen inlogformulier, geen hoofdstukkenmenu.
   await page.goto(linkUitMail(mail, VERIFY_PAD))
-  await expect(page).toHaveURL(/\/nl\/oefenen/)
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  expect(new URL(page.url()).searchParams.get('q')).toBeTruthy()
 
   // De welkomstmail gaat nu uit via `after()` in de callback, net als na
   // inloggen. Hij komt ná het antwoord aan de leerling, dus hier even op
@@ -178,6 +182,10 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
     await expect(page.getByRole('button', { name: 'Vraag het Aaf' })).toBeVisible()
   }
 
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible()
+
   // 7. Uitloggen en opnieuw inloggen: het account blijft gewoon werken.
   await logUit(page, naam)
   await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
@@ -201,7 +209,7 @@ test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon',
   page,
 }) => {
   await registreerEnBevestig(page)
-  // Net geregistreerd en bevestigd: de callback zet je meteen op /nl/oefenen.
+  // Net geregistreerd en bevestigd: de callback zet je meteen op de eerste som.
   await sluitRondleiding(page)
   await page.goto('/nl/dashboard')
 
@@ -227,6 +235,72 @@ test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon',
   await expect(page.locator('li a[href*="/oefenen?"]').first()).toBeVisible()
 })
 
+const GEKOZEN_SOORT = '/oefenen?chapter=h2&topic=h2_termsgewijs'
+
+test('wie niet ingelogd is, houdt de gekozen soort tot na het inloggen @telefoon', async ({
+  page,
+}) => {
+  await page.goto(`/nl${GEKOZEN_SOORT}`)
+  await expect(page).toHaveURL(/\/nl\/inloggen/)
+  const inlog = new URL(page.url())
+  expect(inlog.searchParams.get('naar')).toBe(GEKOZEN_SOORT)
+  expect(inlog.searchParams.get('chapter')).toBeNull()
+  expect(inlog.searchParams.get('topic')).toBeNull()
+
+  await page.locator('input[name="email"]').fill(TESTLEERLING.email)
+  await page.locator('input[name="password"]').fill(TESTLEERLING.wachtwoord)
+  await page.getByRole('button', { name: 'Inloggen' }).click()
+
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  const geland = new URL(page.url())
+  expect(geland.searchParams.get('topic')).toBe('h2_termsgewijs')
+  expect(geland.searchParams.get('q')).toBeTruthy()
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible()
+})
+
+test('een gekozen soort blijft bewaard tot na de bevestigingsmail', async ({ page }) => {
+  await page.goto(`/nl${GEKOZEN_SOORT}`)
+  await page.getByRole('link', { name: 'Registreer' }).click()
+  await expect(page).toHaveURL(/\/nl\/registreren/)
+  expect(new URL(page.url()).searchParams.get('naar')).toBe(GEKOZEN_SOORT)
+
+  const email = uniekAdres()
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('input[name="password"]').fill(WEGWERP_WACHTWOORD)
+  await page.locator('input[name="passwordConfirm"]').fill(WEGWERP_WACHTWOORD)
+  await page.getByRole('button', { name: 'Account aanmaken' }).click()
+  await expect(melding(page)).toBeVisible()
+
+  const mail = await wachtOpMail(email, { onderwerpBevat: ONDERWERP_BEVESTIGEN })
+  await page.goto(linkUitMail(mail, VERIFY_PAD))
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  const geland = new URL(page.url())
+  expect(geland.searchParams.get('topic')).toBe('h2_termsgewijs')
+  expect(geland.searchParams.get('q')).toBeTruthy()
+  await sluitRondleiding(page)
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible()
+})
+
+test('wie al ingelogd is, gaat vanaf de theorie direct naar oefenen', async ({ page }) => {
+  await logIn(page)
+  await page.goto(`/nl${GEKOZEN_SOORT}`)
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  const geland = new URL(page.url())
+  expect(geland.searchParams.get('chapter')).toBe('h2')
+  expect(geland.searchParams.get('topic')).toBe('h2_termsgewijs')
+  expect(geland.searchParams.get('q')).toBeNull()
+})
+
+test('een andere pagina dan oefenen bewaart het adres niet', async ({ page }) => {
+  await page.goto('/nl/dashboard')
+  await expect(page).toHaveURL(/\/nl\/inloggen$/)
+  expect(new URL(page.url()).searchParams.get('naar')).toBeNull()
+})
+
 test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async ({
   page,
 }) => {
@@ -238,9 +312,10 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
   const link = linkUitMail(mail, VERIFY_PAD)
 
   // De eerste klik gaat goed: de code wordt ingewisseld en je landt direct
-  // ingelogd op de oefenpagina. Geen "bevestigd"-melding, geen inlogformulier.
+  // op de eerste som. Geen "bevestigd"-melding, geen inlogformulier.
   await page.goto(link)
-  await expect(page).toHaveURL(/\/nl\/oefenen/)
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  expect(new URL(page.url()).searchParams.get('q')).toBeTruthy()
 
   // Uitloggen voor de tweede klik, anders stuurt de nog actieve sessie je
   // meteen door vanaf de inlogpagina en zie je de foutmelding niet.

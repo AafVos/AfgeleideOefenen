@@ -1,9 +1,17 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { after } from 'next/server'
+import { after, NextResponse, type NextRequest } from 'next/server'
 
+import { bestemmingNaBevestigen } from '@/lib/auth/bestemming'
+import { veiligOefenpad } from '@/lib/auth/oefenpad'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
+
+function inlogMetMail(origin: string, mail: string, oefenpad: string | null) {
+  const url = new URL('/nl/inloggen', origin)
+  url.searchParams.set('mail', mail)
+  if (oefenpad) url.searchParams.set('naar', oefenpad)
+  return NextResponse.redirect(url)
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -17,11 +25,15 @@ export async function GET(request: NextRequest) {
       : `/nl${nextParam}`  // no locale prefix → prepend default locale
     : '/nl/dashboard'      // no next param → default
 
+  // Alleen een pad dat met /oefenen begint telt als gekozen soort.
+  // Iets anders (een ander pad, een adres buiten de site) valt weg.
+  const oefenpad = veiligOefenpad(nextParam)
+
   // E-mailbevestiging: de code inwisselen voor een sessie, zodat de leerling
-  // direct ingelogd is op de oefenpagina — net als bij aanmelden zonder
+  // direct ingelogd is op zijn eerste opgave — net als bij aanmelden zonder
   // bevestigingsmail. Oude mails met `next=/nl/inloggen` blijven werken: ook
-  // dan wordt de code ingewisseld; de inlogpagina stuurt een ingelogde
-  // leerling alsnog door.
+  // dan wordt de code ingewisseld. Een gekozen soort (`next=/oefenen?…`)
+  // komt op die som uit, niet op het hoofdstukkenmenu.
   //
   // Of het ook gelukt is, zegt Supabase op twee verschillende manieren:
   //
@@ -32,41 +44,39 @@ export async function GET(request: NextRequest) {
   //     Dan zet Supabase het antwoord achter de `#`, en dat stuk stuurt een
   //     browser nooit naar de server. Daar kan hier dus niets over gezegd
   //     worden: dat vangt de inlogpagina zelf op (`mail=onbekend`).
-  if (/^\/nl\/inloggen(\/|$|\?)/.test(next)) {
+  const bevestigen = /^\/nl\/inloggen(\/|$|\?)/.test(next) || oefenpad !== null
+  if (bevestigen) {
     if (searchParams.has('error') || searchParams.has('error_code')) {
-      const url = new URL(next, origin)
-      url.searchParams.set('mail', 'verlopen')
-      return NextResponse.redirect(url)
+      return inlogMetMail(origin, 'verlopen', oefenpad)
     }
 
     if (code) {
       const supabase = await createClient()
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) {
-        const url = new URL(next, origin)
-        url.searchParams.set('mail', 'verlopen')
-        return NextResponse.redirect(url)
+        return inlogMetMail(origin, 'verlopen', oefenpad)
       }
 
-      // Ingelogd op de oefenpagina na bevestigen.
-      // Kopieer de gebruikersnaam uit user_metadata naar profiles, net als
-      // de login-action doet -- anders staat er voor altijd een e-mailadres
-      // in de bovenbalk in plaats van de naam die de leerling koos.
+      // Ingelogd na bevestigen. Kopieer de gebruikersnaam uit user_metadata
+      // naar profiles, net als de login-action doet — anders staat er voor
+      // altijd een e-mailadres in de bovenbalk in plaats van de naam die de
+      // leerling koos.
       if (data.user) {
         await zetGekozenGebruikersnaam(supabase, data.user)
 
+        const userId = data.user.id
         after(async () => {
-          await stuurWelkomstmail(data.user.id)
+          await stuurWelkomstmail(userId)
         })
       }
-      return NextResponse.redirect(`${origin}/nl/oefenen`)
+
+      const doel = await bestemmingNaBevestigen(supabase, oefenpad)
+      return NextResponse.redirect(`${origin}${doel}`)
     }
 
     // Geen code en geen fout: de `#`-staart met het antwoord is niet bij de
     // server aangekomen. De inlogpagina vangt dat zelf op.
-    const url = new URL(next, origin)
-    url.searchParams.set('mail', 'onbekend')
-    return NextResponse.redirect(url)
+    return inlogMetMail(origin, 'onbekend', oefenpad)
   }
 
   // Bestemming is niet de inlogpagina (bv. de resetpagina na een
