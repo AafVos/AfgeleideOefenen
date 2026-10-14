@@ -95,6 +95,10 @@ export function normalizeAnswer(raw: string): string {
   const zonderOpmaak = raw
     .toLowerCase()
     .replace(/\s+/g, '')
+    // x², x³ en x⁴ zijn dezelfde macht als x^2, x^3 en x^4.
+    .replace(/²/g, '^2')
+    .replace(/³/g, '^3')
+    .replace(/⁴/g, '^4')
     // Een maal-teken tussen twee cijfers is een vermenigvuldiging.
     // 2*4, 2·4 en 2\cdot4 worden 2×4, en zijn dus niet hetzelfde als 24.
     // Naast een letter mag het teken wel weg: 3*x is 3x.
@@ -112,9 +116,9 @@ export function normalizeAnswer(raw: string): string {
     // Zo zijn 0,2 en 0.2 gelijk, en ook 1,8x^2 en 1.8x^2. 0,33 wordt 0.33
     // en blijft ongelijk aan 1/3: we ronden niet af naar een breuk.
     .replace(/(\d),(?=\d)/g, '$1.')
-    // Verhaaltje of lijn: de leerling typt soms het voorvoegsel of de eenheid mee.
+    // Verhaaltje, lijn of kromme: de leerling typt soms het voorvoegsel of de eenheid mee.
     // Het opgeslagen antwoord blijft het kale getal of de kale uitdrukking.
-    // Een andere termvolgorde van een lijn staat hieronder.
+    // Een andere termvolgorde staat hieronder.
     .replace(/^[txhy]=/, '')
   return haalEenheidWeg(latexNaarTypwijze(zonderOpmaak))
 }
@@ -332,6 +336,210 @@ function zelfdeLijn(a: string, b: string): boolean {
   return links !== null && links === lijnSleutel(b)
 }
 
+type MachtTerm = { macht: number; coeff: Breuk }
+
+function metMacht(coeff: Breuk | null, macht: number): MachtTerm | null {
+  if (!coeff || !Number.isInteger(macht) || macht < 0 || macht > 12) return null
+  return { coeff, macht }
+}
+
+/**
+ * Eén term van een veelterm, zonder het teken ervoor.
+ * `2x^3`, `(1/2)x^3`, `x^3/2`, `3x/2` en `8`.
+ * `1/2x^2` slaan we over: dat toont de site als een breuk met `2x^2` onder de streep.
+ */
+function leesOngetekendeMacht(body: string): MachtTerm | null {
+  if (/^\d+\/\d+x/.test(body)) return null
+
+  const gedeeldeMacht = /^\((-?)x\^(\d+)\)\/(\d+)$/.exec(body)
+  if (gedeeldeMacht) {
+    return metMacht(
+      breuk(gedeeldeMacht[1] === '-' ? -1 : 1, Number(gedeeldeMacht[3])),
+      Number(gedeeldeMacht[2]),
+    )
+  }
+
+  const breukX = /^\((-?\d+)\/(-?\d+)\)x(?:\^(\d+))?$/.exec(body)
+  if (breukX) {
+    return metMacht(breuk(Number(breukX[1]), Number(breukX[2])), breukX[3] ? Number(breukX[3]) : 1)
+  }
+
+  const breukKnopX = /^\((-?\d+)\)\/\((-?\d+)\)x(?:\^(\d+))?$/.exec(body)
+  if (breukKnopX) {
+    return metMacht(
+      breuk(Number(breukKnopX[1]), Number(breukKnopX[2])),
+      breukKnopX[3] ? Number(breukKnopX[3]) : 1,
+    )
+  }
+
+  const breukConstant = /^\((-?\d+)\/(-?\d+)\)$/.exec(body)
+  if (breukConstant) return metMacht(breuk(Number(breukConstant[1]), Number(breukConstant[2])), 0)
+
+  const breukKnopConstant = /^\((-?\d+)\)\/\((-?\d+)\)$/.exec(body)
+  if (breukKnopConstant) {
+    return metMacht(breuk(Number(breukKnopConstant[1]), Number(breukKnopConstant[2])), 0)
+  }
+
+  const haakjesX = /^\((-?\d+(?:\.\d+)?)\)x(?:\^(\d+))?$/.exec(body)
+  if (haakjesX) {
+    return metMacht(metTeken(haakjesX[1]), haakjesX[2] ? Number(haakjesX[2]) : 1)
+  }
+
+  const factorMacht = /^(\d+(?:\.\d+)?)\(x\^(\d+)\)$/.exec(body)
+  if (factorMacht) return metMacht(leesGetal(factorMacht[1]), Number(factorMacht[2]))
+
+  const getalX = /^(\d+(?:\.\d+)?)x(?:\^(\d+))?(?:\/(\d+))?$/.exec(body)
+  if (getalX) {
+    const basis = leesGetal(getalX[1])
+    const noemer = getalX[3] ? Number(getalX[3]) : 1
+    const coeff = basis && noemer !== 0 ? breuk(basis.n, basis.d * noemer) : null
+    return metMacht(coeff, getalX[2] ? Number(getalX[2]) : 1)
+  }
+
+  const alleenX = /^x(?:\^(\d+))?(?:\/(\d+))?$/.exec(body)
+  if (alleenX) {
+    const noemer = alleenX[2] ? Number(alleenX[2]) : 1
+    return metMacht(noemer === 0 ? null : breuk(1, noemer), alleenX[1] ? Number(alleenX[1]) : 1)
+  }
+
+  const breukLos = /^(\d+)\/(\d+)$/.exec(body)
+  if (breukLos) return metMacht(breuk(Number(breukLos[1]), Number(breukLos[2])), 0)
+
+  const getal = /^(\d+(?:\.\d+)?)$/.exec(body)
+  if (getal) return metMacht(leesGetal(getal[1]), 0)
+
+  return null
+}
+
+function leesMachtTerm(ruw: string): MachtTerm | null {
+  let body = ruw
+  let teken: 1 | -1 = 1
+  for (let keer = 0; keer < 4; keer++) {
+    const zonder = haalBuitensteHaakjesWeg(body)
+    if (zonder !== body) {
+      body = zonder
+      continue
+    }
+    if (body.startsWith('+')) {
+      body = body.slice(1)
+      continue
+    }
+    if (body.startsWith('-')) {
+      teken = teken === 1 ? -1 : 1
+      body = body.slice(1)
+      continue
+    }
+    break
+  }
+  if (!body) return null
+  const gelezen = leesOngetekendeMacht(body)
+  if (!gelezen) return null
+  const coeff = keerBreuk(gelezen.coeff, teken)
+  if (!coeff) return null
+  return { macht: gelezen.macht, coeff }
+}
+
+/**
+ * Splitst een som in termen. Een minteken in een exponent, zoals `x^-2`,
+ * hoort bij de macht en is geen nieuw termteken.
+ */
+function veeltermTermen(s: string): Array<{ teken: 1 | -1; body: string }> | null {
+  const termen: Array<{ teken: 1 | -1; body: string }> = []
+  let i = 0
+  let teken: 1 | -1 = 1
+  if (s[0] === '+') i = 1
+  else if (s[0] === '-') {
+    teken = -1
+    i = 1
+  }
+  if (i >= s.length) return null
+
+  while (i < s.length) {
+    let j = i
+    let diepte = 0
+    while (j < s.length) {
+      const tekenNu = s[j]
+      if (tekenNu === '(') {
+        diepte++
+        j++
+        continue
+      }
+      if (tekenNu === ')') {
+        diepte--
+        if (diepte < 0) return null
+        j++
+        continue
+      }
+      if (tekenNu === '^' && diepte === 0) {
+        if (s[j + 1] === '(') {
+          j++
+          continue
+        }
+        let k = j + 1
+        if (s[k] === '+' || s[k] === '-') k++
+        if (!/\d/.test(s[k] ?? '')) return null
+        while (k < s.length && /\d/.test(s[k])) k++
+        j = k
+        continue
+      }
+      if (diepte === 0 && (tekenNu === '+' || tekenNu === '-')) break
+      j++
+    }
+    if (diepte !== 0) return null
+    const body = s.slice(i, j)
+    if (!body) return null
+    termen.push({ teken, body })
+    if (j >= s.length) break
+    teken = s[j] === '-' ? -1 : 1
+    i = j + 1
+    if (i >= s.length) return null
+  }
+  return termen
+}
+
+/**
+ * Sleutel van een veelterm in x, zoals `-x^2 + 8` en `8 - x^2`.
+ * Zelfde veelterm, andere schrijfwijze, krijgt dezelfde sleutel.
+ * Een lijn, een andere letter, of haakjes die nog een som vermenigvuldigen,
+ * geeft null: dan blijft de gewone tekstvergelijking.
+ */
+function veeltermSleutel(genormaliseerd: string): string | null {
+  const s = haalBuitensteHaakjesWeg(genormaliseerd)
+  if (!s.includes('^') || /[^x0-9+\-().^/]/.test(s)) return null
+
+  const termen = veeltermTermen(s)
+  if (!termen) return null
+
+  const coeffs = new Map<number, Breuk>()
+  for (const term of termen) {
+    const gelezen = leesMachtTerm(term.body)
+    if (!gelezen) return null
+    const deel = keerBreuk(gelezen.coeff, term.teken)
+    if (!deel) return null
+    const som = telBreuk(coeffs.get(gelezen.macht) ?? NUL, deel)
+    if (!som) return null
+    coeffs.set(gelezen.macht, som)
+  }
+
+  const delen: string[] = []
+  let hoogste = -1
+  for (const macht of [...coeffs.keys()].sort((a, b) => b - a)) {
+    const coeff = coeffs.get(macht)
+    if (!coeff || coeff.n === 0) continue
+    if (macht > hoogste) hoogste = macht
+    delen.push(`${macht}=${breukSleutel(coeff)}`)
+  }
+  // Na samenvoegen moet er een macht 2 of hoger overblijven.
+  // Anders is het een lijn, en die heeft zijn eigen sleutel.
+  if (hoogste < 2) return null
+  return delen.join(';')
+}
+
+function zelfdeVeelterm(a: string, b: string): boolean {
+  const links = veeltermSleutel(a)
+  return links !== null && links === veeltermSleutel(b)
+}
+
 export function answersMatch(
   student: string,
   correct: string,
@@ -339,10 +547,10 @@ export function answersMatch(
 ): boolean {
   const norm = normalizeAnswer(student)
   const goed = normalizeAnswer(correct)
-  if (norm === goed || zelfdeLijn(norm, goed)) return true
+  if (norm === goed || zelfdeLijn(norm, goed) || zelfdeVeelterm(norm, goed)) return true
   return alternatives.some((alt) => {
     const andere = normalizeAnswer(alt)
-    return norm === andere || zelfdeLijn(norm, andere)
+    return norm === andere || zelfdeLijn(norm, andere) || zelfdeVeelterm(norm, andere)
   })
 }
 
