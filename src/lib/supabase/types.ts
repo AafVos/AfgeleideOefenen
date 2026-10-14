@@ -70,6 +70,52 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['chapters']['Insert']>
         Relationships: []
       }
+      /** Boekparagrafen per hoofdstuk. Migratie 0053. */
+      paragraphs: {
+        Row: {
+          id: string
+          chapter_id: string
+          slug: string
+          label: string
+          title: string
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          chapter_id: string
+          slug: string
+          label: string
+          title: string
+          order_index: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['paragraphs']['Insert']>
+        Relationships: []
+      }
+      /** Theorieblok A, B, C binnen een paragraaf. Migratie 0053. */
+      theory_blocks: {
+        Row: {
+          id: string
+          paragraph_id: string
+          slug: string
+          letter: string
+          title: string
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          paragraph_id: string
+          slug: string
+          letter: string
+          title: string
+          order_index: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['theory_blocks']['Insert']>
+        Relationships: []
+      }
       topics_new: {
         Row: {
           id: string
@@ -78,6 +124,7 @@ export type Database = {
           chapter_id: string
           order_index: number
           is_unlocked_by_default: boolean
+          theory_block_id: string | null
           created_at: string
         }
         Insert: {
@@ -87,6 +134,7 @@ export type Database = {
           chapter_id: string
           order_index: number
           is_unlocked_by_default?: boolean
+          theory_block_id?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['topics_new']['Insert']>
