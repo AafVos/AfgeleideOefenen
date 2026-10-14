@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Math as TeX, RichMath } from '@/components/math'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { getVoorbeeld, getVoorbeelden, voorbeeldPad } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
@@ -101,9 +102,13 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         </section>
 
         <div className="mt-12 flex flex-col gap-3">
+          <ProbeerKnop
+            oefenen={voorbeeld.oefenen}
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
+          />
           <Link
             href={voorbeeld.oefenen as '/oefenen'}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
           >
             Oefen dit soort sommen
           </Link>
