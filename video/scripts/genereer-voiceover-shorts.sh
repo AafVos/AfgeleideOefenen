@@ -34,6 +34,7 @@ genereer() {
 }
 
 genereer macht \
+  "Hoe differentieer je drie x tot de vierde?" \
   "De machtsregel. Zo differentieer je een macht van x." \
   "De functie f van x is drie x tot de vierde." \
   "Haal de macht naar voren, en haal er één af." \
@@ -42,6 +43,7 @@ genereer macht \
   "Oefen het zelf op afgeleideoefenen punt nl."
 
 genereer ketting \
+  "Hoe differentieer je, haakje twee x plus één, tot de derde?" \
   "Zit er een functie in een functie? Dan gebruik je de kettingregel." \
   "De functie f van x is, haakje twee x plus één, tot de derde. De binnenkant noemen we h van x. De buitenkant is g: tot de derde." \
   "Eerst de buitenkant. Drie keer, haakje twee x plus één, tot de tweede." \
@@ -50,6 +52,7 @@ genereer ketting \
   "Oefen de kettingregel op afgeleideoefenen punt nl."
 
 genereer product \
+  "Hoe differentieer je x kwadraat, keer haakje drie x plus één?" \
   "Twee functies keer elkaar? Dan de productregel." \
   "De functie f van x is x kwadraat, keer haakje drie x plus één." \
   "g van x is x kwadraat. h van x is drie x plus één." \
@@ -59,6 +62,7 @@ genereer product \
   "Oefen de productregel op afgeleideoefenen punt nl."
 
 genereer quotient \
+  "Hoe differentieer je x, gedeeld door x plus één?" \
   "Een breuk van twee functies? Dan de quotiëntregel." \
   "De functie f van x is x, gedeeld door x plus één." \
   "g is de teller: x. h is de noemer: x plus één." \
@@ -67,6 +71,7 @@ genereer quotient \
   "Oefen de quotiëntregel op afgeleideoefenen punt nl."
 
 genereer wortel \
+  "Hoe differentieer je wortel x?" \
   "De afgeleide van een wortel. Schrijf hem eerst als een macht." \
   "De functie f van x is wortel x. Dat is x tot de macht een half. Dat geldt voor x groter dan nul." \
   "De machtsregel: een half, keer x tot de macht min een half." \
