@@ -98,6 +98,12 @@ export default function ProductregelPage() {
           Zelf oefenen
         </Link>
         <Link
+          href="/uitleg-videos/somregel-of-productregel"
+          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+        >
+          Bekijk de video: Somregel of productregel?
+        </Link>
+        <Link
           href="/theorie"
           className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
         >

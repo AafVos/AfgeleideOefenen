@@ -32,6 +32,8 @@ export type UitlegVideo = {
    * vandaan komen. Leeg = geen oefensectie tonen.
    */
   clusterIds: string[]
+  /** Geschreven uitleg die bij deze video hoort. Leeg = geen teruglink. */
+  theoriePad?: string
 }
 
 /**
@@ -71,6 +73,7 @@ const VIDEOS: UitlegVideo[] = [
       // De productregel · Twee polynomen
       'faa995e4-1e45-4d93-8145-ee749232725d',
     ],
+    theoriePad: '/theorie/productregel',
   },
   {
     slug: 'som-29',
@@ -183,6 +186,7 @@ const VIDEOS: UitlegVideo[] = [
       // De quotiëntregel · Eenvoudige breuk (het cluster van #36)
       'a56f5e6f-4637-4087-98a4-6a60cec1deec',
     ],
+    theoriePad: '/theorie/quotientregel',
   },
   {
     slug: 'machten-herschrijven',

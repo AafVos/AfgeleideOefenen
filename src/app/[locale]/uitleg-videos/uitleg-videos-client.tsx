@@ -35,6 +35,7 @@ type VideoItem = {
   src: string
   href: string
   hasPractice: boolean
+  theorieHref: string | null
 }
 
 type Labels = {
@@ -73,6 +74,7 @@ type Labels = {
   learnTitle: string
   ruleTitle: string
   exampleTitle: string
+  writtenLink: string
   askNoAccount: string
   askLogin: string
   askRegister: string
@@ -333,6 +335,14 @@ export function UitlegVideosClient({
           ) : null}
           {active && videoAlsKop ? (
             <VideoUitlegBlok uitleg={active.uitleg} labels={labels} />
+          ) : null}
+          {active?.theorieHref ? (
+            <Link
+              href={active.theorieHref as '/theorie'}
+              className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+            >
+              {labels.writtenLink}
+            </Link>
           ) : null}
         </div>
 
