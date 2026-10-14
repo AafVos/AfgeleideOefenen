@@ -59,6 +59,7 @@ export type ConfigCluster = {
   title: string
   topic_id: string
   order_index: number
+  theory_block_id: string | null
   questionCount: number
   newCount: number
   wrongCount: number
@@ -96,7 +97,7 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
       .order('order_index'),
     db
       .from('topic_clusters_new')
-      .select('id, slug, title, topic_id, order_index')
+      .select('id, slug, title, topic_id, order_index, theory_block_id')
       .order('order_index'),
     db.from('questions_new').select('id, cluster_id'),
   ])
@@ -141,6 +142,7 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
       title: c.title,
       topic_id: c.topic_id,
       order_index: c.order_index,
+      theory_block_id: c.theory_block_id,
       questionCount: qIds.length,
       newCount,
       wrongCount,
@@ -327,7 +329,7 @@ export async function loadTestResults(
 
   const { data: clusters } = await db
     .from('topic_clusters_new')
-    .select('id, slug, title, topic_id')
+    .select('id, slug, title, topic_id, theory_block_id')
     .in('id', clusterIds.length ? clusterIds : ['__none__'])
 
   const topicIds = Array.from(new Set((clusters ?? []).map((c) => c.topic_id)))
@@ -339,8 +341,7 @@ export async function loadTestResults(
   const chapterIds = Array.from(new Set((topics ?? []).map((t) => t.chapter_id)))
   const blockIds = Array.from(
     new Set(
-      (topics ?? [])
-        .map((t) => t.theory_block_id)
+      [...(topics ?? []).map((t) => t.theory_block_id), ...(clusters ?? []).map((c) => c.theory_block_id)]
         .filter((id): id is string => Boolean(id)),
     ),
   )
@@ -373,7 +374,8 @@ export async function loadTestResults(
     const cluster = clusterById.get(q.cluster_id)
     const topic = cluster ? topicById.get(cluster.topic_id) : null
     const chapter = topic ? chapterById.get(topic.chapter_id) : null
-    const block = topic?.theory_block_id ? blockById.get(topic.theory_block_id) : null
+    const blockId = cluster?.theory_block_id ?? topic?.theory_block_id ?? null
+    const block = blockId ? blockById.get(blockId) : null
     const a = answerByQuestion.get(tq.question_id)
     const isCorrect = a?.is_correct === true
 

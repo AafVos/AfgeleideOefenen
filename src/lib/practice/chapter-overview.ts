@@ -45,6 +45,8 @@ export type ClusterInfo = {
   title: string
   topic_id: string
   order_index: number
+  /** Eigen theorieblok. Ontbreekt het, dan geldt het blok van het onderwerp. */
+  theory_block_id: string | null
 }
 
 export type NewExerciseTile = {
@@ -117,7 +119,7 @@ export async function loadClustersForTopics(
   if (!topicIds.length) return []
   const { data, error } = await db
     .from('topic_clusters_new')
-    .select('id, slug, title, topic_id, order_index')
+    .select('id, slug, title, topic_id, order_index, theory_block_id')
     .in('topic_id', topicIds)
     .order('order_index')
   if (error) throw new Error(error.message)
