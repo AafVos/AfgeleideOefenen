@@ -512,22 +512,6 @@ function OefenKaart({
     })
   }
 
-  function handleBackspace() {
-    const el = inputRef.current
-    const start = el?.selectionStart ?? answer.length
-    const end = el?.selectionEnd ?? answer.length
-    if (start === end && start === 0) return
-    const nextStart = start === end ? start - 1 : start
-    const value = answer.slice(0, nextStart) + answer.slice(end)
-    setAnswer(value)
-    requestAnimationFrame(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.setSelectionRange(nextStart, nextStart)
-      }
-    })
-  }
-
   function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!answer.trim() || resultaat || !vraag) return
@@ -634,12 +618,7 @@ function OefenKaart({
               autoCorrect="off"
               spellCheck={false}
             />
-            <MathKeyboard
-              onInsert={handleInsert}
-              onBackspace={handleBackspace}
-              onClear={() => setAnswer('')}
-              disabled={pending}
-            />
+            <MathKeyboard onInsert={handleInsert} disabled={pending} />
           </label>
           <ErrorBanner>{error}</ErrorBanner>
           <Button type="submit" disabled={pending || !answer.trim()} className="min-h-11 px-4">
