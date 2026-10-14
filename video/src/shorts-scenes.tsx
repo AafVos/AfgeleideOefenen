@@ -27,47 +27,6 @@ export const PRODUCT_DUREN = [133, 156, 158, 145, 148, 109, 135]
 export const QUOTIENT_DUREN = [138, 141, 148, 219, 259, 131]
 export const WORTEL_DUREN = [152, 221, 137, 133, 116]
 
-const MACHT_TEKST = [
-  'De machtsregel: een macht van x.',
-  'f(x) = 3x⁴',
-  'Haal de macht naar voren, en haal er één af.',
-  '4 × 3 = 12. En 4 − 1 = 3.',
-  'De afgeleide van f is 12x³.',
-  'Oefen het zelf op afgeleideoefenen.nl.',
-]
-const KETTING_TEKST = [
-  'Een functie in een functie: de kettingregel.',
-  'f(x) = (2x + 1)³. Binnenkant h, buitenkant g.',
-  'Eerst de buitenkant: 3(2x + 1)².',
-  'Keer de afgeleide van h. Die is 2.',
-  'De afgeleide van f is 6(2x + 1)².',
-  'Oefen de kettingregel op afgeleideoefenen.nl.',
-]
-const PRODUCT_TEKST = [
-  'Twee functies keer elkaar: de productregel.',
-  'f(x) = x² · (3x + 1)',
-  'g(x) = x² en h(x) = 3x + 1.',
-  'De afgeleide van g is 2x. Die van h is 3.',
-  '2x · (3x + 1) + x² · 3',
-  'Dat is 9x² + 2x.',
-  'Oefen de productregel op afgeleideoefenen.nl.',
-]
-const QUOTIENT_TEKST = [
-  'Een breuk van twee functies: de quotiëntregel.',
-  'f(x) = x / (x + 1)',
-  'g is de teller. h is de noemer.',
-  'In de teller staat een min. Dat wordt 1.',
-  'De afgeleide is 1 / (x + 1)².',
-  'Oefen de quotiëntregel op afgeleideoefenen.nl.',
-]
-const WORTEL_TEKST = [
-  'De afgeleide van een wortel. Eerst als macht.',
-  '√x = x tot de macht ½. Voor x > 0.',
-  'Een half, keer x tot de macht −½.',
-  'Terugschrijven: 1 / (2√x).',
-  'Oefen wortels op afgeleideoefenen.nl.',
-]
-
 function poseVoor(beat: number, laatste: number): AafPose {
   if (beat === 0 || beat === laatste) return 'wave'
   if (beat === laatste - 1) return 'jump'
@@ -75,13 +34,13 @@ function poseVoor(beat: number, laatste: number): AafPose {
 }
 
 function Kader({
+  sleutel,
   duren,
-  teksten,
   titel,
   children,
 }: {
+  sleutel: string
   duren: number[]
-  teksten: string[]
   titel: ReactNode
   children: (beat: number) => ReactNode
 }) {
@@ -92,7 +51,8 @@ function Kader({
   return (
     <ShortShell
       titel={einde ? undefined : titel}
-      caption={teksten[beat]}
+      fragment={`voiceover-shorts/${sleutel}/${beat + 1}`}
+      delay={beatStart(duren, beat) + 15}
       pose={poseVoor(beat, duren.length - 1)}
       poseFrame={lokaal}
     >
@@ -139,8 +99,8 @@ export function MachtShort() {
   return (
     <AbsoluteFill>
       <Kader
+        sleutel="macht"
         duren={MACHT_DUREN}
-        teksten={MACHT_TEKST}
         titel={
           <>
             De <span style={{ color: groen }}>machtsregel</span>
@@ -197,8 +157,8 @@ export function KettingShort() {
   return (
     <AbsoluteFill>
       <Kader
+        sleutel="ketting"
         duren={KETTING_DUREN}
-        teksten={KETTING_TEKST}
         titel={
           <>
             De <span style={{ color: groen }}>kettingregel</span>
@@ -280,8 +240,8 @@ export function ProductShort() {
   return (
     <AbsoluteFill>
       <Kader
+        sleutel="product"
         duren={PRODUCT_DUREN}
-        teksten={PRODUCT_TEKST}
         titel={
           <>
             De <span style={{ color: min }}>productregel</span>
@@ -349,8 +309,8 @@ export function QuotientShort() {
   return (
     <AbsoluteFill>
       <Kader
+        sleutel="quotient"
         duren={QUOTIENT_DUREN}
-        teksten={QUOTIENT_TEKST}
         titel={
           <>
             De <span style={{ color: groen }}>quotiëntregel</span>
@@ -439,8 +399,8 @@ export function WortelShort() {
   return (
     <AbsoluteFill>
       <Kader
+        sleutel="wortel"
         duren={WORTEL_DUREN}
-        teksten={WORTEL_TEKST}
         titel={
           <>
             Afgeleide van een <span style={{ color: groen }}>wortel</span>

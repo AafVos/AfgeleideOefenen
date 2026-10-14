@@ -1,5 +1,6 @@
 import { Audio, Sequence, Series, staticFile } from 'remotion'
 
+import { Ondertitels } from './ondertitels'
 import {
   RegelsIntro,
   RegelsLijm,
@@ -11,9 +12,12 @@ import {
 /** Voice-overfragment dat `delay` frames na de scènestart begint. */
 function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
   return (
-    <Sequence from={delay}>
-      <Audio src={staticFile(`voiceover-regels/scene-${scene}.mp3`)} />
-    </Sequence>
+    <>
+      <Sequence from={delay}>
+        <Audio src={staticFile(`voiceover-regels/scene-${scene}.mp3`)} />
+      </Sequence>
+      <Ondertitels fragment={`voiceover-regels/${scene}`} delay={delay} />
+    </>
   )
 }
 

@@ -1,13 +1,17 @@
 import { Audio, Sequence, Series, staticFile } from 'remotion'
 
+import { Ondertitels } from './ondertitels'
 import { Som34Analyse, Som34Intro, Som34Quotientregel, t } from './scenes-som34'
 
 /** Voice-overfragment dat `delay` frames na de scènestart begint. */
 function Stem({ scene, delay = 15 }: { scene: number; delay?: number }) {
   return (
-    <Sequence from={delay}>
-      <Audio src={staticFile(`voiceover-som34/scene-${scene}.mp3`)} />
-    </Sequence>
+    <>
+      <Sequence from={delay}>
+        <Audio src={staticFile(`voiceover-som34/scene-${scene}.mp3`)} />
+      </Sequence>
+      <Ondertitels fragment={`voiceover-som34/${scene}`} delay={delay} />
+    </>
   )
 }
 

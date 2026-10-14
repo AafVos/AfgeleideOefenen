@@ -2,18 +2,21 @@ import type { ReactNode } from 'react'
 import { AbsoluteFill, Sequence, Audio, staticFile } from 'remotion'
 
 import { Aaf, type AafPose } from './Aaf'
+import { Ondertitels } from './ondertitels'
 import { theme } from './theme'
 
 /** Staand beeld voor een Short: 1080×1920. Logo, ondertitel, Aaf rechtsonder. */
 export function ShortShell({
   titel,
-  caption,
+  fragment,
+  delay,
   pose,
   poseFrame,
   children,
 }: {
   titel?: ReactNode
-  caption: string
+  fragment: string
+  delay: number
   pose: AafPose
   poseFrame: number
   children?: ReactNode
@@ -68,26 +71,14 @@ export function ShortShell({
           left: 0,
           right: 0,
           bottom: 0,
-          minHeight: 250,
-          backgroundColor: theme.surface2,
+          minHeight: 300,
+          backgroundColor: 'rgba(20, 32, 27, 0.94)',
           display: 'flex',
           alignItems: 'center',
           padding: '28px 210px 40px 44px',
         }}
       >
-        <p
-          style={{
-            fontFamily: theme.fontSans,
-            fontSize: 48,
-            fontWeight: 700,
-            lineHeight: 1.25,
-            color: theme.text,
-            margin: 0,
-            textAlign: 'left',
-          }}
-        >
-          {caption}
-        </p>
+        <Ondertitels fragment={fragment} delay={delay} staand />
       </div>
       <div style={{ position: 'absolute', right: 36, bottom: 28 }}>
         <Aaf size={155} pose={pose} poseFrame={poseFrame} />
