@@ -5,10 +5,20 @@ import { Aaf, type AafPose } from './Aaf'
 import { theme } from './theme'
 
 /**
- * Staand beeld (1080×1920) voor een Short. Letters zijn groot genoeg voor een
- * telefoon: 1080 px breed wordt op een scherm ongeveer een derde.
- * De ondertitel en Aaf staan boven de knoppen van YouTube.
+ * Staand beeld (1080×1920). YouTube dekt de bovenste 10%, de onderste 20% en
+ * de rechter 15% af. Het logo, de som en Aaf blijven daarbinnen. De ondertitel
+ * staat rond 60–70% van de hoogte, zodat hij niet onder de knoppen valt.
  */
+const BREEDTE = 1080
+const HOOGTE = 1920
+const VEILIG_BOVEN = Math.round(HOOGTE * 0.1)
+const VEILIG_RECHTS = Math.round(BREEDTE * 0.15)
+const LINKSMARGE = 36
+const RECHTSMARGE = VEILIG_RECHTS + 28
+const INHOUD_BREED = BREEDTE - LINKSMARGE - RECHTSMARGE
+const ONDERTITEL_TOP = Math.round(HOOGTE * 0.6)
+const ONDERTITEL_HOOG = Math.round(HOOGTE * 0.1)
+
 export function ShortScene({
   children,
   caption,
@@ -24,12 +34,12 @@ export function ShortScene({
       <div
         style={{
           position: 'absolute',
-          top: 96,
-          left: 0,
-          right: 0,
+          top: VEILIG_BOVEN + 20,
+          left: LINKSMARGE,
+          width: INHOUD_BREED,
           textAlign: 'center',
           fontFamily: theme.fontSerif,
-          fontSize: 44,
+          fontSize: 52,
           color: theme.text,
         }}
       >
@@ -38,15 +48,15 @@ export function ShortScene({
       <div
         style={{
           position: 'absolute',
-          top: 200,
-          left: 48,
-          right: 48,
-          bottom: 640,
+          top: VEILIG_BOVEN + 110,
+          left: LINKSMARGE,
+          width: INHOUD_BREED,
+          bottom: HOOGTE - ONDERTITEL_TOP + 20,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 36,
+          gap: 28,
           textAlign: 'center',
         }}
       >
@@ -55,16 +65,17 @@ export function ShortScene({
       <div
         style={{
           position: 'absolute',
-          left: 40,
-          right: 40,
-          bottom: 400,
+          top: ONDERTITEL_TOP,
+          left: LINKSMARGE,
+          width: INHOUD_BREED,
+          height: ONDERTITEL_HOOG,
           display: 'flex',
-          alignItems: 'flex-end',
-          gap: 20,
+          alignItems: 'center',
+          gap: 16,
         }}
       >
         <Caption>{caption}</Caption>
-        <Aaf size={168} pose={pose} poseFrame={frame} />
+        <Aaf size={140} pose={pose} poseFrame={frame} />
       </div>
     </AbsoluteFill>
   )
@@ -72,7 +83,7 @@ export function ShortScene({
 
 export function Sitenaam({ groot = false }: { groot?: boolean }) {
   return (
-    <span style={{ fontSize: groot ? 78 : undefined, lineHeight: 1.15 }}>
+    <span style={{ fontSize: groot ? 92 : undefined, lineHeight: 1.15 }}>
       integraal
       <span style={{ color: theme.accent }}>oefenen</span>
       .nl
@@ -95,7 +106,7 @@ function Caption({ children }: { children: string }) {
         borderRadius: 28,
         padding: '22px 28px',
         fontFamily: theme.fontSans,
-        fontSize: 46,
+        fontSize: 44,
         fontWeight: 600,
         lineHeight: 1.25,
         color: theme.text,
@@ -112,7 +123,7 @@ export function KortTitel({ children }: { children: ReactNode }) {
     <h1
       style={{
         fontFamily: theme.fontSerif,
-        fontSize: 78,
+        fontSize: 92,
         lineHeight: 1.12,
         color: theme.text,
         margin: 0,
@@ -124,20 +135,20 @@ export function KortTitel({ children }: { children: ReactNode }) {
   )
 }
 
-/** Groene formulekaart, zoals in de uitlegvideo's, maar kleiner voor 9:16. */
+/** Groene formulekaart. Groot genoeg om op een telefoon in één oogopslag te lezen. */
 export function KorteKaart({ children }: { children: ReactNode }) {
   return (
     <div
       style={{
         backgroundColor: theme.accentLight,
         borderRadius: 28,
-        padding: '28px 36px',
+        padding: '28px 32px',
         fontFamily: theme.fontSerif,
-        fontSize: 48,
-        lineHeight: 1.35,
+        fontSize: 76,
+        lineHeight: 1.3,
         color: theme.text,
         textAlign: 'center',
-        maxWidth: 980,
+        maxWidth: '100%',
       }}
     >
       {children}
@@ -147,8 +158,8 @@ export function KorteKaart({ children }: { children: ReactNode }) {
 
 export const formuleStijl = {
   fontFamily: theme.fontSerif,
-  fontSize: 84,
-  lineHeight: 1.25,
+  fontSize: 156,
+  lineHeight: 1.2,
   color: theme.text,
 } as const
 

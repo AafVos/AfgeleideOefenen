@@ -96,7 +96,7 @@ function Integraal({
 
 function Grafiek() {
   return (
-    <svg width={860} height={480} viewBox="0 0 320 190" role="img" aria-label="Grafiek van f van x is 2x, van 0 tot 3">
+    <svg width={780} height={440} viewBox="0 0 320 190" role="img" aria-label="Grafiek van f van x is 2x, van 0 tot 3">
       <polygon points="36,150 250,40 250,150" fill={theme.accentLight} />
       <line x1="28" y1="150" x2="290" y2="150" stroke={theme.text} strokeWidth="3" />
       <line x1="36" y1="168" x2="36" y2="24" stroke={theme.text} strokeWidth="3" />
@@ -118,6 +118,21 @@ export function ShortPrimitief() {
       map="primitief"
       duren={shortDuren.primitief}
       beats={[
+        {
+          pose: 'think',
+          caption: 'Hoe vind je de primitieve van 4x³?',
+          visual: (
+            <Formule>
+              <Integraal>
+                4
+                <Macht n="3">
+                  <X />
+                </Macht>{' '}
+                d<X />
+              </Integraal>
+            </Formule>
+          ),
+        },
         {
           pose: 'wave',
           caption: 'De macht gaat één omhoog. Deel door de nieuwe macht.',
@@ -207,6 +222,18 @@ export function ShortSubstitutie() {
       duren={shortDuren.substitutie}
       beats={[
         {
+          pose: 'think',
+          caption: 'Hoe primitiver je 2x(x² + 3)⁴?',
+          visual: (
+            <Formule>
+              <Integraal>
+                2<X />(<X2 /> + 3)
+                <Sup>4</Sup> d<X />
+              </Integraal>
+            </Formule>
+          ),
+        },
+        {
           pose: 'wave',
           caption: 'Zie je een functie én zijn afgeleide?',
           visual: (
@@ -235,10 +262,10 @@ export function ShortSubstitutie() {
           caption: 'g(x) = x² + 3. De afgeleide van g is 2x.',
           visual: (
             <>
-              <Formule style={{ fontSize: 64 }}>
+              <Formule style={{ fontSize: 120 }}>
                 g(<X />) = <X2 /> + 3
               </Formule>
-              <Formule style={{ fontSize: 64 }}>
+              <Formule style={{ fontSize: 120 }}>
                 <span style={{ color: theme.accent }}>
                   g′(<X />) = 2<X />
                 </span>
@@ -282,6 +309,17 @@ export function ShortPartieel() {
       map="partieel"
       duren={shortDuren.partieel}
       beats={[
+        {
+          pose: 'think',
+          caption: 'Hoe primitiver je x · eˣ?',
+          visual: (
+            <Formule>
+              <Integraal>
+                <X /> · <Ex /> d<X />
+              </Integraal>
+            </Formule>
+          ),
+        },
         {
           pose: 'wave',
           caption: 'Een product van twee functies.',
@@ -328,7 +366,7 @@ export function ShortPartieel() {
           pose: 'nod',
           caption: 'x keer e tot de x, min de integraal van e tot de x.',
           visual: (
-            <Formule style={{ fontSize: 68 }}>
+            <Formule style={{ fontSize: 120 }}>
               <X /> · <Ex /> − <Integraal><Ex /> d<X /></Integraal>
             </Formule>
           ),
@@ -338,7 +376,7 @@ export function ShortPartieel() {
           caption: 'De primitieve is x eˣ − eˣ + c.',
           visual: (
             <Pop from={6}>
-              <Formule style={{ fontSize: 72 }}>
+              <Formule style={{ fontSize: 128 }}>
                 <X /> · <Ex /> − <Ex />
                 <PlusC />
               </Formule>
@@ -363,6 +401,18 @@ export function ShortOppervlakte() {
       duren={shortDuren.oppervlakte}
       beats={[
         {
+          pose: 'think',
+          caption: 'Wat is de oppervlakte onder 2x?',
+          visual: (
+            <>
+              <Grafiek />
+              <div style={{ ...formuleStijl, fontSize: 112 }}>
+                van 0 tot 3
+              </div>
+            </>
+          ),
+        },
+        {
           pose: 'wave',
           caption: 'Onder een grafiek: reken een integraal.',
           visual: (
@@ -378,7 +428,7 @@ export function ShortOppervlakte() {
           visual: (
             <>
               <Grafiek />
-              <div style={{ ...formuleStijl, fontSize: 64 }}>
+              <div style={{ ...formuleStijl, fontSize: 120 }}>
                 f(<X />) = 2<X />
               </div>
             </>
@@ -388,7 +438,7 @@ export function ShortOppervlakte() {
           pose: 'point',
           caption: 'De primitieve van 2x is x².',
           visual: (
-            <Formule style={{ fontSize: 72 }}>
+            <Formule style={{ fontSize: 112 }}>
               <Integraal van="0" tot="3">
                 2<X /> d<X />
               </Integraal>
@@ -431,16 +481,13 @@ export function ShortArctan() {
       beats={[
         {
           pose: 'think',
-          caption: 'Welke primitieve hoort hierbij?',
+          caption: 'Welke primitieve hoort bij 1/(x² + 1)?',
           visual: (
-            <>
-              <KortTitel>Primitieve arctan</KortTitel>
-              <Formule>
-                <Integraal>
-                  <Breuk teller="1" noemer={<><X2 /> + 1</>} /> d<X />
-                </Integraal>
-              </Formule>
-            </>
+            <Formule>
+              <Integraal>
+                <Breuk teller="1" noemer={<><X2 /> + 1</>} /> d<X />
+              </Integraal>
+            </Formule>
           ),
         },
         {
@@ -459,7 +506,7 @@ export function ShortArctan() {
           pose: 'nod',
           caption: 'De afgeleide van arctan(x) is weer die breuk.',
           visual: (
-            <Formule style={{ fontSize: 60 }}>
+            <Formule style={{ fontSize: 108 }}>
               <span style={{ color: theme.accent }}>afgeleide</span> van arctan(<X />)
               <br />= <Breuk teller="1" noemer={<><X2 /> + 1</>} />
             </Formule>

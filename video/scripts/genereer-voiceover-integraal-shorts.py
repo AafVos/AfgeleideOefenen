@@ -28,6 +28,7 @@ FPS = 30
 # Volgorde vast: de beats in src/shorts.tsx volgen deze lijst.
 TEKSTEN = {
     "primitief": [
+        "Hoe vind je de primitieve van vier x tot de derde?",
         "De primitieve van een macht. De macht gaat één omhoog, en je deelt door die nieuwe macht.",
         "Kijk naar de integraal van vier x tot de derde.",
         "De macht drie wordt vier. Daarna deel je door vier.",
@@ -35,6 +36,7 @@ TEKSTEN = {
         "Oefen dit op integraaloefenen punt nl.",
     ],
     "substitutie": [
+        "Hoe primitiver je twee x keer, haakje x kwadraat plus drie, tot de vierde?",
         "Substitutie. Zie je een functie, en vlak ervoor zijn afgeleide? Dan ken je de primitieve.",
         "Neem de integraal van twee x, keer, x kwadraat plus drie, tot de vierde.",
         "Noem de kern g van x. g van x is x kwadraat plus drie. De afgeleide van g is twee x. Die staat er al.",
@@ -42,6 +44,7 @@ TEKSTEN = {
         "Oefen substitutie op integraaloefenen punt nl.",
     ],
     "partieel": [
+        "Hoe primitiver je x keer e tot de x?",
         "Partieel integreren gebruik je bij een product van twee functies.",
         "Neem de integraal van x keer e tot de x.",
         "g van x is x. De afgeleide van g is één. De afgeleide van h is e tot de x, dus h van x is ook e tot de x.",
@@ -50,6 +53,7 @@ TEKSTEN = {
         "Meer partieel oefenen doe je op integraaloefenen punt nl.",
     ],
     "oppervlakte": [
+        "Wat is de oppervlakte onder de grafiek van twee x, tussen nul en drie?",
         "De oppervlakte onder een grafiek reken je uit met een integraal.",
         "De grafiek van f van x is twee x, tussen nul en drie.",
         "De primitieve van twee x is x kwadraat.",
