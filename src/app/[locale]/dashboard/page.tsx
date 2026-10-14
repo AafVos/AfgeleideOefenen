@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
+import { bouwDashboardIndeling, bouwOnderwerpVoortgang } from '@/lib/dashboard/indeling'
+import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
 import { canoniek } from '@/lib/seo'
 import { getCurrentProfile } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
@@ -8,7 +10,7 @@ import { createClient } from '@/lib/supabase/server'
 import { berekenReeks, dagSleutel, laatsteDagen, telOefendagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
 import { eersteOnderdeel, eersteOpgaveId, opgaveLink } from './start'
-import type { ChapterData, TopicData } from './topic-block'
+import type { ChapterData } from './topic-block'
 
 export async function generateMetadata({
   params,
@@ -33,30 +35,36 @@ export default async function DashboardPage() {
   const oudeNaam = profile?.display_name?.trim().split(/\s+/)[0]?.trim()
   const firstName = gekozenNaam || oudeNaam || null
 
-  // New tables
-  const { data: chapters } = await supabase
-    .from('chapters')
-    .select('id, slug, title, order_index')
-    .order('order_index')
-
-  const { data: topics } = await supabase
-    .from('topics_new')
-    .select('id, title, slug, chapter_id, order_index')
-    .order('order_index')
-
-  const { data: clusters } = await supabase
-    .from('topic_clusters_new')
-    .select('id, title, slug, topic_id, order_index')
-    .order('order_index')
-
-  const { data: progressRows } = await supabase
-    .from('user_progress_new')
-    .select('cluster_id, status, total_answered, total_correct')
-    .eq('user_id', user.id)
-
-  const progressByCluster = new Map(
-    (progressRows ?? []).map((p) => [p.cluster_id, p]),
-  )
+  const [
+    { data: chapters },
+    { data: topics },
+    { data: paragraphs },
+    { data: blocks },
+    { data: clusters },
+    { data: progressRows },
+  ] = await Promise.all([
+    supabase.from('chapters').select('id, slug, title, order_index').order('order_index'),
+    supabase
+      .from('topics_new')
+      .select('id, title, slug, chapter_id, order_index, theory_block_id')
+      .order('order_index'),
+    supabase
+      .from('paragraphs')
+      .select('id, chapter_id, slug, label, title, order_index')
+      .order('order_index'),
+    supabase
+      .from('theory_blocks')
+      .select('id, paragraph_id, slug, letter, title, order_index')
+      .order('order_index'),
+    supabase
+      .from('topic_clusters_new')
+      .select('id, title, slug, topic_id, order_index')
+      .order('order_index'),
+    supabase
+      .from('user_progress_new')
+      .select('cluster_id, status, total_answered, total_correct')
+      .eq('user_id', user.id),
+  ])
 
   // Activiteit uit session_answers_new. De balkjes gaan over de laatste
   // 14 dagen; "Dagen op rij", "Goed beantwoord" en "Vragen" gaan over
@@ -110,58 +118,23 @@ export default async function DashboardPage() {
 
   const streakDays = berekenReeks(new Set(tellingPerDag.keys()), vandaag)
 
-  // Build chapter → meta map
-  const chapterById = new Map((chapters ?? []).map((c) => [c.id, c]))
-
-  // Sort topics by chapter order then topic order
-  const sortedTopics = [...(topics ?? [])].sort((a, b) => {
-    const ca = chapterById.get(a.chapter_id)?.order_index ?? 999
-    const cb = chapterById.get(b.chapter_id)?.order_index ?? 999
-    if (ca !== cb) return ca - cb
-    return a.order_index - b.order_index
-  })
-
-  // Build TopicData per topic
-  const topicDataById = new Map<string, TopicData>()
-  for (const topic of sortedTopics) {
-    const chapterSlug = chapterById.get(topic.chapter_id)?.slug ?? ''
-    const topicClusters = (clusters ?? [])
-      .filter((c) => c.topic_id === topic.id)
-      .sort((a, b) => a.order_index - b.order_index)
-      .map((c) => {
-        const progress = progressByCluster.get(c.id)
-        return {
-          id: c.id,
-          slug: c.slug,
-          title: c.title,
-          topicId: topic.id,
-          totalAnswered: progress?.total_answered ?? 0,
-          totalCorrect: progress?.total_correct ?? 0,
-          isKnown: progress?.status === 'mastered',
-        }
-      })
-    topicDataById.set(topic.id, {
-      id: topic.id,
-      slug: topic.slug,
-      title: topic.title,
-      chapterSlug,
-      clusters: topicClusters,
-    })
+  const bron = {
+    chapters: chapters ?? [],
+    topics: topics ?? [],
+    clusters: clusters ?? [],
+    voortgang: progressRows ?? [],
   }
-
-  // Group topics by chapter
-  const chapterData: ChapterData[] = (chapters ?? [])
-    .sort((a, b) => a.order_index - b.order_index)
-    .map((chapter) => ({
-      id: chapter.id,
-      slug: chapter.slug,
-      title: chapter.title,
-      topics: sortedTopics
-        .filter((t) => t.chapter_id === chapter.id)
-        .map((t) => topicDataById.get(t.id)!)
-        .filter(Boolean),
-    }))
-    .filter((ch) => ch.topics.length > 0)
+  // De oude lijst blijft nodig voor de startknop, en voor de schakelaar
+  // die de indeling per onderwerp weer aanzet.
+  const chapterData: ChapterData[] = bouwOnderwerpVoortgang(bron)
+  const blokIndeling =
+    oefenIndeling() === 'blok'
+      ? bouwDashboardIndeling({
+          ...bron,
+          paragraphs: paragraphs ?? [],
+          blocks: blocks ?? [],
+        })
+      : null
 
   // Een leerling die nog nooit iets gemaakt heeft, krijgt geen lege
   // voortgangsrapportage maar één knop die meteen zijn eerste opgave opent
@@ -203,6 +176,7 @@ export default async function DashboardPage() {
         totalAnswered={totalAnswered}
         totalCorrect={totalCorrect}
         start={start}
+        blokIndeling={blokIndeling}
       />
     </div>
   )

@@ -6,7 +6,9 @@ import { useMemo } from 'react'
 import { Link } from '@/i18n/navigation'
 import { cn } from '@/components/ui'
 
-import { ChapterBlock, type ChapterData } from './topic-block'
+import type { DashboardIndeling } from '@/lib/dashboard/indeling'
+
+import { ChapterBlock, NieuwHoofdstukBlock, type ChapterData } from './topic-block'
 
 export type ActivityDay = { date: string; count: number }
 
@@ -29,6 +31,7 @@ export function DashboardGrid({
   totalAnswered = 0,
   totalCorrect = 0,
   start = null,
+  blokIndeling = null,
 }: {
   chapterData: ChapterData[]
   streakDays?: number
@@ -36,6 +39,8 @@ export function DashboardGrid({
   totalAnswered?: number
   totalCorrect?: number
   start?: StartData | null
+  /** Boekindeling. Ontbreekt hij, dan blijft de lijst per onderwerp. */
+  blokIndeling?: DashboardIndeling | null
 }) {
   const t = useTranslations('Dashboard')
   const allClusters = useMemo(
@@ -85,13 +90,21 @@ export function DashboardGrid({
             {start ? t('chapterOverview') : t('chapterProgress')}
           </p>
           <div className="space-y-2">
-            {chapterData.map((chapter) => (
-              <ChapterBlock
-                key={chapter.id}
-                chapter={chapter}
-                defaultOpen={chapter.id === start?.chapterId}
-              />
-            ))}
+            {blokIndeling
+              ? blokIndeling.hoofdstukken.map((chapter) => (
+                  <NieuwHoofdstukBlock
+                    key={chapter.id}
+                    chapter={chapter}
+                    defaultOpen={chapter.id === start?.chapterId}
+                  />
+                ))
+              : chapterData.map((chapter) => (
+                  <ChapterBlock
+                    key={chapter.id}
+                    chapter={chapter}
+                    defaultOpen={chapter.id === start?.chapterId}
+                  />
+                ))}
           </div>
         </div>
 

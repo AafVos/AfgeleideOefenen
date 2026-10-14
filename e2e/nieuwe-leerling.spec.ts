@@ -221,12 +221,10 @@ test('vanaf het dashboard staat de eerste opgave één klik verderop @telefoon',
   ).toBeVisible()
 
   // En met de terugknop van de browser staat hij weer op het dashboard, met
-  // het eerste hoofdstuk opengeklapt: de onderwerpen eronder zijn zichtbaar
+  // het eerste hoofdstuk opengeklapt: er is meteen een link naar oefenen,
   // zonder dat hij eerst ergens op moet klikken.
   await page.goBack()
-  await expect(
-    page.locator('li a[href*="/oefenen?chapter="]').first(),
-  ).toBeVisible()
+  await expect(page.locator('li a[href*="/oefenen?"]').first()).toBeVisible()
 })
 
 test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async ({
