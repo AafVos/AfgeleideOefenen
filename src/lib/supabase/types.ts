@@ -22,6 +22,8 @@ export type Database = {
           grade: Grade | null
           display_name: string | null
           tour_seen_at: string | null
+          /** Alleen docent, youtube, klas of forum. Migratie 0057. */
+          herkomst: string | null
           created_at: string
         }
         Insert: {
@@ -31,6 +33,7 @@ export type Database = {
           grade?: Grade | null
           display_name?: string | null
           tour_seen_at?: string | null
+          herkomst?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
