@@ -16,7 +16,6 @@ function cluster(slug: string): ClusterData {
     totalAnswered: 0,
     totalCorrect: 0,
     isKnown: false,
-    isSkipped: false,
   }
 }
 

@@ -51,7 +51,7 @@ export default async function DashboardPage() {
 
   const { data: progressRows } = await supabase
     .from('user_progress_new')
-    .select('cluster_id, status, total_answered, total_correct, is_skipped')
+    .select('cluster_id, status, total_answered, total_correct')
     .eq('user_id', user.id)
 
   const progressByCluster = new Map(
@@ -130,7 +130,6 @@ export default async function DashboardPage() {
       .sort((a, b) => a.order_index - b.order_index)
       .map((c) => {
         const progress = progressByCluster.get(c.id)
-        const isSkipped = progress?.is_skipped === true
         return {
           id: c.id,
           slug: c.slug,
@@ -138,8 +137,7 @@ export default async function DashboardPage() {
           topicId: topic.id,
           totalAnswered: progress?.total_answered ?? 0,
           totalCorrect: progress?.total_correct ?? 0,
-          isKnown: !isSkipped && progress?.status === 'mastered',
-          isSkipped,
+          isKnown: progress?.status === 'mastered',
         }
       })
     topicDataById.set(topic.id, {
