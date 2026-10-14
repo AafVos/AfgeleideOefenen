@@ -234,6 +234,7 @@
     "startBody": "Je hebt nog niets gemaakt, dus hier valt nog weinig te zien. Druk op de knop, dan staat er meteen een som op je scherm. Typ je antwoord en je krijgt direct te horen of het goed is.",
     "startButton": "Begin met oefenen",
     "startWhere": "Je begint bij {chapter} — {topic}. Je kunt hieronder ook zelf iets anders kiezen.",
+    "nogGeenOpgaven": "nog geen opgaven",
     "activityTitle": "Afgelopen 14 dagen",
     "activityStart": "14 dagen geleden",
     "activityEnd": "vandaag"
@@ -337,8 +338,8 @@
     "resultsTitle": "Zelf-toets resultaat",
     "eyebrow": "Zelf-toets",
     "h1": "Stel je eigen toets samen",
-    "intro": "Kies de onderwerpen, hoeveel vragen en uit welke bron. Het resultaat telt niet mee voor je voortgang. Dit is puur om jezelf te testen.",
-    "scopeLabel": "Onderwerpen",
+    "intro": "Kies een theorieblok, hoeveel vragen en uit welke bron. Binnen een blok kun je ook één soort som kiezen. Het resultaat telt niet mee voor je voortgang.",
+    "scopeLabel": "Theorieblokken",
     "sourceLabel": "Bron",
     "source": {
       "new": "Alleen nieuwe vragen",
@@ -351,7 +352,8 @@
     "countLabel": "Aantal vragen",
     "availableLabel": "{n} beschikbaar in deze selectie",
     "cappedHint": "Maximaal {n} beschikbaar, wordt automatisch beperkt.",
-    "errorEmpty": "Kies minstens één onderwerp.",
+    "errorEmpty": "Kies minstens één theorieblok.",
+    "nogGeenOpgaven": "nog geen opgaven",
     "noQuestionsHint": "Geen vragen in deze selectie.",
     "startLabel": "Start toets",
     "startPending": "Bezig…",

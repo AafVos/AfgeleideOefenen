@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/navigation'
 
 import { Button, ErrorBanner } from '@/components/ui'
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
+import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
 import type {
   ConfigCluster,
   ConfigData,
@@ -15,6 +16,7 @@ import type {
 } from '@/lib/practice/custom-test'
 
 import { createCustomTestAction } from './actions'
+import { BlokBoom } from './blok-boom'
 
 type CheckState = 'all' | 'none' | 'some'
 
@@ -252,6 +254,15 @@ export function ConfigForm({
         <p className="px-2 pb-2 pt-1 text-xs font-medium uppercase tracking-wider text-text-muted">
           {t('scopeLabel')}
         </p>
+        {oefenIndeling() === 'blok' ? (
+          <BlokBoom
+            config={config}
+            selected={selectedClusters}
+            source={source}
+            onToggleCluster={toggleCluster}
+            onSetClusters={setClustersFor}
+          />
+        ) : (
         <ul className="space-y-0.5">
           {config.chapters.map((ch) => {
             const topics = topicsByChapter.get(ch.id) ?? []
@@ -384,6 +395,7 @@ export function ConfigForm({
             )
           })}
         </ul>
+        )}
       </div>
 
       {/* Filters */}
