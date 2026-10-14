@@ -21,7 +21,8 @@
 
 BEGIN;
 
-CREATE FUNCTION pg_temp.norm_antwoord(raw text)
+-- Migratie 0051 maakt dezelfde hulpfunctie al aan, in dezelfde sessie.
+CREATE OR REPLACE FUNCTION pg_temp.norm_antwoord(raw text)
 RETURNS text
 LANGUAGE sql
 IMMUTABLE
