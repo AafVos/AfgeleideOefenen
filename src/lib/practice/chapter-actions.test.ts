@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // =====================================================================
 // Nakijken van een antwoord: wat doet dat met de voortgang?
@@ -24,7 +24,9 @@ type AnswerRow = {
   time_spent_sec: number | null
 }
 
-type QueryResult = { data: unknown; error: null }
+type DbFout = { code: string; message: string }
+
+type QueryResult = { data: unknown; error: DbFout | null }
 
 const QUESTION = {
   id: 'q1',
@@ -38,6 +40,13 @@ const QUESTION = {
 let progress: ProgressRow
 let answers: AnswerRow[]
 let aiSaysCorrect: boolean
+/** Engelse tekst die een mislukte antwoordinvoeg moet teruggeven. */
+let antwoordInvoegfout: string | null
+/** Fout bij het aanmaken van voortgang. De eerste lezing vindt dan niets. */
+let voortgangInvoegfout: DbFout | null
+let voortgangLezingen: number
+/** Engelse tekst die een mislukte melding moet teruggeven. */
+let vlagFout: string | null
 
 function freshProgress(correctStreak: number, totalAnswered: number): ProgressRow {
   return {
@@ -65,6 +74,12 @@ function from(table: string) {
 
     if (table === 'session_answers_new') {
       if (op === 'insert') {
+        if (antwoordInvoegfout) {
+          return {
+            data: null,
+            error: { code: '23505', message: antwoordInvoegfout },
+          }
+        }
         const row: AnswerRow = {
           id: `a${answers.length + 1}`,
           user_answer: (values.user_answer ?? null) as string | null,
@@ -81,7 +96,18 @@ function from(table: string) {
 
     if (table === 'user_progress_new') {
       if (op === 'update') Object.assign(progress, values)
+      if (op === 'insert' && voortgangInvoegfout) {
+        return { data: null, error: voortgangInvoegfout }
+      }
+      if (op === 'select' && voortgangInvoegfout) {
+        voortgangLezingen += 1
+        if (voortgangLezingen === 1) return { data: null, error: null }
+      }
       return { data: { ...progress }, error: null }
+    }
+
+    if (table === 'question_flags_new' && op === 'insert' && vlagFout) {
+      return { data: null, error: { code: '42501', message: vlagFout } }
     }
 
     return { data: null, error: null }
@@ -132,15 +158,22 @@ vi.mock('@/lib/ai/check-answer-new', () => ({
   }),
 }))
 
-const { skipStudyQuestionAction, submitStudyAnswerAction } = await import(
-  './chapter-actions'
-)
+const { flagQuestionNewAction, skipStudyQuestionAction, submitStudyAnswerAction } =
+  await import('./chapter-actions')
+
+function verseBoekhouding() {
+  antwoordInvoegfout = null
+  voortgangInvoegfout = null
+  voortgangLezingen = 0
+  vlagFout = null
+}
 
 describe('submitStudyAnswerAction', () => {
   beforeEach(() => {
     progress = freshProgress(2, 2)
     answers = []
     aiSaysCorrect = false
+    verseBoekhouding()
   })
 
   it('telt een antwoord dat meteen goed is één keer mee', async () => {
@@ -209,6 +242,7 @@ describe('skipStudyQuestionAction', () => {
     progress = freshProgress(2, 2)
     answers = []
     aiSaysCorrect = false
+    verseBoekhouding()
   })
 
   it('geeft het goede antwoord terug zonder iets fout te rekenen', async () => {
@@ -247,5 +281,76 @@ describe('skipStudyQuestionAction', () => {
     expect(progress.status).toBe('mastered')
     expect(progress.correct_streak).toBe(3)
     expect(progress.total_answered).toBe(3)
+  })
+})
+
+const ENGELSE_DB_TEKST =
+  'duplicate key value violates unique constraint "user_progress_new_user_id_cluster_id_key"'
+
+describe('fouttekst van de database', () => {
+  beforeEach(() => {
+    progress = freshProgress(2, 2)
+    answers = []
+    aiSaysCorrect = false
+    verseBoekhouding()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('zet een mislukte opslag om in een Nederlandse zin', async () => {
+    antwoordInvoegfout = ENGELSE_DB_TEKST
+
+    const result = await submitStudyAnswerAction('q1', '6x')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('duplicate key')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain(
+      'user_progress_new_user_id_cluster_id_key',
+    )
+  })
+
+  it('valt niet om als de voortgang net al bestaat', async () => {
+    voortgangInvoegfout = { code: '23505', message: ENGELSE_DB_TEKST }
+
+    const result = await submitStudyAnswerAction('q1', '6x')
+
+    expect(result).toMatchObject({ kind: 'correct', streak: 3, mastered: true })
+    expect(JSON.stringify(result)).not.toContain('duplicate key')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain(
+      'user_progress_new_user_id_cluster_id_key',
+    )
+  })
+
+  it('toont bij een andere opslagfout geen Engelse tekst', async () => {
+    voortgangInvoegfout = {
+      code: '42501',
+      message: 'permission denied for table user_progress_new',
+    }
+
+    const result = await submitStudyAnswerAction('q1', '6x')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('permission denied')
+  })
+
+  it('zet een mislukte melding om in een Nederlandse zin', async () => {
+    vlagFout = 'permission denied for table question_flags_new'
+
+    const result = await flagQuestionNewAction('q1', 'de uitkomst klopt niet')
+
+    expect(result).toEqual({
+      ok: false,
+      error: 'Versturen is niet gelukt. Probeer het later nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('permission denied')
   })
 })

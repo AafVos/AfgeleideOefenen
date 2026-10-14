@@ -236,7 +236,12 @@ export async function submitCustomTestAnswerAction(
     .select('id')
     .single()
   if (answerErr || !answerRow) {
-    return { kind: 'error', message: answerErr?.message ?? 'Kon antwoord niet opslaan.' }
+    console.error(
+      '[zelf-toets] antwoord opslaan mislukt:',
+      answerErr?.code ?? '',
+      answerErr?.message ?? '',
+    )
+    return { kind: 'error', message: 'Opslaan is niet gelukt. Probeer het nog eens.' }
   }
 
   // For wrong answers, ask the AI if it's actually a valid alternative

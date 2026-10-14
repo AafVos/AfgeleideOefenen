@@ -12,6 +12,25 @@ import {
 
 type DB = Awaited<ReturnType<typeof createClient>>
 
+/** Zin op het scherm als opslaan mislukt. De tekst van de database blijft in de log. */
+const OPSLAAN_MISLUKT = 'Opslaan is niet gelukt. Probeer het nog eens.'
+
+class OpslagMislukt extends Error {
+  constructor() {
+    super(OPSLAAN_MISLUKT)
+    this.name = 'OpslagMislukt'
+  }
+}
+
+function vangOpslag(plek: string, e: unknown): { kind: 'error'; message: string } {
+  if (!(e instanceof OpslagMislukt)) console.error(plek, e)
+  return { kind: 'error', message: OPSLAAN_MISLUKT }
+}
+
+function isDubbeleRij(error: { code?: string; message?: string }): boolean {
+  return error.code === '23505' || /unique|duplicate key/i.test(error.message ?? '')
+}
+
 export type StudyResult =
   | { kind: 'correct'; streak: number; mastered: boolean }
   | {
@@ -93,94 +112,100 @@ export async function submitStudyAnswerAction(
   const alts: string[] = question.answer_alternatives ?? []
   const isCorrect = answersMatch(userAnswer, question.answer, alts)
 
-  const sessionId = await getOrCreateSession(
-    supabase,
-    user.id,
-    question.topic_id,
-    question.cluster_id,
-  )
-
-  const { data: answerRow, error: answerError } = await supabase
-    .from('session_answers_new')
-    .insert({
-      session_id: sessionId,
-      question_id: question.id,
-      user_answer: userAnswer,
-      is_correct: isCorrect,
-      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
-    })
-    .select('id')
-    .single()
-
-  if (answerError || !answerRow) {
-    return {
-      kind: 'error',
-      message: answerError?.message ?? 'Kon antwoord niet opslaan.',
-    }
-  }
-
-  if (isCorrect) {
-    const progress = await bumpProgressOnCorrect(
+  try {
+    const sessionId = await getOrCreateSession(
       supabase,
       user.id,
       question.topic_id,
       question.cluster_id,
     )
-    return {
-      kind: 'correct',
-      streak: progress.correct_streak,
-      mastered: progress.status === 'mastered',
-    }
-  }
 
-  // Nog niet goed volgens de database. Eerst de AI-controle en de uitleg
-  // ophalen (cache-first; schrijfacties gaan via service role), pas daarna de
-  // voortgang bijwerken: een goed antwoord in een andere notatie mag niet
-  // eerst als fout geteld worden en daarna nog eens als goed.
-  let errorExplanation: string | null = null
-  let aiSaysCorrect = false
-  try {
-    const service = createServiceRoleClient()
-    const aiResult = await checkWrongAnswerNew(service, question.id, userAnswer)
-    if ('error' in aiResult) {
-      console.error('[check-answer-new]', aiResult.error)
-    } else {
-      errorExplanation = aiResult.errorExplanation || null
-      aiSaysCorrect = aiResult.isMathematicallyCorrect
+    const { data: answerRow, error: answerError } = await supabase
+      .from('session_answers_new')
+      .insert({
+        session_id: sessionId,
+        question_id: question.id,
+        user_answer: userAnswer,
+        is_correct: isCorrect,
+        time_spent_sec: cleanTimeSpentSec(timeSpentSec),
+      })
+      .select('id')
+      .single()
+
+    if (answerError || !answerRow) {
+      console.error(
+        '[oefenen] antwoord opslaan mislukt:',
+        answerError?.code ?? '',
+        answerError?.message ?? '',
+      )
+      return { kind: 'error', message: OPSLAAN_MISLUKT }
+    }
+
+    if (isCorrect) {
+      const progress = await bumpProgressOnCorrect(
+        supabase,
+        user.id,
+        question.topic_id,
+        question.cluster_id,
+      )
+      return {
+        kind: 'correct',
+        streak: progress.correct_streak,
+        mastered: progress.status === 'mastered',
+      }
+    }
+
+    // Nog niet goed volgens de database. Eerst de AI-controle en de uitleg
+    // ophalen (cache-first; schrijfacties gaan via service role), pas daarna de
+    // voortgang bijwerken: een goed antwoord in een andere notatie mag niet
+    // eerst als fout geteld worden en daarna nog eens als goed.
+    let errorExplanation: string | null = null
+    let aiSaysCorrect = false
+    try {
+      const service = createServiceRoleClient()
+      const aiResult = await checkWrongAnswerNew(service, question.id, userAnswer)
+      if ('error' in aiResult) {
+        console.error('[check-answer-new]', aiResult.error)
+      } else {
+        errorExplanation = aiResult.errorExplanation || null
+        aiSaysCorrect = aiResult.isMathematicallyCorrect
+      }
+    } catch (e) {
+      console.error('[check-answer-new] unexpected', e)
+    }
+
+    // AI zegt wiskundig correct (alternatieve notatie): alsnog goed rekenen
+    if (aiSaysCorrect) {
+      await supabase
+        .from('session_answers_new')
+        .update({ is_correct: true })
+        .eq('id', answerRow.id)
+
+      const progress = await bumpProgressOnCorrect(
+        supabase,
+        user.id,
+        question.topic_id,
+        question.cluster_id,
+      )
+      return {
+        kind: 'correct',
+        streak: progress.correct_streak,
+        mastered: progress.status === 'mastered',
+      }
+    }
+
+    // Echt fout: nu pas de opgave meetellen en de reeks terugzetten.
+    await bumpProgressOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
+
+    return {
+      kind: 'incorrect',
+      answerId: answerRow.id,
+      correctAnswer: question.answer,
+      latexCorrectAnswer: question.latex_answer ?? null,
+      errorExplanation,
     }
   } catch (e) {
-    console.error('[check-answer-new] unexpected', e)
-  }
-
-  // AI zegt wiskundig correct (alternatieve notatie): alsnog goed rekenen
-  if (aiSaysCorrect) {
-    await supabase
-      .from('session_answers_new')
-      .update({ is_correct: true })
-      .eq('id', answerRow.id)
-
-    const progress = await bumpProgressOnCorrect(
-      supabase,
-      user.id,
-      question.topic_id,
-      question.cluster_id,
-    )
-    return {
-      kind: 'correct',
-      streak: progress.correct_streak,
-      mastered: progress.status === 'mastered',
-    }
-  }
-
-  // Echt fout: nu pas de opgave meetellen en de reeks terugzetten.
-  await bumpProgressOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
-
-  return {
-    kind: 'incorrect',
-    answerId: answerRow.id,
-    correctAnswer: question.answer,
-    latexCorrectAnswer: question.latex_answer ?? null,
-    errorExplanation,
+    return vangOpslag('[oefenen] nakijken mislukt:', e)
   }
 }
 
@@ -217,34 +242,39 @@ export async function skipStudyQuestionAction(
     .maybeSingle()
   if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
 
-  const sessionId = await getOrCreateSession(
-    supabase,
-    user.id,
-    question.topic_id,
-    question.cluster_id,
-  )
+  try {
+    const sessionId = await getOrCreateSession(
+      supabase,
+      user.id,
+      question.topic_id,
+      question.cluster_id,
+    )
 
-  const { error: answerError } = await supabase
-    .from('session_answers_new')
-    .insert({
-      session_id: sessionId,
-      question_id: question.id,
-      user_answer: null,
-      is_correct: null,
-      hints_used: 1,
-      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
-    })
+    const { error: answerError } = await supabase
+      .from('session_answers_new')
+      .insert({
+        session_id: sessionId,
+        question_id: question.id,
+        user_answer: null,
+        is_correct: null,
+        hints_used: 1,
+        time_spent_sec: cleanTimeSpentSec(timeSpentSec),
+      })
 
-  if (answerError) {
-    return { kind: 'error', message: answerError.message }
-  }
+    if (answerError) {
+      console.error('[oefenen] overslaan opslaan mislukt:', answerError.message)
+      return { kind: 'error', message: OPSLAAN_MISLUKT }
+    }
 
-  await bumpProgressOnSkip(supabase, user.id, question.topic_id, question.cluster_id)
+    await bumpProgressOnSkip(supabase, user.id, question.topic_id, question.cluster_id)
 
-  return {
-    kind: 'skipped',
-    correctAnswer: question.answer,
-    latexCorrectAnswer: question.latex_answer ?? null,
+    return {
+      kind: 'skipped',
+      correctAnswer: question.answer,
+      latexCorrectAnswer: question.latex_answer ?? null,
+    }
+  } catch (e) {
+    return vangOpslag('[oefenen] overslaan mislukt:', e)
   }
 }
 
@@ -269,10 +299,10 @@ export async function flagQuestionNewAction(
   })
 
   if (error) {
-    if (error.code === '23505' || error.message.toLowerCase().includes('unique')) {
-      return { ok: true }
-    }
-    return { ok: false, error: error.message }
+    // Dezelfde leerling heeft deze opgave al gemeld: dat is geen fout.
+    if (isDubbeleRij(error)) return { ok: true }
+    console.error('[melding] opslaan mislukt:', error.message)
+    return { ok: false, error: 'Versturen is niet gelukt. Probeer het later nog eens.' }
   }
 
   return { ok: true }
@@ -304,8 +334,25 @@ async function getOrCreateSession(
     .insert({ user_id: userId, topic_id: topicId, cluster_id: clusterId })
     .select('id')
     .single()
-  if (error) throw new Error(error.message)
+  if (error) {
+    console.error('[sessie] aanmaken mislukt:', error.message)
+    throw new OpslagMislukt()
+  }
   return created.id
+}
+
+async function leesVoortgang(db: DB, userId: string, clusterId: string) {
+  const { data, error } = await db
+    .from('user_progress_new')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('cluster_id', clusterId)
+    .maybeSingle()
+  if (error) {
+    console.error('[voortgang] ophalen mislukt:', error.message)
+    throw new OpslagMislukt()
+  }
+  return data
 }
 
 async function getOrCreateProgress(
@@ -314,22 +361,25 @@ async function getOrCreateProgress(
   topicId: string,
   clusterId: string,
 ) {
-  const { data } = await db
-    .from('user_progress_new')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('cluster_id', clusterId)
-    .maybeSingle()
-
-  if (data) return data
+  const bestaand = await leesVoortgang(db, userId, clusterId)
+  if (bestaand) return bestaand
 
   const { data: created, error } = await db
     .from('user_progress_new')
     .insert({ user_id: userId, topic_id: topicId, cluster_id: clusterId, status: 'in_progress' })
     .select('*')
     .single()
-  if (error) throw new Error(error.message)
-  return created
+  if (!error && created) return created
+
+  // Twee pogingen tegelijk zien allebei nog geen rij en voegen allebei in.
+  // De tweede botst op de unieke sleutel (gebruiker + cluster). Dan pakken
+  // we de rij die de eerste net heeft aangemaakt, zodat de pagina niet omvalt.
+  if (error) console.error('[voortgang] opslaan mislukt:', error.message)
+  if (error && isDubbeleRij(error)) {
+    const opnieuw = await leesVoortgang(db, userId, clusterId)
+    if (opnieuw) return opnieuw
+  }
+  throw new OpslagMislukt()
 }
 
 async function bumpProgressOnCorrect(
@@ -355,7 +405,10 @@ async function bumpProgressOnCorrect(
     .eq('id', p.id)
     .select('*')
     .single()
-  if (error) throw new Error(error.message)
+  if (error) {
+    console.error('[voortgang] bijwerken mislukt:', error.message)
+    throw new OpslagMislukt()
+  }
   return data
 }
 
