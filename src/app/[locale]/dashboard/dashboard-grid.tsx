@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
-import { Link } from '@/i18n/navigation'
+import { KlikLink } from '@/components/klik-link'
 import { cn } from '@/components/ui'
 
 import { weegClusters, type DashboardIndeling } from '@/lib/dashboard/indeling'
@@ -149,12 +149,13 @@ function StartCard({ start }: { start: StartData }) {
     <div className="mb-5 rounded-xl border border-accent/30 bg-accent-light p-5">
       <p className="font-serif text-xl text-text sm:text-2xl">{t('startTitle')}</p>
       <p className="mt-1 max-w-prose text-sm text-text-muted">{t('startBody')}</p>
-      <Link
+      <KlikLink
         href={start.href}
+        bezigTekst="Eerste opgave openen"
         className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-lg bg-accent px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-accent/90"
       >
         {t('startButton')}
-      </Link>
+      </KlikLink>
       <p className="mt-3 text-xs text-text-muted">
         {t('startWhere', {
           chapter: start.chapterTitle,

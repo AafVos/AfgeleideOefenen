@@ -151,17 +151,20 @@ export async function submitStudyAnswerAction(
     }
 
     if (isCorrect) {
-      const progress = await bumpProgressOnCorrect(
-        supabase,
-        user.id,
-        question.topic_id,
-        question.cluster_id,
-      )
+      const [progress, clusterTitle] = await Promise.all([
+        bumpProgressOnCorrect(
+          supabase,
+          user.id,
+          question.topic_id,
+          question.cluster_id,
+        ),
+        clusterTitel(supabase, question.cluster_id),
+      ])
       return {
         kind: 'correct',
         streak: progress.correct_streak,
         mastered: progress.status === 'mastered',
-        clusterTitle: await clusterTitel(supabase, question.cluster_id),
+        clusterTitle,
       }
     }
 
@@ -191,17 +194,20 @@ export async function submitStudyAnswerAction(
         .update({ is_correct: true })
         .eq('id', answerRow.id)
 
-      const progress = await bumpProgressOnCorrect(
-        supabase,
-        user.id,
-        question.topic_id,
-        question.cluster_id,
-      )
+      const [progress, clusterTitle] = await Promise.all([
+        bumpProgressOnCorrect(
+          supabase,
+          user.id,
+          question.topic_id,
+          question.cluster_id,
+        ),
+        clusterTitel(supabase, question.cluster_id),
+      ])
       return {
         kind: 'correct',
         streak: progress.correct_streak,
         mastered: progress.status === 'mastered',
-        clusterTitle: await clusterTitel(supabase, question.cluster_id),
+        clusterTitle,
       }
     }
 

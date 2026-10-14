@@ -1,5 +1,4 @@
-import { Link } from '@/i18n/navigation'
-
+import { KlikLink } from '@/components/klik-link'
 import { cn } from '@/components/ui'
 import type { NewExerciseTile } from '@/lib/practice/chapter-overview'
 
@@ -40,9 +39,10 @@ function TileGrid({
         const active = activeQuestionId === tile.questionId
         return (
           <li key={tile.questionId}>
-            <Link
+            <KlikLink
               href={tileHref as '/oefenen'}
               prefetch={false}
+              bezigTekst="Opgave openen"
               className={cn(
                 'block min-h-[6.75rem] rounded-xl border px-3 py-3 transition',
                 active &&
@@ -63,7 +63,7 @@ function TileGrid({
                 </span>
               </div>
               <ExerciseTileMathPreview latex_body={tile.latex_body} />
-            </Link>
+            </KlikLink>
           </li>
         )
       })}

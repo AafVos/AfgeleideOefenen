@@ -115,80 +115,55 @@ export async function loadTheoryBlocks(db: DB): Promise<TheoryBlockInfo[]> {
   return (data ?? []) as TheoryBlockInfo[]
 }
 
-export async function loadClustersForTopics(
-  db: DB,
-  topicIds: string[],
-): Promise<ClusterInfo[]> {
-  if (!topicIds.length) return []
+export async function loadAllClusters(db: DB): Promise<ClusterInfo[]> {
   const { data, error } = await db
     .from('topic_clusters_new')
     .select('id, slug, title, topic_id, order_index, theory_block_id')
-    .in('topic_id', topicIds)
     .order('order_index')
   if (error) throw new Error(error.message)
   return (data ?? []) as ClusterInfo[]
 }
 
-export async function loadTilesForClusters(
-  db: DB,
-  clusterIds: string[],
-): Promise<NewExerciseTile[]> {
-  if (!clusterIds.length) return []
+export type VraagVoorTegel = {
+  id: string
+  cluster_id: string
+  difficulty: number
+  order_index: number | null
+  latex_body: string | null
+  answer_prefix: string | null
+}
+
+/** Alle opgaven. De volgorde van de tegels bepaalt `naarTegels`, niet deze query. */
+export async function loadAlleVragen(db: DB): Promise<VraagVoorTegel[]> {
   const { data, error } = await db
     .from('questions_new')
     .select('id, cluster_id, difficulty, order_index, latex_body, answer_prefix')
-    .in('cluster_id', clusterIds)
   if (error) throw new Error(error.message)
-
-  const sorted = (data ?? []).slice().sort((a, b) => {
-    const ai = clusterIds.indexOf(a.cluster_id)
-    const bi = clusterIds.indexOf(b.cluster_id)
-    if (ai !== bi) return ai - bi
-    if (a.difficulty !== b.difficulty) return a.difficulty - b.difficulty
-    return (a.order_index ?? 999) - (b.order_index ?? 999)
-  })
-
-  // Laatste goed/fout-status per vraag (RLS beperkt tot eigen sessies).
-  // In brokken van 100 id's: alle id's in één .in() maakt de request-URI te lang.
-  const lastCorrectByQuestionId = new Map<string, boolean>()
-  if (sorted.length) {
-    const ids = sorted.map((q) => q.id)
-    const chunks: string[][] = []
-    for (let i = 0; i < ids.length; i += 100) chunks.push(ids.slice(i, i + 100))
-    const results = await Promise.all(
-      chunks.map((chunk) =>
-        db
-          .from('session_answers_new')
-          .select('question_id, is_correct, answered_at')
-          .in('question_id', chunk)
-          .order('answered_at', { ascending: false }),
-      ),
-    )
-    for (const { data: attempts, error: aErr } of results) {
-      if (aErr) throw new Error(aErr.message)
-      for (const row of attempts ?? []) {
-        if (row.is_correct !== true && row.is_correct !== false) continue
-        if (!lastCorrectByQuestionId.has(row.question_id)) {
-          lastCorrectByQuestionId.set(row.question_id, row.is_correct)
-        }
-      }
-    }
-  }
-
-  return sorted.map((q, i) => ({
-    questionId: q.id,
-    clusterId: q.cluster_id,
-    ordinal: i + 1,
-    difficulty: clampDiff(q.difficulty),
-    latex_body: q.latex_body,
-    preview: stripForPreview(q.latex_body ?? '', 56),
-    lastCorrect: lastCorrectByQuestionId.get(q.id) ?? null,
-    verhaal: vraagIsToepassing(q.latex_body, q.answer_prefix),
-  }))
+  return (data ?? []) as VraagVoorTegel[]
 }
 
-/** De soort som van de vraag die deze leerling het laatst beantwoordde. */
-export async function loadLaatsteClusterId(db: DB): Promise<string | null> {
+/**
+ * Nieuwste goed/fout per opgave, voor de kleur van de tegel.
+ *
+ * Eén aanroep. De database geeft per opgave alleen de laatste poging terug,
+ * niet elke eerdere keer. Alleen de eigen rijen: de functie loopt als de
+ * leerling zelf, en de tabel laat alleen zijn sessies zien.
+ */
+export async function loadLaatsteAntwoorden(
+  db: DB,
+): Promise<Map<string, boolean>> {
+  const { data, error } = await db.rpc('laatste_antwoord_per_vraag')
+  if (error) throw new Error(error.message)
+  const perVraag = new Map<string, boolean>()
+  for (const row of data ?? []) {
+    if (row.is_correct !== true && row.is_correct !== false) continue
+    perVraag.set(row.question_id, row.is_correct)
+  }
+  return perVraag
+}
+
+/** De opgave die deze leerling het laatst beantwoordde, om daar weer te openen. */
+export async function loadLaatsteVraagId(db: DB): Promise<string | null> {
   const { data, error } = await db
     .from('session_answers_new')
     .select('question_id')
@@ -196,15 +171,65 @@ export async function loadLaatsteClusterId(db: DB): Promise<string | null> {
     .limit(1)
     .maybeSingle()
   if (error) throw new Error(error.message)
-  if (!data) return null
+  return data?.question_id ?? null
+}
 
-  const { data: vraag, error: qErr } = await db
-    .from('questions_new')
-    .select('cluster_id')
-    .eq('id', data.question_id)
-    .maybeSingle()
-  if (qErr) throw new Error(qErr.message)
-  return vraag?.cluster_id ?? null
+/**
+ * Soorten sommen in de volgorde van het boek: hoofdstuk, onderwerp, soort.
+ * De lijsten komen al op `order_index` binnen; die volgorde blijft hier staan.
+ */
+export function clusterIdsOpVolgorde(
+  chapters: Array<{ id: string }>,
+  topics: Array<{ id: string; chapter_id: string }>,
+  clusters: Array<{ id: string; topic_id: string }>,
+): string[] {
+  const onderwerpen = new Map<string, Array<{ id: string }>>()
+  for (const topic of topics) {
+    const lijst = onderwerpen.get(topic.chapter_id) ?? []
+    lijst.push(topic)
+    onderwerpen.set(topic.chapter_id, lijst)
+  }
+  const soorten = new Map<string, Array<{ id: string }>>()
+  for (const cluster of clusters) {
+    const lijst = soorten.get(cluster.topic_id) ?? []
+    lijst.push(cluster)
+    soorten.set(cluster.topic_id, lijst)
+  }
+  return chapters.flatMap((chapter) =>
+    (onderwerpen.get(chapter.id) ?? []).flatMap((topic) =>
+      (soorten.get(topic.id) ?? []).map((cluster) => cluster.id),
+    ),
+  )
+}
+
+/** Tegels in boekvolgorde, met de laatste goed/fout-kleur erbij. */
+export function naarTegels(
+  vragen: VraagVoorTegel[],
+  clusterIds: string[],
+  laatsteGoed: ReadonlyMap<string, boolean>,
+): NewExerciseTile[] {
+  const volgorde = new Map(clusterIds.map((id, index) => [id, index]))
+  const sorted = vragen
+    .filter((vraag) => volgorde.has(vraag.cluster_id))
+    .slice()
+    .sort((a, b) => {
+      const ai = volgorde.get(a.cluster_id) ?? 0
+      const bi = volgorde.get(b.cluster_id) ?? 0
+      if (ai !== bi) return ai - bi
+      if (a.difficulty !== b.difficulty) return a.difficulty - b.difficulty
+      return (a.order_index ?? 999) - (b.order_index ?? 999)
+    })
+
+  return sorted.map((vraag, index) => ({
+    questionId: vraag.id,
+    clusterId: vraag.cluster_id,
+    ordinal: index + 1,
+    difficulty: clampDiff(vraag.difficulty),
+    latex_body: vraag.latex_body,
+    preview: stripForPreview(vraag.latex_body ?? '', 56),
+    lastCorrect: laatsteGoed.get(vraag.id) ?? null,
+    verhaal: vraagIsToepassing(vraag.latex_body, vraag.answer_prefix),
+  }))
 }
 
 export async function loadQuestionNew(
@@ -218,19 +243,23 @@ export async function loadQuestionNew(
   difficulty: 1 | 2 | 3
   steps: Array<{ id: string; step_order: number; step_description: string }>
 } | null> {
-  const { data: q, error: qErr } = await db
-    .from('questions_new')
-    .select('id, cluster_id, difficulty, latex_body, answer_prefix')
-    .eq('id', questionId)
-    .maybeSingle()
-  if (qErr) throw new Error(qErr.message)
+  const [vraag, stappen] = await Promise.all([
+    db
+      .from('questions_new')
+      .select('id, cluster_id, difficulty, latex_body, answer_prefix')
+      .eq('id', questionId)
+      .maybeSingle(),
+    db
+      .from('question_steps_new')
+      .select('id, step_order, step_description')
+      .eq('question_id', questionId)
+      .order('step_order'),
+  ])
+  if (vraag.error) throw new Error(vraag.error.message)
+  if (stappen.error) throw new Error(stappen.error.message)
+  const q = vraag.data
   if (!q) return null
-
-  const { data: steps } = await db
-    .from('question_steps_new')
-    .select('id, step_order, step_description')
-    .eq('question_id', q.id)
-    .order('step_order')
+  const steps = stappen.data
 
   return {
     id: q.id,
