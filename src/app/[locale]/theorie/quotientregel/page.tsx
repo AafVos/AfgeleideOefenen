@@ -35,9 +35,9 @@ export default function QuotientregelPage() {
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{QUOTIENTREGEL_TITEL}</h1>
       <p className="mt-6 text-lg text-text-muted">
-        Je gebruikt de quotiëntregel als de ene functie door de andere gedeeld wordt. In de
-        teller van de afgeleide staat een min. De noemer laat je staan als het kwadraat van de
-        noemer.
+        Je gebruikt de quotiëntregel (zonder trema: quotientregel) als de ene functie door de
+        andere gedeeld wordt. In de teller van de afgeleide staat een min. De noemer laat je
+        staan als het kwadraat van de noemer.
       </p>
       <p className="mt-3 text-text-muted">
         <RichMath source="$f$ is de functie die je differentieert. $g$ is de teller, $h$ de noemer. Die volgorde ligt vast." />

@@ -15,7 +15,7 @@ import {
 describe('extreme-waarden-pagina', () => {
   it('heeft een eigen adres, titel en omschrijving', () => {
     expect(EXTREME_WAARDEN_PAD).toBe('/theorie/extreme-waarden')
-    expect(EXTREME_WAARDEN_TITEL).toBe('Extreme waarden')
+    expect(EXTREME_WAARDEN_TITEL).toBe('Extreme waarden oefenen')
     expect(EXTREME_WAARDEN_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(EXTREME_WAARDEN_OMSCHRIJVING).not.toMatch(/\b(extreme value|derivative)\b/i)
   })
