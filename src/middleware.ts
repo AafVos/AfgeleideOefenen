@@ -15,6 +15,7 @@ const ZONDER_TAALCODE = [
   'uitloggen',
   'robots.txt',
   'sitemap.xml',
+  'og',
 ]
 
 // Next.js 16 noemt dit liever `proxy.ts`. Dat bestand draait altijd op Node
@@ -22,6 +23,11 @@ const ZONDER_TAALCODE = [
 // is wat Cloudflare aan kan en wat Vercel ook gewoon blijft draaien.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Het WhatsApp-plaatje heeft geen sessie nodig.
+  if (pathname === '/og') {
+    return NextResponse.next()
+  }
 
   // Video's die vroeger op het somnummer stonden. Eén sprong naar het nieuwe adres.
   const nieuwVideoAdres = oudVideoAdres(pathname)
