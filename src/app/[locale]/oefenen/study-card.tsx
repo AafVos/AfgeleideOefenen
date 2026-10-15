@@ -108,12 +108,15 @@ export function StudyCard({
     void startStudySessionAction(question.id)
   }, [question.id])
 
-  // Stappenplan + knoppen automatisch in beeld brengen na het onthullen
+  // Na een fout antwoord de uitleg in beeld brengen. Bij het stappenplan
+  // blijft die uitleg bovenaan staan; bij "ik weet het niet" de knoppen.
   useEffect(() => {
-    if (revealed) {
-      feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }
-  }, [revealed])
+    if (state.phase !== 'wrong' && !revealed) return
+    feedbackRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: state.phase === 'wrong' ? 'start' : 'end',
+    })
+  }, [state.phase, revealed])
 
   function next() {
     if (onVolgende) {
@@ -420,6 +423,7 @@ export function StudyCard({
         <div ref={feedbackRef}>
           <WrongFeedback
             steps={steps}
+            explanation={state.errorExplanation}
             revealed={revealed}
             onReveal={() => setRevealed(true)}
             onNext={next}
@@ -504,8 +508,31 @@ function AfterAnswerButtons({
   )
 }
 
+/**
+ * Korte uitleg waarom dit antwoord fout is. Leeg of alleen witruimte: geen vak,
+ * ook niet als het stappenplan er wel is.
+ */
+function FoutUitleg({ text }: { text: string | null }) {
+  const t = useTranslations('PracticeCard')
+  const uitleg = text?.trim() ?? ''
+  if (!uitleg) return null
+
+  return (
+    <div
+      role="status"
+      className="rounded-xl border border-accent-2/40 bg-accent-2-light px-4 py-3"
+    >
+      <p className="text-sm font-semibold text-accent-2">{t('whatWentWrong')}</p>
+      <div className="mt-1 max-w-full overflow-x-auto text-sm leading-relaxed break-words text-text">
+        <RichMath source={uitleg} />
+      </div>
+    </div>
+  )
+}
+
 function WrongFeedback({
   steps,
+  explanation,
   revealed,
   onReveal,
   onNext,
@@ -513,6 +540,7 @@ function WrongFeedback({
   pending,
 }: {
   steps: Step[]
+  explanation: string | null
   revealed: boolean
   onReveal: () => void
   onNext: () => void
@@ -520,27 +548,32 @@ function WrongFeedback({
   pending: boolean
 }) {
   const t = useTranslations('PracticeCard')
+  const uitleg = <FoutUitleg text={explanation} />
 
   if (!revealed) {
     return (
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button onClick={onRetry} disabled={pending} className="min-h-11 px-5">
-          {t('retryButton')}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={onReveal}
-          disabled={pending}
-          className="min-h-11 px-5"
-        >
-          {t('showAnswer')}
-        </Button>
+      <div className="space-y-4">
+        {uitleg}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button onClick={onRetry} disabled={pending} className="min-h-11 px-5">
+            {t('retryButton')}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={onReveal}
+            disabled={pending}
+            className="min-h-11 px-5"
+          >
+            {t('showAnswer')}
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
+      {uitleg}
       <StepsList steps={steps} />
       <AfterAnswerButtons onNext={onNext} onRetry={onRetry} pending={pending} />
     </div>
