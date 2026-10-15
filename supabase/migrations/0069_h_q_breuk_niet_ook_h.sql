@@ -115,7 +115,8 @@ BEGIN
   END IF;
 
   tekst := pg_temp.stap('h2_quotientregel', 'som_met_breuk', 6, 4);
-  keer := (length(tekst) - length(replace(tekst, $h$$h'(q)$$h$, ''))) / length($h$$h'(q)$$h$);
+  -- De dollar sluit pas aan het eind van de formule, dus niet $h'(q)$.
+  keer := (length(tekst) - length(replace(tekst, $n$h'(q)$n$, ''))) / length($n$h'(q)$n$);
   IF tekst IS DISTINCT FROM $v$Met het minteken voor de breuk wordt het $-\dfrac{-3}{(2q-1)^2} = \dfrac{3}{(2q-1)^2}$. Combineer: $h'(q) = 2q + \dfrac{3}{(2q-1)^2}$.$v$
      OR keer <> 1
      OR strpos(tekst, $a$2q + \dfrac{3}{(2q-1)^2}$a$) = 0
