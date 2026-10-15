@@ -30,7 +30,7 @@ export default async function WachtwoordVergetenPage({
   const oefenpad = veiligOefenpad(naar)
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
+    <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1">
           <h1 className="font-serif text-3xl text-text">{t('h1')}</h1>

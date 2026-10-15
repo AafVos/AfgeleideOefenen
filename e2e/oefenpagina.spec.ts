@@ -40,9 +40,7 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     await expect(klikbaar).toHaveClass(/cursor-pointer/)
     await expect(zijbalk.getByRole('button', { name: /2\.5/ })).toHaveCount(0)
     await zijbalk.getByRole('button', { name: /2\.1/ }).click()
-    const leeg = zijbalk.locator('[aria-disabled="true"]').filter({ hasText: 'Soorten van stijgen' })
-    await expect(leeg).toBeVisible()
-    await expect(leeg).toHaveClass(/text-xs/)
+    await expect(zijbalk.getByText('Soorten van stijgen')).toHaveCount(0)
     await zijbalk.getByRole('button', { name: /H7 –/ }).click()
     await expect(zijbalk.getByRole('button', { name: /7\.[1-4]/ })).toHaveCount(0)
     await expect(zijbalk.getByRole('button', { name: /7\.5/ })).toBeVisible()
@@ -63,9 +61,7 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     await expect(klikbaar).toContainText(/\d+/)
     await expect(menu.getByRole('button', { name: /2\.5/ })).toHaveCount(0)
     await menu.getByRole('button', { name: /2\.1/ }).click()
-    await expect(
-      menu.locator('[aria-disabled="true"]').filter({ hasText: 'Soorten van stijgen' }),
-    ).toBeVisible()
+    await expect(menu.getByText('Soorten van stijgen')).toHaveCount(0)
     // Een klik op het hoofdstuk sluit dit menu. 7.1–7.4 en 9.1–9.2
     // controleert de computerzijbalk hierboven.
     await menu.getByRole('button', { name: /2\.3/ }).click()
@@ -75,4 +71,81 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
 
   await expect(page.locator('#blok-h2-3d')).toBeInViewport()
   await expect(page.locator('#blok-h2-1d')).toBeAttached()
+})
+
+test('een open hoofdstuk klapt weer dicht en blijft dicht @telefoon', async ({ page }) => {
+  await page.goto('/nl/oefenen?chapter=h2')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+
+  const breed = (page.viewportSize()?.width ?? 0) >= 1024
+  if (breed) {
+    const h2 = page.locator('aside').getByRole('button', { name: /H2 –/ })
+    await expect(h2).toHaveAttribute('aria-expanded', 'true')
+    await h2.click()
+    await expect(h2).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('aside').getByRole('button', { name: /2\.1/ })).toHaveCount(0)
+    return
+  }
+
+  await page.getByRole('button', { name: /H2 –/ }).click()
+  const menu = page.getByRole('dialog')
+  const h2 = menu.getByRole('button', { name: /H2 –/ })
+  await expect(h2).toHaveAttribute('aria-expanded', 'true')
+  await h2.click()
+  await expect(h2).toHaveAttribute('aria-expanded', 'false')
+  await expect(menu.getByRole('button', { name: /2\.1/ })).toHaveCount(0)
+  await expect(menu).toBeVisible()
+})
+
+function vakkenOverlappen(
+  a: { x: number; y: number; width: number; height: number },
+  b: { x: number; y: number; width: number; height: number },
+) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  )
+}
+
+test('omhoog scrollen schuift de kop meteen, en het poppetje dekt de link niet @telefoon', async ({
+  page,
+}) => {
+  await page.goto('/nl/oefenen')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+
+  const header = page.locator('header')
+  const titel = page.getByRole('heading', { level: 1, name: 'Oefenen' })
+  const scroller = page.locator('[data-oefen-scroll]')
+  // De pagina springt soms naar de laatste som. Daarna meten we vanaf de top.
+  await page.waitForTimeout(400)
+  await scroller.evaluate((el) => {
+    el.scrollTop = 0
+  })
+  await expect(titel).toBeInViewport()
+  const voor = await titel.boundingBox()
+  const headerVoor = await header.boundingBox()
+  expect(voor && headerVoor && voor.y >= headerVoor.y + headerVoor.height - 1).toBeTruthy()
+
+  const vak = await scroller.boundingBox()
+  expect(vak).toBeTruthy()
+  await page.mouse.move(vak!.x + vak!.width / 2, vak!.y + Math.min(280, vak!.height / 2))
+  await page.mouse.wheel(0, 220)
+  await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(40)
+  const naOmlaag = await scroller.evaluate((el) => el.scrollTop)
+  await page.mouse.wheel(0, -220)
+  await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeLessThan(naOmlaag - 30)
+
+  await scroller.evaluate((el) => {
+    el.scrollTop = 0
+  })
+  const terug = await titel.boundingBox()
+  const headerNa = await header.boundingBox()
+  expect(terug && headerNa && terug.y >= headerNa.y + headerNa.height - 1).toBeTruthy()
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+  const poppetje = await page.getByRole('button', { name: 'Vraag het Aaf' }).boundingBox()
+  const link = await page.getByRole('link', { name: /integraaloefenen\.nl/ }).boundingBox()
+  expect(poppetje && link && !vakkenOverlappen(poppetje, link)).toBeTruthy()
 })

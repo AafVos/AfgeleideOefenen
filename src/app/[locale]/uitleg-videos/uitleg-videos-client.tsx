@@ -406,7 +406,7 @@ export function UitlegVideosClient({
       {/* Vraag insturen */}
       <section
         id="vraag-stellen"
-        className="mt-12 scroll-mt-20 rounded-2xl border border-border bg-surface-2 p-5 sm:p-7"
+        className="mt-12 scroll-mt-4 rounded-2xl border border-border bg-surface-2 p-5 sm:p-7"
       >
         <h2 className="font-serif text-2xl text-text">{labels.askTitle}</h2>
         <p className="mt-1 text-sm text-text-muted">{labels.askIntro}</p>
