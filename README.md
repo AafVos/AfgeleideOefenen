@@ -1,8 +1,10 @@
 # afgeleideoefenen.nl
 
 Nederlandse wiskundewebsite voor VWO-studenten om differentiëren te leren.
-Gebouwd met **Next.js (App Router) + Supabase + Gemini**. Zie
-[`idea.md`](./idea.md) voor de volledige bouwopdracht.
+Gebouwd met **Next.js (App Router) + Supabase + Gemini**. Afspraken voor
+wie aan de code werkt staan in [`AGENTS.md`](./AGENTS.md). In
+[`idea.md`](./idea.md) klopt hoofdstuk 3 (de tabellen); de rest is het
+plan van april 2026 en is geen bouwopdracht meer.
 
 ---
 
@@ -278,14 +280,11 @@ preview de productie-stand. Zet de site niet zelf live met `wrangler` of
 
 ---
 
-## Bouwvolgorde
+## Wat al staat
 
-Zie `idea.md` sectie 11 — volg de vier fasen:
-
-1. **Fundament** — scaffolding + Supabase + admin CRUD ✓
-2. **Leerlogica** — oefenpagina, vraag­selectie, mastery tracking ✓
-3. **AI-laag** — Gemini-integratie en fouttype-detectie ✓. Vragen genereren is nog niet gebouwd.
-4. **Polish** — wiskundig toetsenbord, mobiel, extra statistieken ✓
+De site is live. Sectie 11 in `idea.md` (vier fasen met lege vinkjes) is het
+oude plan van april 2026. Die fasen volg je niet meer. Nieuw werk gaat via
+een pull request, zoals hieronder.
 
 ---
 
