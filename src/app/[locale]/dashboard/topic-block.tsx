@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
 
 import { KlikLink } from '@/components/klik-link'
 
@@ -229,9 +228,15 @@ export function NieuwHoofdstukBlock({
   chapter: NieuwHoofdstuk
   defaultOpen?: boolean
 }) {
-  const t = useTranslations('Dashboard')
   const [open, setOpen] = useState(defaultOpen)
   const { mastered, total, pct } = weegClusters(chapter.clusters)
+  const paragrafen = chapter.paragrafen
+    .map((paragraaf) => ({
+      ...paragraaf,
+      blokken: paragraaf.blokken.filter((blok) => blok.heeftOpgaven),
+    }))
+    .filter((paragraaf) => paragraaf.blokken.length > 0)
+  if (paragrafen.length === 0 && chapter.losseOnderwerpen.length === 0) return null
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -277,7 +282,7 @@ export function NieuwHoofdstukBlock({
 
       {open && (
         <ul className="pb-2 pt-1">
-          {chapter.paragrafen.map((paragraaf) => {
+          {paragrafen.map((paragraaf) => {
             const clusters = paragraaf.blokken.flatMap((blok) => blok.clusters)
             return (
               <li key={paragraaf.id}>
@@ -291,33 +296,22 @@ export function NieuwHoofdstukBlock({
                   <VoortgangCijfers clusters={clusters} />
                 </div>
                 <ul>
-                  {paragraaf.blokken.map((blok) =>
-                    blok.heeftOpgaven ? (
-                      <li key={blok.id}>
-                        <KlikLink
-                          href={hrefVoorBlok(blok.slug)}
-                          bezigTekst="Oefenen openen"
-                          className="group flex min-h-11 items-center gap-3 py-2 pl-12 pr-4 text-sm text-text hover:text-accent"
-                        >
-                          <span className="shrink-0 font-mono text-text-muted">{blok.letter}</span>
-                          <span className="min-w-0 flex-1 break-words group-hover:underline">
-                            {blok.title}
-                          </span>
-                          <VoortgangCijfers clusters={blok.clusters} />
-                        </KlikLink>
-                        <ReeksZinnen clusters={blok.clusters} inspringen="pl-16" />
-                      </li>
-                    ) : (
-                      <li
-                        key={blok.id}
-                        className="flex min-h-11 items-center gap-3 py-2 pl-12 pr-4 text-sm text-text-muted"
+                  {paragraaf.blokken.map((blok) => (
+                    <li key={blok.id}>
+                      <KlikLink
+                        href={hrefVoorBlok(blok.slug)}
+                        bezigTekst="Oefenen openen"
+                        className="group flex min-h-11 items-center gap-3 py-2 pl-12 pr-4 text-sm text-text hover:text-accent"
                       >
-                        <span className="shrink-0 font-mono">{blok.letter}</span>
-                        <span className="min-w-0 flex-1 break-words">{blok.title}</span>
-                        <span className="shrink-0 text-xs">{t('nogGeenOpgaven')}</span>
-                      </li>
-                    ),
-                  )}
+                        <span className="shrink-0 font-mono text-text-muted">{blok.letter}</span>
+                        <span className="min-w-0 flex-1 break-words group-hover:underline">
+                          {blok.title}
+                        </span>
+                        <VoortgangCijfers clusters={blok.clusters} />
+                      </KlikLink>
+                      <ReeksZinnen clusters={blok.clusters} inspringen="pl-16" />
+                    </li>
+                  ))}
                 </ul>
               </li>
             )
