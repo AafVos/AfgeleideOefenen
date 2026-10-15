@@ -4,6 +4,7 @@ import { useActionState, useCallback, useEffect, useRef, useState, useTransition
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
+import { GoogleKnop } from '@/components/google-knop'
 import { Link } from '@/i18n/navigation'
 import { hrefMetOefenpad } from '@/lib/auth/oefenpad'
 import type { Herkomst } from '@/lib/herkomst'
@@ -18,9 +19,11 @@ const COOLDOWN_SECONDS = 60
 export function SignupForm({
   herkomst = null,
   oefenpad = null,
+  googleAan = false,
 }: {
   herkomst?: Herkomst | null
   oefenpad?: string | null
+  googleAan?: boolean
 }) {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
@@ -111,7 +114,9 @@ export function SignupForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <div className="space-y-4">
+      {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
+      <form action={formAction} className="space-y-4">
       {herkomst ? <input type="hidden" name="van" defaultValue={herkomst} /> : null}
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
@@ -166,7 +171,8 @@ export function SignupForm({
           {t('loginLink')}
         </Link>
       </p>
-    </form>
+      </form>
+    </div>
   )
 }
 

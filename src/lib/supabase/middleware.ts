@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { routing } from '@/i18n/routing'
+import { gebruikersnaamBestemming, moetNaamVragen, padZonderNaamvraag } from '@/lib/auth/google'
 import { inlogAdres } from '@/lib/auth/oefenpad'
 
 import type { Database } from './types'
@@ -17,6 +18,7 @@ const TAAL = routing.defaultLocale
 const ALLEEN_INGELOGD = [
   '/dashboard',
   '/feedback',
+  '/gebruikersnaam',
   '/instellingen',
   '/oefenen',
   '/zelf-toets',
@@ -82,6 +84,23 @@ export async function updateSession(request: NextRequest) {
     url.pathname = doel.pathname
     url.search = doel.search
     return NextResponse.redirect(url)
+  }
+
+  // Eerste keer via Google: eerst een gebruikersnaam, daarna de rest van
+  // de site. Uitloggen en de terugkeer van Google blijven bereikbaar.
+  if (user && moetNaamVragen(user) && !padZonderNaamvraag(pad)) {
+    const doel = new URL(
+      gebruikersnaamBestemming(padZonderTaal, request.nextUrl.search),
+      request.url,
+    )
+    const url = request.nextUrl.clone()
+    url.pathname = doel.pathname
+    url.search = doel.search
+    const antwoord = NextResponse.redirect(url)
+    for (const koekje of supabaseResponse.cookies.getAll()) {
+      antwoord.cookies.set(koekje)
+    }
+    return antwoord
   }
 
   if (pad.startsWith('/admin')) {

@@ -174,7 +174,25 @@
     "errorMissingFields": "Vul je e-mailadres en wachtwoord in.",
     "errorInvalidCredentials": "Onjuiste combinatie van e-mail en wachtwoord.",
     "errorUnconfirmed": "Je hebt je e-mailadres nog niet bevestigd. Check je inbox.",
-    "errorGeneric": "Er ging iets mis bij het inloggen. Probeer het opnieuw."
+    "errorGeneric": "Er ging iets mis bij het inloggen. Probeer het opnieuw.",
+    "googleCancelled": "Je hebt aanmelden met Google afgebroken. Je kunt het opnieuw proberen of inloggen met je e-mailadres."
+  },
+  "Google": {
+    "button": "Doorgaan met Google",
+    "pending": "Bezig met Google…",
+    "error": "Aanmelden met Google lukt nu niet. Gebruik je e-mailadres.",
+    "or": "of"
+  },
+  "Gebruikersnaam": {
+    "title": "Gebruikersnaam",
+    "h1": "Hoe mogen we je noemen?",
+    "subtitle": "Dit mag je overslaan. Vul je een naam in, dan staat die in de bovenbalk in plaats van je e-mailadres.",
+    "usernameLabel": "Gebruikersnaam (optioneel)",
+    "submitLabel": "Verder",
+    "submitPending": "Bezig…",
+    "errorTeLang": "Gebruik maximaal 40 tekens.",
+    "errorBezet": "Die gebruikersnaam is al in gebruik. Kies een andere.",
+    "errorGeneric": "Opslaan is niet gelukt. Probeer het nog eens."
   },
   "Register": {
     "title": "Registreren",
