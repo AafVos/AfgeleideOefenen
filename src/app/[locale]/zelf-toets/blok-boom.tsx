@@ -201,25 +201,11 @@ export function BlokBoom({
   }
 
   function blokRij(blok: ToetsBlok) {
+    if (!blok.heeftOpgaven) return null
     const ids = blok.clusters.map((cluster) => cluster.id)
     const open = openBlocks.has(blok.id)
     const meerdere = blok.clusters.length > 1
     const metKop = blok.onderwerpen.filter((onderwerp) => onderwerp.clusters.length > 0)
-    if (!blok.heeftOpgaven) {
-      return (
-        <li key={blok.id}>
-          <div className="min-h-11 rounded-md px-2 py-1 text-sm text-text-muted md:flex md:min-h-0 md:items-center md:gap-2">
-            <span className="hidden shrink-0 md:block md:size-5" />
-            <span className="hidden shrink-0 md:block md:size-5" />
-            <span className="mr-1 font-mono md:mr-0 md:shrink-0">{blok.letter}</span>
-            <span className="break-words md:min-w-0 md:flex-1">{blok.title}</span>
-            <span className="mt-0.5 block text-xs md:mt-0 md:ml-auto md:shrink-0">
-              {t('nogGeenOpgaven')}
-            </span>
-          </div>
-        </li>
-      )
-    }
 
     return (
       <li key={blok.id}>
@@ -265,7 +251,11 @@ export function BlokBoom({
   function hoofdstukLijst(hoofdstuk: ToetsHoofdstuk) {
     const ids = clusterIdsVanHoofdstuk(hoofdstuk)
     const open = openChapters.has(hoofdstuk.id)
-    const heeftKinderen = hoofdstuk.paragrafen.length > 0 || hoofdstuk.losseOnderwerpen.length > 0
+    const heeftKinderen =
+      hoofdstuk.paragrafen.some((paragraaf) =>
+        paragraaf.blokken.some((blok) => blok.heeftOpgaven),
+      ) || hoofdstuk.losseOnderwerpen.length > 0
+    if (!heeftKinderen && ids.length === 0) return null
     return (
       <li key={hoofdstuk.id}>
         <div className="flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-2 md:min-h-0">
@@ -294,7 +284,9 @@ export function BlokBoom({
         </div>
         {open && heeftKinderen && (
           <ul className="ml-7 space-y-0.5 border-l border-border pl-2">
-            {hoofdstuk.paragrafen.map((paragraaf) => (
+            {hoofdstuk.paragrafen
+              .filter((paragraaf) => paragraaf.blokken.some((blok) => blok.heeftOpgaven))
+              .map((paragraaf) => (
               <li key={paragraaf.id}>
                 <div className="flex min-h-11 items-center gap-2 px-2 text-sm">
                   <span className="shrink-0 font-mono text-xs font-semibold text-text-muted">
