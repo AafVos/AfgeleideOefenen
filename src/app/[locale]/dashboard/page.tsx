@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { bouwDashboardIndeling, bouwOnderwerpVoortgang } from '@/lib/dashboard/indeling'
+import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
 import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
 import { canoniek } from '@/lib/seo'
 import { getCurrentProfile } from '@/lib/supabase/request-cache'
@@ -68,6 +69,7 @@ export default async function DashboardPage() {
     supabase
       .from('paragraphs')
       .select('id, chapter_id, slug, label, title, order_index')
+      .eq('zichtbaar', true)
       .order('order_index'),
     supabase
       .from('theory_blocks')
@@ -133,7 +135,7 @@ export default async function DashboardPage() {
       ? bouwDashboardIndeling({
           ...bron,
           paragraphs: paragraphs ?? [],
-          blocks: blocks ?? [],
+          blocks: blokkenVanParagrafen(blocks ?? [], paragraphs ?? []),
         })
       : null
 

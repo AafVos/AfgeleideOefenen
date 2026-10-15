@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { clusterIdsOpVolgorde, naarTegels, type VraagVoorTegel } from './chapter-overview'
+import {
+  blokkenVanParagrafen,
+  clusterIdsOpVolgorde,
+  naarTegels,
+  type VraagVoorTegel,
+} from './chapter-overview'
 
 function vraag(deel: Partial<VraagVoorTegel> & Pick<VraagVoorTegel, 'id' | 'cluster_id'>): VraagVoorTegel {
   return {
@@ -47,5 +52,18 @@ describe('naarTegels', () => {
     expect(tegels.map((tegel) => tegel.ordinal)).toEqual([1, 2, 3])
     expect(tegels.find((tegel) => tegel.questionId === 'eerst')?.lastCorrect).toBe(true)
     expect(tegels.find((tegel) => tegel.questionId === 'laat')?.lastCorrect).toBeNull()
+  })
+})
+
+describe('blokkenVanParagrafen', () => {
+  it('laat blokken van een paragraaf die niet meekomt weg', () => {
+    const blokken = blokkenVanParagrafen(
+      [
+        { id: 'blijft', paragraph_id: 'p24' },
+        { id: 'weg', paragraph_id: 'p25' },
+      ],
+      [{ id: 'p24' }],
+    )
+    expect(blokken.map((blok) => blok.id)).toEqual(['blijft'])
   })
 })
