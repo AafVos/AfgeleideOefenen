@@ -1,17 +1,21 @@
-# lerendifferentiëren.nl — Technische Bouwopdracht
+# afgeleideoefenen.nl — Technische Bouwopdracht
 **Versie 1.0 — April 2026**
+
+De site heet **afgeleideoefenen.nl**. Alleen hoofdstuk 3 (de tabellen)
+beschrijft hoe het nu is. De rest is het plan van april 2026: geen
+bouwopdracht meer, en sectie 11 volg je niet.
 
 ---
 
 ## 1. Projectbeschrijving
 
-Bouw een Nederlandse wiskundewebsite voor VWO-studenten om differentiëren te leren. De site heet **lerendifferentiëren.nl** en volgt de Getal & Ruimte notatie en leerlijn.
+Bouw een Nederlandse wiskundewebsite voor VWO-studenten om differentiëren te leren. De site heet **afgeleideoefenen.nl** en volgt de Getal & Ruimte notatie en leerlijn.
 
 De kern van de site is **practice-first**: studenten beginnen direct met oefenen. Theorie is beschikbaar als inklapbaar hulpmiddel. Het systeem is adaptief en zelflerend via AI.
 
 **Doelgroep:** VWO wiskunde studenten (Nederland)
 **Taal:** Volledig Nederlands
-**Notatie:** Getal & Ruimte (gebruik `t(x)/n(x)` voor quotiëntregel, niet `f/g`)
+**Notatie:** Getal & Ruimte. Functies heten `f`, `g` en `h`. Bij de quotiëntregel is dat `g(x)/h(x)`.
 
 ---
 
@@ -25,7 +29,7 @@ De kern van de site is **practice-first**: studenten beginnen direct met oefenen
 | AI | Google Gemini API | 1500 req/dag gratis |
 | Hosting | Cloudflare Workers | Live op worker `afgeleide-oefenen` |
 | Wiskunde rendering | KaTeX | Snelle LaTeX rendering in browser |
-| UI Components | Shadcn/ui | Gratis, mooi, Next.js compatibel |
+| Uiterlijk | Tailwind | Eigen onderdelen in de code |
 
 ---
 
@@ -303,7 +307,7 @@ De UI is minimalistisch en licht. Zie de bijgeleverde HTML schets voor referenti
 - Sticky navigatiebalk bovenaan (56px hoog)
 
 ### Componenten
-- Gebruik **Shadcn/ui** voor admin panel (tabellen, forms, modals, toasts)
+- Beheer gebruikt dezelfde Tailwind-onderdelen als de rest van de site
 - Streak indicator: 3 bolletjes die opvullen naarmate de student goed antwoord geeft
 - Progress bar per cluster bovenaan de oefenpagina
 
@@ -352,6 +356,9 @@ input.addEventListener('input', (e) => {
 ---
 
 ## 11. Aanbevolen Bouwvolgorde
+
+Dit is het oude plan. De vinkjes hieronder staan leeg en zijn geen
+werklijst. De site is al gebouwd; nieuw werk volgt `AGENTS.md` en de README.
 
 ### Fase 1 — Fundament (zonder AI)
 - [ ] Next.js project aanmaken (`npx create-next-app@latest`)
@@ -433,6 +440,6 @@ Stap 5: Schrijf het antwoord op           (f'(x) = 12x²)
 - Supabase Auth beheert gebruikersaccounts — maak geen eigen auth systeem
 - Gemini model: `gemini-1.5-flash` (snel en binnen gratis tier)
 - KaTeX importeren via npm: `npm install katex`
-- Gebruik Shadcn/ui voor admin panel: `npx shadcn@latest init`
+- Het uiterlijk is Tailwind, zoals in de README
 - Student kan een vraag flaggen als "klopt niet" — sla dit op in een aparte `question_flags` tabel
 - De site moet later kunnen uitbreiden naar andere wiskunde topics (integreren, limieten)
