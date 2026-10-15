@@ -6,7 +6,9 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // /nl geeft het klaargezette bestand, zonder eerst door te sturen naar /nl/.
+    "html_handling": "drop-trailing-slash"
   },
   // De startpagina-ingang blijft klein. worker-next.js is de al gebundelde
   // Next-server en laadt pas als een pagina hem echt nodig heeft.

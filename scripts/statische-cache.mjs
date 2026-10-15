@@ -78,8 +78,18 @@ function schrijfStartpagina() {
     throw new Error('De klaargezette startpagina mist de kop.')
   }
 
+  const script = `<script>(function(){var delen=document.cookie.split(";");for(var i=0;i<delen.length;i++){var naam=delen[i].split("=")[0].trim();if(/^sb-.+-auth-token(?:\\.\\d+)?$/.test(naam)){location.replace("/nl/dashboard");return}}})()</script>`
+  const metScript = html.includes(script)
+    ? html
+    : html.replace('<head>', `<head>${script}`)
+
   fs.mkdirSync(path.dirname(startHtml), { recursive: true })
-  fs.writeFileSync(startHtml, html)
+  fs.writeFileSync(startHtml, metScript)
+  // Zonder dit bestand start de worker voor /nl. Met het bestand geeft
+  // Cloudflare de pagina zelf, zonder de worker af te wachten.
+  const alsBestand = path.join(bestanden, 'nl/index.html')
+  fs.mkdirSync(path.dirname(alsBestand), { recursive: true })
+  fs.writeFileSync(alsBestand, metScript)
 }
 
 function bundelZwareWorker(bron) {
