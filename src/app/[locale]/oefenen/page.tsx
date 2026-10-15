@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import {
+  blokkenVanParagrafen,
   clusterIdsOpVolgorde,
   loadAllClusters,
   loadAlleVragen,
@@ -211,11 +212,12 @@ async function BlokPagina({ searchParams }: PageProps) {
   const allTiles = naarTegels(vragen, allClusterIds, laatsteAntwoorden)
   const laatsteClusterId =
     vragen.find((vraag) => vraag.id === laatsteVraagId)?.cluster_id ?? null
+  const zichtbareBlokken = blokkenVanParagrafen(blocks, paragraphs)
 
   const data = {
     chapters,
     paragraphs,
-    blocks,
+    blocks: zichtbareBlokken,
     topics: allTopics,
     clusters: allClusters,
     tiles: allTiles,
@@ -238,7 +240,7 @@ async function BlokPagina({ searchParams }: PageProps) {
       indeling="blok"
       chapters={chapters}
       paragraphs={paragraphs}
-      blocks={blocks}
+      blocks={zichtbareBlokken}
       allTopics={allTopics}
       allClusters={allClusters}
       adres={adres}

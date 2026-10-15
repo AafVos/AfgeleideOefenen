@@ -6,6 +6,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
 import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
@@ -90,6 +91,7 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
     db
       .from('paragraphs')
       .select('id, chapter_id, slug, label, title, order_index')
+      .eq('zichtbaar', true)
       .order('order_index'),
     db
       .from('theory_blocks')
@@ -154,7 +156,7 @@ export async function loadConfigData(db: DB, userId: string): Promise<ConfigData
     topics: (topics ?? []) as ConfigTopic[],
     clusters: enrichedClusters,
     paragraphs: paragraphs ?? [],
-    blocks: blocks ?? [],
+    blocks: blokkenVanParagrafen(blocks ?? [], paragraphs ?? []),
   }
 }
 

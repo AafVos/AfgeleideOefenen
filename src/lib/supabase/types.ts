@@ -73,7 +73,7 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['chapters']['Insert']>
         Relationships: []
       }
-      /** Boekparagrafen per hoofdstuk. Migratie 0053. */
+      /** Boekparagrafen per hoofdstuk. Migratie 0053. `zichtbaar` sinds 0064. */
       paragraphs: {
         Row: {
           id: string
@@ -82,6 +82,7 @@ export type Database = {
           label: string
           title: string
           order_index: number
+          zichtbaar: boolean
           created_at: string
         }
         Insert: {
@@ -91,6 +92,7 @@ export type Database = {
           label: string
           title: string
           order_index: number
+          zichtbaar?: boolean
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['paragraphs']['Insert']>
