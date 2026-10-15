@@ -374,11 +374,11 @@ function OnderwerpWeergave({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
+    <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-hidden">
       {/* ── Sidebar (staat vast; content scrolt zelf) ───────────────── */}
       <aside
         className={cn(
-          'nice-scrollbar border-b border-border bg-surface lg:h-full lg:border-b-0 lg:border-r',
+          'nice-scrollbar shrink-0 border-b border-border bg-surface lg:h-full lg:min-h-0 lg:shrink lg:border-b-0 lg:border-r',
           sidebarOpen
             ? 'overflow-x-auto p-4 lg:w-64 lg:overflow-x-visible lg:overflow-y-auto lg:py-8'
             : 'px-0 py-2 lg:w-11 lg:py-4',
@@ -556,7 +556,7 @@ function OnderwerpWeergave({
       <div
         ref={mainScrollRef}
         onScroll={handleMainScroll}
-        className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
+        className="nice-scrollbar lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain"
       >
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -734,7 +734,6 @@ function OnderwerpWeergave({
 
 type BlokLabels = Labels & {
   oudeOpgaven: string
-  nogGeenOpgaven: string
   kiesOnderdeel: string
   sluiten: string
 }
@@ -781,20 +780,20 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
         <section
           key={h.chapter.id}
           id={`hoofdstuk-${h.chapter.slug}`}
-          className="mt-10 scroll-mt-28 first:mt-4 lg:scroll-mt-4"
+          className="mt-10 scroll-mt-14 first:mt-4 lg:scroll-mt-4"
         >
           <h2 className="border-b border-border pb-3 font-serif text-2xl text-text">
             {hoofdstukNaam(h.chapter)}
           </h2>
           {h.paragrafen.map((p) => (
-            <div key={p.id} id={`paragraaf-${p.slug}`} className="scroll-mt-28 lg:scroll-mt-4">
+            <div key={p.id} id={`paragraaf-${p.slug}`} className="scroll-mt-14 lg:scroll-mt-4">
               <h3 className="mt-8 font-serif text-xl text-text">
                 <span className="font-mono font-semibold">{p.label}</span> {p.title}
               </h3>
               {p.blokken.map((blok) => {
                 const tegels = tegelsVanKopjes(blok.kopjes, allTiles)
                 return (
-                  <div key={blok.id} id={`blok-${blok.slug}`} className="scroll-mt-28 lg:scroll-mt-4">
+                  <div key={blok.id} id={`blok-${blok.slug}`} className="scroll-mt-14 lg:scroll-mt-4">
                     <h3 className="mt-6 font-serif text-lg text-text">
                       <span className="font-mono font-semibold">
                         {p.label} {blok.letter}
@@ -1204,20 +1203,21 @@ function BlokWeergave({
     }
   }, [overzicht, vraag, bezigId])
 
-  function toggleInSet(set: Set<string>, id: string, update: (next: Set<string>) => void) {
-    const next = new Set(set)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    update(next)
-  }
-
   function boomLijst() {
     return (
       <div>
         <ul className="space-y-0.5">
           {boom.hoofdstukken.map((h) => {
             const naam = hoofdstukNaam(h.chapter)
+            const paragrafen = h.paragrafen
+              .map((p) => ({
+                ...p,
+                blokken: p.blokken.filter((blok) => blok.heeftOpgaven),
+              }))
+              .filter((p) => p.blokken.length > 0)
+            // Geen boekparagrafen (Beweging): alleen tonen als er opgaven zijn.
             if (h.paragrafen.length === 0) {
+              if (!overzicht.some((node) => node.chapter.id === h.chapter.id)) return null
               const actief = inBeeld === `hoofdstuk-${h.chapter.slug}`
               return (
                 <li key={h.chapter.id}>
@@ -1243,13 +1243,23 @@ function BlokWeergave({
                 </li>
               )
             }
+            if (paragrafen.length === 0) return null
             const open = openHoofdstukken.has(h.chapter.id)
             return (
               <li key={h.chapter.id}>
                 <button
                   type="button"
                   onClick={() => {
-                    toggleInSet(openHoofdstukken, h.chapter.id, setOpenHoofdstukken)
+                    // Dichtklappen mag niet meteen weer open door scrollNaar.
+                    if (open) {
+                      setOpenHoofdstukken((prev) => {
+                        const next = new Set(prev)
+                        next.delete(h.chapter.id)
+                        return next
+                      })
+                      return
+                    }
+                    setOpenHoofdstukken((prev) => new Set(prev).add(h.chapter.id))
                     scrollNaar(`hoofdstuk-${h.chapter.slug}`, {
                       blok: null,
                       topic: null,
@@ -1265,17 +1275,23 @@ function BlokWeergave({
                 </button>
                 {open && (
                   <ul className="mb-1">
-                    {h.paragrafen.map((p) => {
+                    {paragrafen.map((p) => {
                       const pOpen = openParagrafen.has(p.id)
                       return (
                         <li key={p.id}>
                           <button
                             type="button"
                             onClick={() => {
-                              const id = `paragraaf-${p.slug}`
-                              if (!pOpen) {
-                                setOpenParagrafen((prev) => new Set(prev).add(p.id))
+                              if (pOpen) {
+                                setOpenParagrafen((prev) => {
+                                  const next = new Set(prev)
+                                  next.delete(p.id)
+                                  return next
+                                })
+                                return
                               }
+                              setOpenParagrafen((prev) => new Set(prev).add(p.id))
+                              const id = `paragraaf-${p.slug}`
                               if (document.getElementById(id) || vraag || bezigId) {
                                 scrollNaar(
                                   id,
@@ -1287,9 +1303,7 @@ function BlokWeergave({
                                   },
                                   true,
                                 )
-                                return
                               }
-                              toggleInSet(openParagrafen, p.id, setOpenParagrafen)
                             }}
                             className="flex min-h-11 w-full items-center gap-2 rounded-md py-2 pl-7 pr-3 text-left text-sm text-text hover:bg-surface-2"
                             aria-expanded={pOpen}
@@ -1301,49 +1315,36 @@ function BlokWeergave({
                           </button>
                           {pOpen && (
                             <ul>
-                              {p.blokken.map((blok) =>
-                                blok.heeftOpgaven ? (
-                                  <li key={blok.id}>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        scrollNaar(`blok-${blok.slug}`, {
-                                          blok: blok.slug,
-                                          topic: null,
-                                          cluster: null,
-                                          chapter: null,
-                                        })
-                                      }
-                                      aria-current={
-                                        inBeeld === `blok-${blok.slug}` ? 'true' : undefined
-                                      }
-                                      className={
-                                        inBeeld === `blok-${blok.slug}`
-                                          ? 'flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm font-semibold text-accent hover:bg-surface-2'
-                                          : 'flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm text-text hover:bg-surface-2'
-                                      }
-                                    >
-                                      <span className="font-mono">{blok.letter}</span>
-                                      <span className="min-w-0 flex-1 break-words">{blok.title}</span>
-                                      <span className="shrink-0 tabular-nums text-xs text-text-muted">
-                                        {blok.aantalOpgaven}
-                                        <span className="sr-only"> opgaven</span>
-                                      </span>
-                                    </button>
-                                  </li>
-                                ) : (
-                                  <li key={blok.id}>
-                                    <div
-                                      aria-disabled="true"
-                                      className="cursor-default py-1 pl-12 pr-3 text-xs text-text-muted/50"
-                                    >
-                                      <span className="font-mono">{blok.letter}</span>{' '}
-                                      <span className="break-words">{blok.title}</span>
-                                      <span className="sr-only">, {labels.nogGeenOpgaven}</span>
-                                    </div>
-                                  </li>
-                                ),
-                              )}
+                              {p.blokken.map((blok) => (
+                                <li key={blok.id}>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      scrollNaar(`blok-${blok.slug}`, {
+                                        blok: blok.slug,
+                                        topic: null,
+                                        cluster: null,
+                                        chapter: null,
+                                      })
+                                    }
+                                    aria-current={
+                                      inBeeld === `blok-${blok.slug}` ? 'true' : undefined
+                                    }
+                                    className={
+                                      inBeeld === `blok-${blok.slug}`
+                                        ? 'flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm font-semibold text-accent hover:bg-surface-2'
+                                        : 'flex min-h-11 w-full cursor-pointer items-start gap-2 rounded-md py-2 pl-12 pr-3 text-left text-sm text-text hover:bg-surface-2'
+                                    }
+                                  >
+                                    <span className="font-mono">{blok.letter}</span>
+                                    <span className="min-w-0 flex-1 break-words">{blok.title}</span>
+                                    <span className="shrink-0 tabular-nums text-xs text-text-muted">
+                                      {blok.aantalOpgaven}
+                                      <span className="sr-only"> opgaven</span>
+                                    </span>
+                                  </button>
+                                </li>
+                              ))}
                             </ul>
                           )}
                         </li>
@@ -1451,11 +1452,11 @@ function BlokWeergave({
   return (
     <div
       ref={paginaRef}
-      className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden"
+      className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row"
     >
       <aside
         className={cn(
-          'nice-scrollbar hidden border-border bg-surface lg:block lg:h-full lg:border-r',
+          'nice-scrollbar hidden min-h-0 border-border bg-surface lg:block lg:h-full lg:overflow-y-auto lg:border-r',
           sidebarOpen ? 'lg:w-80 lg:overflow-y-auto lg:p-4 lg:py-8' : 'lg:w-12 lg:py-4',
         )}
       >
@@ -1493,12 +1494,13 @@ function BlokWeergave({
 
       <div
         ref={mainScrollRef}
-        className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto"
+        data-oefen-scroll=""
+        className="nice-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
       >
         <button
           type="button"
           onClick={() => setBoomOpen(true)}
-          className="sticky top-14 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium lg:hidden"
+          className="sticky top-0 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium [overflow-anchor:none] lg:hidden"
         >
           <span className="min-w-0 truncate">{kop}</span>
           <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="currentColor" aria-hidden>
