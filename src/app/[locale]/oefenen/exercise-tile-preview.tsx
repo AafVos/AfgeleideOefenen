@@ -1,9 +1,16 @@
 'use client'
 
+import { memo } from 'react'
+
 import { Math as TeX, RichMath } from '@/components/math'
 
-/** Zelfde keuze als PracticeCard; inline zodat meerdere rijen netjes passen onder max-h. */
-export function ExerciseTileMathPreview({
+/**
+ * Zelfde keuze als PracticeCard; inline zodat meerdere rijen netjes passen onder max-h.
+ *
+ * De formule wordt maar één keer getekend. Een andere tegel aanklikken of
+ * een kleur die verandert, tekent de rest niet opnieuw.
+ */
+export const ExerciseTileMathPreview = memo(function ExerciseTileMathPreview({
   latex_body,
 }: {
   latex_body: string | null
@@ -23,4 +30,4 @@ export function ExerciseTileMathPreview({
       </div>
     </div>
   )
-}
+})

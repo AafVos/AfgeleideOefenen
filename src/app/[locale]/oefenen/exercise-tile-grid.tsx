@@ -20,11 +20,13 @@ function TileGrid({
   baseHref,
   tiles,
   activeQuestionId,
+  onKies,
   labels,
 }: {
   baseHref: string
   tiles: NewExerciseTile[]
   activeQuestionId: string | null
+  onKies?: (questionId: string) => void
   labels: {
     lastCorrect: string
     lastWrong: string
@@ -43,6 +45,23 @@ function TileGrid({
               href={tileHref as '/oefenen'}
               prefetch={false}
               bezigTekst="Opgave openen"
+              onClick={
+                onKies
+                  ? (event) => {
+                      if (
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey ||
+                        event.button !== 0
+                      ) {
+                        return
+                      }
+                      event.preventDefault()
+                      onKies(tile.questionId)
+                    }
+                  : undefined
+              }
               className={cn(
                 'block min-h-[6.75rem] rounded-xl border px-3 py-3 transition',
                 active &&
@@ -75,11 +94,14 @@ export function ExerciseTileGrid({
   baseHref,
   sections,
   activeQuestionId,
+  onKies,
   labels,
 }: {
   baseHref: string
   sections: TileSection[]
   activeQuestionId: string | null
+  /** Gewone klik: opgave openen zonder de pagina opnieuw te tekenen. */
+  onKies?: (questionId: string) => void
   labels: {
     heading: string
     lastCorrect: string
@@ -122,6 +144,7 @@ export function ExerciseTileGrid({
                 baseHref={baseHref}
                 tiles={sub.tiles}
                 activeQuestionId={activeQuestionId}
+                onKies={onKies}
                 labels={tileLabels}
               />
             </div>
