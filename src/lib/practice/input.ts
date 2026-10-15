@@ -51,8 +51,9 @@ export function toLatexPreview(raw: string): string {
     '$1\\dfrac{$2}{$3}',
   )
 
-  // pi → \pi
-  s = s.replace(/\bpi\b/g, '\\pi')
+  // pi → \pi. Een cijfer ervoor (`2pi`) is geen woordgrens, dus die
+  // telt niet als begin van het woord.
+  s = s.replace(/(?<![A-Za-z])pi\b/g, '\\pi')
 
   // * en · naar \cdot
   s = s.replace(/\*|·/g, '\\cdot ')
