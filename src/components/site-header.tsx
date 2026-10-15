@@ -118,7 +118,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
 
   return (
     <>
-    <header className="relative sticky top-0 z-30 h-14 border-b border-border bg-surface/85 backdrop-blur">
+    <header className="relative z-30 h-14 shrink-0 border-b border-border bg-surface [overflow-anchor:none]">
       <div className="flex h-full w-full items-center justify-between gap-4 px-4">
         <Link
           href={`/${locale}`}

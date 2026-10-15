@@ -190,11 +190,11 @@ export function TheorieClient({
   const chapter = chapters.find((ch) => ch.slug === activeSlug) ?? chapters[0]
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row lg:overflow-hidden">
+    <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-hidden">
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
       <aside
         className={cn(
-          'nice-scrollbar border-b border-border bg-surface lg:h-full lg:border-b-0 lg:border-r',
+          'nice-scrollbar shrink-0 border-b border-border bg-surface lg:h-full lg:min-h-0 lg:shrink lg:border-b-0 lg:border-r',
           sidebarOpen
             ? 'overflow-x-auto p-4 lg:w-64 lg:overflow-x-visible lg:overflow-y-auto lg:py-8'
             : 'px-0 py-2 lg:w-11 lg:py-4',
@@ -288,7 +288,7 @@ export function TheorieClient({
       </aside>
 
       {/* ── Content ─────────────────────────────────────────────────── */}
-      <div className="nice-scrollbar flex-1 lg:h-full lg:overflow-y-auto">
+      <div className="nice-scrollbar lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
           <div className="mb-6">
@@ -322,7 +322,7 @@ function ChapterSection({
 }) {
   const { code, short } = splitTitle(chapter.title)
   return (
-    <section id={`hoofdstuk-${chapter.slug}`} className="scroll-mt-16 lg:scroll-mt-4">
+    <section id={`hoofdstuk-${chapter.slug}`} className="scroll-mt-4">
       <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
         <h2 className="font-serif text-2xl text-text">
           {code && (
@@ -424,7 +424,7 @@ function TheoryCard({
   return (
     <article
       id={`kaart-${chapterSlug}-${card.id}`}
-      className="flex min-w-0 scroll-mt-16 flex-col rounded-xl border border-border bg-surface lg:scroll-mt-4"
+      className="flex min-w-0 scroll-mt-4 flex-col rounded-xl border border-border bg-surface"
     >
       {hasNotes ? (
         <button

@@ -262,7 +262,6 @@ async function BlokPagina({ searchParams }: PageProps) {
         collapseSidebar: t('collapseSidebar'),
         expandSidebar: t('expandSidebar'),
         oudeOpgaven: 'Oude opgaven',
-        nogGeenOpgaven: 'nog geen opgaven',
         kiesOnderdeel: 'Kies een onderdeel',
         sluiten: 'Sluiten',
       }}

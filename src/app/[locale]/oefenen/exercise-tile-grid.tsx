@@ -133,7 +133,7 @@ export function ExerciseTileGrid({
             <div
               key={ci}
               id={sub.id}
-              className={cn('scroll-mt-28 lg:scroll-mt-4', ci > 0 || section.label ? 'mt-5' : '')}
+              className={cn('scroll-mt-14 lg:scroll-mt-4', ci > 0 || section.label ? 'mt-5' : '')}
             >
               {sub.label && (
                 <p className="text-xs font-medium uppercase tracking-wider text-text-muted">

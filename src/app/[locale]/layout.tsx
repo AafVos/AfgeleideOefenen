@@ -66,9 +66,13 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <SiteHeader locale={locale} />
-      <main className="flex-1">{children}</main>
-      <SiteFooter />
+      {/* De hele pagina vult het scherm. De kop en de footer blijven staan;
+          alleen het midden scrolt. Zo schuift er geen tekst onder de kop. */}
+      <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
+        <SiteHeader locale={locale} />
+        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</main>
+        <SiteFooter />
+      </div>
     </NextIntlClientProvider>
   )
 }

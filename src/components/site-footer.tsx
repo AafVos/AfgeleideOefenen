@@ -8,8 +8,9 @@ export async function SiteFooter() {
   const t = await getTranslations('Footer')
 
   return (
-    <footer className="mt-auto border-t border-border bg-surface">
-      <div className="flex flex-col gap-1 px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+    <footer className="shrink-0 border-t border-border bg-surface">
+      {/* Rechts blijft leeg: daar staat het hulp-poppetje overheen. */}
+      <div className="flex flex-col gap-1 px-4 py-2 pr-20 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/privacy"
           className="inline-flex min-h-11 items-center text-sm text-text-muted underline-offset-2 hover:text-text hover:underline"

@@ -220,7 +220,7 @@ export function bouwBlokBoom(data: IndelingData): BlokBoom {
 
 /**
  * Alles wat rechts op de oefenpagina onder elkaar staat.
- * Een theorieblok zonder opgaven blijft weg; de zijbalk toont die wel.
+ * Een theorieblok zonder opgaven blijft weg, ook in de zijbalk.
  */
 export function bouwOefenOverzicht(data: IndelingData): OverzichtHoofdstuk[] {
   const boom = bouwBlokBoom(data)
