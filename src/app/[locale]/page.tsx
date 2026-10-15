@@ -181,6 +181,29 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+          <h2 className="mt-10 font-serif text-2xl text-text">{t('veelGezochtH2')}</h2>
+          <ul className="mt-4 space-y-1">
+            {(
+              [
+                ['zoek1', '/voorbeeld/x-kwadraat'],
+                ['zoek2', '/voorbeeld/wortel-x'],
+                ['zoek3', '/voorbeeld/sin-x'],
+                ['zoek4', '/voorbeeld/e-tot-de-x'],
+                ['zoek5', '/voorbeeld/ln-x'],
+                ['zoek6', '/theorie/raaklijn'],
+                ['zoek7', '/theorie/extreme-waarden'],
+              ] as const
+            ).map(([labelKey, href]) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                >
+                  {t(labelKey)}
+                </Link>
+              </li>
+            ))}
+          </ul>
           <p className="mt-6 text-text-muted">
             {t.rich('examTraining', {
               link: (chunks) => (
