@@ -92,6 +92,7 @@ cp .env.local.example .env.local
 | `EMAIL_FROM`                    | Afzender van de mail die de site zelf stuurt; moet op een bij Resend geverifieerd domein staan. Standaard: `no-reply@afgeleideoefenen.nl` |
 | `NOTIFY_EMAIL`                  | Adres waar alle post van de site heen gaat: het seintje "nieuwe gebruiker", feedback, een vraag via Aaf en een video-verzoek. Geen standaardwaarde: zonder deze regel gaan die berichten niet weg en ziet de leerling "Versturen is niet gelukt" |
 | `WEBHOOK_SECRET`                | Zelf te verzinnen. Dezelfde waarde staat in de Vault als `webhook_secret`. De welkomstmail (migratie 0035) en het seintje bij een nieuwe registratie (migratie 0036) lezen hem daar. Zonder match: 401 |
+| `NEXT_PUBLIC_GOOGLE_LOGIN`      | Zet op `1` om de knop "Doorgaan met Google" te tonen. Alleen als de provider in Supabase al aan staat. Live: bouwvariabele van Workers Builds, daarna een nieuwe bouw |
 
 ### 4. Start de dev server
 
@@ -304,6 +305,9 @@ Deployen met `wrangler` of `opennextjs-cloudflare deploy` doe je niet.
 - **Omgevingsvariabelen** horen bij de bouwvariabelen van Workers Builds
   (waaronder alles wat met `NEXT_PUBLIC_` begint) en als Worker-secrets. Niet
   in git.
+- **Aanmelden met Google:** de knop staat uit tot `NEXT_PUBLIC_GOOGLE_LOGIN=1`
+  bij de bouwvariabelen staat én Google als provider in Supabase aan staat.
+  Zonder die twee blijft inloggen met e-mail en wachtwoord zoals het was.
 - **Bezoekersteller:** `NEXT_PUBLIC_CF_BEACON_TOKEN` is het publieke token van
   Cloudflare Web Analytics. Leeg of weg: de site laadt geen tellerscript.
   Omdat de naam met `NEXT_PUBLIC_` begint, moet hij bij de bouwvariabelen

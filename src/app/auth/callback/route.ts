@@ -1,6 +1,7 @@
 import { after, NextResponse, type NextRequest } from 'next/server'
 
-import { bestemmingNaBevestigen } from '@/lib/auth/bestemming'
+import { bestemmingNaBevestigen, bestemmingNaInloggen } from '@/lib/auth/bestemming'
+import { googleFoutSleutel, moetNaamVragen } from '@/lib/auth/google'
 import { oefenpadUitAdres, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
@@ -34,6 +35,35 @@ export async function GET(request: NextRequest) {
   // Alleen een pad dat met /oefenen begint telt als gekozen soort.
   // Iets anders (een ander pad, een adres buiten de site) valt weg.
   const oefenpad = veiligOefenpad(nextParam)
+
+  // Terugkeer van "Doorgaan met Google". Los van de bevestigingsmail: daar
+  // wijst `next` naar de inlogpagina, hier naar het dashboard of een som.
+  if (searchParams.get('via') === 'google') {
+    if (searchParams.has('error') || searchParams.has('error_code') || !code) {
+      const url = metOefenpad(new URL('/nl/inloggen', origin), nextParam)
+      url.searchParams.set('error', googleFoutSleutel(searchParams.get('error')))
+      return NextResponse.redirect(url)
+    }
+
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error || !data.user) {
+      const url = metOefenpad(new URL('/nl/inloggen', origin), nextParam)
+      url.searchParams.set('error', 'auth_callback_failed')
+      return NextResponse.redirect(url)
+    }
+
+    await zetGekozenGebruikersnaam(supabase, data.user)
+
+    if (moetNaamVragen(data.user)) {
+      return NextResponse.redirect(metOefenpad(new URL('/nl/gebruikersnaam', origin), nextParam))
+    }
+
+    const userId = data.user.id
+    after(() => stuurWelkomstmail(userId))
+    const doel = await bestemmingNaInloggen(supabase, oefenpad, 'nl')
+    return NextResponse.redirect(`${origin}${doel}`)
+  }
 
   // E-mailbevestiging: de code inwisselen voor een sessie, zodat de leerling
   // direct ingelogd is op zijn eerste opgave — net als bij aanmelden zonder

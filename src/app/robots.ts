@@ -13,6 +13,7 @@ const PERSOONLIJK_MET_TAALCODE = [
   'feedback',
   'inloggen',
   'registreren',
+  'gebruikersnaam',
   'wachtwoord-vergeten',
   'wachtwoord-opnieuw',
 ]

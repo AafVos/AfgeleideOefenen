@@ -4,6 +4,8 @@ import { useActionState, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
+import { GoogleKnop } from '@/components/google-knop'
+
 import { loginAction, resendConfirmationAction, type LoginState } from './actions'
 
 const initialState: LoginState = { errorKey: null }
@@ -11,9 +13,11 @@ const initialState: LoginState = { errorKey: null }
 export function LoginForm({
   callbackError,
   oefenpad = null,
+  googleAan = false,
 }: {
   callbackError?: string | null
   oefenpad?: string | null
+  googleAan?: boolean
 }) {
   const [state, formAction] = useActionState(loginAction, initialState)
   const t = useTranslations('Login')
@@ -33,7 +37,9 @@ export function LoginForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <div className="space-y-4">
+      {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
+      <form action={formAction} className="space-y-4">
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
       <PasswordField
@@ -80,7 +86,8 @@ export function LoginForm({
       )}
 
       <SubmitButton />
-    </form>
+      </form>
+    </div>
   )
 }
 
