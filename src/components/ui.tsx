@@ -170,18 +170,6 @@ export function ErrorBanner({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function SuccessBanner({ children }: { children: React.ReactNode }) {
-  if (!children) return null
-  return (
-    <p
-      role="status"
-      className="rounded-md border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent"
-    >
-      {children}
-    </p>
-  )
-}
-
 export function Badge({
   children,
   tone = 'neutral',

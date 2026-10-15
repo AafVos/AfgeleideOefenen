@@ -279,14 +279,6 @@ export function duurAlsKaartje(duur: string): string {
   return `PT${Number(minuten)}M${Number(seconden)}S`
 }
 
-/** De hoofdstukken waar video's bij horen, in de volgorde H2, H6, H7, H9. */
-export function getVideoChapters(): string[] {
-  const uniek = new Set(
-    VIDEOS.map((v) => v.chapter).filter((c): c is string => c !== null),
-  )
-  return [...uniek].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
-}
-
 /**
  * De uitlegvideo die bij een cluster hoort, of null. Zo kan de oefenpagina bij
  * een vraag laten zien dat er uitleg over dat onderwerp klaarstaat.

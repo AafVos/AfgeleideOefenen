@@ -159,18 +159,6 @@ function aantalOpgavenPerBlok(
   return aantallen
 }
 
-export function blokIdsMetOpgaven(
-  topics: TopicInfo[],
-  clusters: ClusterInfo[],
-  tiles: TegelVerwijzing[],
-): Set<string> {
-  const ids = new Set<string>()
-  for (const [id, aantal] of aantalOpgavenPerBlok(topics, clusters, tiles)) {
-    if (aantal > 0) ids.add(id)
-  }
-  return ids
-}
-
 export function bouwBlokBoom(data: IndelingData): BlokBoom {
   const aantallen = aantalOpgavenPerBlok(data.topics, data.clusters, data.tiles)
   const paragraphsByChapter = new Map<string, ParagraphInfo[]>()
