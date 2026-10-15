@@ -317,7 +317,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1
     FROM public.question_steps_new
-    WHERE step_description LIKE $v$%$t(2 - t) = 0$%$v$
+    WHERE strpos(step_description, $v$$t(2 - t) = 0$$v$) > 0
   ) THEN
     RAISE EXCEPTION 'Het product t(2-t) is mee veranderd';
   END IF;
@@ -325,7 +325,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1
     FROM public.question_steps_new
-    WHERE step_description LIKE $v$%$N(t) = 20t\,e^{-t}$%$v$
+    WHERE strpos(step_description, $v$$N(t) = 20t\,e^{-t}$$v$) > 0
   ) THEN
     RAISE EXCEPTION 'De hoeveelheid N(t) in het verhaal is mee veranderd';
   END IF;
@@ -333,7 +333,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1
     FROM public.question_steps_new
-    WHERE step_description LIKE $v$%$T(t) = 20 + 6\sin(t)$%$v$
+    WHERE strpos(step_description, $v$$T(t) = 20 + 6\sin(t)$$v$) > 0
   ) THEN
     RAISE EXCEPTION 'De temperatuur T(t) in het verhaal is mee veranderd';
   END IF;
