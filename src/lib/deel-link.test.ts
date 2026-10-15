@@ -10,4 +10,10 @@ describe('deelLink', () => {
   it('laat het hoofdstuk staan', () => {
     expect(deelLink('/nl/oefenen?chapter=h2')).toBe('/nl/oefenen?chapter=h2&van=klas')
   })
+
+  it('zet van=klas op de proef, met de soort som erbij', () => {
+    expect(deelLink('/nl/proberen?chapter=h2&topic=macht')).toBe(
+      '/nl/proberen?chapter=h2&topic=macht&van=klas',
+    )
+  })
 })
