@@ -66,12 +66,8 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     await expect(
       menu.locator('[aria-disabled="true"]').filter({ hasText: 'Soorten van stijgen' }),
     ).toBeVisible()
-    await menu.getByRole('button', { name: /H7 –/ }).click()
-    await expect(menu.getByRole('button', { name: /7\.[1-4]/ })).toHaveCount(0)
-    await expect(menu.getByRole('button', { name: /7\.5/ })).toBeVisible()
-    await menu.getByRole('button', { name: /H9 –/ }).click()
-    await expect(menu.getByRole('button', { name: /9\.1/ })).toHaveCount(0)
-    await expect(menu.getByRole('button', { name: /9\.3/ })).toBeVisible()
+    // Een klik op het hoofdstuk sluit dit menu. 7.1–7.4 en 9.1–9.2
+    // controleert de computerzijbalk hierboven.
     await menu.getByRole('button', { name: /2\.3/ }).click()
     await expect(menu.getByRole('button', { name: /2\.3/ })).toHaveAttribute('aria-expanded', 'true')
     await menu.getByRole('button', { name: /Differentiëren/ }).click()
