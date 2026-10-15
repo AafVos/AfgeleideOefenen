@@ -4,7 +4,6 @@ import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { SiteFooter } from '@/components/site-footer'
-import { SiteHeader } from '@/components/site-header'
 import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
 import { DEEL_TEKST_START, DEEL_TITEL_START, SITE_URL } from '@/lib/seo'
@@ -67,10 +66,11 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages}>
       {/* De hele pagina vult het scherm. De kop en de footer blijven staan;
-          alleen het midden scrolt. Zo schuift er geen tekst onder de kop. */}
+          alleen het midden scrolt. Zo schuift er geen tekst onder de kop.
+          De kop zelf zit in de lay-out van de pagina, niet hier: de
+          startpagina heeft een kop zonder inlogcontrole. */}
       <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
-        <SiteHeader locale={locale} />
-        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</main>
+        {children}
         <SiteFooter />
       </div>
     </NextIntlClientProvider>

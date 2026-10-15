@@ -5,6 +5,7 @@ import { routing } from '@/i18n/routing'
 import { gebruikersnaamBestemming, moetNaamVragen, padZonderNaamvraag } from '@/lib/auth/google'
 import { inlogAdres } from '@/lib/auth/oefenpad'
 
+import { heeftSessiekoekje } from './sessie-koekje'
 import type { Database } from './types'
 
 const TAAL = routing.defaultLocale
@@ -33,6 +34,28 @@ function zonderTaalcode(pad: string) {
 }
 
 export async function updateSession(request: NextRequest) {
+  const pad = request.nextUrl.pathname
+  const padZonderTaal = zonderTaalcode(pad)
+
+  const naarInloggen = () => {
+    const url = request.nextUrl.clone()
+    // Alleen een pad dat met /oefenen begint blijft bewaard, als één
+    // parameter. Zoekwoorden van de som horen niet los op het inlogscherm,
+    // en een ander pad (dashboard, instellingen) ook niet.
+    const doel = new URL(inlogAdres(padZonderTaal, request.nextUrl.search), request.url)
+    url.pathname = doel.pathname
+    url.search = doel.search
+    return NextResponse.redirect(url)
+  }
+
+  // Geen sessiekoekje: niemand is ingelogd. Supabase overslaan scheelt de
+  // wachtronde die de startpagina anders ruim een seconde kostte.
+  if (!heeftSessiekoekje(request.cookies.getAll())) {
+    if (pad.startsWith('/admin')) return naarInloggen()
+    if (ALLEEN_INGELOGD.some((p) => padZonderTaal.startsWith(p))) return naarInloggen()
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient<Database>(
@@ -70,22 +93,6 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Het beheergedeelte staat buiten `src/app/[locale]`, dus daar zit geen
-  // taalcode in het pad. De leerlingpagina's wel; die halen we eraf.
-  const pad = request.nextUrl.pathname
-  const padZonderTaal = zonderTaalcode(pad)
-
-  const naarInloggen = () => {
-    const url = request.nextUrl.clone()
-    // Alleen een pad dat met /oefenen begint blijft bewaard, als één
-    // parameter. Zoekwoorden van de som horen niet los op het inlogscherm,
-    // en een ander pad (dashboard, instellingen) ook niet.
-    const doel = new URL(inlogAdres(padZonderTaal, request.nextUrl.search), request.url)
-    url.pathname = doel.pathname
-    url.search = doel.search
-    return NextResponse.redirect(url)
-  }
-
   // Eerste keer via Google: eerst een gebruikersnaam, daarna de rest van
   // de site. Uitloggen en de terugkeer van Google blijven bereikbaar.
   if (user && moetNaamVragen(user) && !padZonderNaamvraag(pad)) {
@@ -96,6 +103,19 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = doel.pathname
     url.search = doel.search
+    const antwoord = NextResponse.redirect(url)
+    for (const koekje of supabaseResponse.cookies.getAll()) {
+      antwoord.cookies.set(koekje)
+    }
+    return antwoord
+  }
+
+  // De startpagina zelf vraagt niet meer wie er is. Een ingelogde leerling
+  // hoort daar niet te blijven: meteen door naar het dashboard.
+  if (user && padZonderTaal === '/') {
+    const url = request.nextUrl.clone()
+    url.pathname = `/${TAAL}/dashboard`
+    url.search = ''
     const antwoord = NextResponse.redirect(url)
     for (const koekje of supabaseResponse.cookies.getAll()) {
       antwoord.cookies.set(koekje)

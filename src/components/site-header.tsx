@@ -10,6 +10,7 @@ import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 import { MobileNav } from './mobile-nav'
 import { NavDropdown } from './nav-dropdown'
+import { PubliekeKop } from './publieke-kop'
 import { UserMenu } from './user-menu'
 import { WelcomeTour } from './welcome-tour'
 
@@ -68,13 +69,14 @@ function IconChart() {
 
 export async function SiteHeader({ locale }: { locale: string }) {
   const user = await getCurrentUser()
+  if (!user) return <PubliekeKop locale={locale} />
 
   // Profiel, hoofdstukken en vertalingen hangen niet van elkaar af, en de
   // eerste twee zijn per request gedeeld met de pagina onder de header — die
   // vroeg ze eerder nog een keer apart op.
   const [profile, chapters, t] = await Promise.all([
-    user ? getCurrentProfile() : null,
-    user ? getChapters() : [],
+    getCurrentProfile(),
+    getChapters(),
     getTranslations({ locale, namespace: 'Header' }),
   ])
 
@@ -128,79 +130,58 @@ export async function SiteHeader({ locale }: { locale: string }) {
         </Link>
 
         <nav className="hidden items-center gap-1 text-sm md:flex">
-          {user ? (
-            <>
-              {theorieDropdown}
-              {videosLink}
-              <NavDropdown
-                label={t('freeExercise')}
-                icon={<IconPencil />}
-                overviewHref={`/${locale}/oefenen`}
-                overviewLabel={t('overview')}
-                items={oefenenItems}
-                dataTour="oefenen"
-              />
-              <Link
-                href={`/${locale}/zelf-toets`}
-                data-tour="zelftoets"
-                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-              >
-                <IconClipboardCheck />
-                {t('zelfToets')}
-              </Link>
-              <Link
-                href={`/${locale}/dashboard`}
-                data-tour="voortgang"
-                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-              >
-                <IconChart />
-                {t('dashboard')}
-              </Link>
-              {role === 'admin' && (
-                <Link
-                  href="/admin"
-                  className="shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-                >
-                  {t('admin')}
-                </Link>
-              )}
-              <UserMenu
-                displayName={username ?? user.email ?? ''}
-                email={user.email ?? ''}
-                locale={locale}
-                labels={{
-                  signedInAs: t('signedInAs'),
-                  settings: t('settings'),
-                  feedback: t('feedback'),
-                  logout: t('logout'),
-                }}
-              />
-            </>
-          ) : (
-            <>
-              {theorieDropdown}
-              {videosLink}
-              <Link
-                href={`/${locale}/inloggen`}
-                className="rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
-              >
-                {t('login')}
-              </Link>
-              <Link
-                href={`/${locale}/registreren`}
-                className="ml-1 rounded-md bg-accent px-3 py-1.5 text-white hover:bg-accent/90"
-              >
-                {t('register')}
-              </Link>
-            </>
+          {theorieDropdown}
+          {videosLink}
+          <NavDropdown
+            label={t('freeExercise')}
+            icon={<IconPencil />}
+            overviewHref={`/${locale}/oefenen`}
+            overviewLabel={t('overview')}
+            items={oefenenItems}
+            dataTour="oefenen"
+          />
+          <Link
+            href={`/${locale}/zelf-toets`}
+            data-tour="zelftoets"
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+          >
+            <IconClipboardCheck />
+            {t('zelfToets')}
+          </Link>
+          <Link
+            href={`/${locale}/dashboard`}
+            data-tour="voortgang"
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+          >
+            <IconChart />
+            {t('dashboard')}
+          </Link>
+          {role === 'admin' && (
+            <Link
+              href="/admin"
+              className="shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
+            >
+              {t('admin')}
+            </Link>
           )}
+          <UserMenu
+            displayName={username ?? user.email ?? ''}
+            email={user.email ?? ''}
+            locale={locale}
+            labels={{
+              signedInAs: t('signedInAs'),
+              settings: t('settings'),
+              feedback: t('feedback'),
+              logout: t('logout'),
+            }}
+          />
         </nav>
 
         {/* Mobile: hamburger */}
         <div className="flex items-center gap-1 md:hidden">
           <MobileNav
             locale={locale}
-            isLoggedIn={!!user}
+            isLoggedIn
             username={username}
             role={role}
           />
@@ -208,7 +189,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
       </div>
     </header>
     {/* Buiten de header: backdrop-blur maakt position:fixed anders relatief aan de header */}
-    {user && <WelcomeTour tourSeen={tourSeen} />}
+    <WelcomeTour tourSeen={tourSeen} />
     </>
   )
 }

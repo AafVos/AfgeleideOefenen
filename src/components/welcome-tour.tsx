@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { askAafAction, type FeedbackState } from '@/app/[locale]/feedback/actions'
+import { askAafAction, type FeedbackState } from '@/app/[locale]/(paginas)/feedback/actions'
 import { markTourSeenAction } from '@/lib/tour-actions'
 
 

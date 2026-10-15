@@ -1,7 +1,9 @@
+import { cookies } from 'next/headers'
 import { cache } from 'react'
 
 import { loadChapters, type ChapterInfo } from '@/lib/practice/chapter-overview'
 
+import { heeftSessiekoekje } from './sessie-koekje'
 import { createClient } from './server'
 
 /**
@@ -18,6 +20,11 @@ import { createClient } from './server'
  */
 
 export const getCurrentUser = cache(async () => {
+  const cookieStore = await cookies()
+  // Zonder sessiekoekje is er niemand ingelogd. Niet alsnog Supabase
+  // vragen: dat is een wachtronde op elke openbare pagina.
+  if (!heeftSessiekoekje(cookieStore.getAll())) return null
+
   const supabase = await createClient()
   const {
     data: { user },

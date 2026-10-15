@@ -230,7 +230,7 @@ export async function sitemails(
  * terug.
  *
  * De welkomstmail gaat na het antwoord aan de leerling de deur uit (`after()`
- * in `src/app/[locale]/inloggen/actions.ts`), dus even wachten hoort erbij.
+ * in `src/app/[locale]/(paginas)/inloggen/actions.ts`), dus even wachten hoort erbij.
  */
 export async function wachtOpSitemail(
   adres: string,
