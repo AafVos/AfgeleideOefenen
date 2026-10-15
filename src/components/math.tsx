@@ -1,6 +1,6 @@
-import katex from 'katex'
 import 'katex/dist/katex.min.css'
 
+import { formuleHtml } from '@/components/formule-html'
 import { cn } from '@/components/ui'
 
 export function Math({
@@ -22,12 +22,7 @@ export function Math({
   className?: string
 }) {
   const block = displayMode && !wrap
-  const html = katex.renderToString(wrap ? `\\displaystyle ${tex}` : tex, {
-    displayMode: block,
-    throwOnError: false,
-    strict: 'ignore',
-    output: 'html',
-  })
+  const html = formuleHtml(tex, { displayMode, wrap })
 
   return (
     <span

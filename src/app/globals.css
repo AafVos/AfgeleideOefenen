@@ -95,3 +95,11 @@ body {
   background: var(--color-accent-light);
   box-shadow: 0 0 0 3px var(--color-accent);
 }
+
+/* De MathML-versie is er voor de schermlezer. KaTeX verstopt hem al, maar
+   op een telefoon kan die verborgen formule de pagina toch breder maken
+   dan het scherm. Deze extra afscherming houdt hem binnen de formule. */
+.katex .katex-mathml {
+  clip-path: inset(50%);
+  contain: paint;
+}
