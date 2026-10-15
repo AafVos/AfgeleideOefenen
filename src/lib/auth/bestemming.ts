@@ -5,7 +5,7 @@ import {
   eersteOpgaveId,
   opgaveLink,
   type EersteOnderdeel,
-} from '@/app/[locale]/dashboard/start'
+} from '@/app/[locale]/(paginas)/dashboard/start'
 import { bouwOnderwerpVoortgang } from '@/lib/dashboard/indeling'
 import type { Database } from '@/lib/supabase/types'
 

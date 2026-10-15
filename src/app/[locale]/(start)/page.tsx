@@ -1,14 +1,17 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { redirect } from 'next/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
-import { createClient } from '@/lib/supabase/server'
 
 import { HomeDemo } from './home-demo'
+
+// Voor iedereen hetzelfde. Een ingelogde leerling komt hier niet: de
+// middleware stuurt hem meteen naar het dashboard. Zo hoeft deze pagina
+// niet te wachten op Supabase en kan hij bij de bouw al klaarstaan.
+export const dynamic = 'force-static'
 
 export async function generateMetadata({
   params,
@@ -26,16 +29,6 @@ export async function generateMetadata({
 }
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  const locale = await getLocale()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (user) {
-    redirect(`/${locale}/dashboard`)
-  }
-
   const t = await getTranslations('Home')
 
   const domain = SITE_CONFIG.domain
