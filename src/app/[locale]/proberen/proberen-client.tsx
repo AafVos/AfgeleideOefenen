@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { MathKeyboard } from '@/components/math-keyboard'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Button } from '@/components/ui'
@@ -135,13 +136,14 @@ export function ProberenClient({
         <p className="mt-6 text-lg text-text">
           Maak een gratis account om je voortgang te bewaren en verder te oefenen
         </p>
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap items-start gap-3">
           <Link
             href="/registreren?van=proberen"
             className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
           >
             Account aanmaken
           </Link>
+          <DeelKnop />
         </div>
       </div>
     )
