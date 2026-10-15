@@ -1,6 +1,16 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { unstable_rethrow } from 'next/navigation'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 
 import { DeelKnop } from '@/components/deel-knop'
 import { KlikLink } from '@/components/klik-link'
@@ -25,12 +35,14 @@ import {
   queryVoorSelectie,
   type Adres,
   type Kopje,
+  type OverzichtHoofdstuk,
 } from '@/lib/practice/oefenen-indeling'
 
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
 import { getVideoForCluster } from '@/lib/videos'
 
 import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
+import { laadOpgave } from './laad-opgave'
 import { StudyCard } from './study-card'
 
 const desktopQuery = '(min-width: 1024px)'
@@ -742,6 +754,81 @@ type BlokProps = {
   labels: BlokLabels
 }
 
+/**
+ * De tegels blijven dit onderdeel. Een andere som openen verandert hier
+ * niets aan, dus de formules worden niet opnieuw getekend.
+ */
+const OverzichtBlokken = memo(function OverzichtBlokken({
+  overzicht,
+  allTiles,
+  labels,
+  onKies,
+}: {
+  overzicht: OverzichtHoofdstuk[]
+  allTiles: NewExerciseTile[]
+  labels: {
+    heading: string
+    lastCorrect: string
+    lastWrong: string
+    notTried: string
+    exercise: string
+  }
+  onKies: (questionId: string, basis: string) => void
+}) {
+  return (
+    <>
+      {overzicht.map((h) => (
+        <section
+          key={h.chapter.id}
+          id={`hoofdstuk-${h.chapter.slug}`}
+          className="mt-10 scroll-mt-28 first:mt-4 lg:scroll-mt-4"
+        >
+          <h2 className="border-b border-border pb-3 font-serif text-2xl text-text">
+            {hoofdstukNaam(h.chapter)}
+          </h2>
+          {h.paragrafen.map((p) => (
+            <div key={p.id} id={`paragraaf-${p.slug}`} className="scroll-mt-28 lg:scroll-mt-4">
+              <h3 className="mt-8 font-serif text-xl text-text">
+                <span className="font-mono font-semibold">{p.label}</span> {p.title}
+              </h3>
+              {p.blokken.map((blok) => {
+                const tegels = tegelsVanKopjes(blok.kopjes, allTiles)
+                return (
+                  <div key={blok.id} id={`blok-${blok.slug}`} className="scroll-mt-28 lg:scroll-mt-4">
+                    <h3 className="mt-6 font-serif text-lg text-text">
+                      <span className="font-mono font-semibold">
+                        {p.label} {blok.letter}
+                      </span>
+                      {' – '}
+                      {blok.title}
+                    </h3>
+                    <ExerciseTileGrid
+                      baseHref={`/oefenen?blok=${encodeURIComponent(blok.slug)}`}
+                      sections={sectiesVan(blok.kopjes, tegels)}
+                      activeQuestionId={null}
+                      onKies={(id) => onKies(id, `/oefenen?blok=${encodeURIComponent(blok.slug)}`)}
+                      labels={labels}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+          {h.kopjes.length > 0 && (
+            <ExerciseTileGrid
+              baseHref={`/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`}
+              sections={sectiesVan(h.kopjes, tegelsVanKopjes(h.kopjes, allTiles))}
+              activeQuestionId={null}
+              onKies={(id) => onKies(id, `/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`)}
+              labels={labels}
+            />
+          )}
+        </section>
+      ))}
+    </>
+  )
+})
+
 function BlokWeergave({
   chapters,
   paragraphs,
@@ -754,9 +841,46 @@ function BlokWeergave({
   startBij,
   labels,
 }: BlokProps) {
-  const router = useRouter()
   const [adres, setAdres] = useState(adresVanServer)
   const [allTilesState, setAllTilesState] = useState(allTiles)
+  const [vraag, setVraag] = useState(question)
+  const [bezigId, setBezigId] = useState<string | null>(null)
+  const [laadFout, setLaadFout] = useState<string | null>(null)
+  // Het overzicht blijft in de pagina zodra het getekend is. Een tegel
+  // openen verbergt het alleen, zodat de formules niet opnieuw gebouwd worden.
+  const [overzichtInDom, setOverzichtInDom] = useState(question == null)
+  const [scrollVersie, setScrollVersie] = useState(0)
+  const scrollDoel = useRef<string | null>(null)
+  const aanvraag = useRef(0)
+  const openVraagRef = useRef<(questionId: string, basis: string) => void>(() => {})
+  const kiesOpgave = useCallback((questionId: string, basis: string) => {
+    openVraagRef.current(questionId, basis)
+  }, [])
+  const [bekendeVragen, setBekendeVragen] = useState<Map<string, Question>>(() => {
+    const map = new Map<string, Question>()
+    if (question) map.set(question.id, question)
+    return map
+  })
+
+  function bewaarScroll(id: string) {
+    scrollDoel.current = id
+    setScrollVersie((n) => n + 1)
+  }
+  const serverVraagId = question?.id ?? null
+  const [gezienServerVraag, setGezienServerVraag] = useState(serverVraagId)
+  if (serverVraagId !== gezienServerVraag) {
+    setGezienServerVraag(serverVraagId)
+    setVraag(question)
+    setBezigId(null)
+    setLaadFout(null)
+    if (question) {
+      setBekendeVragen((prev) => {
+        const next = new Map(prev)
+        next.set(question.id, question)
+        return next
+      })
+    }
+  }
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [boomOpen, setBoomOpen] = useState(false)
 
@@ -814,27 +938,6 @@ function BlokWeergave({
   }
 
   useEffect(() => {
-    function onPop() {
-      const sp = new URLSearchParams(window.location.search)
-      const volgende = {
-        blok: sp.get('blok'),
-        topic: sp.get('topic'),
-        cluster: sp.get('cluster'),
-        chapter: sp.get('chapter'),
-      }
-      setAdres(volgende)
-      setBoomOpen(false)
-      const id = ankerUitAdres(volgende, losSelectieOp(volgende, data))
-      if (id) {
-        setInBeeld(id)
-        document.getElementById(id)?.scrollIntoView({ block: 'start' })
-      }
-    }
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [data])
-
-  useEffect(() => {
     if (!boomOpen) return
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') setBoomOpen(false)
@@ -853,9 +956,10 @@ function BlokWeergave({
   )
 
   const baseHref = selectie ? `/oefenen?${queryVoorSelectie(selectie)}` : '/oefenen'
-  const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
+  const huidigeVraag = bezigId && vraag?.id !== bezigId ? null : vraag
+  const currentIdx = huidigeVraag ? tiles.findIndex((t) => t.questionId === huidigeVraag.id) : -1
   const nextTile = tiles.length ? (tiles[(currentIdx + 1) % tiles.length] ?? null) : null
-  const nextHref = nextTile ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}` : baseHref
+  const vraagOpen = vraag !== null || bezigId !== null || laadFout !== null
 
   function openVoorAnker(id: string) {
     if (id.startsWith('blok-')) {
@@ -895,25 +999,145 @@ function BlokWeergave({
     return sp.toString()
   }
 
-  function scrollNaar(id: string, volgend: Adres | null, houdMenu = false) {
-    if (!houdMenu) setBoomOpen(false)
-    if (question && volgend) {
-      const query = queryVanAdres(volgend)
-      router.push((query ? `/oefenen?${query}` : '/oefenen') as '/oefenen')
+  function zetAdresInBalk(volgend: Adres) {
+    setAdres(volgend)
+    const query = queryVanAdres(volgend)
+    const pad = window.location.pathname
+    const doel = query ? `${pad}?${query}` : pad
+    if (`${pad}${window.location.search}` !== doel) {
+      window.history.pushState(null, '', doel)
+    }
+  }
+
+  const laad = useCallback(async (id: string) => {
+    if (!allTilesState.some((tegel) => tegel.questionId === id)) {
+      aanvraag.current += 1
+      setBezigId(null)
+      setVraag(null)
+      setLaadFout('Deze opgave is er niet.')
       return
     }
-    if (volgend) {
-      setAdres(volgend)
-      const query = queryVanAdres(volgend)
-      const pad = window.location.pathname
-      const doel = query ? `${pad}?${query}` : pad
-      if (`${pad}${window.location.search}` !== doel) {
-        window.history.pushState(null, '', doel)
-      }
+    const bekend = bekendeVragen.get(id)
+    if (bekend) {
+      aanvraag.current += 1
+      setBezigId(null)
+      setLaadFout(null)
+      setVraag(bekend)
+      return
     }
+    const n = ++aanvraag.current
+    setBezigId(id)
+    setLaadFout(null)
+    try {
+      const geladen = await laadOpgave(id)
+      if (aanvraag.current !== n) return
+      setBezigId(null)
+      if (!geladen) {
+        setVraag(null)
+        setLaadFout('Deze opgave is er niet.')
+        return
+      }
+      setBekendeVragen((prev) => {
+        const next = new Map(prev)
+        next.set(id, geladen)
+        return next
+      })
+      setVraag(geladen)
+    } catch (e) {
+      unstable_rethrow(e)
+      if (aanvraag.current !== n) return
+      setBezigId(null)
+      setLaadFout('De opgave kon niet geladen worden. Probeer het nog eens.')
+    }
+  }, [allTilesState, bekendeVragen])
+
+  const openVraag = useCallback((questionId: string, basis: string) => {
+    const params = new URLSearchParams(basis.includes('?') ? basis.slice(basis.indexOf('?') + 1) : '')
+    params.set('q', questionId)
+    const pad = window.location.pathname
+    const doel = `${pad}?${params.toString()}`
+    if (`${pad}${window.location.search}` !== doel) {
+      window.history.pushState(null, '', doel)
+    }
+    setAdres({
+      blok: params.get('blok'),
+      topic: params.get('topic'),
+      cluster: params.get('cluster'),
+      chapter: params.get('chapter'),
+    })
+    mainScrollRef.current?.scrollTo({ top: 0 })
+    window.scrollTo({ top: 0 })
+    if (vraag?.id === questionId && bezigId == null && !laadFout) return
+    void laad(questionId)
+  }, [vraag, bezigId, laadFout, laad])
+
+  useEffect(() => {
+    openVraagRef.current = openVraag
+  }, [openVraag])
+
+  const bijGeschiedenis = useEffectEvent(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const volgende = {
+      blok: sp.get('blok'),
+      topic: sp.get('topic'),
+      cluster: sp.get('cluster'),
+      chapter: sp.get('chapter'),
+    }
+    setAdres(volgende)
+    setBoomOpen(false)
+    const q = sp.get('q')
+    const id = ankerUitAdres(volgende, losSelectieOp(volgende, data))
+    if (!q) {
+      aanvraag.current += 1
+      setBezigId(null)
+      setLaadFout(null)
+      setVraag(null)
+      setOverzichtInDom(true)
+      if (id) {
+        setInBeeld(id)
+        bewaarScroll(id)
+      }
+      return
+    }
+    if (id) setInBeeld(id)
+    void laad(q)
+  })
+
+  useEffect(() => {
+    window.addEventListener('popstate', bijGeschiedenis)
+    return () => window.removeEventListener('popstate', bijGeschiedenis)
+  }, [])
+
+  function sluitVraag() {
+    aanvraag.current += 1
+    setBezigId(null)
+    setLaadFout(null)
+    setVraag(null)
+    setOverzichtInDom(true)
+    zetAdresInBalk(adres)
+    const anker = ankerUitAdres(adres, selectie)
+    if (anker) {
+      setInBeeld(anker)
+      openVoorAnker(anker)
+      bewaarScroll(anker)
+    }
+  }
+
+  function scrollNaar(id: string, volgend: Adres | null, houdMenu = false) {
+    if (!houdMenu) setBoomOpen(false)
+    const open = vraag !== null || bezigId !== null || laadFout !== null
+    if (open) {
+      aanvraag.current += 1
+      setBezigId(null)
+      setLaadFout(null)
+      setVraag(null)
+      setOverzichtInDom(true)
+    }
+    if (volgend) zetAdresInBalk(volgend)
     setInBeeld(id)
     openVoorAnker(id)
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (open || !document.getElementById(id)) bewaarScroll(id)
+    else document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const landAnker = question ? null : (ankerUitAdres(adresVanServer, selectie) ?? startBij)
@@ -934,7 +1158,17 @@ function BlokWeergave({
   }, [landAnker, question])
 
   useEffect(() => {
-    if (question) return
+    if (vraag || bezigId || laadFout) return
+    const id = scrollDoel.current
+    if (!id) return
+    const el = document.getElementById(id)
+    if (!el) return
+    scrollDoel.current = null
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [scrollVersie, vraag, bezigId, laadFout, overzichtInDom])
+
+  useEffect(() => {
+    if (vraag || bezigId) return
     const root = mainScrollRef.current
     function zichtbaar(): string | null {
       const grens = root && root.scrollHeight > root.clientHeight + 8
@@ -968,7 +1202,7 @@ function BlokWeergave({
       root?.removeEventListener('scroll', onScroll)
       window.removeEventListener('scroll', onScroll)
     }
-  }, [overzicht, question])
+  }, [overzicht, vraag, bezigId])
 
   function toggleInSet(set: Set<string>, id: string, update: (next: Set<string>) => void) {
     const next = new Set(set)
@@ -1042,7 +1276,7 @@ function BlokWeergave({
                               if (!pOpen) {
                                 setOpenParagrafen((prev) => new Set(prev).add(p.id))
                               }
-                              if (document.getElementById(id) || question) {
+                              if (document.getElementById(id) || vraag || bezigId) {
                                 scrollNaar(
                                   id,
                                   {
@@ -1195,7 +1429,7 @@ function BlokWeergave({
     return labels.h1
   }
 
-  const kop = question
+  const kop = vraagOpen
     ? selectie?.soort === 'blok'
       ? naamVanSelectie(selectie)
       : selectie
@@ -1203,13 +1437,16 @@ function BlokWeergave({
         : labels.kiesOnderdeel
     : naamVanAnker(inBeeld)
 
-  const tegelLabels = {
-    heading: labels.tilesHeading,
-    lastCorrect: labels.tileLastCorrect,
-    lastWrong: labels.tileLastWrong,
-    notTried: labels.tileNotTried,
-    exercise: labels.tileExercise,
-  }
+  const tegelLabels = useMemo(
+    () => ({
+      heading: labels.tilesHeading,
+      lastCorrect: labels.tileLastCorrect,
+      lastWrong: labels.tileLastWrong,
+      notTried: labels.tileNotTried,
+      exercise: labels.tileExercise,
+    }),
+    [labels],
+  )
 
   return (
     <div
@@ -1270,7 +1507,7 @@ function BlokWeergave({
         </button>
 
         <div className="mx-auto max-w-6xl px-4 py-8">
-          {question ? (
+          {vraagOpen ? (
             <h1 className="sr-only">{labels.h1}</h1>
           ) : (
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
@@ -1279,74 +1516,44 @@ function BlokWeergave({
             </div>
           )}
 
-          {!question && overzicht.length > 0 && (
+          {!vraagOpen && overzicht.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
           )}
 
-          {!question && (
-            <div>
-            {overzicht.map((h) => (
-              <section
-                key={h.chapter.id}
-                id={`hoofdstuk-${h.chapter.slug}`}
-                className="mt-10 scroll-mt-28 first:mt-4 lg:scroll-mt-4"
-              >
-                <h2 className="border-b border-border pb-3 font-serif text-2xl text-text">
-                  {hoofdstukNaam(h.chapter)}
-                </h2>
-                {h.paragrafen.map((p) => (
-                  <div key={p.id} id={`paragraaf-${p.slug}`} className="scroll-mt-28 lg:scroll-mt-4">
-                    <h3 className="mt-8 font-serif text-xl text-text">
-                      <span className="font-mono font-semibold">{p.label}</span> {p.title}
-                    </h3>
-                    {p.blokken.map((blok) => {
-                      const tegels = tegelsVanKopjes(blok.kopjes, allTilesState)
-                      return (
-                        <div
-                          key={blok.id}
-                          id={`blok-${blok.slug}`}
-                          className="scroll-mt-28 lg:scroll-mt-4"
-                        >
-                          <h3 className="mt-6 font-serif text-lg text-text">
-                            <span className="font-mono font-semibold">
-                              {p.label} {blok.letter}
-                            </span>
-                            {' – '}
-                            {blok.title}
-                          </h3>
-                          <ExerciseTileGrid
-                            baseHref={`/oefenen?blok=${encodeURIComponent(blok.slug)}`}
-                            sections={sectiesVan(blok.kopjes, tegels)}
-                            activeQuestionId={null}
-                            labels={tegelLabels}
-                          />
-                        </div>
-                      )
-                    })}
-                  </div>
-                ))}
-                {h.kopjes.length > 0 && (
-                  <ExerciseTileGrid
-                    baseHref={`/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`}
-                    sections={sectiesVan(h.kopjes, tegelsVanKopjes(h.kopjes, allTilesState))}
-                    activeQuestionId={null}
-                    labels={tegelLabels}
-                  />
-                )}
-              </section>
-            ))}
+          {overzichtInDom && overzicht.length > 0 && (
+            <div hidden={vraagOpen || undefined}>
+              <OverzichtBlokken
+                overzicht={overzicht}
+                allTiles={allTilesState}
+                labels={tegelLabels}
+                onKies={kiesOpgave}
+              />
             </div>
           )}
 
-          {question ? (
+          {vraagOpen ? (
             <div className="mt-8 flex flex-col gap-8 lg:flex-row">
               <div className="min-w-0 flex-1">
                 <div className="mx-auto max-w-3xl">
                   <div className="mb-5">
                     <Link
+                      id="terug-naar-overzicht"
                       href={baseHref as '/oefenen'}
                       aria-label={labels.backToAll}
                       title={labels.backToAll}
+                      onClick={(event) => {
+                        if (
+                          event.metaKey ||
+                          event.ctrlKey ||
+                          event.shiftKey ||
+                          event.altKey ||
+                          event.button !== 0
+                        ) {
+                          return
+                        }
+                        event.preventDefault()
+                        sluitVraag()
+                      }}
                       className="inline-flex size-11 items-center text-text-muted transition hover:-translate-x-0.5 hover:text-text"
                     >
                       <svg
@@ -1364,14 +1571,19 @@ function BlokWeergave({
                       </svg>
                     </Link>
                   </div>
+                  {huidigeVraag ? (
                   <StudyCard
-                    key={question.id}
-                    question={question}
-                    steps={question.steps}
-                    nextHref={nextHref}
-                    video={getVideoForCluster(question.cluster_id)}
+                    key={huidigeVraag.id}
+                    question={huidigeVraag}
+                    steps={huidigeVraag.steps}
+                    onVolgende={
+                      nextTile
+                        ? () => openVraag(nextTile.questionId, baseHref)
+                        : undefined
+                    }
+                    video={getVideoForCluster(huidigeVraag.cluster_id)}
                     questionNumber={
-                      tiles.find((t) => t.questionId === question.id)?.ordinal ??
+                      tiles.find((t) => t.questionId === huidigeVraag.id)?.ordinal ??
                       (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
                     }
                     onAnswered={(questionId, isCorrect) => {
@@ -1382,6 +1594,15 @@ function BlokWeergave({
                       )
                     }}
                   />
+                  ) : laadFout ? (
+                    <Card>
+                      <p className="font-medium text-text">{laadFout}</p>
+                    </Card>
+                  ) : (
+                    <p role="status" className="text-sm text-text-muted">
+                      Opgave openen…
+                    </p>
+                  )}
                 </div>
               </div>
               <aside className="shrink-0 lg:sticky lg:top-0 lg:w-64 lg:self-start">
@@ -1390,13 +1611,26 @@ function BlokWeergave({
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {tiles.map((q) => {
-                    const active = q.questionId === question.id
+                    const active = q.questionId === (bezigId ?? huidigeVraag?.id)
                     return (
                       <KlikLink
                         key={q.questionId}
                         href={`${baseHref}&q=${encodeURIComponent(q.questionId)}` as '/oefenen'}
                         prefetch={false}
                         bezigTekst="Opgave openen"
+                        onClick={(event) => {
+                          if (
+                            event.metaKey ||
+                            event.ctrlKey ||
+                            event.shiftKey ||
+                            event.altKey ||
+                            event.button !== 0
+                          ) {
+                            return
+                          }
+                          event.preventDefault()
+                          openVraag(q.questionId, baseHref)
+                        }}
                         aria-current={active ? 'page' : undefined}
                         aria-label={`${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
                         className={cn(

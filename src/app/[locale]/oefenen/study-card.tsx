@@ -74,6 +74,7 @@ export function StudyCard({
   clusterName,
   video,
   onAnswered,
+  onVolgende,
 }: {
   question: StudyQuestion
   steps: Step[]
@@ -84,6 +85,8 @@ export function StudyCard({
   /** Uitlegvideo over dit onderwerp, als die er is. */
   video?: UitlegVideo | null
   onAnswered?: (questionId: string, isCorrect: boolean) => void
+  /** Volgende som openen zonder de hele pagina opnieuw te tekenen. */
+  onVolgende?: () => void
 }) {
   const router = useRouter()
   const t = useTranslations('PracticeCard')
@@ -113,6 +116,10 @@ export function StudyCard({
   }, [revealed])
 
   function next() {
+    if (onVolgende) {
+      onVolgende()
+      return
+    }
     startTransition(() => {
       if (nextHref) {
         router.push(nextHref)
