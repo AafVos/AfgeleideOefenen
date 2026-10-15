@@ -508,11 +508,20 @@ project_id = "dccjsuyuolxwqqcjxtqe"
 site_url = "https://www.afgeleideoefenen.nl"
 # Waar de link in de bevestigingsmail en de resetmail heen mag wijzen. Dit is de
 # hele lijst, geen aanvulling: wat hier niet staat, haalt `config push` uit het
-# dashboard weg. Staan er nu nog voorbeeldomgevingen van Vercel in, dan zie je
-# dat in `config diff` — zet ze er dan eerst bij.
+# dashboard weg. Een adres dat hier niet staat, zie je in `config diff` — zet
+# het er dan eerst bij.
 additional_redirect_urls = [
   "https://www.afgeleideoefenen.nl/auth/callback",
   "https://afgeleideoefenen.nl/auth/callback",
+  # De worker zelf, los van de voorbeeldversies hieronder.
+  "https://afgeleide-oefenen.alhvos.workers.dev/**",
+  # Voorbeeldversies van Workers Builds: elke pull request krijgt een adres als
+  # https://<tak>-afgeleide-oefenen.alhvos.workers.dev. De ster dekt alleen dat
+  # ene stukje vooraan (punt en schuine streep tellen als grens), dus hij
+  # blijft binnen de worker `afgeleide-oefenen` op workers.dev-account alhvos.
+  # Zonder deze regel komt wie op een voorbeeldversie zijn wachtwoord vergeet
+  # of zich registreert, via de mail op de echte site terecht.
+  "https://*-afgeleide-oefenen.alhvos.workers.dev/**",
 ]
 
 [remotes.productie.auth.rate_limit]

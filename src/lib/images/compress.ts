@@ -6,7 +6,7 @@ const KWALITEIT = 0.82
  * comprimeert naar JPEG. Een gefotografeerde boekpagina blijft daarmee prima
  * leesbaar, terwijl een telefoonfoto van 4 MB terugvalt naar een paar honderd
  * kB. Dat is nodig: een Server Action accepteert maar een paar MB aan
- * formulierdata, en Vercel kapt een request af rond 4,5 MB.
+ * formulierdata.
  *
  * Lukt decoderen niet (bijvoorbeeld HEIC in een browser die dat niet kan),
  * dan gaat het originele bestand mee en vangt de groottecontrole het af.

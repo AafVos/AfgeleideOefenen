@@ -1,7 +1,14 @@
 import type { Metadata } from 'next'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
+import Script from 'next/script'
 
 import './globals.css'
+
+// Publiek token van Cloudflare Web Analytics. Leeg of weg: geen tellerscript,
+// dus lokaal en in de tests gebeurt er niets. Live staat hij bij de
+// bouwvariabelen van Workers Builds, want NEXT_PUBLIC_ wordt bij de bouw
+// ingebakken.
+const beaconToken = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN
 
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
@@ -38,6 +45,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-bg text-text">
         {children}
       </body>
+      {beaconToken ? (
+        <Script
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          strategy="afterInteractive"
+          data-cf-beacon={JSON.stringify({ token: beaconToken, spa: true })}
+        />
+      ) : null}
     </html>
   )
 }
