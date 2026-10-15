@@ -56,9 +56,21 @@ test('een fout antwoord wordt afgekeurd', async ({ page }) => {
   ).toBeVisible()
   await expect(page.getByText('Goed!', { exact: true })).toBeHidden()
 
-  // En het goede antwoord staat er netjes als je erom vraagt.
+  // De korte uitleg waarom dit antwoord fout is, staat meteen op het scherm.
+  const uitleg = page.getByRole('status')
+  await expect(uitleg).toContainText('Wat ging er mis?')
+  await expect(uitleg).toContainText(
+    'Je antwoord is niet correct. Kijk je tussenstappen eens goed na.',
+  )
+
+  // En het goede antwoord staat er netjes als je erom vraagt. De uitleg
+  // blijft staan, ook naast het stappenplan.
   await page.getByRole('button', { name: 'Laat het goede antwoord zien' }).click()
   await expect(page.getByText('Juiste antwoord')).toBeVisible()
+  await expect(page.getByText(/stappenplan/i)).toBeVisible()
+  await expect(uitleg).toContainText(
+    'Je antwoord is niet correct. Kijk je tussenstappen eens goed na.',
+  )
 })
 
 test('een goed antwoord in een andere notatie telt één keer', async ({ page }) => {
