@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { redirect } from 'next/navigation'
 
+import { googleLoginAan, gebruikersnaamBestemming, moetNaamVragen } from '@/lib/auth/google'
 import { hrefMetOefenpad, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { leesHerkomst } from '@/lib/herkomst'
 import { canoniek } from '@/lib/seo'
@@ -30,13 +31,18 @@ export default async function SignupPage({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (user) {
-    redirect(`/${locale}/dashboard`)
-  }
-
   const { van, naar } = await searchParams
   const herkomst = leesHerkomst(van)
   const oefenpad = veiligOefenpad(naar)
+
+  if (user) {
+    if (moetNaamVragen(user)) {
+      const zoek = oefenpad ? `?naar=${encodeURIComponent(oefenpad)}` : ''
+      redirect(gebruikersnaamBestemming('/registreren', zoek))
+    }
+    redirect(`/${locale}/dashboard`)
+  }
+
   const t = await getTranslations('Register')
 
   return (
@@ -45,7 +51,7 @@ export default async function SignupPage({
       <p className="mt-2 text-sm text-text-muted">{t('subtitle')}</p>
 
       <div className="mt-8 rounded-xl border border-border bg-surface p-6">
-        <SignupForm herkomst={herkomst} oefenpad={oefenpad} />
+        <SignupForm herkomst={herkomst} oefenpad={oefenpad} googleAan={googleLoginAan()} />
       </div>
 
       <p className="mt-2 text-center text-sm text-text-muted">

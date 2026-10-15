@@ -119,6 +119,10 @@ const env = {
   RESEND_API_KEY: 're_nep',
   // Verzonnen geheim voor de webhooks; niets uit productie.
   WEBHOOK_SECRET: 'e2e-nep-geheim',
+  // De knop "Doorgaan met Google" blijft uit. Die hoort pas aan als de
+  // provider in Supabase klaarstaat. Een waarde uit de omgeving van deze
+  // computer mag de test daar niet omheen zetten.
+  NEXT_PUBLIC_GOOGLE_LOGIN: '',
 }
 
 // Harde rem. Wijst Resend naar iets anders dan deze computer, dan gaat er
