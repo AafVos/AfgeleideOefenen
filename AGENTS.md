@@ -26,8 +26,8 @@ overgeslagen als een pull request alleen tekst verandert. Lokaal start
 
 ## Lokaal op Workers
 
-De live site staat nog op Vercel. Dezelfde code kan ook op Cloudflare
-Workers, via OpenNext. Zo draai je die versie op je eigen computer:
+De live site draait op Cloudflare Workers (worker `afgeleide-oefenen`), via
+OpenNext. Zo draai je die versie op je eigen computer:
 
 ```bash
 cp .dev.vars.example .dev.vars   # één keer; blijft buiten git
@@ -36,11 +36,13 @@ npm run cf:preview
 
 `npm run cf:preview` bouwt de site en start hem in de Workers-omgeving.
 `npm run dev` blijft de gewone ontwikkelserver. Zet de site niet zelf live
-met `wrangler` of `opennextjs-cloudflare deploy`.
+met `wrangler` of `opennextjs-cloudflare deploy`. Na een merge doet Workers
+Builds dat.
 
 Botst een pull request met `main`, dan maakt GitHub de samengevoegde versie
 niet aan en start die controle helemaal niet. Niet rood en niet "in
-afwachting": in `gh pr checks` blijven alleen de Vercel-regels over. De check
+afwachting": in `gh pr checks` blijven dan alleen de controles over die op
+de tak zelf draaien, zoals Workers Builds. De check
 "Botst met main" (`.github/workflows/botst-met-main.yml`) draait op de tak
 zelf en wordt dan rood, met de bestanden die botsen. Voeg `main` samen of
 rebase, en duw opnieuw — daarna start de controle vanzelf.

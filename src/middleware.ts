@@ -19,8 +19,8 @@ const ZONDER_TAALCODE = [
 ]
 
 // Next.js 16 noemt dit liever `proxy.ts`. Dat bestand draait altijd op Node
-// en wordt op Workers een zware, aparte bundel. Deze lichtere edge-versie
-// is wat Cloudflare aan kan en wat Vercel ook gewoon blijft draaien.
+// en wordt op Workers een zware, aparte bundel. Deze lichtere versie is wat
+// Cloudflare aankan.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 

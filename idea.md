@@ -23,7 +23,7 @@ De kern van de site is **practice-first**: studenten beginnen direct met oefenen
 | Backend | Next.js API Routes | Geen aparte server nodig |
 | Database | Supabase (PostgreSQL) | Gratis tier, ingebouwde auth |
 | AI | Google Gemini API | 1500 req/dag gratis |
-| Hosting | Vercel | Gratis, perfecte Next.js integratie |
+| Hosting | Cloudflare Workers | Live op worker `afgeleide-oefenen` |
 | Wiskunde rendering | KaTeX | Snelle LaTeX rendering in browser |
 | UI Components | Shadcn/ui | Gratis, mooi, Next.js compatibel |
 

@@ -74,7 +74,7 @@ export default async function PrivacyPage() {
           <li>{t('whereSupabase')}</li>
           <li>{t('whereResend')}</li>
           <li>{t('whereGemini')}</li>
-          <li>{t('whereVercel')}</li>
+          <li>{t('whereCloudflare')}</li>
         </ul>
         <p className="mt-4">{t('whereNot')}</p>
       </Sectie>

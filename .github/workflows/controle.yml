@@ -3,17 +3,18 @@
 # Waarom dit bestand bestaat: sinds Next.js 16 kijkt `next build` de lint niet
 # meer na (zie node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md:
 # "The `next lint` command has been removed. ... `next build` no longer runs
-# linting."). De Vercel-build blijft dus groen bij lintfouten. Deze workflow
-# vult dat gat.
+# linting."). Deze workflow vult dat gat.
 #
 # Botst de pull request met main, dan maakt GitHub de samengevoegde versie
 # (refs/pull/<nummer>/merge) niet aan en start deze workflow helemaal niet.
 # De checks hieronder blijven dan weg: niet rood, gewoon afwezig. De workflow
 # botst-met-main.yml draait op de tak zelf en wordt in dat geval rood.
 #
-# De Vercel-bouw doet Vercel zelf. De Workers-bouw draait hier wel, zodat een
-# pull request die Cloudflare breekt meteen rood wordt. Die job is nog geen
-# verplichte controle op main; dat komt pas bij de overstap.
+# De live site is de Cloudflare Worker `afgeleide-oefenen`. Workers Builds
+# bouwt elke pull request en zet `main` live. De Workers-bouw hier is dezelfde
+# bouw, zodat een pull request die Cloudflare breekt rood wordt nog voordat
+# die controle van Cloudflare binnen is. Die job is nog geen verplichte
+# controle op main.
 name: Controle
 
 on:
@@ -76,8 +77,7 @@ jobs:
       - name: Rekenregels
         run: npm test
 
-  # Zelfde site, gebouwd voor Cloudflare Workers. Vercel blijft de live site;
-  # deze job laat alleen zien dat de Workers-bouw niet stuk is.
+  # Dezelfde site, gebouwd voor Cloudflare Workers. De live site is deze bouw.
   workers:
     name: Bouw voor Workers
     runs-on: ubuntu-latest
