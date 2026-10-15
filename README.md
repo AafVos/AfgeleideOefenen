@@ -15,7 +15,7 @@ Gebouwd met **Next.js (App Router) + Supabase + Gemini**. Zie
 | Database    | Supabase (PostgreSQL + Auth)                  |
 | AI          | Google Gemini (`gemini-2.5-flash`)            |
 | Wiskunde    | KaTeX                                         |
-| Hosting     | Vercel (live). Cloudflare Workers via OpenNext staat klaar |
+| Hosting     | Cloudflare Workers (OpenNext), worker `afgeleide-oefenen` |
 
 ---
 
@@ -43,9 +43,8 @@ npm error Missing: @swc/helpers@0.5.23 from lock file
 Next.js 16.3.8 zet `@swc/helpers` vast op `0.5.23`. Daarnaast vraagt
 `@swc/core` (meegeleverd via next-intl) diezelfde hulpfuncties als losse eis
 (`>=0.5.17`). npm 11 lost die twee eisen samen op, npm 10 niet. Daarom staat
-de eis op twee plekken vastgelegd: `engines.node` (`>=24`) in `package.json`,
-dat Vercel leest voor de bouw-Node, en `.nvmrc`, dat `nvm` en de automatische
-controle lezen.
+de eis op twee plekken vastgelegd: `engines.node` (`>=24`) in `package.json`
+en `.nvmrc`. Die laatste lezen `nvm` en de automatische controle.
 
 ### 1. Installeer dependencies
 
@@ -182,8 +181,8 @@ verandert; instellingen die het blok niet noemt, blijft hij af. Drie redenen om
 toch op te letten:
 
 * **Een lijst die het blok wél noemt, vervangt hij in zijn geheel.** Staan er in
-  het dashboard nu nog andere adressen bij *Redirect URLs* — bijvoorbeeld de
-  voorbeeldomgevingen van Vercel — dan haalt `push` die weg, en werkt de link in
+  het dashboard nu nog andere adressen bij *Redirect URLs* — bijvoorbeeld een
+  extra voorbeeldadres — dan haalt `push` die weg, en werkt de link in
   de bevestigingsmail daar niet meer. Zet ze eerst bij
   `additional_redirect_urls` in het blok.
 * **Hij schrijft álles weg wat het bestand noemt, niet alleen het blok
@@ -257,15 +256,15 @@ antwoorden in `src/lib/practice/engine.ts`.
 
 Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`,
 `npm run typecheck`, `npm test` en `npm run cf:build`. Dat is nodig omdat
-`next build` sinds Next.js 16 zelf geen lint meer draait; zonder deze workflow
-zou een lintfout of een kapotte rekenregel ongezien door de Vercel-build komen.
-De Vercel-bouw doet Vercel zelf. De Workers-bouw draait in deze controle, zodat
-een pull request die Cloudflare breekt meteen rood wordt.
+`next build` sinds Next.js 16 zelf geen lint meer draait. De bouw voor
+Cloudflare Workers draait in deze controle, zodat een pull request die die
+bouw breekt meteen rood wordt. Cloudflare bouwt daarnaast zelf elke pull
+request (Workers Builds) en zet `main` live.
 
 ### Lokaal op Workers
 
-De live site staat nog op Vercel. Zo kijk je of dezelfde code in de
-Workers-omgeving start:
+De live site draait op Cloudflare Workers. Zo kijk je of dezelfde code in die
+omgeving start:
 
 ```bash
 cp .dev.vars.example .dev.vars   # één keer; blijft buiten git
@@ -273,8 +272,8 @@ npm run cf:preview
 ```
 
 `.dev.vars` zet de preview op je `.env.local`. Zonder dat bestand leest de
-preview de productie-stand. Zet de site niet zelf live: dat doet later de
-koppeling met Cloudflare, na een merge.
+preview de productie-stand. Zet de site niet zelf live met `wrangler` of
+`opennextjs-cloudflare deploy`: na een merge doet Workers Builds dat.
 
 ---
 
@@ -289,35 +288,34 @@ Zie `idea.md` sectie 11 — volg de vier fasen:
 
 ---
 
-## Deploy naar productie (Vercel)
+## Hoe iets live komt
 
-1. **Push je code naar een Git-remote** (GitHub / GitLab / Bitbucket). Check
-   dat `.env.local` níét gecommit is (`git status` → zou leeg moeten zijn qua
-   secrets).
-2. Ga naar [vercel.com/new](https://vercel.com/new), koppel je repo en kies
-   **Next.js** als framework (wordt automatisch gedetecteerd).
-3. Vul onder **Environment Variables** alle keys uit `.env.local.example` in
-   voor zowel Production als Preview (behalve `NEXT_PUBLIC_SITE_URL`, die zet
-   je op je productie-domein, bv. `https://afgeleideoefenen.nl`).
-4. Deploy → je krijgt een `*.vercel.app`-URL.
-5. **Eigen domein koppelen**: in het Vercel-project → **Settings → Domains**
-   voeg je `afgeleideoefenen.nl` toe. Vercel geeft één A-record en één
-   CNAME — vul die in bij je domeinregistrar.
-6. **Supabase Auth redirect URLs** updaten: Supabase dashboard →
-   **Authentication → URL Configuration** → zet `Site URL` op je productie-URL
-   en voeg `https://<domein>/auth/callback` toe aan **Redirect URLs**.
-7. **Eigen SMTP aanzetten in Supabase**: dashboard → **Authentication →
-   Emails → SMTP Settings** → "Enable Custom SMTP" aan, met de SMTP-gegevens
-   van Resend en een afzender op een bij Resend geverifieerd domein. Zonder
-   deze stap laat Supabase maar een paar bevestigingsmails per uur door — zie
-   [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen).
-8. **Database bijwerken**: alle bestanden in `supabase/migrations/`, op
-   bestandsnaam, via `npx supabase db push` tegen het echte project. Niet
-   twee losse bestanden in de SQL-editor plakken, en `seed.sql` niet
-   meedraaien: dat bestand is alleen voor de lokale testdatabase.
-9. **Gemini API-key** onder Google AI Studio: zet een HTTP-referrer
-   restriction op `https://afgeleideoefenen.nl/*` zodat hij niet misbruikt
-   wordt als hij lekt.
+1. Eigen tak vanaf de nieuwste `main`, pull request met `gh pr create`.
+2. De controles in GitHub moeten groen zijn. Cloudflare Workers Builds bouwt
+   de pull request en zet er een voorbeeldversie op een `*.workers.dev`-adres
+   bij.
+3. Merge naar `main`. Workers Builds zet die versie live op
+   afgeleideoefenen.nl (worker `afgeleide-oefenen`).
+
+Deployen met `wrangler` of `opennextjs-cloudflare deploy` doe je niet.
+
+### Wat er op de echte site al staat
+
+- **Omgevingsvariabelen** horen bij de bouwvariabelen van Workers Builds
+  (waaronder alles wat met `NEXT_PUBLIC_` begint) en als Worker-secrets. Niet
+  in git.
+- **Bezoekersteller:** `NEXT_PUBLIC_CF_BEACON_TOKEN` is het publieke token van
+  Cloudflare Web Analytics. Leeg of weg: de site laadt geen tellerscript.
+  Omdat de naam met `NEXT_PUBLIC_` begint, moet hij bij de bouwvariabelen
+  staan.
+- **Supabase Auth:** site-URL `https://www.afgeleideoefenen.nl`, en bij
+  Redirect URLs de adressen uit `[remotes.productie.auth]` in
+  `supabase/config.toml`, inclusief de voorbeeldversies op `workers.dev`.
+- **SMTP** in Supabase: Authentication → Emails → SMTP Settings, met Resend.
+  Zonder die stap laat Supabase maar een paar bevestigingsmails per uur door
+  — zie [Mail gaat langs twee wegen](#mail-gaat-langs-twee-wegen).
+- **Database:** de bestanden in `supabase/migrations/`, op bestandsnaam.
+  `seed.sql` hoort alleen op de lokale testdatabase.
 
 ### SEO & vindbaarheid
 
