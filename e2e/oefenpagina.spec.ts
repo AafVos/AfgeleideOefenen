@@ -118,6 +118,12 @@ test('omhoog scrollen schuift de kop meteen, en het poppetje dekt de link niet @
   const header = page.locator('header')
   const titel = page.getByRole('heading', { level: 1, name: 'Oefenen' })
   const scroller = page.locator('[data-oefen-scroll]')
+  // De pagina springt soms naar de laatste som. Daarna meten we vanaf de top.
+  await page.waitForTimeout(400)
+  await scroller.evaluate((el) => {
+    el.scrollTop = 0
+  })
+  await expect(titel).toBeInViewport()
   const voor = await titel.boundingBox()
   const headerVoor = await header.boundingBox()
   expect(voor && headerVoor && voor.y >= headerVoor.y + headerVoor.height - 1).toBeTruthy()
