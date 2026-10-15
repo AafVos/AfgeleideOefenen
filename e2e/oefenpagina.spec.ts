@@ -19,8 +19,9 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
   await expect(page.locator('#hoofdstuk-h2')).toBeVisible()
   await expect(page.locator('#blok-h2-1d')).toBeAttached()
   await expect(page.locator('#blok-h2-3d')).toBeAttached()
-  // 2.5 heeft nog geen opgaven en hoort rechts niet te staan.
+  // 2.5 gaat niet over differentiëren en hoort nergens te staan.
   await expect(page.locator('#blok-h2-5a')).toHaveCount(0)
+  await expect(page.locator('#paragraaf-h2-5')).toHaveCount(0)
 
   const titel = page.getByRole('heading', { level: 1, name: 'Oefenen' })
   const deel = page.getByRole('button', { name: 'Stuur naar een klasgenoot' })
@@ -37,10 +38,18 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     const klikbaar = zijbalk.getByRole('button', { name: /Differentiequotiënten berekenen/ })
     await expect(klikbaar).toContainText(/\d+/)
     await expect(klikbaar).toHaveClass(/cursor-pointer/)
-    await zijbalk.getByRole('button', { name: /2\.5/ }).click()
-    const leeg = zijbalk.locator('[aria-disabled="true"]').filter({ hasText: 'Grafieken tekenen' })
+    await expect(zijbalk.getByRole('button', { name: /2\.5/ })).toHaveCount(0)
+    await zijbalk.getByRole('button', { name: /2\.1/ }).click()
+    const leeg = zijbalk.locator('[aria-disabled="true"]').filter({ hasText: 'Soorten van stijgen' })
     await expect(leeg).toBeVisible()
     await expect(leeg).toHaveClass(/text-xs/)
+    await zijbalk.getByRole('button', { name: /H7 –/ }).click()
+    await expect(zijbalk.getByRole('button', { name: /7\.[1-4]/ })).toHaveCount(0)
+    await expect(zijbalk.getByRole('button', { name: /7\.5/ })).toBeVisible()
+    await zijbalk.getByRole('button', { name: /H9 –/ }).click()
+    await expect(zijbalk.getByRole('button', { name: /9\.1/ })).toHaveCount(0)
+    await expect(zijbalk.getByRole('button', { name: /9\.2/ })).toHaveCount(0)
+    await expect(zijbalk.getByRole('button', { name: /9\.3/ })).toBeVisible()
     await zijbalk.getByRole('button', { name: /2\.3/ }).click()
     await expect(zijbalk.getByRole('button', { name: /2\.3/ })).toHaveAttribute(
       'aria-expanded',
@@ -52,10 +61,17 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
     const menu = page.getByRole('dialog')
     const klikbaar = menu.getByRole('button', { name: /Differentiequotiënten berekenen/ })
     await expect(klikbaar).toContainText(/\d+/)
-    await menu.getByRole('button', { name: /2\.5/ }).click()
+    await expect(menu.getByRole('button', { name: /2\.5/ })).toHaveCount(0)
+    await menu.getByRole('button', { name: /2\.1/ }).click()
     await expect(
-      menu.locator('[aria-disabled="true"]').filter({ hasText: 'Grafieken tekenen' }),
+      menu.locator('[aria-disabled="true"]').filter({ hasText: 'Soorten van stijgen' }),
     ).toBeVisible()
+    await menu.getByRole('button', { name: /H7 –/ }).click()
+    await expect(menu.getByRole('button', { name: /7\.[1-4]/ })).toHaveCount(0)
+    await expect(menu.getByRole('button', { name: /7\.5/ })).toBeVisible()
+    await menu.getByRole('button', { name: /H9 –/ }).click()
+    await expect(menu.getByRole('button', { name: /9\.1/ })).toHaveCount(0)
+    await expect(menu.getByRole('button', { name: /9\.3/ })).toBeVisible()
     await menu.getByRole('button', { name: /2\.3/ }).click()
     await expect(menu.getByRole('button', { name: /2\.3/ })).toHaveAttribute('aria-expanded', 'true')
     await menu.getByRole('button', { name: /Differentiëren/ }).click()

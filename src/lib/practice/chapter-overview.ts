@@ -101,9 +101,19 @@ export async function loadParagraphs(db: DB): Promise<ParagraphInfo[]> {
   const { data, error } = await db
     .from('paragraphs')
     .select('id, chapter_id, slug, label, title, order_index')
+    .eq('zichtbaar', true)
     .order('order_index')
   if (error) throw new Error(error.message)
   return (data ?? []) as ParagraphInfo[]
+}
+
+/** Blokken van een verborgen paragraaf horen nergens in de indeling. */
+export function blokkenVanParagrafen<T extends { paragraph_id: string }>(
+  blocks: T[],
+  paragraphs: { id: string }[],
+): T[] {
+  const ids = new Set(paragraphs.map((p) => p.id))
+  return blocks.filter((block) => ids.has(block.paragraph_id))
 }
 
 export async function loadTheoryBlocks(db: DB): Promise<TheoryBlockInfo[]> {
