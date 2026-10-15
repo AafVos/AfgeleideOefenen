@@ -8,6 +8,16 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // De startpagina-ingang blijft klein. worker-next.js is de al gebundelde
+  // Next-server en laadt pas als een pagina hem echt nodig heeft.
+  "find_additional_modules": true,
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": ["**/worker-next.js"],
+      "fallthrough": true
+    }
+  ],
   "observability": {
     "enabled": true
   }
