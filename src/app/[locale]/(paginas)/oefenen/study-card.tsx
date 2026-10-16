@@ -47,6 +47,8 @@ type StudyQuestion = {
   /** Tekst vóór het antwoordvak. Leeg bij een kale som: `f'(x) =`. Leeg bij een verhaaltje: niets. */
   answer_prefix: string | null
   difficulty: 1 | 2 | 3
+  source_label: string | null
+  source_url: string | null
 }
 
 type State =
@@ -245,6 +247,22 @@ export function StudyCard({
       </div>
 
       <div className="mb-6 min-w-0">
+        {question.source_label ? (
+          <p className="mb-3 text-sm leading-snug text-text-muted">
+            {question.source_url ? (
+              <a
+                href={question.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+              >
+                {question.source_label}
+              </a>
+            ) : (
+              question.source_label
+            )}
+          </p>
+        ) : null}
         <div className="font-serif text-2xl leading-snug text-text">
           {question.latex_body?.includes('$') ? (
             <div className="break-words">
