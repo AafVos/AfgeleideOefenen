@@ -76,6 +76,7 @@ export async function UitlegVideosInhoud({
         soort: v.soort,
         chapter: v.chapter,
         hasPractice: v.clusterIds.length > 0,
+        oefenen: v.oefenen,
         theorieHref: v.theoriePad ? `/${locale}${v.theoriePad}` : null,
       }))}
       activeSlug={activeVideo?.slug ?? null}
@@ -103,7 +104,6 @@ export async function UitlegVideosInhoud({
         nextQuestion: t('nextQuestion'),
         previousQuestion: t('previousQuestion'),
         morePractice: t('morePractice'),
-        loginToPractice: t('loginToPractice'),
         askTitle: t('askTitle'),
         askIntro: t('askIntro'),
         askCta: t('askCta'),

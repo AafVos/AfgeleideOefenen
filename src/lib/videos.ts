@@ -32,6 +32,11 @@ export type UitlegVideo = {
    * vandaan komen. Leeg = geen oefensectie tonen.
    */
   clusterIds: string[]
+  /**
+   * Oefenlink van de eerste soort som bij deze video (`chapter`, `topic`,
+   * `cluster`). Zonder account wordt die omgezet naar drie proefsommen.
+   */
+  oefenen: string
   /** Geschreven uitleg die bij deze video hoort. Leeg = geen teruglink. */
   theoriePad?: string
 }
@@ -73,6 +78,7 @@ const VIDEOS: UitlegVideo[] = [
       // De productregel · Twee polynomen
       'faa995e4-1e45-4d93-8145-ee749232725d',
     ],
+    oefenen: '/oefenen?chapter=h2&topic=h2_termsgewijs&cluster=polynoom_differentieren',
     theoriePad: '/theorie/productregel',
   },
   {
@@ -102,6 +108,7 @@ const VIDEOS: UitlegVideo[] = [
       // De productregel · Kwadraat van een polynoom (het cluster van som 29)
       'd622e23a-4112-4eca-81fa-69187f8d48a1',
     ],
+    oefenen: '/oefenen?chapter=h2&topic=h2_productregel&cluster=kwadraat_van_polynoom',
   },
   {
     slug: 'productregel-bij-twee-polynomen',
@@ -131,6 +138,7 @@ const VIDEOS: UitlegVideo[] = [
       // Productregel: twee polynomen (het cluster van som 30)
       'faa995e4-1e45-4d93-8145-ee749232725d',
     ],
+    oefenen: '/oefenen?chapter=h2&topic=h2_productregel&cluster=twee_polynomen',
   },
   {
     slug: 'quotientregel-bij-een-breuk',
@@ -158,6 +166,7 @@ const VIDEOS: UitlegVideo[] = [
       // De quotiëntregel · Eenvoudige breuk (het cluster van som 34)
       'a56f5e6f-4637-4087-98a4-6a60cec1deec',
     ],
+    oefenen: '/oefenen?chapter=h2&topic=h2_quotientregel&cluster=eenvoudige_breuk',
   },
   {
     slug: 'quotientregel',
@@ -186,6 +195,7 @@ const VIDEOS: UitlegVideo[] = [
       // De quotiëntregel · Eenvoudige breuk (het cluster van #36)
       'a56f5e6f-4637-4087-98a4-6a60cec1deec',
     ],
+    oefenen: '/oefenen?chapter=h2&topic=h2_quotientregel&cluster=eenvoudige_breuk',
     theoriePad: '/theorie/quotientregel',
   },
   {
@@ -211,6 +221,7 @@ const VIDEOS: UitlegVideo[] = [
     chapter: 'H6',
     duration: '2:59',
     src: `${STORAGE_BASE}/machten-herschrijven.mp4`,
+    oefenen: '/oefenen?chapter=h6&topic=h6_machten&cluster=negatieve_macht',
     clusterIds: [
       // Machten en wortels herschrijven · Negatieve machten (voorbeeld 6/x³)
       'fa5bef5c-3c41-46d2-a009-6bec675b78b5',
