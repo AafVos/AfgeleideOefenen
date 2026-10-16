@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { anoniemeStartpagina, anoniemeTheorieBestand } from './startpagina-snel'
+import {
+  anoniemeStartpagina,
+  anoniemeTheorieBestand,
+  theorieZonderPersoonlijk,
+} from './startpagina-snel'
 
 function verzoek(
   pad: string,
@@ -120,5 +124,24 @@ describe('anoniemeTheorieBestand', () => {
         }),
       ),
     ).toBe('kettingregel.html')
+  })
+
+  it('geldt niet voor het adres van een ingelogde leerling', () => {
+    expect(anoniemeTheorieBestand(verzoek('/nl/theorie/persoonlijk'))).toBeNull()
+  })
+})
+
+describe('theorieZonderPersoonlijk', () => {
+  it('haalt het extra stuk van een theorie-adres af', () => {
+    expect(theorieZonderPersoonlijk('/nl/theorie/persoonlijk')).toBe('/nl/theorie')
+    expect(theorieZonderPersoonlijk('/nl/theorie/kettingregel/persoonlijk')).toBe(
+      '/nl/theorie/kettingregel',
+    )
+  })
+
+  it('laat andere adressen met rust', () => {
+    expect(theorieZonderPersoonlijk('/nl/theorie/kettingregel')).toBeNull()
+    expect(theorieZonderPersoonlijk('/nl/oefenen/persoonlijk')).toBeNull()
+    expect(theorieZonderPersoonlijk('/nl/theorie/kettingregel/extra/persoonlijk')).toBeNull()
   })
 })
