@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import type { VideoUitleg } from '@/lib/videos'
 import { MathKeyboard } from '@/components/math-keyboard'
@@ -336,13 +337,18 @@ export function UitlegVideosClient({
           {active && videoAlsKop ? (
             <VideoUitlegBlok uitleg={active.uitleg} labels={labels} />
           ) : null}
-          {active?.theorieHref ? (
-            <Link
-              href={active.theorieHref as '/theorie'}
-              className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-            >
-              {labels.writtenLink}
-            </Link>
+          {active ? (
+            <div className="mt-5 flex flex-wrap items-start gap-3">
+              <DeelKnop />
+              {active.theorieHref ? (
+                <Link
+                  href={active.theorieHref as '/theorie'}
+                  className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+                >
+                  {labels.writtenLink}
+                </Link>
+              ) : null}
+            </div>
           ) : null}
         </div>
 
