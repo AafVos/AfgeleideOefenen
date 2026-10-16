@@ -105,6 +105,7 @@ export function SignupForm({
 
         <Link
           href={hrefMetOefenpad('/inloggen', oefenpad)}
+          data-meet="registreren-na-mail-inloggen"
           className="block w-full rounded-md bg-accent px-4 py-2.5 text-center font-medium text-white shadow-sm transition hover:bg-accent/90"
         >
           {t('toLoginLabel')}
@@ -167,7 +168,11 @@ export function SignupForm({
 
       <p className="pt-1 text-center text-sm text-text-muted">
         {t('hasAccount')}{' '}
-        <Link href={hrefMetOefenpad('/inloggen', oefenpad)} className="font-medium text-accent hover:underline">
+        <Link
+          href={hrefMetOefenpad('/inloggen', oefenpad)}
+          data-meet="registreren-naar-inloggen"
+          className="font-medium text-accent hover:underline"
+        >
           {t('loginLink')}
         </Link>
       </p>
@@ -261,6 +266,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
+      data-meet="registreren-versturen"
       className="w-full rounded-md bg-accent px-4 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? t('submitPending') : t('submitLabel')}

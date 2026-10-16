@@ -76,6 +76,7 @@ function TileGrid({
             <KlikLink
               href={tileHref as '/oefenen'}
               prefetch={false}
+              data-meet="oefenen-tegel"
               bezigTekst="Opgave openen"
               onClick={
                 onKies

@@ -67,6 +67,9 @@ export default async function PrivacyPage() {
 
         <h3 className="mt-8 font-serif text-xl text-text">{t('flagH3')}</h3>
         <p className="mt-3">{t('flagBody')}</p>
+
+        <h3 className="mt-8 font-serif text-xl text-text">{t('metenH3')}</h3>
+        <p className="mt-3">{t('metenBody')}</p>
       </Sectie>
 
       <Sectie titel={t('whereH2')}>
@@ -83,6 +86,7 @@ export default async function PrivacyPage() {
         <p>{t('howLongAccount')}</p>
         <p className="mt-3">{t('howLongCache')}</p>
         <p className="mt-3">{t('howLongMail')}</p>
+        <p className="mt-3">{t('howLongMeting')}</p>
       </Sectie>
 
       <Sectie titel={t('cookiesH2')}>

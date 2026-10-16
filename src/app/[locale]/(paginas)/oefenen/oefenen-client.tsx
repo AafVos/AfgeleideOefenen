@@ -478,6 +478,7 @@ function OnderwerpWeergave({
           <button
             type="button"
             onClick={() => setSidebarChoice(!sidebarOpen)}
+            data-meet="oefenen-zijbalk"
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
@@ -515,6 +516,7 @@ function OnderwerpWeergave({
                 <button
                   type="button"
                   onClick={() => handleChapterClick(ch)}
+                  data-meet="oefenen-hoofdstuk"
                   className={
                     chActive
                       ? 'flex w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
@@ -559,6 +561,7 @@ function OnderwerpWeergave({
                             <button
                               type="button"
                               onClick={() => handleClusterClick(onlyCluster, tp)}
+                              data-meet="oefenen-soort-som"
                               className={
                                 isActive
                                   ? 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
@@ -579,6 +582,7 @@ function OnderwerpWeergave({
                           <button
                             type="button"
                             onClick={() => handleTopicClick(tp)}
+                            data-meet="oefenen-onderwerp"
                             className={
                               tpActive
                                 ? 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
@@ -609,6 +613,7 @@ function OnderwerpWeergave({
                                     <button
                                       type="button"
                                       onClick={() => handleClusterClick(cl, tp)}
+                                      data-meet="oefenen-soort-som"
                                       className={
                                         clActive
                                           ? 'flex w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs font-medium text-accent'
@@ -693,6 +698,7 @@ function OnderwerpWeergave({
                   <div className="mb-5">
                     <Link
                       href={baseHref as '/oefenen'}
+                      data-meet="oefenen-terug"
                       aria-label={labels.backToAll}
                       title={labels.backToAll}
                       className="inline-flex text-text-muted transition hover:-translate-x-0.5 hover:text-text"
@@ -775,6 +781,7 @@ function OnderwerpWeergave({
                               key={q.questionId}
                               href={href as '/oefenen'}
                               prefetch={false}
+                              data-meet="oefenen-opgavenummer"
                               bezigTekst="Opgave openen"
                               aria-current={active ? 'page' : undefined}
                               aria-label={`${g.chapter.title} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
@@ -1375,6 +1382,7 @@ function BlokWeergave({
                 <li key={h.chapter.id}>
                   <button
                     type="button"
+                    data-meet="oefenen-hoofdstuk"
                     onClick={() =>
                       scrollNaar(`hoofdstuk-${h.chapter.slug}`, {
                         blok: null,
@@ -1402,6 +1410,7 @@ function BlokWeergave({
               <li key={h.chapter.id}>
                 <button
                   type="button"
+                  data-meet="oefenen-hoofdstuk"
                   onClick={() => {
                     // Dichtklappen mag niet meteen weer open door scrollNaar.
                     if (open) {
@@ -1435,6 +1444,7 @@ function BlokWeergave({
                         <li key={p.id}>
                           <button
                             type="button"
+                            data-meet="oefenen-paragraaf"
                             onClick={() => {
                               if (pOpen) {
                                 setOpenParagrafen((prev) => {
@@ -1473,6 +1483,7 @@ function BlokWeergave({
                                 <li key={blok.id}>
                                   <button
                                     type="button"
+                                    data-meet="oefenen-theorieblok"
                                     onClick={() =>
                                       scrollNaar(`blok-${blok.slug}`, {
                                         blok: blok.slug,
@@ -1516,6 +1527,7 @@ function BlokWeergave({
             <button
               type="button"
               onClick={() => setOudeOpen((v) => !v)}
+              data-meet="oefenen-oude-opgaven"
               className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2"
               aria-expanded={oudeOpen}
             >
@@ -1530,6 +1542,7 @@ function BlokWeergave({
                     <li key={ch.id}>
                       <button
                         type="button"
+                        data-meet="oefenen-hoofdstuk"
                         onClick={() =>
                           scrollNaar(`hoofdstuk-${ch.slug}`, {
                             blok: null,
@@ -1627,6 +1640,7 @@ function BlokWeergave({
           <button
             type="button"
             onClick={() => setSidebarOpen((v) => !v)}
+            data-meet="oefenen-zijbalk"
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
@@ -1659,6 +1673,7 @@ function BlokWeergave({
           type="button"
           onClick={() => setBoomOpen(true)}
           data-tour="hoofdstukken"
+          data-meet="oefenen-kies-onderdeel"
           className="sticky top-0 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium [overflow-anchor:none] lg:hidden"
         >
           <span className="min-w-0 truncate">{kop}</span>
@@ -1711,6 +1726,7 @@ function BlokWeergave({
                     <Link
                       id="terug-naar-overzicht"
                       href={baseHref as '/oefenen'}
+                      data-meet="oefenen-terug"
                       aria-label={labels.backToAll}
                       title={labels.backToAll}
                       onClick={(event) => {
@@ -1789,6 +1805,7 @@ function BlokWeergave({
                         key={q.questionId}
                         href={`${baseHref}&q=${encodeURIComponent(q.questionId)}` as '/oefenen'}
                         prefetch={false}
+                        data-meet="oefenen-opgavenummer"
                         bezigTekst="Opgave openen"
                         onClick={(event) => {
                           if (
@@ -1849,6 +1866,7 @@ function BlokWeergave({
             <button
               type="button"
               onClick={() => setBoomOpen(false)}
+              data-meet="oefenen-kies-onderdeel-sluiten"
               className="min-h-11 px-3 text-sm font-medium text-text"
             >
               {labels.sluiten}

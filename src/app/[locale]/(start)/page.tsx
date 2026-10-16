@@ -106,6 +106,7 @@ export default async function HomePage() {
               howItWorks: () => (
                 <Link
                   href="/hoe-het-werkt"
+                  data-meet="start-hoe-het-werkt"
                   className="font-medium text-accent underline-offset-2 hover:underline"
                 >
                   {t('subLeadLink')}
@@ -117,18 +118,21 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#regels"
+              data-meet="start-regels"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
               {t('ctaRegel')}
             </a>
             <Link
               href="/registreren"
+              data-meet="start-registreren"
               className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
               {t('ctaRegister')}
             </Link>
             <Link
               href="/inloggen"
+              data-meet="start-inloggen"
               className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
               {t('ctaLogin')}
@@ -138,6 +142,7 @@ export default async function HomePage() {
           <p className="mt-4">
             <IntegraalVerwijzing
               tekst={t('integraal')}
+              dataMeet="start-integraal"
               className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
             />
           </p>
@@ -164,6 +169,7 @@ export default async function HomePage() {
               <li key={titleKey}>
                 <Link
                   href={href}
+                  data-meet="start-onderwerp"
                   className="block min-h-11 rounded-xl border border-border bg-surface p-4 hover:bg-surface-2"
                 >
                   <p className="font-medium text-text underline decoration-border underline-offset-4">
@@ -190,6 +196,7 @@ export default async function HomePage() {
               <li key={href}>
                 <Link
                   href={href}
+                  data-meet="start-veelgezocht"
                   className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
                 >
                   {t(labelKey)}
@@ -202,6 +209,7 @@ export default async function HomePage() {
               link: (chunks) => (
                 <Link
                   href={EXAMENTRAINING_PAD}
+                  data-meet="start-examentraining"
                   className="font-medium text-accent underline-offset-2 hover:underline"
                 >
                   {chunks}
@@ -241,7 +249,7 @@ export default async function HomePage() {
                 key={item.question}
                 className="group rounded-xl border border-border bg-surface p-4 open:bg-surface-2"
               >
-                <summary className="cursor-pointer font-medium text-text">
+                <summary data-meet="start-faq" className="cursor-pointer font-medium text-text">
                   {item.question}
                 </summary>
                 <p className="mt-2 text-sm text-text-muted">{item.answer}</p>
@@ -256,6 +264,7 @@ export default async function HomePage() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/registreren"
+              data-meet="start-cta-registreren"
               className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
               {t('ctaRegister')}

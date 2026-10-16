@@ -40,6 +40,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
+        data-meet="oefenen-klopt-niet"
         className="min-h-11 px-2 py-2 text-xs text-text-muted underline-offset-2 hover:text-accent-2 hover:underline"
       >
         Klopt niet?
@@ -64,6 +65,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
         <button
           type="submit"
           disabled={pending}
+          data-meet="oefenen-klopt-niet-versturen"
           className={cn(
             'min-h-11 rounded-md bg-accent-2 px-3 py-2 text-sm font-medium text-white hover:bg-accent-2/90 disabled:opacity-60',
           )}

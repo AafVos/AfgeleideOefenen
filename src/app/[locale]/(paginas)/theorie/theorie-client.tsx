@@ -238,6 +238,7 @@ export function TheorieClient({
           <button
             type="button"
             onClick={() => setSidebarChoice(!sidebarOpen)}
+            data-meet="theorie-zijbalk"
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
@@ -276,6 +277,7 @@ export function TheorieClient({
                   <button
                     type="button"
                     onClick={() => zetAnker(`#hoofdstuk-${ch.slug}`)}
+                    data-meet="theorie-hoofdstuk"
                     className={
                       active
                         ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
@@ -300,6 +302,7 @@ export function TheorieClient({
                           <button
                             type="button"
                             onClick={() => zetAnker(`#kaart-${ch.slug}-${card.id}`)}
+                            data-meet="theorie-kaart-in-zijbalk"
                             className="flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text"
                           >
                             <span className="size-1.5 shrink-0 rounded-full bg-border" />
@@ -349,6 +352,7 @@ function HoofdstukKnoppen({ slug, labels }: { slug: string; labels: Labels }) {
     return (
       <Link
         href={oefenen as '/oefenen'}
+        data-meet="theorie-oefen-hoofdstuk"
         className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
       >
         {labels.practiceChapter}
@@ -359,10 +363,12 @@ function HoofdstukKnoppen({ slug, labels }: { slug: string; labels: Labels }) {
     <div className="flex flex-wrap items-center gap-2">
       <ProbeerKnop
         oefenen={oefenen}
+        dataMeet="theorie-probeer"
         className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
       />
       <Link
         href="/registreren"
+        data-meet="theorie-registreren"
         className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm text-text hover:bg-surface-2"
       >
         {labels.freeAccount}
@@ -428,6 +434,7 @@ function ExampleSteps({ steps, label }: { steps: string[]; label: string }) {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((nu) => !nu)}
+        data-meet="theorie-meer-uitleg"
         className="min-h-11 py-2 text-left font-medium text-accent"
       >
         {label}
@@ -484,6 +491,7 @@ function TheoryCard({
         <button
           type="button"
           onClick={onToggle}
+          data-meet="theorie-kaart"
           aria-expanded={open}
           aria-label={`${card.title} — ${detailsLabel}`}
           className="group flex w-full items-center justify-between gap-3 rounded-t-xl px-5 py-4 text-left"
@@ -584,6 +592,7 @@ function TheoryCard({
         {card.uitlegPad && (
           <Link
             href={card.uitlegPad as '/theorie'}
+            data-meet="theorie-hele-uitleg"
             className="inline-flex min-h-11 items-center self-start text-sm font-medium text-accent underline underline-offset-2"
           >
             Lees de hele uitleg

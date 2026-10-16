@@ -144,6 +144,42 @@ paragraaf.
 
 ---
 
+## Klikmeting zonder koekjes
+
+De site meet zelf wat bezoekers doen, ook zonder account. Dat gaat buiten
+Cloudflare Web Analytics om: die telt alleen paginabezoeken.
+
+* **Wat er in gaat** (tabel `site_gebeurtenissen`, migratie 0072): tijdstip,
+  een willekeurig id per tabblad uit `sessionStorage`, het soort gebeurtenis
+  (`pagina`, `klik`, `dode_klik`, `woedeklik`, `fout`, `scroll`), het pad
+  zonder queryparameters — op `van` en `utm_source` na —, de vaste naam van
+  wat er aangeklikt is, telefoon/tablet/computer op schermbreedte, het domein
+  van de verwijzer, en of iemand is ingelogd.
+* **Wat er nooit in gaat:** geen koekje, geen IP-adres, geen user-agent, geen
+  e-mailadres of gebruikers-id, niets uit een invoerveld, en niets op `/admin`.
+* **Hoe:** `src/lib/meten/meter.ts` verzamelt in de browser en stuurt elke drie
+  seconden één pakketje met `navigator.sendBeacon` naar `/api/meet`. Dat
+  scriptje laadt pas als de pagina er staat (`src/components/meten.tsx`). De
+  rekenregels staan los in `src/lib/meten/gebeurtenis.ts`, met tests.
+* **Namen van knoppen:** zet `data-meet="..."` op een knop of link. Staat die
+  er niet, dan wordt het het soort element plus een korte tekst. De namen zijn
+  op telefoon en computer hetzelfde, zodat de totalen optellen.
+* **Grenzen:** hoogstens 300 gebeurtenissen per tabblad per uur, bekende
+  crawlers en testbrowsers (`navigator.webdriver`) meten niet mee, en lokaal
+  staat het meten uit. Wil je het op je eigen computer bekijken, zet dan
+  `NEXT_PUBLIC_MEET_LOKAAL=1` in `.env.local`.
+* **Opruimen:** ruwe rijen blijven 90 dagen staan. `site_meting_onderhoud()`
+  schrijft de dagtotalen weg en gooit de rest weg, hoogstens één keer per dag.
+  Deze database heeft geen pg_cron, dus roept `/api/meet` die functie af en toe
+  mee aan.
+* **Kijken wat eruit komt:** de views `meet_bezoekers_per_dag`,
+  `meet_apparaat_per_dag`, `meet_trechter` (startpagina → proefsom →
+  registreren → eerste som), `meet_doelen_top`, `meet_dode_klikken`,
+  `meet_woedeklikken`, `meet_fouten` en `meet_scroll_per_pagina`. De
+  alleen-lezen analistrol mag daar bij.
+
+---
+
 ## De instellingen van de echte site
 
 Alles wat bepaalt hoe de mail van het inloggen eruitziet en werkt — het
