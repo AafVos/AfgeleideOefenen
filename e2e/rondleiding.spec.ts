@@ -102,13 +102,20 @@ test('de rondleiding start pas na de gebruikersnaam en loopt tot op de oefenpagi
 }, testInfo) => {
   test.setTimeout(180_000)
   const email = uniekAdres()
-  const { error } = await testDatabase().auth.admin.createUser({
+  const admin = testDatabase().auth.admin
+  const aangemaakt = await admin.createUser({
     email,
     password: WEGWERP_WACHTWOORD,
     email_confirm: true,
+  })
+  expect(aangemaakt.error).toBeNull()
+  // Een wachtwoord-account krijgt vanzelf provider "email". Daarna
+  // zetten we Google erop, anders stuurt de site niet naar de naamvraag.
+  const bijgewerkt = await admin.updateUserById(aangemaakt.data.user!.id, {
     app_metadata: { provider: 'google', providers: ['google'] },
   })
-  expect(error).toBeNull()
+  expect(bijgewerkt.error).toBeNull()
+  expect(bijgewerkt.data.user?.app_metadata?.provider).toBe('google')
 
   await page.goto('/nl/inloggen')
   await page.locator('input[name="email"]').fill(email)

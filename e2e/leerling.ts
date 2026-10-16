@@ -126,7 +126,7 @@ export async function logUit(page: Page, naamInMenu: string) {
 export async function sluitRondleiding(page: Page) {
   const ballon = page.getByRole('dialog')
   const gestart = await ballon
-    .waitFor({ state: 'visible', timeout: 5_000 })
+    .waitFor({ state: 'visible', timeout: 15_000 })
     .then(() => true)
     .catch(() => false)
   if (!gestart) return
