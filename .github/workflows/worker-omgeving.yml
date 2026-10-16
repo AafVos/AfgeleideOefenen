@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: "15 5 * * *"
   workflow_dispatch:
+    inputs:
+      bouw_uuids:
+        description: Bouw-uuids waarvan alleen de foutregels worden opgehaald. Leeg slaat deze stap over.
+        required: false
+        default: ""
 
 concurrency:
   group: worker-omgeving
@@ -119,3 +124,21 @@ jobs:
             gh issue close "$nummer" \
               --comment "De verplichte geheimen staan weer op de Worker. Automatisch gesloten."
           fi
+
+  bouwlog:
+    name: Foutregels van een bouw
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.bouw_uuids != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Foutregels ophalen
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          UUIDS: ${{ inputs.bouw_uuids }}
+        run: node scripts/bouwlog.mjs
