@@ -3,18 +3,7 @@
  */
 
 import { SITE_CONFIG } from '@/config/site'
-
-/**
- * Een verhaaltje is proza met een vraag, geen kale formule.
- * Woorden als sin blijven in de formule staan; die tellen niet als zin.
- */
-const PROZA =
-  /\b(de|het|een|van|is|na|op|voor|met|bij|door|tot|naar|bereken|bepaal|hoeveel|wanneer|welk|welke|hoogte|tijdstip|seconden|seconde|meter|minuten|minuut|uur|uren)\b/i
-
-function isVerhaaltje(questionBody: string): boolean {
-  const buitenWiskunde = questionBody.replace(/\$[^$]*\$/g, ' ')
-  return buitenWiskunde.includes('?') || PROZA.test(buitenWiskunde)
-}
+import { isVerhaaltje } from '@/lib/practice/answer-prefix'
 
 /**
  * Kale som: "Bepaal de afgeleide van f(x) = …".

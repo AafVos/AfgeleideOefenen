@@ -73,6 +73,39 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
   await expect(page.locator('#blok-h2-1d')).toBeAttached()
 })
 
+test('filter op verhaaltjes en gewone sommen blijft staan @telefoon', async ({ page }) => {
+  await page.goto('/nl/oefenen?chapter=e2e')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+
+  const hoofdstuk = page.locator('#hoofdstuk-e2e')
+  const filter = hoofdstuk.getByRole('radiogroup', { name: 'Soort sommen' })
+  const verhaal = filter.getByRole('radio', { name: 'Verhaaltjes (1)' })
+  const gewoon = filter.getByRole('radio', { name: 'Gewone sommen (8)' })
+  await expect(verhaal).toBeVisible()
+  await expect(gewoon).toBeVisible()
+  // Een blok met alleen verhaaltjes krijgt geen knop.
+  await expect(page.locator('#blok-h2-1d').getByRole('radiogroup')).toHaveCount(0)
+
+  await verhaal.click()
+  await expect(hoofdstuk.getByRole('link', { name: /omhoog gegooid/ })).toBeVisible()
+  await expect(hoofdstuk.getByRole('link', { name: /^Opgave 1\./ })).toHaveCount(0)
+  await expect(page).toHaveURL(/soort=verhaal/)
+
+  await gewoon.click()
+  await expect(hoofdstuk.getByRole('link', { name: /omhoog gegooid/ })).toHaveCount(0)
+  await expect(hoofdstuk.getByRole('link', { name: /^Opgave 1\./ })).toBeVisible()
+
+  // Naar een ander hoofdstuk en terug: de keuze blijft, ook zonder parameter.
+  await page.goto('/nl/oefenen?chapter=h2')
+  await expect(page.locator('#hoofdstuk-h2')).toBeVisible()
+  await page.goto('/nl/oefenen?chapter=e2e')
+  await expect(hoofdstuk.getByRole('radio', { name: 'Gewone sommen (8)' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  )
+  await expect(hoofdstuk.getByRole('link', { name: /omhoog gegooid/ })).toHaveCount(0)
+})
+
 test('een open hoofdstuk klapt weer dicht en blijft dicht @telefoon', async ({ page }) => {
   await page.goto('/nl/oefenen?chapter=h2')
   await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
