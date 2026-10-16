@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { anoniemeStartpagina } from './startpagina-snel'
+import { anoniemeStartpagina, anoniemeStatischePagina } from './startpagina-snel'
 
 function verzoek(
   pad: string,
@@ -49,6 +49,31 @@ describe('anoniemeStartpagina', () => {
         }),
       ),
     ).toBe(false)
+  })
+
+  it('geeft de theoriepagina aan iemand zonder sessie', () => {
+    expect(anoniemeStatischePagina(verzoek('/nl/theorie'))).toBe('theorie')
+    expect(anoniemeStatischePagina(verzoek('/nl/theorie/'))).toBe('theorie')
+    expect(anoniemeStatischePagina(verzoek('/nl'))).toBe('start')
+  })
+
+  it('geeft de theoriepagina niet aan een ingelogde leerling of de app', () => {
+    expect(
+      anoniemeStatischePagina(
+        verzoek('/nl/theorie', {
+          headers: { cookie: 'sb-project-auth-token=geheim' },
+        }),
+      ),
+    ).toBe(null)
+    expect(
+      anoniemeStatischePagina(
+        verzoek('/nl/theorie', { headers: { rsc: '1' } }),
+      ),
+    ).toBe(null)
+    expect(anoniemeStatischePagina(verzoek('/nl/theorie?van=klas'))).toBe(null)
+    expect(anoniemeStatischePagina(verzoek('/nl/theorie/machtsregel'))).toBe(
+      null,
+    )
   })
 
   it('negeert de tussenstap van Google', () => {

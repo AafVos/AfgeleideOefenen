@@ -5,6 +5,11 @@ import { canoniek, deelkaart } from '@/lib/seo'
 
 import { TheorieClient, type TheorieChapter } from './theorie-client'
 
+// De lay-out zet deze pagina al van tevoren klaar. De oefenknoppen lezen
+// het sessiekoekje in de browser, zodat de formules niet bij elk bezoek
+// opnieuw getekend worden.
+export const dynamic = 'force-static'
+
 export async function generateMetadata({
   params,
 }: {

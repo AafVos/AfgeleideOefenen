@@ -1,7 +1,7 @@
 // Na de OpenNext-bouw:
 // 1. de cache bij de statische bestanden leggen (de live bouw doet dat niet
 //    altijd zelf);
-// 2. de startpagina als los HTML-bestand klaarzetten;
+// 2. de startpagina en de theoriepagina als los HTML-bestand klaarzetten;
 // 3. de worker klein houden voor een bezoeker zonder sessie. De zware
 //    Next-bundel start pas als die echt nodig is.
 import { spawnSync } from 'node:child_process'
@@ -13,36 +13,49 @@ const cache = path.join(wortel, 'cache')
 const bestanden = path.join(wortel, 'assets')
 const cacheBijBestanden = path.join(bestanden, 'cdn-cgi/_next_cache')
 const startHtml = path.join(bestanden, 'cdn-cgi/start.html')
+const theorieHtml = path.join(bestanden, 'cdn-cgi/theorie.html')
 const worker = path.join(wortel, 'worker.js')
 const workerNext = path.join(wortel, 'worker-next.js')
 const merkteken = 'STARTPAGINA_SNEL'
 
 const ingang = `// ${merkteken}
-// Bezoekers zonder sessie krijgen de startpagina uit een bestand. De zware
-// Next-bundel (worker-next.js) wordt pas geladen als die echt nodig is.
-import { anoniemeStartpagina } from "../src/lib/startpagina-snel.ts";
+// Bezoekers zonder sessie krijgen de startpagina of de theoriepagina uit een
+// bestand. De zware Next-bundel (worker-next.js) wordt pas geladen als die
+// echt nodig is. Een app-verzoek (rsc) gaat wel naar Next, anders werkt
+// doorklikken niet.
+import { anoniemeStatischePagina } from "../src/lib/startpagina-snel.ts";
 
 export { DOQueueHandler } from "./.build/durable-objects/queue.js";
 export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
 export { BucketCachePurge } from "./.build/durable-objects/bucket-cache-purge.js";
 
+function uitBestand(bestand, kopNaam) {
+  const headers = new Headers();
+  headers.set("content-type", "text/html; charset=utf-8");
+  headers.set(
+    "cache-control",
+    "s-maxage=31536000, stale-while-revalidate=2592000",
+  );
+  headers.set("x-nextjs-prerender", "1");
+  headers.set(kopNaam, "bestand");
+  return new Response(bestand.body, { status: 200, headers });
+}
+
 export default {
   async fetch(request, env, ctx) {
-    if (anoniemeStartpagina(request) && env.ASSETS) {
+    const welke = env.ASSETS ? anoniemeStatischePagina(request) : null;
+    if (welke === "start") {
       const bestand = await env.ASSETS.fetch(
         "http://assets.local/cdn-cgi/start.html",
       );
-      if (bestand.ok) {
-        const headers = new Headers();
-        headers.set("content-type", "text/html; charset=utf-8");
-        headers.set(
-          "cache-control",
-          "s-maxage=31536000, stale-while-revalidate=2592000",
-        );
-        headers.set("x-nextjs-prerender", "1");
-        headers.set("x-startpagina", "bestand");
-        return new Response(bestand.body, { status: 200, headers });
-      }
+      if (bestand.ok) return uitBestand(bestand, "x-startpagina");
+      await bestand.body?.cancel();
+    }
+    if (welke === "theorie") {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/theorie.html",
+      );
+      if (bestand.ok) return uitBestand(bestand, "x-theorie");
       await bestand.body?.cancel();
     }
 
@@ -90,6 +103,40 @@ function schrijfStartpagina() {
   const alsBestand = path.join(bestanden, 'nl/index.html')
   fs.mkdirSync(path.dirname(alsBestand), { recursive: true })
   fs.writeFileSync(alsBestand, metScript)
+}
+
+function schrijfTheoriepagina() {
+  const kandidaten = []
+  verzamel(cache, kandidaten, 'theorie.cache')
+  let html = null
+  for (const pad of kandidaten) {
+    if (!pad.includes(`${path.sep}$${path.sep}`)) continue
+    let pagina
+    try {
+      pagina = JSON.parse(fs.readFileSync(pad, 'utf8'))
+    } catch {
+      continue
+    }
+    if (
+      typeof pagina.html === 'string' &&
+      pagina.html.startsWith('<!DOCTYPE') &&
+      pagina.html.includes('alle regels op één pagina')
+    ) {
+      html = pagina.html
+      break
+    }
+  }
+  if (!html) {
+    throw new Error('Geen klaargezette theoriepagina in de OpenNext-cache.')
+  }
+  if (!html.includes('kop-zonder-sessie')) {
+    throw new Error('De klaargezette theoriepagina mist de openbare kop.')
+  }
+
+  fs.mkdirSync(path.dirname(theorieHtml), { recursive: true })
+  fs.writeFileSync(theorieHtml, html)
+  // Alleen onder cdn-cgi. De kleine worker deelt dit bestand uit bij een
+  // gewoon bezoek. Een doorklik van de app gaat naar Next.
 }
 
 function bundelZwareWorker(bron) {
@@ -158,5 +205,6 @@ if (!fs.existsSync(cache)) {
 
 fs.cpSync(cache, cacheBijBestanden, { recursive: true })
 schrijfStartpagina()
+schrijfTheoriepagina()
 maakKleineIngang()
-console.log('Startpagina staat klaar als los bestand.')
+console.log('Startpagina en theoriepagina staan klaar als los bestand.')

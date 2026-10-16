@@ -1,6 +1,6 @@
 /**
  * Theorie-content voor afgeleideoefenen.nl: de formules en voorbeelden die op
- * de overzichtspagina /theorie staan (`app/[locale]/(paginas)/theorie/page.tsx`) en in
+ * de overzichtspagina /theorie staan (`app/[locale]/(openbaar)/theorie/page.tsx`) en in
  * het theoriemenu in de kop van de site.
  */
 
