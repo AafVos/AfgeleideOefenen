@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 
 import { logIn } from './leerling'
 
@@ -73,18 +73,30 @@ test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoo
   await expect(page.locator('#blok-h2-1d')).toBeAttached()
 })
 
+function aantalUit(tekst: string): number {
+  const gevonden = tekst.match(/\((\d+)\)/)
+  if (!gevonden) throw new Error(`geen aantal in «${tekst}»`)
+  return Number(gevonden[1])
+}
+
 test('filter op verhaaltjes en gewone sommen blijft staan @telefoon', async ({ page }) => {
   await page.goto('/nl/oefenen?chapter=e2e')
   await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
 
   const hoofdstuk = page.locator('#hoofdstuk-e2e')
-  const filter = hoofdstuk.getByRole('radiogroup', { name: 'Soort sommen' })
-  const verhaal = filter.getByRole('radio', { name: 'Verhaaltjes (1)' })
-  const gewoon = filter.getByRole('radio', { name: 'Gewone sommen (8)' })
+  const filter = page.getByRole('radiogroup', { name: 'Soort sommen' })
+  await expect(filter).toHaveCount(1)
+  const verhaal = filter.getByRole('radio', { name: /^Verhaaltjes \(\d+\)$/ })
+  const gewoon = filter.getByRole('radio', { name: /^Gewone sommen \(\d+\)$/ })
+  const alles = filter.getByRole('radio', { name: /^Alles \(\d+\)$/ })
   await expect(verhaal).toBeVisible()
   await expect(gewoon).toBeVisible()
-  // Een blok met alleen verhaaltjes krijgt geen knop.
+  const som =
+    aantalUit(await gewoon.innerText()) + aantalUit(await verhaal.innerText())
+  expect(aantalUit(await alles.innerText())).toBe(som)
+  // Het filter staat één keer bovenaan, niet in een onderdeel.
   await expect(page.locator('#blok-h2-1d').getByRole('radiogroup')).toHaveCount(0)
+  await expect(hoofdstuk.getByRole('radiogroup')).toHaveCount(0)
 
   await verhaal.click()
   await expect(hoofdstuk.getByRole('link', { name: /omhoog gegooid/ })).toBeVisible()
@@ -99,12 +111,84 @@ test('filter op verhaaltjes en gewone sommen blijft staan @telefoon', async ({ p
   await page.goto('/nl/oefenen?chapter=h2')
   await expect(page.locator('#hoofdstuk-h2')).toBeVisible()
   await page.goto('/nl/oefenen?chapter=e2e')
-  await expect(hoofdstuk.getByRole('radio', { name: 'Gewone sommen (8)' })).toHaveAttribute(
+  await expect(page.getByRole('radio', { name: /^Gewone sommen \(\d+\)$/ })).toHaveAttribute(
     'aria-checked',
     'true',
   )
   await expect(hoofdstuk.getByRole('link', { name: /omhoog gegooid/ })).toHaveCount(0)
 })
+
+test('filter bovenaan geldt voor heel hoofdstuk 2 @telefoon', async ({ page }) => {
+  await page.goto('/nl/oefenen?chapter=h2')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+
+  const filter = page.getByRole('radiogroup', { name: 'Soort sommen' })
+  await expect(filter).toHaveCount(1)
+  const volgorde = await page.evaluate(() => {
+    const titel = document.querySelector('h1')
+    const knoppen = document.querySelector('[aria-label="Soort sommen"]')
+    const hoofdstuk = document.getElementById('hoofdstuk-h2')
+    if (!titel || !knoppen || !hoofdstuk) return false
+    const volgt = (eerste: Node, tweede: Node) =>
+      (eerste.compareDocumentPosition(tweede) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+    return volgt(titel, knoppen) && volgt(knoppen, hoofdstuk)
+  })
+  expect(volgorde).toBe(true)
+
+  const alles = filter.getByRole('radio', { name: /^Alles \(\d+\)$/ })
+  const gewoon = filter.getByRole('radio', { name: /^Gewone sommen \(\d+\)$/ })
+  const verhaal = filter.getByRole('radio', { name: /^Verhaaltjes \(\d+\)$/ })
+  expect(aantalUit(await alles.innerText())).toBe(
+    aantalUit(await gewoon.innerText()) + aantalUit(await verhaal.innerText()),
+  )
+
+  const hoofdstuk = page.locator('#hoofdstuk-h2')
+  const tweeEen = page.locator('#paragraaf-h2-1')
+  const blok23 = page.locator('#blok-h2-3d')
+  await expect(hoofdstuk.locator('[data-verhaal="nee"]')).not.toHaveCount(0)
+  await expect(hoofdstuk.locator('[data-verhaal="ja"]')).not.toHaveCount(0)
+  // 2.1 is een verhaaltjesblok. 2.3 heeft beide soorten.
+  await expect(tweeEen.locator('[data-verhaal="ja"]')).not.toHaveCount(0)
+  await expect(blok23.locator('[data-verhaal="nee"]')).not.toHaveCount(0)
+  await expect(blok23.locator('[data-verhaal="ja"]')).not.toHaveCount(0)
+
+  await verhaal.click()
+  await expect(hoofdstuk.locator('[data-verhaal="nee"]')).toHaveCount(0)
+  await expect(hoofdstuk.locator('[data-verhaal="ja"]')).not.toHaveCount(0)
+  await expect(tweeEen.locator('[data-verhaal="ja"]')).not.toHaveCount(0)
+  await expect(blok23.locator('[data-verhaal="nee"]')).toHaveCount(0)
+  await expect(page.locator('#blok-h2-1d > h3')).toBeVisible()
+  await expect(page.locator('#paragraaf-h2-1 > h3')).toBeVisible()
+  await geenLegeKoppen(hoofdstuk)
+
+  await gewoon.click()
+  await expect(hoofdstuk.locator('[data-verhaal="ja"]')).toHaveCount(0)
+  await expect(hoofdstuk.locator('[data-verhaal="nee"]')).not.toHaveCount(0)
+  await expect(blok23.locator('[data-verhaal="nee"]')).not.toHaveCount(0)
+  // 2.1 heeft dan niets meer: de kop verdwijnt.
+  await expect(page.locator('#paragraaf-h2-1 > h3')).toHaveCount(0)
+  await expect(page.locator('#blok-h2-1d > h3')).toHaveCount(0)
+  await geenLegeKoppen(hoofdstuk)
+})
+
+async function geenLegeKoppen(hoofdstuk: Locator) {
+  const blokken = hoofdstuk.locator('[id^="blok-"]')
+  const aantalBlokken = await blokken.count()
+  for (let i = 0; i < aantalBlokken; i++) {
+    const blok = blokken.nth(i)
+    const kop = await blok.locator(':scope > h3').count()
+    const tegels = await blok.locator('[data-verhaal]').count()
+    expect(kop > 0).toBe(tegels > 0)
+  }
+  const paragrafen = hoofdstuk.locator('[id^="paragraaf-"]')
+  const aantalParagrafen = await paragrafen.count()
+  for (let i = 0; i < aantalParagrafen; i++) {
+    const paragraaf = paragrafen.nth(i)
+    const kop = await paragraaf.locator(':scope > h3').count()
+    const tegels = await paragraaf.locator('[data-verhaal]').count()
+    expect(kop > 0).toBe(tegels > 0)
+  }
+}
 
 test('een open hoofdstuk klapt weer dicht en blijft dicht @telefoon', async ({ page }) => {
   await page.goto('/nl/oefenen?chapter=h2')
