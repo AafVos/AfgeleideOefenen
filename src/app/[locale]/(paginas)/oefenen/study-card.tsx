@@ -343,6 +343,7 @@ export function StudyCard({
                 </div>
                 <input
                   ref={inputRef}
+                  data-tour="antwoord"
                   autoFocus
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
@@ -354,7 +355,9 @@ export function StudyCard({
                   autoCorrect="off"
                   spellCheck={false}
                 />
-                <MathKeyboard onInsert={handleKey} disabled={pending} />
+                <div data-tour="beheersing">
+                  <MathKeyboard onInsert={handleKey} disabled={pending} />
+                </div>
               </label>
 
               <ErrorBanner>{state.error}</ErrorBanner>
@@ -362,6 +365,7 @@ export function StudyCard({
               <div className="flex flex-wrap items-center gap-3">
                 <Button
                   type="submit"
+                  data-tour="nakijken"
                   className="min-h-11 px-5"
                   disabled={(pending && submitting) || !answer.trim()}
                 >

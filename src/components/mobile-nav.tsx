@@ -25,6 +25,7 @@ export function MobileNav({
         aria-label={open ? 'Menu sluiten' : 'Menu openen'}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
+        data-tour="menu"
         className="flex size-11 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
       >
         {open ? (

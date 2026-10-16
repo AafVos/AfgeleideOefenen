@@ -15,15 +15,23 @@ export function SoortFilter({
   verhaal,
   waarde,
   onKies,
+  rondleiding = false,
 }: {
   gewoon: number
   verhaal: number
   waarde: SoortKeuze
   onKies: (soort: SoortKeuze) => void
+  /** Alleen het voorbeeldhoofdstuk van de rondleiding. */
+  rondleiding?: boolean
 }) {
   const aantal = { gewoon, verhaal }
   return (
-    <div role="radiogroup" aria-label="Soort sommen" className="mt-4 flex flex-wrap gap-2">
+    <div
+      role="radiogroup"
+      aria-label="Soort sommen"
+      data-tour={rondleiding ? 'soort' : undefined}
+      className="mt-4 flex flex-wrap gap-2"
+    >
       {KNOPPEN.map((knop) => {
         const aan = waarde === knop.id
         return (
