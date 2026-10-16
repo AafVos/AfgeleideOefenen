@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { cn } from '@/components/ui'
 import type { OverviewCard } from '@/content/theory/afgeleiden'
+import { heeftSessiekoekje } from '@/lib/supabase/sessie-koekje'
 
 export type TheorieChapter = {
   slug: string
@@ -27,6 +28,8 @@ type Labels = {
   showSteps: string
   answerLabel: string
   practiceSelf: string
+  practiceChapter: string
+  freeAccount: string
 }
 
 const desktopQuery = '(min-width: 1024px)'
@@ -35,6 +38,23 @@ function subscribeDesktop(onChange: () => void) {
   const mq = window.matchMedia(desktopQuery)
   mq.addEventListener('change', onChange)
   return () => mq.removeEventListener('change', onChange)
+}
+
+/** Het sessiekoekje staat pas in de browser. De server leest het niet, zodat de pagina statisch blijft. */
+function leesIngelogd() {
+  const koekjes = document.cookie.split(';').map((deel) => ({
+    name: (deel.trim().split('=')[0] ?? '').trim(),
+  }))
+  return heeftSessiekoekje(koekjes)
+}
+
+function subscribeIngelogd(onChange: () => void) {
+  window.addEventListener('focus', onChange)
+  return () => window.removeEventListener('focus', onChange)
+}
+
+function useIngelogd() {
+  return useSyncExternalStore(subscribeIngelogd, leesIngelogd, () => false)
 }
 
 /** Op de server (en bij de eerste paint) dicht, zodat een telefoon de formule ziet. */
@@ -96,7 +116,7 @@ export function TheorieClient({
   const [openCards, setOpenCards] = useState<Set<string>>(new Set())
   const chaptersRef = useRef(chapters)
   const activeRef = useRef(activeSlug)
-  const pendingScroll = useRef<string | null>(null)
+  const inhoudRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     chaptersRef.current = chapters
@@ -113,26 +133,24 @@ export function TheorieClient({
   }
 
   const toonHoofdstuk = useCallback((slug: string, elementId: string | null) => {
-    if (!window.matchMedia(desktopQuery).matches) setSidebarChoice(false)
-    if (slug !== activeRef.current) {
-      pendingScroll.current = elementId
-      setActiveSlug(slug)
-      return
-    }
-    if (elementId) {
+    const mobiel = !window.matchMedia(desktopQuery).matches
+    // Op een telefoon klapt de lijst eerst dicht. Scroll pas daarna, anders
+    // schuift het hoofdstuk mee omhoog en verdwijnt de kop uit beeld.
+    if (mobiel) setSidebarChoice(false)
+    setActiveSlug(slug)
+    if (!elementId) return
+    const scroll = () => {
       document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+    if (mobiel) requestAnimationFrame(() => requestAnimationFrame(scroll))
+    else scroll()
   }, [])
 
   const pasAnkerToe = useCallback((hash: string) => {
     const anker = leesAnker(hash, chaptersRef.current)
     if (!anker) {
-      // Terug naar het adres zonder anker: weer het eerste hoofdstuk.
       const eerste = chaptersRef.current[0]?.slug
-      if (!hash && eerste && eerste !== activeRef.current) {
-        pendingScroll.current = `hoofdstuk-${eerste}`
-        setActiveSlug(eerste)
-      }
+      if (!hash && eerste && eerste !== activeRef.current) setActiveSlug(eerste)
       return
     }
     const elementId = anker.kaartId
@@ -178,16 +196,27 @@ export function TheorieClient({
     }
   }, [pasAnkerToe])
 
+  // Tijdens het scrollen licht het hoofdstuk op dat bovenaan in beeld is.
   useEffect(() => {
-    const id = pendingScroll.current
-    if (!id) return
-    const el = document.getElementById(id)
-    if (!el) return
-    pendingScroll.current = null
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [activeSlug])
-
-  const chapter = chapters.find((ch) => ch.slug === activeSlug) ?? chapters[0]
+    const root = isDesktop ? inhoudRef.current : null
+    const secties = chapters
+      .map((ch) => document.getElementById(`hoofdstuk-${ch.slug}`))
+      .filter((el): el is HTMLElement => el != null)
+    if (secties.length === 0) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const zichtbaar = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+        if (!zichtbaar) return
+        const slug = zichtbaar.target.id.slice('hoofdstuk-'.length)
+        setActiveSlug((huidig) => (huidig === slug ? huidig : slug))
+      },
+      { root, rootMargin: '-8% 0px -55% 0px', threshold: [0, 0.15] },
+    )
+    for (const sectie of secties) observer.observe(sectie)
+    return () => observer.disconnect()
+  }, [chapters, isDesktop])
 
   return (
     <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-hidden">
@@ -288,23 +317,56 @@ export function TheorieClient({
       </aside>
 
       {/* ── Content ─────────────────────────────────────────────────── */}
-      <div className="nice-scrollbar lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain">
-        <div className="mx-auto max-w-5xl px-4 py-8">
+      <div
+        ref={inhoudRef}
+        className="nice-scrollbar lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain"
+      >
+        <div className="mx-auto max-w-5xl space-y-12 px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
-          <div className="mb-6">
+          <div>
             <DeelKnop />
           </div>
 
-          {chapter && (
+          {chapters.map((chapter) => (
             <ChapterSection
+              key={chapter.slug}
               chapter={chapter}
               openCards={openCards}
               onToggle={toggleCard}
               labels={labels}
             />
-          )}
+          ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+function HoofdstukKnoppen({ slug, labels }: { slug: string; labels: Labels }) {
+  const ingelogd = useIngelogd()
+  const oefenen = `/oefenen?chapter=${encodeURIComponent(slug)}`
+  if (ingelogd) {
+    return (
+      <Link
+        href={oefenen as '/oefenen'}
+        className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
+      >
+        {labels.practiceChapter}
+      </Link>
+    )
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <ProbeerKnop
+        oefenen={oefenen}
+        className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
+      />
+      <Link
+        href="/registreren"
+        className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm text-text hover:bg-surface-2"
+      >
+        {labels.freeAccount}
+      </Link>
     </div>
   )
 }
@@ -322,7 +384,10 @@ function ChapterSection({
 }) {
   const { code, short } = splitTitle(chapter.title)
   return (
-    <section id={`hoofdstuk-${chapter.slug}`} className="scroll-mt-4">
+    <section
+      id={`hoofdstuk-${chapter.slug}`}
+      className="scroll-mt-4 [content-visibility:auto] [contain-intrinsic-size:auto_48rem]"
+    >
       <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
         <h2 className="font-serif text-2xl text-text">
           {code && (
@@ -333,18 +398,7 @@ function ChapterSection({
           )}
           {short}
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <ProbeerKnop
-            oefenen={`/oefenen?chapter=${encodeURIComponent(chapter.slug)}`}
-            className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent/90"
-          />
-          <Link
-            href={`/oefenen?chapter=${encodeURIComponent(chapter.slug)}` as '/oefenen'}
-            className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm text-text hover:bg-surface-2"
-          >
-            {labels.practiceSelf}
-          </Link>
-        </div>
+        <HoofdstukKnoppen slug={chapter.slug} labels={labels} />
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
