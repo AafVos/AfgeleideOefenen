@@ -7,6 +7,7 @@ import { getLocale } from 'next-intl/server'
 
 import { bestemmingNaInloggen } from '@/lib/auth/bestemming'
 import { bevestigingsRedirect } from '@/lib/auth/bevestigingslink'
+import { gebruikersnaamBestemming, moetNaamVragen } from '@/lib/auth/google'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
@@ -74,6 +75,12 @@ export async function loginAction(
 
   const locale = await getLocale()
   revalidatePath('/', 'layout')
+  // Eerste keer via Google: het formulier "Hoe mogen we je noemen?" hoort
+  // op zijn eigen adres. Doen we dat pas in de middleware, dan blijft de
+  // browser op het dashboard staan en valt de rondleiding over het formulier.
+  if (data.user && moetNaamVragen(data.user)) {
+    redirect(gebruikersnaamBestemming('/dashboard', ''))
+  }
   redirect(await bestemmingNaInloggen(supabase, formData.get('naar'), locale))
 }
 

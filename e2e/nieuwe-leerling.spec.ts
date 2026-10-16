@@ -475,7 +475,6 @@ test('wachtwoord vergeten: mail, link, nieuw wachtwoord, inloggen', async ({
   await logIn(page, { email, wachtwoord: nieuwWachtwoord })
 
   // En het oude wachtwoord werkt niet meer.
-  await sluitRondleiding(page)
   await logUit(page, email)
   await page.goto('/nl/inloggen')
   await page.locator('input[name="email"]').fill(email)

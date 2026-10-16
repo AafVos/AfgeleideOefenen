@@ -269,6 +269,11 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
   const [plek, setPlek] = useState<Plek | null>(null)
   const doelRef = useRef<HTMLElement | null>(null)
   const doosRef = useRef<HTMLDivElement | null>(null)
+  const stepsRef = useRef(steps)
+  const routerRef = useRef(router)
+  const geduwd = useRef<string | null>(null)
+  stepsRef.current = steps
+  routerRef.current = router
 
   const steps: Stap[] = useMemo(
     () => [
@@ -316,10 +321,17 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
     const gestopt = () => stop
     doelRef.current = null
 
+    function gaNaar(doel: string) {
+      const sleutel = `${stepIdx}:${doel}`
+      if (geduwd.current === sleutel) return
+      geduwd.current = sleutel
+      routerRef.current.push(doel)
+    }
+
     async function klaarzetten() {
       setWacht(true)
       setPlek(null)
-      const stap = steps[stepIdx]
+      const stap = stepsRef.current[stepIdx]
       if (!stap || gestopt()) return
 
       if (stap.eersteOpgave) {
@@ -335,12 +347,12 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
             const absoluut = new URL(href, window.location.origin)
             const hier = `${window.location.pathname}${window.location.search}`
             const doel = `${absoluut.pathname}${absoluut.search}`
-            if (hier !== doel) router.push(doel)
+            if (hier !== doel) gaNaar(doel)
           }
         }
       } else if (stap.pad && !opPad(stap.pad)) {
         const taal = window.location.pathname.split('/').filter(Boolean)[0] || 'nl'
-        router.push(`/${taal}${stap.pad}`)
+        gaNaar(`/${taal}${stap.pad}`)
       }
 
       if (stap.pad) {
@@ -355,7 +367,7 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
       const el = stap.doel ? await wachtOp(() => vindDoel(stap.doel!), wachttijd, gestopt) : null
       if (gestopt()) return
 
-      if (stap.doel && !el && stap.optioneel && stepIdx < steps.length - 1) {
+      if (stap.doel && !el && stap.optioneel && stepIdx < stepsRef.current.length - 1) {
         setStepIdx((i) => i + 1)
         return
       }
@@ -369,7 +381,10 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
     return () => {
       stop = true
     }
-  }, [phase, stepIdx, steps, router])
+    // steps en router via een ref: een nieuw array-object mag deze
+    // voorbereiding niet afbreken, anders blijft het scherm gedimd
+    // zonder ballon.
+  }, [phase, stepIdx])
 
   useLayoutEffect(() => {
     if (phase !== 'tour' || wacht) return
@@ -426,14 +441,16 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
 
   return (
     <>
-      <div
-        className={
-          plek?.bijItem
-            ? 'fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
-            : 'fixed inset-0 z-40 bg-[#101820]/30'
-        }
-        aria-hidden
-      />
+      {!wacht && (
+        <div
+          className={
+            plek?.bijItem
+              ? 'fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
+              : 'fixed inset-0 z-40 bg-[#101820]/30'
+          }
+          aria-hidden
+        />
+      )}
 
       <div
         ref={doosRef}
