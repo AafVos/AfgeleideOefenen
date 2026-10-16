@@ -50,6 +50,8 @@ export default async function TheoriePage() {
         showSteps: t('showSteps'),
         answerLabel: t('answerLabel'),
         practiceSelf: t('practiceSelf'),
+        practiceChapter: t('practiceChapter'),
+        freeAccount: t('freeAccount'),
       }}
     />
   )
