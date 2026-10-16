@@ -22,6 +22,10 @@ type QuestionConfig = {
   correctLatex: string
 }
 
+/** Drie sommen van dezelfde soort als de makkelijke proefsom: een polynoom. */
+const DRIE_SOMMEN =
+  '/proberen?chapter=h2&topic=h2_termsgewijs&cluster=polynoom_differentieren'
+
 const QUESTIONS: Record<Difficulty, QuestionConfig> = {
   easy: {
     difficulty: 1,
@@ -132,7 +136,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           <p className="mt-1 text-sm text-accent">{t('correctBody')}</p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
-              href="/proberen"
+              href={DRIE_SOMMEN}
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
             >
               {t('correctCta')}
@@ -189,7 +193,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
-              href="/proberen"
+              href={DRIE_SOMMEN}
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
             >
               {t('wrongCta')}
