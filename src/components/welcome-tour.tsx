@@ -271,7 +271,6 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
   const doosRef = useRef<HTMLDivElement | null>(null)
   const routerRef = useRef(router)
   const geduwd = useRef<string | null>(null)
-  routerRef.current = router
 
   const steps: Stap[] = useMemo(
     () => [
@@ -289,7 +288,10 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
     [t],
   )
   const stepsRef = useRef(steps)
-  stepsRef.current = steps
+  useEffect(() => {
+    stepsRef.current = steps
+    routerRef.current = router
+  }, [steps, router])
   const step = steps[stepIdx]!
   const isLast = stepIdx === steps.length - 1
 
