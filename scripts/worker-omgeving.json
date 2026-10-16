@@ -1,0 +1,79 @@
+[
+  {
+    "naam": "NEXT_PUBLIC_SUPABASE_URL",
+    "doel": "Adres van het Supabase-project. De site praat hiermee met de database en het inloggen.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": true
+  },
+  {
+    "naam": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "doel": "Openbare sleutel van Supabase. Staat in de browser; de database bewaakt zelf wat een leerling mag.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": true
+  },
+  {
+    "naam": "NEXT_PUBLIC_SITE_URL",
+    "doel": "Adres van de site zelf, voor links in pagina's en mails.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": true
+  },
+  {
+    "naam": "NEXT_PUBLIC_GOOGLE_LOGIN",
+    "doel": "Zet op 1 om de knop Doorgaan met Google te tonen. Alleen als die aanmelding in Supabase al aan staat.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": false
+  },
+  {
+    "naam": "NEXT_PUBLIC_CF_BEACON_TOKEN",
+    "doel": "Meetbezoek van Cloudflare. Zonder deze regel meet de site niets.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": false
+  },
+  {
+    "naam": "SUPABASE_SERVICE_ROLE_KEY",
+    "doel": "Sleutel waarmee de server namens de site in de database mag, onder meer voor het seintje bij een nieuwe gebruiker.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": true
+  },
+  {
+    "naam": "GEMINI_API_KEY",
+    "doel": "Sleutel voor de controle van een open antwoord.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": true
+  },
+  {
+    "naam": "RESEND_API_KEY",
+    "doel": "Sleutel waarmee de site zelf mail verstuurt. Zonder deze regel gaat het seintje bij een nieuwe gebruiker er stil niet uit.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": true
+  },
+  {
+    "naam": "NOTIFY_EMAIL",
+    "doel": "Adres dat het seintje bij een nieuwe gebruiker, feedback en een videoverzoek ontvangt.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": true
+  },
+  {
+    "naam": "EMAIL_FROM",
+    "doel": "Afzender van mail die de site zelf stuurt. Zonder deze regel geldt no-reply op het domein van de site.",
+    "wanneer": "runtime",
+    "geheim": false,
+    "verplicht": false
+  },
+  {
+    "naam": "WEBHOOK_SECRET",
+    "doel": "Geheim waarmee Supabase de webhooks van de site mag aanroepen. Zonder match antwoordt de site met 401.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": true
+  }
+]

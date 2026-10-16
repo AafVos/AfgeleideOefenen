@@ -1,0 +1,121 @@
+# Kijkt één keer per dag of de verplichte geheimen op de Worker staan.
+# Alleen namen. Waarden komen niet in het logboek en niet in de melding.
+name: Worker-omgeving
+
+on:
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: worker-omgeving
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  namen:
+    name: Geheimen op de Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      TITEL: "Een verplicht geheim ontbreekt op de Worker"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Pakketten installeren
+        run: npm ci
+
+      - name: Kijken of de sleutel er is
+        id: sleutel
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::warning::Het geheim CLOUDFLARE_API_TOKEN staat niet in GitHub → Settings → Secrets."
+            echo "Deze controle is overgeslagen: het geheim \`CLOUDFLARE_API_TOKEN\` ontbreekt." >> "$GITHUB_STEP_SUMMARY"
+            echo "draaien=nee" >> "$GITHUB_OUTPUT"
+          else
+            echo "draaien=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Namen vergelijken
+        id: vergelijk
+        if: ${{ steps.sleutel.outputs.draaien == 'ja' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set +e
+          node scripts/controleer-worker-env.mjs > namen.txt
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "mist=nee" >> "$GITHUB_OUTPUT"
+            echo "Alle verplichte geheimen staan op de Worker." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$code" -eq 1 ] && [ -s namen.txt ]; then
+            echo "mist=ja" >> "$GITHUB_OUTPUT"
+            echo "::warning::Een verplicht geheim ontbreekt op de Worker. Zie Issues."
+            {
+              echo "## Ontbrekende namen"
+              echo
+              echo '```'
+              cat namen.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::De controle zelf ging mis (afsluitcode $code)."
+            exit 1
+          fi
+
+      - name: Melding openen of bijwerken
+        if: ${{ steps.vergelijk.outputs.mist == 'ja' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          {
+            echo "Deze melding is automatisch gemaakt door de workflow **Worker-omgeving**."
+            echo
+            echo "Op de Worker \`afgeleide-oefenen\` ontbreekt minstens één verplicht geheim uit \`scripts/worker-omgeving.json\`."
+            echo "Daardoor kan mail of een andere servertaak stil niets doen."
+            echo
+            echo "Ontbrekende namen (geen waarden):"
+            echo
+            echo '```'
+            cat namen.txt
+            echo '```'
+            echo
+            echo "Zet ze met \`npx wrangler secret put <NAAM>\`. Zet de waarde niet in deze melding."
+            echo
+            echo "Laatste controle: [run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+          } > melding.md
+
+          nummer=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.TITEL)][0].number // empty')
+
+          if [ -n "$nummer" ]; then
+            gh issue edit "$nummer" --body-file melding.md
+          else
+            gh issue create --title "$TITEL" --body-file melding.md
+          fi
+
+      - name: Melding sluiten als alles er is
+        if: ${{ steps.vergelijk.outputs.mist == 'nee' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          nummer=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.TITEL)][0].number // empty')
+          if [ -n "$nummer" ]; then
+            gh issue close "$nummer" \
+              --comment "De verplichte geheimen staan weer op de Worker. Automatisch gesloten."
+          fi
