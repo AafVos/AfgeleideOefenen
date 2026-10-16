@@ -141,6 +141,8 @@
     "showSteps": "Toon de stappen",
     "answerLabel": "Antwoord",
     "practiceSelf": "Zelf oefenen",
+    "practiceChapter": "Oefen dit hoofdstuk",
+    "freeAccount": "Gratis account",
     "step": "Stap {n}",
     "noTheory": "Nog geen theorie voor dit onderdeel, alleen oefenvragen.",
     "chapterLabel": "Hoofdstukken",
