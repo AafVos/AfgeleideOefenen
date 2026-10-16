@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { seintjeOntbreekt } from '@/lib/omgeving/worker-variabelen'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui'
 
@@ -33,8 +34,16 @@ export default async function AdminDashboardPage() {
     { label: 'Antwoorden totaal', value: answerCount.count },
   ]
 
+  const seintjeMist = seintjeOntbreekt()
+
   return (
     <div>
+      {seintjeMist.length > 0 && (
+        <p className="mb-4 rounded-lg border border-amber-700/40 bg-amber-50 px-4 py-3 text-sm text-text">
+          Het seintje bij een nieuwe gebruiker gaat er niet uit. Deze namen
+          ontbreken: {seintjeMist.join(', ')}.
+        </p>
+      )}
       <h2 className="mb-4 font-serif text-xl text-text">Statistieken</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => {

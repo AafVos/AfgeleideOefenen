@@ -42,9 +42,11 @@ export async function POST(req: Request) {
       return Response.json({ ok: true })
     }
 
-    // Zonder ontvanger of mailsleutel gaat dit seintje er stil niet uit. Toch
-    // een 200 terug: het bericht is voor onszelf, en bij een foutcode blijft
-    // Supabase het onnodig opnieuw proberen.
+    // Zonder ontvanger of mailsleutel gaat dit seintje er niet uit. De
+    // beheerpagina toont de ontbrekende naam, en de ochtendcontrole maakt een
+    // melding als het geheim op de Worker ontbreekt. Toch een 200 terug: het
+    // bericht is voor onszelf, en bij een foutcode blijft Supabase het
+    // onnodig opnieuw proberen.
     const naar = meldAdres()
     if (!naar) {
       console.error('[nieuwe-gebruiker] geen NOTIFY_EMAIL; seintje niet verstuurd')

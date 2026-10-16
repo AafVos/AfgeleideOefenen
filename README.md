@@ -77,6 +77,9 @@ npm install
 
 ### 3. Omgevingsvariabelen
 
+Wat de live Worker nodig heeft, staat in [`docs/omgeving.md`](./docs/omgeving.md).
+Hieronder hetzelfde voor je eigen computer.
+
 Kopieer het voorbeeld en vul je eigen keys in:
 
 ```bash
