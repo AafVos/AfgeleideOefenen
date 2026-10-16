@@ -201,17 +201,29 @@ function sectiesVan(kopjes: Kopje[], tegels: NewExerciseTile[]): TileSection[] {
   }))
 }
 
-function inhoudVanKopjes(kopjes: Kopje[], alle: NewExerciseTile[], soort: SoortKeuze) {
-  const bron = tegelsVanKopjes(kopjes, alle)
-  const aantal = teltSoorten(bron)
-  const gekozen = bron.filter((tegel) => pastBijSoort(tegel.verhaal, soort))
-  const secties = sectiesVan(kopjes, gekozen)
+function gefilterdeSecties(
+  kopjes: Kopje[],
+  alle: NewExerciseTile[],
+  soort: SoortKeuze,
+): TileSection[] {
+  const gekozen = tegelsVanKopjes(kopjes, alle).filter((tegel) =>
+    pastBijSoort(tegel.verhaal, soort),
+  )
+  return sectiesVan(kopjes, gekozen)
     .map((sectie) => ({
       ...sectie,
       subSections: sectie.subSections.filter((sub) => sub.tiles.length > 0),
     }))
     .filter((sectie) => sectie.subSections.length > 0)
-  return { aantal, toonFilter: toonSoortFilter(aantal), secties }
+}
+
+/** Alle sommen die op de oefenpagina staan, niet alleen van één onderdeel. */
+function totaalOpPagina(overzicht: OverzichtHoofdstuk[], alle: NewExerciseTile[]) {
+  const kopjes = overzicht.flatMap((h) => [
+    ...h.kopjes,
+    ...h.paragrafen.flatMap((p) => p.blokken.flatMap((blok) => blok.kopjes)),
+  ])
+  return teltSoorten(tegelsVanKopjes(kopjes, alle))
 }
 
 function hrefMetSoort(basis: string, soort: SoortKeuze): string {
@@ -834,14 +846,12 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
   overzicht,
   allTiles,
   soort,
-  onKiesSoort,
   labels,
   onKies,
 }: {
   overzicht: OverzichtHoofdstuk[]
   allTiles: NewExerciseTile[]
   soort: SoortKeuze
-  onKiesSoort: (soort: SoortKeuze) => void
   labels: {
     heading: string
     lastCorrect: string
@@ -855,21 +865,21 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
     <>
       {overzicht.map((h) => {
         const hoofdstukInhoud =
-          h.kopjes.length > 0 ? inhoudVanKopjes(h.kopjes, allTiles, soort) : null
+          h.kopjes.length > 0 ? gefilterdeSecties(h.kopjes, allTiles, soort) : []
         const paragrafen = h.paragrafen.map((p) => ({
           p,
           blokken: p.blokken.map((blok) => ({
             blok,
-            inhoud: inhoudVanKopjes(blok.kopjes, allTiles, soort),
+            inhoud: gefilterdeSecties(blok.kopjes, allTiles, soort),
           })),
         }))
         const heeftZichtbaar =
-          (hoofdstukInhoud?.secties.length ?? 0) > 0 ||
-          paragrafen.some((p) => p.blokken.some((b) => b.inhoud.secties.length > 0))
+          hoofdstukInhoud.length > 0 ||
+          paragrafen.some((p) => p.blokken.some((b) => b.inhoud.length > 0))
         const voorbeeld = h.chapter.slug === 'h2'
         const eersteBlokId = paragrafen
           .flatMap((p) => p.blokken)
-          .find((b) => b.inhoud.secties.length > 0)?.blok.id
+          .find((b) => b.inhoud.length > 0)?.blok.id
         return (
           <section
             key={h.chapter.id}
@@ -882,7 +892,7 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
               </h2>
             )}
             {paragrafen.map(({ p, blokken }) => {
-              const paragraafZichtbaar = blokken.some((b) => b.inhoud.secties.length > 0)
+              const paragraafZichtbaar = blokken.some((b) => b.inhoud.length > 0)
               return (
                 <div
                   key={p.id}
@@ -904,10 +914,10 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                         key={blok.id}
                         id={`blok-${blok.slug}`}
                         className={
-                          inhoud.secties.length > 0 ? 'scroll-mt-14 lg:scroll-mt-4' : undefined
+                          inhoud.length > 0 ? 'scroll-mt-14 lg:scroll-mt-4' : undefined
                         }
                       >
-                        {inhoud.secties.length > 0 && (
+                        {inhoud.length > 0 && (
                           <>
                             <h3 className="mt-6 font-serif text-lg text-text">
                               <span className="font-mono font-semibold">
@@ -916,18 +926,9 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                               {' – '}
                               {blok.title}
                             </h3>
-                            {inhoud.toonFilter && (
-                              <SoortFilter
-                                gewoon={inhoud.aantal.gewoon}
-                                verhaal={inhoud.aantal.verhaal}
-                                waarde={soort}
-                                onKies={onKiesSoort}
-                                rondleiding={voorbeeld}
-                              />
-                            )}
                             <ExerciseTileGrid
                               baseHref={basis}
-                              sections={inhoud.secties}
+                              sections={inhoud}
                               activeQuestionId={null}
                               onKies={(id) => onKies(id, basis)}
                               labels={labels}
@@ -941,23 +942,14 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                 </div>
               )
             })}
-            {hoofdstukInhoud && hoofdstukInhoud.secties.length > 0 && (
+            {hoofdstukInhoud.length > 0 && (
               <>
-                {hoofdstukInhoud.toonFilter && (
-                  <SoortFilter
-                    gewoon={hoofdstukInhoud.aantal.gewoon}
-                    verhaal={hoofdstukInhoud.aantal.verhaal}
-                    waarde={soort}
-                    onKies={onKiesSoort}
-                    rondleiding={voorbeeld && !eersteBlokId}
-                  />
-                )}
                 <ExerciseTileGrid
                   baseHref={hrefMetSoort(
                     `/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`,
                     soort,
                   )}
-                  sections={hoofdstukInhoud.secties}
+                  sections={hoofdstukInhoud}
                   activeQuestionId={null}
                   onKies={(id) =>
                     onKies(
@@ -1610,6 +1602,10 @@ function BlokWeergave({
     }),
     [labels],
   )
+  const paginaAantal = useMemo(
+    () => totaalOpPagina(overzicht, allTilesState),
+    [overzicht, allTilesState],
+  )
 
   return (
     <div
@@ -1681,6 +1677,16 @@ function BlokWeergave({
             </div>
           )}
 
+          {!vraagOpen && toonSoortFilter(paginaAantal) && (
+            <SoortFilter
+              gewoon={paginaAantal.gewoon}
+              verhaal={paginaAantal.verhaal}
+              waarde={soort}
+              onKies={kiesSoort}
+              rondleiding={overzicht.some((h) => h.chapter.slug === 'h2')}
+            />
+          )}
+
           {!vraagOpen && overzicht.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
           )}
@@ -1691,7 +1697,6 @@ function BlokWeergave({
                 overzicht={overzicht}
                 allTiles={allTilesState}
                 soort={soort}
-                onKiesSoort={kiesSoort}
                 labels={tegelLabels}
                 onKies={kiesOpgave}
               />

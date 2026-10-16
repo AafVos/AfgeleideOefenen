@@ -54,6 +54,7 @@ function TileGrid({
           <li
             key={tile.questionId}
             className={kaart}
+            data-verhaal={tile.verhaal ? 'ja' : 'nee'}
             data-tour={rondleiding && index === 0 ? 'tegels' : undefined}
           >
             {bron ? (

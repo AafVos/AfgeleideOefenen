@@ -5,7 +5,7 @@ const KNOPPEN: Array<{
   id: SoortKeuze
   label: (aantal: { gewoon: number; verhaal: number }) => string
 }> = [
-  { id: 'alles', label: () => 'Alles' },
+  { id: 'alles', label: (aantal) => `Alles (${aantal.gewoon + aantal.verhaal})` },
   { id: 'gewoon', label: (aantal) => `Gewone sommen (${aantal.gewoon})` },
   { id: 'verhaal', label: (aantal) => `Verhaaltjes (${aantal.verhaal})` },
 ]
