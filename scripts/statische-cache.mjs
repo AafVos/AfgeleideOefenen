@@ -1,11 +1,12 @@
 // Na de OpenNext-bouw:
 // 1. de cache bij de statische bestanden leggen (de live bouw doet dat niet
 //    altijd zelf);
-// 2. de startpagina als los HTML-bestand klaarzetten;
+// 2. de startpagina en de theoriepagina's als los HTML-bestand klaarzetten;
 // 3. de worker klein houden voor een bezoeker zonder sessie. De zware
 //    Next-bundel start pas als die echt nodig is.
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import net from 'node:net'
 import path from 'node:path'
 
 const wortel = '.open-next'
@@ -18,30 +19,53 @@ const workerNext = path.join(wortel, 'worker-next.js')
 const merkteken = 'STARTPAGINA_SNEL'
 
 const ingang = `// ${merkteken}
-// Bezoekers zonder sessie krijgen de startpagina uit een bestand. De zware
-// Next-bundel (worker-next.js) wordt pas geladen als die echt nodig is.
-import { anoniemeStartpagina } from "../src/lib/startpagina-snel.ts";
+// Bezoekers zonder sessie krijgen de startpagina en de theoriepagina's uit
+// een bestand. De zware Next-bundel (worker-next.js) wordt pas geladen als
+// die echt nodig is. Iemand die is ingelogd gaat wel door die bundel, zodat
+// de kop klopt.
+import { anoniemeStartpagina, anoniemeTheorieBestand } from "../src/lib/startpagina-snel.ts";
 
 export { DOQueueHandler } from "./.build/durable-objects/queue.js";
 export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
 export { BucketCachePurge } from "./.build/durable-objects/bucket-cache-purge.js";
 
+function uitBestand(bestand) {
+  const headers = new Headers();
+  headers.set("content-type", "text/html; charset=utf-8");
+  headers.set("x-nextjs-prerender", "1");
+  return new Response(bestand.body, { status: 200, headers });
+}
+
 export default {
   async fetch(request, env, ctx) {
-    if (anoniemeStartpagina(request) && env.ASSETS) {
+    if (env.ASSETS && anoniemeStartpagina(request)) {
       const bestand = await env.ASSETS.fetch(
         "http://assets.local/cdn-cgi/start.html",
       );
       if (bestand.ok) {
-        const headers = new Headers();
-        headers.set("content-type", "text/html; charset=utf-8");
-        headers.set(
+        const antwoord = uitBestand(bestand);
+        antwoord.headers.set(
           "cache-control",
           "s-maxage=31536000, stale-while-revalidate=2592000",
         );
-        headers.set("x-nextjs-prerender", "1");
-        headers.set("x-startpagina", "bestand");
-        return new Response(bestand.body, { status: 200, headers });
+        antwoord.headers.set("x-startpagina", "bestand");
+        return antwoord;
+      }
+      await bestand.body?.cancel();
+    }
+
+    const theorie = anoniemeTheorieBestand(request);
+    if (env.ASSETS && theorie) {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/theorie/" + theorie,
+      );
+      if (bestand.ok) {
+        const antwoord = uitBestand(bestand);
+        // Niet openbaar cachen: een ingelogde leerling mag deze versie
+        // niet van de rand krijgen. Die gaat hieronder door de server.
+        antwoord.headers.set("cache-control", "private, no-store");
+        antwoord.headers.set("x-theorie", "bestand");
+        return antwoord;
       }
       await bestand.body?.cancel();
     }
@@ -90,6 +114,148 @@ function schrijfStartpagina() {
   const alsBestand = path.join(bestanden, 'nl/index.html')
   fs.mkdirSync(path.dirname(alsBestand), { recursive: true })
   fs.writeFileSync(alsBestand, metScript)
+}
+
+const THEORIE_WORTEL = 'src/app/[locale]/(paginas)/theorie'
+const THEORIE_TITEL = {
+  index: 'Differentiëren: alle regels op één pagina',
+}
+
+function theoriePaginas() {
+  const paginas = [
+    {
+      pad: '/nl/theorie',
+      bestand: 'index.html',
+      titel: THEORIE_TITEL.index,
+    },
+  ]
+  for (const item of fs.readdirSync(THEORIE_WORTEL, { withFileTypes: true })) {
+    if (!item.isDirectory()) continue
+    if (!fs.existsSync(path.join(THEORIE_WORTEL, item.name, 'page.tsx'))) continue
+    const bron = path.join('src/content/theory', `${item.name}.ts`)
+    const tekst = fs.readFileSync(bron, 'utf8')
+    const titel = tekst.match(/_TITEL = '([^']+)'/)
+    if (!titel) {
+      throw new Error(`Geen titel gevonden voor de theoriepagina ${item.name}.`)
+    }
+    paginas.push({
+      pad: `/nl/theorie/${item.name}`,
+      bestand: `${item.name}.html`,
+      titel: titel[1],
+    })
+  }
+  return paginas
+}
+
+function vrijePoort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer()
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const adres = server.address()
+      const poort = typeof adres === 'object' && adres ? adres.port : 0
+      server.close(() => resolve(poort))
+    })
+  })
+}
+
+function leegStroom(stroom) {
+  // De buffer moet leeg, anders blijft de server hangen. De tekst zelf
+  // schrijven we niet weg: daar kan bouw-uitvoer in staan die niet in een
+  // logboek hoort.
+  stroom?.on('data', () => {})
+}
+
+async function schrijfTheoriepaginas() {
+  const paginas = theoriePaginas()
+  const poort = await vrijePoort()
+  if (!poort || poort <= 3100) {
+    throw new Error('Geen vrije poort voor de theoriepagina’s.')
+  }
+  console.log(`Theoriepagina's ophalen op poort ${poort}.`)
+
+  const server = spawn(
+    process.execPath,
+    [
+      path.join('node_modules/next/dist/bin/next'),
+      'start',
+      '--port',
+      String(poort),
+      '--hostname',
+      '127.0.0.1',
+    ],
+    {
+      detached: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env,
+    },
+  )
+  leegStroom(server.stdout)
+  leegStroom(server.stderr)
+
+  const stop = () => {
+    if (!server.pid) return
+    try {
+      process.kill(-server.pid, 'SIGTERM')
+    } catch {
+      try {
+        process.kill(server.pid, 'SIGTERM')
+      } catch {
+        // De server is al gestopt.
+      }
+    }
+  }
+
+  try {
+    const einde = Date.now() + 90_000
+    let laatste = 'geen antwoord'
+    let klaar = false
+    while (Date.now() < einde) {
+      if (server.exitCode != null) break
+      try {
+        const antwoord = await fetch(`http://127.0.0.1:${poort}/nl/theorie`, {
+          signal: AbortSignal.timeout(5_000),
+        })
+        if (antwoord.ok) {
+          klaar = true
+          await antwoord.body?.cancel()
+          break
+        }
+        laatste = `status ${antwoord.status}`
+        await antwoord.body?.cancel()
+      } catch (fout) {
+        laatste = fout instanceof Error ? fout.message : String(fout)
+      }
+      await new Promise((r) => setTimeout(r, 400))
+    }
+    if (!klaar) {
+      throw new Error(
+        `De theoriepagina's konden niet worden opgebouwd (${laatste}).`,
+      )
+    }
+
+    const map = path.join(bestanden, 'cdn-cgi/theorie')
+    fs.mkdirSync(map, { recursive: true })
+    for (const pagina of paginas) {
+      const antwoord = await fetch(`http://127.0.0.1:${poort}${pagina.pad}`)
+      if (!antwoord.ok) {
+        throw new Error(`${pagina.pad} gaf status ${antwoord.status}.`)
+      }
+      const html = await antwoord.text()
+      if (!html.startsWith('<!DOCTYPE')) {
+        throw new Error(`${pagina.pad} heeft geen HTML.`)
+      }
+      if (!html.includes(pagina.titel)) {
+        throw new Error(`${pagina.pad} mist de titel.`)
+      }
+      if (!html.includes('href="/nl/inloggen"')) {
+        throw new Error(`${pagina.pad} is niet de versie zonder sessie.`)
+      }
+      fs.writeFileSync(path.join(map, pagina.bestand), html)
+    }
+  } finally {
+    stop()
+  }
 }
 
 function bundelZwareWorker(bron) {
@@ -158,5 +324,6 @@ if (!fs.existsSync(cache)) {
 
 fs.cpSync(cache, cacheBijBestanden, { recursive: true })
 schrijfStartpagina()
+await schrijfTheoriepaginas()
 maakKleineIngang()
-console.log('Startpagina staat klaar als los bestand.')
+console.log('Startpagina en theoriepagina’s staan klaar als los bestand.')
