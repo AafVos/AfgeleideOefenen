@@ -257,7 +257,9 @@ begin
     raise warning 'Geen Vault in deze database; de welkomstmail-webhook blijft lokaal uit.';
     return;
   end if;
-  delete from vault.secrets where name in ('webhook_secret', 'webhook_basis_url');
+  delete from vault.secrets where name in (
+    'webhook_secret', 'webhook_basis_url', 'meet_schuilnaam_geheim'
+  );
   perform vault.create_secret(
     'e2e-nep-geheim', 'webhook_secret',
     'x-webhook-secret voor /api/webhooks/* (alleen lokaal)'
@@ -265,6 +267,12 @@ begin
   perform vault.create_secret(
     'http://host.docker.internal:3177', 'webhook_basis_url',
     'Waar /api/webhooks/* staat (alleen lokaal)'
+  );
+  -- Dezelfde waarde als MEET_SCHUILNAAM_GEHEIM in .env.local.example, zodat
+  -- de site en de overzichten lokaal dezelfde schuilnaam uitrekenen.
+  perform vault.create_secret(
+    'lokaal-nep-schuilnaamgeheim', 'meet_schuilnaam_geheim',
+    'Geheim voor de schuilnaam in de klikmeting (alleen lokaal)'
   );
 end
 $$;

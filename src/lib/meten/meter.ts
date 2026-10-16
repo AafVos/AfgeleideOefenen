@@ -25,6 +25,7 @@ import {
   type Klikplek,
   type MeetSoort,
 } from './gebeurtenis'
+import { EIGEN_MELDING, type EigenMelding } from './melden'
 
 const SLEUTEL = 'meet-sessie'
 const ADRES = '/api/meet'
@@ -74,6 +75,23 @@ function sessieId(): string | null {
 
 function huidigPad(): string {
   return schoonPad(window.location.pathname, window.location.search)
+}
+
+/**
+ * Wat er op deze pagina scrolt. Niet het document: de hele site staat in een
+ * blok van schermhoogte waarin alleen het midden schuift (zie de lay-out in
+ * `src/app/[locale]`). Scrolt er niets, dan paste de pagina in één scherm.
+ */
+function scrollBak(): Element | null {
+  const kandidaten = [
+    document.querySelector('[data-oefen-scroll]'),
+    document.querySelector('main'),
+    document.scrollingElement,
+  ]
+  for (const bak of kandidaten) {
+    if (bak && bak.scrollHeight > bak.clientHeight + 4) return bak
+  }
+  return null
 }
 
 /** De tekst van een knop of link, maar nooit die van een invoerveld. */
@@ -160,7 +178,10 @@ export function startMeten(): Meter | null {
     // De 404-pagina zet een merkteken neer; zo tellen we die zonder de
     // serverlogs te hoeven lezen.
     if (document.querySelector('[data-meet-404]')) zet('fout', '404')
-    scrollKijken()
+    // Niet meteen kijken hoe hoog de pagina is: na een sprong binnen de app
+    // staat de nieuwe inhoud er vaak nog niet. Anders lijkt elke pagina in
+    // één scherm te passen.
+    window.setTimeout(scrollKijken, 600)
   }
 
   function klikKijken(gebeurtenis: MouseEvent) {
@@ -198,21 +219,24 @@ export function startMeten(): Meter | null {
   }
 
   function scrollKijken() {
-    const hoogte = Math.max(
-      document.documentElement.scrollHeight,
-      document.body?.scrollHeight ?? 0,
-    )
-    if (hoogte <= 0) return
-    const gezien = window.scrollY + window.innerHeight
-    const deel = Math.round((gezien / hoogte) * 100)
+    const bak = scrollBak()
 
-    // Past de pagina in één scherm, dan is er niets te scrollen. Dan is één
-    // gebeurtenis genoeg; de overzichten tellen 100 ook mee bij 25, 50 en 75.
-    const past = hoogte <= window.innerHeight + 4
+    // Niets te scrollen: de hele pagina paste in één scherm. Eén gebeurtenis
+    // is dan genoeg; de overzichten tellen 100 ook mee bij 25, 50 en 75.
+    if (!bak) {
+      if (gehaaldeStappen.has(100)) return
+      for (const stap of SCROLL_STAPPEN) gehaaldeStappen.add(stap)
+      zet('scroll', null, 100)
+      return
+    }
+
+    const deel = Math.round(
+      ((bak.scrollTop + bak.clientHeight) / bak.scrollHeight) * 100,
+    )
     for (const stap of SCROLL_STAPPEN) {
       if (deel >= stap && !gehaaldeStappen.has(stap)) {
         gehaaldeStappen.add(stap)
-        if (!past || stap === 100) zet('scroll', null, stap)
+        zet('scroll', null, stap)
       }
     }
   }
@@ -238,16 +262,28 @@ export function startMeten(): Meter | null {
     zet('fout', 'belofte')
   }
 
+  /** Een melding uit de site zelf, bijvoorbeeld een geslaagde aanmelding. */
+  function eigenMelding(gebeurtenis: Event) {
+    const inhoud = (gebeurtenis as CustomEvent<Partial<EigenMelding>>).detail
+    if (inhoud?.soort !== 'registratie') return
+    zet('registratie', inhoud.doel ?? null)
+    // Niet wachten op de klok: hierna gaat de leerling vaak meteen weg.
+    verstuur()
+  }
+
   function zichtbaarheid() {
     if (document.visibilityState === 'hidden') verstuur()
   }
 
   document.addEventListener('click', klikKijken, true)
-  window.addEventListener('scroll', scrollGeruis, { passive: true })
+  // In de opvangfase, want scrollen van een blok binnen de pagina borrelt
+  // niet omhoog naar window.
+  document.addEventListener('scroll', scrollGeruis, { capture: true, passive: true })
   window.addEventListener('error', foutKijken)
   window.addEventListener('unhandledrejection', beloftenKijken)
   document.addEventListener('visibilitychange', zichtbaarheid)
   window.addEventListener('pagehide', verstuur)
+  window.addEventListener(EIGEN_MELDING, eigenMelding)
 
   const klok = window.setInterval(verstuur, WACHTTIJD)
 
@@ -259,11 +295,12 @@ export function startMeten(): Meter | null {
       gestopt = true
       window.clearInterval(klok)
       document.removeEventListener('click', klikKijken, true)
-      window.removeEventListener('scroll', scrollGeruis)
+      document.removeEventListener('scroll', scrollGeruis, { capture: true })
       window.removeEventListener('error', foutKijken)
       window.removeEventListener('unhandledrejection', beloftenKijken)
       document.removeEventListener('visibilitychange', zichtbaarheid)
       window.removeEventListener('pagehide', verstuur)
+      window.removeEventListener(EIGEN_MELDING, eigenMelding)
       verstuur()
     },
   }

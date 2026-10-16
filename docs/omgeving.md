@@ -21,6 +21,7 @@ bestand, in een commit of in een melding.
 | `NOTIFY_EMAIL` | Ontvanger van seintjes en berichten van leerlingen | runtime | ja | ja |
 | `EMAIL_FROM` | Afzender; anders `no-reply` op het domein van de site | runtime | nee | nee |
 | `WEBHOOK_SECRET` | Supabase mag de webhooks aanroepen | runtime | ja | ja |
+| `MEET_SCHUILNAAM_GEHEIM` | Schuilnaam in de klikmeting; zelfde waarde als `meet_schuilnaam_geheim` in de Vault | runtime | ja | nee |
 
 **Bouw** betekent: Workers Builds zet de naam tijdens het bouwen in de site.
 `NEXT_PUBLIC_`-waarden zitten daarna in de pagina die de browser krijgt. Een

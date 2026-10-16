@@ -70,6 +70,7 @@ export default async function PrivacyPage() {
 
         <h3 className="mt-8 font-serif text-xl text-text">{t('metenH3')}</h3>
         <p className="mt-3">{t('metenBody')}</p>
+        <p className="mt-3">{t('metenSchuilnaam')}</p>
       </Sectie>
 
       <Sectie titel={t('whereH2')}>
