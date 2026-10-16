@@ -133,11 +133,17 @@ export function TheorieClient({
   }
 
   const toonHoofdstuk = useCallback((slug: string, elementId: string | null) => {
-    if (!window.matchMedia(desktopQuery).matches) setSidebarChoice(false)
+    const mobiel = !window.matchMedia(desktopQuery).matches
+    // Op een telefoon klapt de lijst eerst dicht. Scroll pas daarna, anders
+    // schuift het hoofdstuk mee omhoog en verdwijnt de kop uit beeld.
+    if (mobiel) setSidebarChoice(false)
     setActiveSlug(slug)
-    if (elementId) {
+    if (!elementId) return
+    const scroll = () => {
       document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+    if (mobiel) requestAnimationFrame(() => requestAnimationFrame(scroll))
+    else scroll()
   }, [])
 
   const pasAnkerToe = useCallback((hash: string) => {
