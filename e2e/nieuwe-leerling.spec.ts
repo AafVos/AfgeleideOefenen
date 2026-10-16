@@ -172,15 +172,10 @@ test('een nieuwe leerling komt van registreren tot zijn eerste antwoord @telefoo
     ).toBeVisible()
   }
 
-  // 6. De eerste stappen: Aaf stelt zich voor. Op een breed scherm start de
-  //    rondleiding vanzelf, op telefoonformaat staat Aaf rechtsonder klaar.
-  //    (Welke van de twee, controleert `rondleiding.spec.ts` in detail.)
-  if ((page.viewportSize()?.width ?? 0) >= 900) {
-    await expect(page.getByRole('dialog')).toContainText('Hoi! Ik ben Aaf.')
-    await sluitRondleiding(page)
-  } else {
-    await expect(page.getByRole('button', { name: 'Vraag het Aaf' })).toBeVisible()
-  }
+  // 6. De eerste stappen: Aaf stelt zich voor, op computer en op telefoon.
+  //    (De rest van de rondleiding controleert `rondleiding.spec.ts`.)
+  await expect(page.getByRole('dialog')).toContainText('Hoi! Ik ben Aaf.')
+  await sluitRondleiding(page)
 
   await expect(
     page.getByRole('button', { name: 'Nakijken', exact: true }),

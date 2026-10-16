@@ -119,7 +119,7 @@ export async function logUit(page: Page, naamInMenu: string) {
  * Klik de rondleiding weg die bij een kersverse leerling vanzelf start, zodat
  * hij de knoppen eronder niet afdekt.
  *
- * Hij start alleen op een breed scherm, en alleen bij een leerling die hem
+ * Hij start op computer en telefoon, maar alleen bij een leerling die hem
  * nog nooit gezien heeft (zie `rondleiding.spec.ts`). Komt hij niet, dan valt
  * er ook niets weg te klikken.
  */

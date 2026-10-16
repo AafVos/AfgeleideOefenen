@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useEffect, useMemo, useState } from 'react'
+import { useActionState, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 
 import { askAafAction, type FeedbackState } from '@/app/[locale]/(paginas)/feedback/actions'
@@ -10,14 +11,23 @@ import { markTourSeenAction } from '@/lib/tour-actions'
 /** Breedte van de tekstballon; op een smal scherm krimpt hij mee. */
 const GUIDE_WIDTH = 400
 
-/**
- * Vanaf deze breedte staan Theorie, Oefenen en de rest in de bovenbalk. Is
- * het scherm smaller, dan zitten ze in het menu en valt er niets te omringen:
- * dan loopt de rondleiding als losse tekstballonnen midden in beeld.
- */
-const BREED_SCHERM = 900
+/** Het hoofdstuk dat de rondleiding op de oefenpagina opent. */
+const VOORBEELD = '/oefenen?chapter=h2'
 
-type Step = { target?: string; text: string }
+/** Zodat een nieuwe pagina de rondleiding niet terugzet naar het begin. */
+const STAP_SLEUTEL = 'aaf-rondleiding-stap'
+
+type Stap = {
+  tekst: string
+  /** `data-tour` van het element waar de ballon bij hoort. */
+  doel?: string
+  /** Pad zonder taal. Een vraagteken-parameter die hier ontbreekt, mag er ook niet staan. */
+  pad?: string
+  /** Open de eerste tegel van het voorbeeldhoofdstuk. */
+  eersteOpgave?: boolean
+  /** Ontbreekt het element, dan slaan we deze stap over. */
+  optioneel?: boolean
+}
 
 /** Waar de tekstballon staat, hoe breed hij is, en of hij bij een item hangt. */
 type Plek = { x: number; y: number; breedte: number; bijItem: boolean }
@@ -148,136 +158,343 @@ function Aaf({ size = 84 }: { size?: number }) {
   )
 }
 
+function leesStap(): number | null {
+  try {
+    const n = Number(sessionStorage.getItem(STAP_SLEUTEL))
+    return Number.isInteger(n) && n >= 0 ? n : null
+  } catch {
+    return null
+  }
+}
+
+function bewaarStap(stap: number) {
+  try {
+    sessionStorage.setItem(STAP_SLEUTEL, String(stap))
+  } catch {
+    // Een volle of geblokkeerde opslag mag de rondleiding niet stoppen.
+  }
+}
+
+function wisStap() {
+  try {
+    sessionStorage.removeItem(STAP_SLEUTEL)
+  } catch {
+    // Zie bewaarStap.
+  }
+}
+
+function zichtbaar(el: Element): el is HTMLElement {
+  if (!(el instanceof HTMLElement)) return false
+  if (el.hidden || el.closest('[hidden]')) return false
+  const stijl = getComputedStyle(el)
+  if (stijl.display === 'none' || stijl.visibility === 'hidden') return false
+  const r = el.getBoundingClientRect()
+  return r.width >= 8 && r.height >= 8
+}
+
+function vindDoel(doel: string): HTMLElement | null {
+  for (const el of document.querySelectorAll(`[data-tour="${doel}"]`)) {
+    if (zichtbaar(el)) return el
+  }
+  return null
+}
+
+function opPad(pad: string): boolean {
+  const hier = new URL(window.location.href)
+  const doel = new URL(pad, window.location.origin)
+  if (!hier.pathname.endsWith(doel.pathname)) return false
+  for (const [sleutel, waarde] of doel.searchParams) {
+    if (hier.searchParams.get(sleutel) !== waarde) return false
+  }
+  if (!doel.searchParams.has('q') && hier.searchParams.has('q')) return false
+  return true
+}
+
+function wachtOp<T>(check: () => T | null, ms: number, stop: () => boolean): Promise<T | null> {
+  const tot = Date.now() + ms
+  return new Promise((resolve) => {
+    function kijk() {
+      if (stop()) {
+        resolve(null)
+        return
+      }
+      const gevonden = check()
+      if (gevonden) {
+        resolve(gevonden)
+        return
+      }
+      if (Date.now() >= tot) {
+        resolve(null)
+        return
+      }
+      window.setTimeout(kijk, 200)
+    }
+    kijk()
+  })
+}
+
+function berekenPlek(el: HTMLElement | null, hoogte: number, breedte: number): Plek {
+  const marge = 8
+  if (!el) {
+    return {
+      x: Math.max(marge, (window.innerWidth - breedte) / 2),
+      y: Math.max(marge, (window.innerHeight - hoogte) / 2),
+      breedte,
+      bijItem: false,
+    }
+  }
+  const r = el.getBoundingClientRect()
+  const onder = r.bottom + 12
+  const boven = r.top - 12 - hoogte
+  const pastOnder = onder + hoogte <= window.innerHeight - marge
+  const pastBoven = boven >= marge
+  let y = pastOnder ? onder : pastBoven ? boven : Math.max(marge, window.innerHeight - hoogte - marge)
+  const dekt = y < r.bottom && y + hoogte > r.top
+  if (dekt) {
+    y = window.innerHeight - r.bottom >= r.top ? onder : boven
+  }
+  y = Math.max(marge, Math.min(y, window.innerHeight - hoogte - marge))
+  const x = Math.max(marge, Math.min(r.left, window.innerWidth - breedte - marge))
+  return { x, y, breedte, bijItem: true }
+}
+
 export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
   const t = useTranslations('Tour')
+  const router = useRouter()
+  const pathname = usePathname()
+  const opNaamPagina = pathname.includes('/gebruikersnaam')
   const [phase, setPhase] = useState<'hidden' | 'tour' | 'rest'>('hidden')
   const [stepIdx, setStepIdx] = useState(0)
+  const [wacht, setWacht] = useState(true)
   const [plek, setPlek] = useState<Plek | null>(null)
+  const doelRef = useRef<HTMLElement | null>(null)
+  const doosRef = useRef<HTMLDivElement | null>(null)
+  const routerRef = useRef(router)
+  const geduwd = useRef<string | null>(null)
 
-  const steps: Step[] = useMemo(
+  const steps: Stap[] = useMemo(
     () => [
-      { text: t('welcome') },
-      { target: 'theorie', text: t('stepTheorie') },
-      { target: 'videos', text: t('stepVideos') },
-      { target: 'oefenen', text: t('stepOefenen') },
-      { target: 'zelftoets', text: t('stepZelfToets') },
-      { target: 'voortgang', text: t('stepVoortgang') },
-      { text: t('done') },
+      { tekst: t('welcome') },
+      { doel: 'menu', tekst: t('stepMenu') },
+      { doel: 'hoofdstukken', pad: VOORBEELD, tekst: t('stepHoofdstukken') },
+      { doel: 'tegels', pad: VOORBEELD, tekst: t('stepTegels') },
+      { doel: 'soort', pad: VOORBEELD, optioneel: true, tekst: t('stepFilter') },
+      { doel: 'antwoord', eersteOpgave: true, tekst: t('stepAntwoord') },
+      { doel: 'nakijken', tekst: t('stepNakijken') },
+      { doel: 'beheersing', tekst: t('stepBeheersing') },
+      { doel: 'delen', pad: VOORBEELD, tekst: t('stepDelen') },
+      { doel: 'voortgang', tekst: t('done') },
     ],
     [t],
   )
+  const stepsRef = useRef(steps)
+  useEffect(() => {
+    stepsRef.current = steps
+    routerRef.current = router
+  }, [steps, router])
   const step = steps[stepIdx]!
   const isLast = stepIdx === steps.length - 1
 
-  // Eerste keer inloggen: start de rondleiding, maar alleen op een breed
-  // scherm — daar staan de items waar hij naar wijst ook echt in beeld. Op
-  // een telefoon gaat Aaf meteen rechtsonder staan, zodat je haar altijd iets
-  // kunt vragen of de rondleiding alsnog kunt opvragen (zie AFG-101).
+  // Pas ná de gebruikersnaam. Op die pagina ligt de ballon anders over het
+  // formulier. Daarna start hij op computer én telefoon: de oefenpagina
+  // legt zichzelf uit, ook als het menu is ingeklapt.
   useEffect(() => {
+    if (opNaamPagina) return
     const id = window.setTimeout(() => {
-      setPhase(!tourSeen && window.innerWidth >= BREED_SCHERM ? 'tour' : 'rest')
+      if (tourSeen) {
+        wisStap()
+        setPhase('rest')
+        return
+      }
+      const bewaard = leesStap()
+      if (bewaard != null) setStepIdx(Math.min(bewaard, steps.length - 1))
+      setPhase('tour')
     }, 700)
     return () => window.clearTimeout(id)
-  }, [tourSeen])
+  }, [tourSeen, opNaamPagina, steps.length])
 
-  // Plaats de gids bij de actieve stap en zet een ring om het doelwit
+  useEffect(() => {
+    if (phase === 'tour') bewaarStap(stepIdx)
+  }, [phase, stepIdx])
+
   useEffect(() => {
     if (phase !== 'tour') return
+    let stop = false
+    const gestopt = () => stop
+    doelRef.current = null
 
-    function place() {
-      document.querySelectorAll('.tour-ring').forEach((el) => el.classList.remove('tour-ring'))
-      // Op een smal scherm blijft de ballon binnen beeld in plaats van er
-      // half naast te hangen.
-      const breedte = Math.min(GUIDE_WIDTH, window.innerWidth - 16)
-      const s = steps[stepIdx]!
-      if (s.target && window.innerWidth >= BREED_SCHERM) {
-        const el = document.querySelector(`[data-tour="${s.target}"]`)
-        if (el) {
-          el.classList.add('tour-ring')
-          const r = el.getBoundingClientRect()
-          setPlek({
-            x: Math.max(8, Math.min(r.left + r.width / 2 - breedte / 2, window.innerWidth - breedte - 8)),
-            y: r.bottom + 14,
-            breedte,
-            bijItem: true,
-          })
-          return
+    function gaNaar(doel: string) {
+      const sleutel = `${stepIdx}:${doel}`
+      if (geduwd.current === sleutel) return
+      geduwd.current = sleutel
+      routerRef.current.push(doel)
+    }
+
+    async function klaarzetten() {
+      setWacht(true)
+      setPlek(null)
+      const stap = stepsRef.current[stepIdx]
+      if (!stap || gestopt()) return
+
+      if (stap.eersteOpgave) {
+        if (!vindDoel('antwoord')) {
+          const link = await wachtOp(() => {
+            const tegel = vindDoel('tegels')
+            const a = tegel?.querySelector('a')
+            return a instanceof HTMLAnchorElement ? a : null
+          }, 8000, gestopt)
+          if (gestopt()) return
+          const href = link?.getAttribute('href')
+          if (href) {
+            const absoluut = new URL(href, window.location.origin)
+            const hier = `${window.location.pathname}${window.location.search}`
+            const doel = `${absoluut.pathname}${absoluut.search}`
+            if (hier !== doel) gaNaar(doel)
+          }
         }
+      } else if (stap.pad && !opPad(stap.pad)) {
+        const taal = window.location.pathname.split('/').filter(Boolean)[0] || 'nl'
+        gaNaar(`/${taal}${stap.pad}`)
       }
-      setPlek({
-        x: Math.max(8, (window.innerWidth - breedte) / 2),
-        y: Math.max(120, window.innerHeight * 0.34),
-        breedte,
-        bijItem: false,
-      })
+
+      if (stap.pad) {
+        await wachtOp(() => (opPad(stap.pad!) ? document.body : null), 8000, gestopt)
+        if (gestopt()) return
+      }
+
+      // Na een paginawissel even wachten tot het element er is. Zonder
+      // wissel (het menu, of voortgang op een telefoon) niet blijven hangen:
+      // dan komt de ballon in het midden.
+      const wachttijd = stap.optioneel ? 2000 : stap.pad || stap.eersteOpgave ? 8000 : 800
+      const el = stap.doel ? await wachtOp(() => vindDoel(stap.doel!), wachttijd, gestopt) : null
+      if (gestopt()) return
+
+      if (stap.doel && !el && stap.optioneel && stepIdx < stepsRef.current.length - 1) {
+        setStepIdx((i) => i + 1)
+        return
+      }
+
+      if (el) el.scrollIntoView({ block: 'center', inline: 'nearest' })
+      doelRef.current = el
+      setWacht(false)
     }
 
-    const raf = requestAnimationFrame(place)
-    window.addEventListener('resize', place)
+    void klaarzetten()
     return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', place)
+      stop = true
+    }
+    // steps en router via een ref: een nieuw array-object mag deze
+    // voorbereiding niet afbreken, anders blijft het scherm gedimd
+    // zonder ballon.
+  }, [phase, stepIdx])
+
+  useLayoutEffect(() => {
+    if (phase !== 'tour' || wacht) return
+
+    function plaats() {
+      document.querySelectorAll('.tour-ring').forEach((el) => el.classList.remove('tour-ring'))
+      const el = doelRef.current
+      if (el) el.classList.add('tour-ring')
+      const breedte = Math.min(GUIDE_WIDTH, window.innerWidth - 16)
+      const hoogte = doosRef.current?.offsetHeight ?? 200
+      setPlek(berekenPlek(el, hoogte, breedte))
+    }
+
+    plaats()
+    window.addEventListener('resize', plaats)
+    window.addEventListener('scroll', plaats, true)
+    return () => {
+      window.removeEventListener('resize', plaats)
+      window.removeEventListener('scroll', plaats, true)
       document.querySelectorAll('.tour-ring').forEach((el) => el.classList.remove('tour-ring'))
     }
-  }, [phase, stepIdx, steps])
+  }, [phase, wacht, stepIdx])
 
   function finish() {
+    wisStap()
     void markTourSeenAction()
     setPhase('rest')
     setStepIdx(0)
   }
 
+  function ga(naar: number) {
+    setPlek(null)
+    setWacht(true)
+    setStepIdx(naar)
+  }
+
   function restart() {
+    bewaarStap(0)
     setStepIdx(0)
+    setPlek(null)
+    setWacht(true)
     setPhase('tour')
   }
+
+  if (opNaamPagina) return null
 
   if (phase === 'rest') {
     return <AafHelper onRestartTour={restart} />
   }
 
-  if (phase !== 'tour' || !plek) return null
+  if (phase !== 'tour') return null
+
+  const breedte = plek?.breedte ?? Math.min(GUIDE_WIDTH, typeof window === 'undefined' ? GUIDE_WIDTH : window.innerWidth - 16)
 
   return (
     <>
-      {/* Dim de pagina; hangt de ballon niet bij een item, dan het hele scherm */}
-      <div
-        className={
-          plek.bijItem
-            ? 'fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
-            : 'fixed inset-0 z-40 bg-[#101820]/30'
-        }
-        aria-hidden
-      />
+      {!wacht && (
+        <div
+          className={
+            plek?.bijItem
+              ? 'fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
+              : 'fixed inset-0 z-40 bg-[#101820]/30'
+          }
+          aria-hidden
+        />
+      )}
 
       <div
+        ref={doosRef}
         role="dialog"
         aria-label={t('restart')}
-        className="fixed left-0 top-0 z-50 flex items-start gap-1 transition-transform duration-500 ease-out"
-        style={{ transform: `translate(${plek.x}px, ${plek.y}px)`, width: plek.breedte }}
+        className={`fixed left-0 top-0 z-50 flex items-start gap-1 ${breedte < 360 ? 'flex-col' : ''}`}
+        style={
+          plek
+            ? { transform: `translate(${plek.x}px, ${plek.y}px)`, width: plek.breedte }
+            : { visibility: 'hidden', width: breedte }
+        }
       >
         <div className="shrink-0">
-          <Aaf size={plek.breedte < 360 ? 56 : 72} />
+          <Aaf size={breedte < 360 ? 56 : 72} />
         </div>
         <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3 shadow-xl">
-          <p className="text-sm leading-relaxed text-text">{step.text}</p>
+          <p className="text-sm leading-relaxed text-text">{step.tekst}</p>
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
             <button
               type="button"
-              onClick={() => (isLast ? finish() : setStepIdx((i) => i + 1))}
-              className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white transition hover:bg-accent/90"
+              onClick={() => ga(stepIdx - 1)}
+              disabled={stepIdx === 0 || wacht}
+              className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-text-muted disabled:opacity-40"
+            >
+              {t('back')}
+            </button>
+            <button
+              type="button"
+              onClick={() => (isLast ? finish() : ga(stepIdx + 1))}
+              disabled={wacht}
+              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition hover:bg-accent/90 disabled:opacity-60"
             >
               {isLast ? t('finish') : stepIdx === 0 ? t('start') : t('next')}
             </button>
-            {!isLast && (
-              <button
-                type="button"
-                onClick={finish}
-                className="text-xs font-medium text-text-muted underline-offset-2 hover:text-text hover:underline"
-              >
-                {t('skip')}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={finish}
+              disabled={wacht}
+              className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-text-muted underline-offset-2 hover:text-text hover:underline disabled:opacity-40"
+            >
+              {t('skip')}
+            </button>
             <span className="ml-auto text-xs tabular-nums text-text-muted">
               {stepIdx + 1} / {steps.length}
             </span>

@@ -866,6 +866,10 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
         const heeftZichtbaar =
           (hoofdstukInhoud?.secties.length ?? 0) > 0 ||
           paragrafen.some((p) => p.blokken.some((b) => b.inhoud.secties.length > 0))
+        const voorbeeld = h.chapter.slug === 'h2'
+        const eersteBlokId = paragrafen
+          .flatMap((p) => p.blokken)
+          .find((b) => b.inhoud.secties.length > 0)?.blok.id
         return (
           <section
             key={h.chapter.id}
@@ -918,6 +922,7 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                                 verhaal={inhoud.aantal.verhaal}
                                 waarde={soort}
                                 onKies={onKiesSoort}
+                                rondleiding={voorbeeld}
                               />
                             )}
                             <ExerciseTileGrid
@@ -926,6 +931,7 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                               activeQuestionId={null}
                               onKies={(id) => onKies(id, basis)}
                               labels={labels}
+                              rondleiding={voorbeeld && blok.id === eersteBlokId}
                             />
                           </>
                         )}
@@ -943,6 +949,7 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                     verhaal={hoofdstukInhoud.aantal.verhaal}
                     waarde={soort}
                     onKies={onKiesSoort}
+                    rondleiding={voorbeeld && !eersteBlokId}
                   />
                 )}
                 <ExerciseTileGrid
@@ -962,6 +969,7 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                     )
                   }
                   labels={labels}
+                  rondleiding={voorbeeld && !eersteBlokId}
                 />
               </>
             )}
@@ -1383,6 +1391,7 @@ function BlokWeergave({
                         chapter: h.chapter.slug,
                       })
                     }
+                    data-tour={h.chapter.slug === 'h2' ? 'hoofdstukken' : undefined}
                     aria-current={actief ? 'true' : undefined}
                     className={
                       actief
@@ -1419,6 +1428,7 @@ function BlokWeergave({
                       chapter: h.chapter.slug,
                     })
                   }}
+                  data-tour={h.chapter.slug === 'h2' ? 'hoofdstukken' : undefined}
                   className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2"
                   aria-expanded={open}
                 >
@@ -1652,6 +1662,7 @@ function BlokWeergave({
         <button
           type="button"
           onClick={() => setBoomOpen(true)}
+          data-tour="hoofdstukken"
           className="sticky top-0 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium [overflow-anchor:none] lg:hidden"
         >
           <span className="min-w-0 truncate">{kop}</span>

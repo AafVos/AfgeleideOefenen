@@ -268,12 +268,12 @@ jobs:
           exit "$code"
 
       # Sinds AFG-108 loopt hier ook de weg van een nieuwe leerling doorheen:
-      # registreren, de mail ophalen, bevestigen, wachtwoord vergeten. Dat
-      # kost een paar minuten meer dan de oude set, vandaar acht in plaats
-      # van vijf.
+      # registreren, de mail ophalen, bevestigen, wachtwoord vergeten. De
+      # rondleiding over de oefenpagina (AFG-369) komt daar nog bij, op
+      # computer én telefoon. Vandaar tien minuten.
       - name: Weg van een leerling nalopen
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
-        timeout-minutes: 8
+        timeout-minutes: 10
         run: npm run test:e2e
 
       - name: Uitslag bewaren

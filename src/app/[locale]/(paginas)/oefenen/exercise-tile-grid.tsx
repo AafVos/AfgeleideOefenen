@@ -22,6 +22,7 @@ function TileGrid({
   activeQuestionId,
   onKies,
   labels,
+  rondleiding = false,
 }: {
   baseHref: string
   tiles: NewExerciseTile[]
@@ -33,10 +34,12 @@ function TileGrid({
     notTried: string
     exercise: string
   }
+  /** De eerste tegel is het doelwit van de rondleiding. */
+  rondleiding?: boolean
 }) {
   return (
     <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {tiles.map((tile) => {
+      {tiles.map((tile, index) => {
         const tileHref = `${baseHref}&q=${encodeURIComponent(tile.questionId)}`
         const active = activeQuestionId === tile.questionId
         const kaart = cn(
@@ -48,7 +51,11 @@ function TileGrid({
         )
         const bron = tile.sourceLabel
         return (
-          <li key={tile.questionId} className={kaart}>
+          <li
+            key={tile.questionId}
+            className={kaart}
+            data-tour={rondleiding && index === 0 ? 'tegels' : undefined}
+          >
             {bron ? (
               <div className="px-3 pt-2">
                 {tile.sourceUrl ? (
@@ -115,12 +122,15 @@ export function ExerciseTileGrid({
   activeQuestionId,
   onKies,
   labels,
+  rondleiding = false,
 }: {
   baseHref: string
   sections: TileSection[]
   activeQuestionId: string | null
   /** Gewone klik: opgave openen zonder de pagina opnieuw te tekenen. */
   onKies?: (questionId: string) => void
+  /** De eerste tegel is het doelwit van de rondleiding. */
+  rondleiding?: boolean
   labels: {
     heading: string
     lastCorrect: string
@@ -138,6 +148,10 @@ export function ExerciseTileGrid({
     notTried: labels.notTried,
     exercise: labels.exercise,
   }
+
+  const eersteMetTegels = sections.findIndex((section) =>
+    section.subSections.some((sub) => sub.tiles.length > 0),
+  )
 
   return (
     <section className="mt-6" aria-label={labels.heading}>
@@ -165,6 +179,11 @@ export function ExerciseTileGrid({
                 activeQuestionId={activeQuestionId}
                 onKies={onKies}
                 labels={tileLabels}
+                rondleiding={
+                  rondleiding &&
+                  si === eersteMetTegels &&
+                  ci === section.subSections.findIndex((item) => item.tiles.length > 0)
+                }
               />
             </div>
           ))}

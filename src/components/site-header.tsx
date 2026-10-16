@@ -129,7 +129,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
           {t('brand')}<span className="text-accent">{t('brandSuffix')}</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 text-sm md:flex">
+        <nav className="hidden items-center gap-1 text-sm md:flex" data-tour="menu">
           {theorieDropdown}
           {videosLink}
           <NavDropdown
