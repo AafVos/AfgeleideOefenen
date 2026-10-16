@@ -42,7 +42,7 @@ export default async function schoneStart() {
   await leegSitepostbus()
 
   // Welke vragen horen bij het testhoofdstuk?
-  const ONDERWERPEN = ['e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking']
+  const ONDERWERPEN = ['e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking', 'e2e_soort']
   const { data: topics, error: topicError } = await db
     .from('topics_new')
     .select('id, slug')

@@ -39,11 +39,64 @@ import {
 } from '@/lib/practice/oefenen-indeling'
 
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
+import {
+  leesSoort,
+  pastBijSoort,
+  teltSoorten,
+  toonSoortFilter,
+  type SoortKeuze,
+} from '@/lib/practice/soort-filter'
 import { getVideoForCluster } from '@/lib/videos'
 
 import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
 import { laadOpgave } from './laad-opgave'
+import { SoortFilter } from './soort-filter'
 import { StudyCard } from './study-card'
+
+const SOORT_SLEUTEL = 'oefenen-soort'
+const SOORT_EVENT = 'oefenen-soort'
+
+function subscribeSoort(onChange: () => void) {
+  window.addEventListener('popstate', onChange)
+  window.addEventListener(SOORT_EVENT, onChange)
+  return () => {
+    window.removeEventListener('popstate', onChange)
+    window.removeEventListener(SOORT_EVENT, onChange)
+  }
+}
+
+/** Adres gaat voor. Staat daar niets, dan de keuze van de vorige keer. */
+function leesSoortNu(): SoortKeuze {
+  const uitAdres = leesSoort(new URLSearchParams(window.location.search).get('soort'))
+  if (uitAdres) return uitAdres
+  try {
+    return leesSoort(localStorage.getItem(SOORT_SLEUTEL)) ?? 'alles'
+  } catch {
+    return 'alles'
+  }
+}
+
+function useSoortKeuze(): [SoortKeuze, (soort: SoortKeuze) => void] {
+  const soort = useSyncExternalStore(subscribeSoort, leesSoortNu, () => 'alles' as const)
+  const kies = useCallback((volgende: SoortKeuze) => {
+    try {
+      localStorage.setItem(SOORT_SLEUTEL, volgende)
+    } catch {
+      // Privémodus kan opslaan weigeren. Het adres houdt de keuze dan bij.
+    }
+    const sp = new URLSearchParams(window.location.search)
+    if (volgende === 'alles') sp.delete('soort')
+    else sp.set('soort', volgende)
+    const query = sp.toString()
+    const pad = window.location.pathname
+    const doel = query ? `${pad}?${query}` : pad
+    if (`${pad}${window.location.search}` !== doel) {
+      window.history.pushState(null, '', doel)
+    }
+    window.dispatchEvent(new Event(SOORT_EVENT))
+  }, [])
+  return [soort, kies]
+}
 
 const desktopQuery = '(min-width: 1024px)'
 
@@ -144,6 +197,24 @@ function sectiesVan(kopjes: Kopje[], tegels: NewExerciseTile[]): TileSection[] {
       tiles: tegels.filter((t) => t.clusterId === sub.clusterId),
     })),
   }))
+}
+
+function inhoudVanKopjes(kopjes: Kopje[], alle: NewExerciseTile[], soort: SoortKeuze) {
+  const bron = tegelsVanKopjes(kopjes, alle)
+  const aantal = teltSoorten(bron)
+  const gekozen = bron.filter((tegel) => pastBijSoort(tegel.verhaal, soort))
+  const secties = sectiesVan(kopjes, gekozen)
+    .map((sectie) => ({
+      ...sectie,
+      subSections: sectie.subSections.filter((sub) => sub.tiles.length > 0),
+    }))
+    .filter((sectie) => sectie.subSections.length > 0)
+  return { aantal, toonFilter: toonSoortFilter(aantal), secties }
+}
+
+function hrefMetSoort(basis: string, soort: SoortKeuze): string {
+  if (soort === 'alles') return basis
+  return `${basis}${basis.includes('?') ? '&' : '?'}soort=${soort}`
 }
 
 function OnderwerpWeergave({
@@ -760,11 +831,15 @@ type BlokProps = {
 const OverzichtBlokken = memo(function OverzichtBlokken({
   overzicht,
   allTiles,
+  soort,
+  onKiesSoort,
   labels,
   onKies,
 }: {
   overzicht: OverzichtHoofdstuk[]
   allTiles: NewExerciseTile[]
+  soort: SoortKeuze
+  onKiesSoort: (soort: SoortKeuze) => void
   labels: {
     heading: string
     lastCorrect: string
@@ -776,54 +851,121 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
 }) {
   return (
     <>
-      {overzicht.map((h) => (
-        <section
-          key={h.chapter.id}
-          id={`hoofdstuk-${h.chapter.slug}`}
-          className="mt-10 scroll-mt-14 first:mt-4 lg:scroll-mt-4"
-        >
-          <h2 className="border-b border-border pb-3 font-serif text-2xl text-text">
-            {hoofdstukNaam(h.chapter)}
-          </h2>
-          {h.paragrafen.map((p) => (
-            <div key={p.id} id={`paragraaf-${p.slug}`} className="scroll-mt-14 lg:scroll-mt-4">
-              <h3 className="mt-8 font-serif text-xl text-text">
-                <span className="font-mono font-semibold">{p.label}</span> {p.title}
-              </h3>
-              {p.blokken.map((blok) => {
-                const tegels = tegelsVanKopjes(blok.kopjes, allTiles)
-                return (
-                  <div key={blok.id} id={`blok-${blok.slug}`} className="scroll-mt-14 lg:scroll-mt-4">
-                    <h3 className="mt-6 font-serif text-lg text-text">
-                      <span className="font-mono font-semibold">
-                        {p.label} {blok.letter}
-                      </span>
-                      {' – '}
-                      {blok.title}
+      {overzicht.map((h) => {
+        const hoofdstukInhoud =
+          h.kopjes.length > 0 ? inhoudVanKopjes(h.kopjes, allTiles, soort) : null
+        const paragrafen = h.paragrafen.map((p) => ({
+          p,
+          blokken: p.blokken.map((blok) => ({
+            blok,
+            inhoud: inhoudVanKopjes(blok.kopjes, allTiles, soort),
+          })),
+        }))
+        const heeftZichtbaar =
+          (hoofdstukInhoud?.secties.length ?? 0) > 0 ||
+          paragrafen.some((p) => p.blokken.some((b) => b.inhoud.secties.length > 0))
+        return (
+          <section
+            key={h.chapter.id}
+            id={`hoofdstuk-${h.chapter.slug}`}
+            className={heeftZichtbaar ? 'mt-10 scroll-mt-14 first:mt-4 lg:scroll-mt-4' : undefined}
+          >
+            {heeftZichtbaar && (
+              <h2 className="border-b border-border pb-3 font-serif text-2xl text-text">
+                {hoofdstukNaam(h.chapter)}
+              </h2>
+            )}
+            {paragrafen.map(({ p, blokken }) => {
+              const paragraafZichtbaar = blokken.some((b) => b.inhoud.secties.length > 0)
+              return (
+                <div
+                  key={p.id}
+                  id={`paragraaf-${p.slug}`}
+                  className={paragraafZichtbaar ? 'scroll-mt-14 lg:scroll-mt-4' : undefined}
+                >
+                  {paragraafZichtbaar && (
+                    <h3 className="mt-8 font-serif text-xl text-text">
+                      <span className="font-mono font-semibold">{p.label}</span> {p.title}
                     </h3>
-                    <ExerciseTileGrid
-                      baseHref={`/oefenen?blok=${encodeURIComponent(blok.slug)}`}
-                      sections={sectiesVan(blok.kopjes, tegels)}
-                      activeQuestionId={null}
-                      onKies={(id) => onKies(id, `/oefenen?blok=${encodeURIComponent(blok.slug)}`)}
-                      labels={labels}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          ))}
-          {h.kopjes.length > 0 && (
-            <ExerciseTileGrid
-              baseHref={`/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`}
-              sections={sectiesVan(h.kopjes, tegelsVanKopjes(h.kopjes, allTiles))}
-              activeQuestionId={null}
-              onKies={(id) => onKies(id, `/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`)}
-              labels={labels}
-            />
-          )}
-        </section>
-      ))}
+                  )}
+                  {blokken.map(({ blok, inhoud }) => {
+                    const basis = hrefMetSoort(
+                      `/oefenen?blok=${encodeURIComponent(blok.slug)}`,
+                      soort,
+                    )
+                    return (
+                      <div
+                        key={blok.id}
+                        id={`blok-${blok.slug}`}
+                        className={
+                          inhoud.secties.length > 0 ? 'scroll-mt-14 lg:scroll-mt-4' : undefined
+                        }
+                      >
+                        {inhoud.secties.length > 0 && (
+                          <>
+                            <h3 className="mt-6 font-serif text-lg text-text">
+                              <span className="font-mono font-semibold">
+                                {p.label} {blok.letter}
+                              </span>
+                              {' – '}
+                              {blok.title}
+                            </h3>
+                            {inhoud.toonFilter && (
+                              <SoortFilter
+                                gewoon={inhoud.aantal.gewoon}
+                                verhaal={inhoud.aantal.verhaal}
+                                waarde={soort}
+                                onKies={onKiesSoort}
+                              />
+                            )}
+                            <ExerciseTileGrid
+                              baseHref={basis}
+                              sections={inhoud.secties}
+                              activeQuestionId={null}
+                              onKies={(id) => onKies(id, basis)}
+                              labels={labels}
+                            />
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+            {hoofdstukInhoud && hoofdstukInhoud.secties.length > 0 && (
+              <>
+                {hoofdstukInhoud.toonFilter && (
+                  <SoortFilter
+                    gewoon={hoofdstukInhoud.aantal.gewoon}
+                    verhaal={hoofdstukInhoud.aantal.verhaal}
+                    waarde={soort}
+                    onKies={onKiesSoort}
+                  />
+                )}
+                <ExerciseTileGrid
+                  baseHref={hrefMetSoort(
+                    `/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`,
+                    soort,
+                  )}
+                  sections={hoofdstukInhoud.secties}
+                  activeQuestionId={null}
+                  onKies={(id) =>
+                    onKies(
+                      id,
+                      hrefMetSoort(
+                        `/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`,
+                        soort,
+                      ),
+                    )
+                  }
+                  labels={labels}
+                />
+              </>
+            )}
+          </section>
+        )
+      })}
     </>
   )
 })
@@ -882,6 +1024,7 @@ function BlokWeergave({
   }
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [boomOpen, setBoomOpen] = useState(false)
+  const [soort, kiesSoort] = useSoortKeuze()
 
   const data = useMemo(
     () => ({
@@ -950,11 +1093,16 @@ function BlokWeergave({
     [selectie, allTopics, allClusters, allTilesState],
   )
   const tiles = useMemo(
-    () => tegelsVanKopjes(vraagKopjes, allTilesState),
-    [vraagKopjes, allTilesState],
+    () =>
+      tegelsVanKopjes(vraagKopjes, allTilesState).filter((tegel) =>
+        pastBijSoort(tegel.verhaal, soort),
+      ),
+    [vraagKopjes, allTilesState, soort],
   )
 
-  const baseHref = selectie ? `/oefenen?${queryVoorSelectie(selectie)}` : '/oefenen'
+  const baseHref = selectie
+    ? hrefMetSoort(`/oefenen?${queryVoorSelectie(selectie)}`, soort)
+    : hrefMetSoort('/oefenen', soort)
   const huidigeVraag = bezigId && vraag?.id !== bezigId ? null : vraag
   const currentIdx = huidigeVraag ? tiles.findIndex((t) => t.questionId === huidigeVraag.id) : -1
   const nextTile = tiles.length ? (tiles[(currentIdx + 1) % tiles.length] ?? null) : null
@@ -995,6 +1143,8 @@ function BlokWeergave({
     else if (volgend.chapter) sp.set('chapter', volgend.chapter)
     else if (volgend.topic) sp.set('topic', volgend.topic)
     if (volgend.cluster) sp.set('cluster', volgend.cluster)
+    const gekozen = leesSoortNu()
+    if (gekozen !== 'alles') sp.set('soort', gekozen)
     return sp.toString()
   }
 
@@ -1527,6 +1677,8 @@ function BlokWeergave({
               <OverzichtBlokken
                 overzicht={overzicht}
                 allTiles={allTilesState}
+                soort={soort}
+                onKiesSoort={kiesSoort}
                 labels={tegelLabels}
                 onKies={kiesOpgave}
               />

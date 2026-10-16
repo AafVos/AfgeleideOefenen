@@ -147,7 +147,10 @@ values
    (select id from public.chapters where slug = 'e2e'), 2, true),
   -- Achteraan, zodat de opgavenummers van de bestaande tests niet opschuiven.
   ('e2e_uitwerking', 'Uitwerking (e2e)',
-   (select id from public.chapters where slug = 'e2e'), 3, true)
+   (select id from public.chapters where slug = 'e2e'), 3, true),
+  -- Achteraan, zodat de nummers van de bestaande tests hetzelfde blijven.
+  ('e2e_soort', 'Soort som (e2e)',
+   (select id from public.chapters where slug = 'e2e'), 4, true)
 on conflict (slug) do update
   set title       = excluded.title,
       chapter_id  = excluded.chapter_id,
@@ -164,7 +167,9 @@ values
   ((select id from public.topics_new where slug = 'e2e_beheersen'),
    'e2e_rij',     'Drie goed op rij (e2e)', 1),
   ((select id from public.topics_new where slug = 'e2e_uitwerking'),
-   'e2e_niet_weten', 'Ik weet het niet (e2e)', 1)
+   'e2e_niet_weten', 'Ik weet het niet (e2e)', 1),
+  ((select id from public.topics_new where slug = 'e2e_soort'),
+   'e2e_verhaal', 'Verhaaltje (e2e)', 1)
 on conflict (topic_id, slug) do update
   set title       = excluded.title,
       order_index = excluded.order_index;
@@ -173,7 +178,7 @@ on conflict (topic_id, slug) do update
 delete from public.questions_new
  where topic_id in (
    select id from public.topics_new
-    where slug in ('e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking')
+    where slug in ('e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking', 'e2e_soort')
  );
 
 insert into public.questions_new
@@ -195,7 +200,9 @@ from (values
   -- "Ik weet het niet": f(x) = x^5  →  f'(x) = 5x^4. De tweede opgave staat
   -- er zodat "Volgende" echt naar een andere opgave gaat.
   ('e2e_niet_weten', 'f(x) = x^{5}',        '5x^4',  '5x^{4}',  1),
-  ('e2e_niet_weten', 'f(x) = x^{6}',        '6x^5',  '6x^{5}',  2)
+  ('e2e_niet_weten', 'f(x) = x^{6}',        '6x^5',  '6x^{5}',  2),
+  -- Verhaaltje: h(t) = -5t^2 + 20t, hoogste punt als h'(t) = -10t + 20 = 0, dus t = 2.
+  ('e2e_verhaal', 'Een bal wordt omhoog gegooid. De hoogte in meter na $t$ seconden is $h(t) = -5t^{2} + 20t$. Na hoeveel seconden is de bal op zijn hoogste punt?', '2', '2', 1)
 ) as q(cluster_slug, latex_body, answer, latex_answer, order_index)
 join public.topic_clusters_new tc on tc.slug = q.cluster_slug;
 
