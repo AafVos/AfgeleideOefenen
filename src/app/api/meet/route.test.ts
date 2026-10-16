@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Geen echte database en geen echt koekje: allebei een nepje.
-const { rpc, getAll } = vi.hoisted(() => ({
+const { rpc, getAll, getClaims } = vi.hoisted(() => ({
   rpc: vi.fn(),
   getAll: vi.fn<() => { name: string }[]>(),
+  getClaims: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/server', () => ({
   createServiceRoleClient: () => ({ rpc }),
+  createClient: async () => ({ auth: { getClaims } }),
 }))
 
 vi.mock('next/headers', () => ({
@@ -50,10 +52,21 @@ function weggeschreven() {
   return rpc.mock.calls.at(-1)?.[1]?.gebeurtenissen ?? []
 }
 
+/** De schuilnaam die aan `meet_opslaan` is meegegeven. */
+function meegegevenSchuilnaam() {
+  return rpc.mock.calls.at(-1)?.[1]?.schuilnaam ?? null
+}
+
+const INGELOGD = [{ name: 'sb-abcdef-auth-token' }]
+const GEBRUIKER = '11111111-1111-1111-1111-111111111111'
+
 beforeEach(() => {
   rpc.mockReset()
   rpc.mockResolvedValue({ data: 1, error: null })
   getAll.mockReturnValue([])
+  getClaims.mockReset()
+  getClaims.mockResolvedValue({ data: { claims: { sub: GEBRUIKER } } })
+  vi.stubEnv('MEET_SCHUILNAAM_GEHEIM', 'proef-geheim-niet-echt')
   // Standaard geen onderhoud, anders roept de route de database twee keer aan.
   vi.spyOn(Math, 'random').mockReturnValue(0.9)
 })
@@ -80,11 +93,63 @@ describe('POST /api/meet', () => {
   })
 
   it('bepaalt zelf of iemand is ingelogd, uit het sessiekoekje', async () => {
-    getAll.mockReturnValue([{ name: 'sb-abcdef-auth-token' }])
+    getAll.mockReturnValue(INGELOGD)
 
     await POST(zending([klik({ ingelogd: false })]))
 
     expect(weggeschreven()[0].ingelogd).toBe(true)
+  })
+
+  it('stuurt de schuilnaam mee, en nooit het gebruikers-id', async () => {
+    getAll.mockReturnValue(INGELOGD)
+
+    await POST(zending([klik()]))
+
+    // Dezelfde uitkomst als meet_schuilnaam() in de database, zie
+    // src/lib/meten/schuilnaam.test.ts.
+    expect(meegegevenSchuilnaam()).toBe('0cb66a76537cbfb0')
+    expect(JSON.stringify(rpc.mock.calls.at(-1))).not.toContain(GEBRUIKER)
+  })
+
+  it('vraagt Supabase niets als er geen sessiekoekje is', async () => {
+    await POST(zending([klik()]))
+
+    expect(getClaims).not.toHaveBeenCalled()
+    expect(meegegevenSchuilnaam()).toBeNull()
+    expect(weggeschreven()[0].ingelogd).toBe(false)
+  })
+
+  it('laat de schuilnaam leeg zonder geheim', async () => {
+    getAll.mockReturnValue(INGELOGD)
+    vi.stubEnv('MEET_SCHUILNAAM_GEHEIM', '')
+
+    await POST(zending([klik()]))
+
+    expect(meegegevenSchuilnaam()).toBeNull()
+    expect(weggeschreven()[0].ingelogd).toBe(true)
+  })
+
+  it('meet gewoon door als het uitlezen van de sessie mislukt', async () => {
+    getAll.mockReturnValue(INGELOGD)
+    getClaims.mockRejectedValue(new Error('auth plat'))
+
+    await POST(zending([klik()]))
+
+    expect(weggeschreven()[0].ingelogd).toBe(true)
+    expect(meegegevenSchuilnaam()).toBeNull()
+  })
+
+  it('laat de browser geen inlog-gebeurtenis verzinnen', async () => {
+    // `inlog` zet de database er zelf bij, op het moment dat het omslaat.
+    await POST(zending([klik({ soort: 'inlog' })]))
+
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('neemt een geslaagde aanmelding wel aan', async () => {
+    await POST(zending([klik({ soort: 'registratie', doel: null })]))
+
+    expect(weggeschreven()[0].soort).toBe('registratie')
   })
 
   it('negeert een crawler', async () => {

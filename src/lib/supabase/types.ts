@@ -375,6 +375,10 @@ export type Database = {
           apparaat: MeetApparaat
           verwijzer: string | null
           ingelogd: boolean
+          /** Plek binnen het tabblad, vanaf 1. Migratie 0073. */
+          volgnummer: number | null
+          /** Alleen bij een ingelogde leerling. Migratie 0073. */
+          schuilnaam: string | null
         }
         Insert: {
           id?: never
@@ -387,6 +391,8 @@ export type Database = {
           apparaat: MeetApparaat
           verwijzer?: string | null
           ingelogd?: boolean
+          volgnummer?: number | null
+          schuilnaam?: string | null
         }
         Update: Partial<Database['public']['Tables']['site_gebeurtenissen']['Insert']>
         Relationships: []
@@ -415,10 +421,19 @@ export type Database = {
           is_correct: boolean
         }>
       }
-      /** Migratie 0072: gebeurtenissen wegschrijven, met de grens per tabblad. */
+      /**
+       * Migratie 0072, uitgebreid in 0073: gebeurtenissen wegschrijven, met
+       * de grens per tabblad, het volgnummer binnen de sessie en de
+       * schuilnaam van een ingelogde leerling.
+       */
       meet_opslaan: {
-        Args: { gebeurtenissen: MeetGebeurtenisRij[] }
+        Args: { gebeurtenissen: MeetGebeurtenisRij[]; schuilnaam?: string | null }
         Returns: number
+      }
+      /** Migratie 0073: de schuilnaam van één leerling, voor de overzichten. */
+      meet_schuilnaam: {
+        Args: { gebruiker: string | null }
+        Returns: string | null
       }
       /** Migratie 0072: dagtotalen bijwerken en alles ouder dan 90 dagen weg. */
       site_meting_onderhoud: {

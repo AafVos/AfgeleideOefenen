@@ -8,6 +8,7 @@ import { GoogleKnop } from '@/components/google-knop'
 import { Link } from '@/i18n/navigation'
 import { hrefMetOefenpad } from '@/lib/auth/oefenpad'
 import type { Herkomst } from '@/lib/herkomst'
+import { meldMeting } from '@/lib/meten/melden'
 
 import { signupAction, type SignupState } from './actions'
 import { resendConfirmationAction } from '../inloggen/actions'
@@ -55,6 +56,15 @@ export function SignupForm({
       if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
+
+  // De aanmelding is gelukt zodra het formulier plaatsmaakt voor "kijk in je
+  // mail". Dat kan de klikmeting zelf niet zien, dus melden we het hier.
+  const gemeld = useRef(false)
+  useEffect(() => {
+    if (!state.noticeKey || gemeld.current) return
+    gemeld.current = true
+    meldMeting('registratie', herkomst ? `registratie-via-${herkomst}` : undefined)
+  }, [state.noticeKey, herkomst])
 
   function handleResend() {
     if (!state.email) return

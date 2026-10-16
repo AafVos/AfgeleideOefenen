@@ -2,7 +2,8 @@ import { cookies } from 'next/headers'
 import { after } from 'next/server'
 
 import { geldigeZending, isBot } from '@/lib/meten/gebeurtenis'
-import { createServiceRoleClient } from '@/lib/supabase/server'
+import { schuilnaam } from '@/lib/meten/schuilnaam'
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { heeftSessiekoekje } from '@/lib/supabase/sessie-koekje'
 
 /**
@@ -10,11 +11,14 @@ import { heeftSessiekoekje } from '@/lib/supabase/sessie-koekje'
  * paar seconden een handvol gebeurtenissen heen met `navigator.sendBeacon`.
  *
  * Deze route schrijft niets rechtstreeks weg: `meet_opslaan` in de database
- * (migratie 0072) kijkt alles nog een keer na en bewaakt de grens van 300
- * gebeurtenissen per tabblad per uur.
+ * (migraties 0072 en 0073) kijkt alles nog een keer na, deelt het volgnummer
+ * binnen het tabblad uit en bewaakt de grens van 300 gebeurtenissen per
+ * tabblad per uur.
  *
  * Of iemand is ingelogd bepalen we hier, aan de hand van het sessiekoekje.
- * De browser kan daar zelf niet bij, en wie het is slaan we niet op.
+ * Is dat zo, dan rekenen we ook de schuilnaam uit: HMAC van het gebruikers-id
+ * met `MEET_SCHUILNAAM_GEHEIM`. Het gebruikers-id zelf gaat niet mee naar de
+ * database en komt nergens in een logregel.
  */
 
 /** Hoe groot een verzending hoogstens mag zijn. Ruim boven 40 gebeurtenissen. */
@@ -22,6 +26,29 @@ const MAX_BYTES = 16_000
 
 /** Eén op de honderd verzendingen kijkt of het dagelijks onderhoud nog moet. */
 const ONDERHOUD_KANS = 0.01
+
+/**
+ * Wie er klikt, als schuilnaam. Zonder sessiekoekje kijken we Supabase niet
+ * eens lastig. Lukt het uitlezen niet, dan telt de klik gewoon mee als
+ * ingelogd, maar zonder schuilnaam.
+ */
+async function wieKlikt(): Promise<{ ingelogd: boolean; naam: string | null }> {
+  const koekjes = await cookies()
+  if (!heeftSessiekoekje(koekjes.getAll())) return { ingelogd: false, naam: null }
+
+  try {
+    const supabase = await createClient()
+    // getClaims controleert het token, meestal zonder netwerkverkeer.
+    const { data } = await supabase.auth.getClaims()
+    const gebruikerId = data?.claims?.sub ?? null
+    return {
+      ingelogd: true,
+      naam: await schuilnaam(gebruikerId, process.env.MEET_SCHUILNAAM_GEHEIM),
+    }
+  } catch {
+    return { ingelogd: true, naam: null }
+  }
+}
 
 export async function POST(req: Request) {
   if (isBot(req.headers.get('user-agent'))) {
@@ -43,12 +70,12 @@ export async function POST(req: Request) {
   const rijen = geldigeZending(ruw)
   if (!rijen.length) return new Response(null, { status: 204 })
 
-  const koekjes = await cookies()
-  const ingelogd = heeftSessiekoekje(koekjes.getAll())
+  const { ingelogd, naam } = await wieKlikt()
 
   const supabase = createServiceRoleClient()
   const { error } = await supabase.rpc('meet_opslaan', {
     gebeurtenissen: rijen.map((rij) => ({ ...rij, ingelogd })),
+    schuilnaam: naam,
   })
   if (error) {
     // Een meting die niet aankomt mag nooit een leerling in de weg zitten.

@@ -149,14 +149,30 @@ paragraaf.
 De site meet zelf wat bezoekers doen, ook zonder account. Dat gaat buiten
 Cloudflare Web Analytics om: die telt alleen paginabezoeken.
 
-* **Wat er in gaat** (tabel `site_gebeurtenissen`, migratie 0072): tijdstip,
-  een willekeurig id per tabblad uit `sessionStorage`, het soort gebeurtenis
-  (`pagina`, `klik`, `dode_klik`, `woedeklik`, `fout`, `scroll`), het pad
+* **Wat er in gaat** (tabel `site_gebeurtenissen`, migraties 0072 en 0073):
+  tijdstip, een willekeurig id per tabblad uit `sessionStorage`, het
+  volgnummer binnen dat tabblad, het soort gebeurtenis (`pagina`, `klik`,
+  `dode_klik`, `woedeklik`, `fout`, `scroll`, `registratie`, `inlog`), het pad
   zonder queryparameters — op `van` en `utm_source` na —, de vaste naam van
   wat er aangeklikt is, telefoon/tablet/computer op schermbreedte, het domein
-  van de verwijzer, en of iemand is ingelogd.
+  van de verwijzer, of iemand is ingelogd, en de schuilnaam hieronder.
 * **Wat er nooit in gaat:** geen koekje, geen IP-adres, geen user-agent, geen
   e-mailadres of gebruikers-id, niets uit een invoerveld, en niets op `/admin`.
+* **Routes:** de database deelt het `volgnummer` uit, niet de browser — dan
+  klopt de volgorde ook na een herlaadactie. `registratie` meldt de site zelf
+  met `meldMeting()` zodra de aanmelding gelukt is; `inlog` zet `meet_opslaan`
+  erbij op het moment dat een tabblad van uitgelogd naar ingelogd gaat.
+* **Schuilnaam:** alleen bij een ingelogde leerling, en alleen om zijn klikken
+  over meerdere dagen te kunnen volgen. Het is HMAC-SHA256 van het
+  gebruikers-id, als hex, de eerste 16 tekens. Het gebruikers-id zelf komt
+  nergens in de tabel. Het geheim staat op twee plekken, net als
+  `WEBHOOK_SECRET`: als Worker-secret `MEET_SCHUILNAAM_GEHEIM` (daar rekent de
+  site mee, `src/lib/meten/schuilnaam.ts`) en in de Vault als
+  `meet_schuilnaam_geheim` (daar rekenen de overzichten mee,
+  `meet_schuilnaam()`). **Dezelfde waarde**, anders sluiten de twee kanten
+  niet op elkaar aan; `schuilnaam.test.ts` legt de rekensom vast. Ontbreekt
+  het geheim, dan blijft de kolom leeg en werkt de rest gewoon. Wie niet is
+  ingelogd krijgt niets blijvends — alleen het sessie-id van dat tabblad.
 * **Hoe:** `src/lib/meten/meter.ts` verzamelt in de browser en stuurt elke drie
   seconden één pakketje met `navigator.sendBeacon` naar `/api/meet`. Dat
   scriptje laadt pas als de pagina er staat (`src/components/meten.tsx`). De
@@ -175,8 +191,12 @@ Cloudflare Web Analytics om: die telt alleen paginabezoeken.
 * **Kijken wat eruit komt:** de views `meet_bezoekers_per_dag`,
   `meet_apparaat_per_dag`, `meet_trechter` (startpagina → proefsom →
   registreren → eerste som), `meet_doelen_top`, `meet_dode_klikken`,
-  `meet_woedeklikken`, `meet_fouten` en `meet_scroll_per_pagina`. De
-  alleen-lezen analistrol mag daar bij.
+  `meet_woedeklikken`, `meet_fouten`, `meet_scroll_per_pagina`,
+  `meet_routes_top` (de twintig meestgelopen routes, eerste zes stappen),
+  `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en dagen
+  actief) en `meet_voortgang_per_schuilnaam` (opgetelde voortgang naast de
+  schuilnaam). De alleen-lezen analistrol mag daar bij; het geheim achter de
+  schuilnaam kan die rol niet opvragen.
 
 ---
 

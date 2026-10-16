@@ -14,8 +14,20 @@ export const MEET_SOORTEN = [
   'woedeklik',
   'fout',
   'scroll',
+  /** De aanmelding is gelukt. De site meldt dit zelf. */
+  'registratie',
+  /** Dit tabblad was uitgelogd en is nu ingelogd. Die zet de database erbij. */
+  'inlog',
 ] as const
 export type MeetSoort = (typeof MEET_SOORTEN)[number]
+
+/**
+ * Wat de browser zelf mag melden. `inlog` hoort daar niet bij: dat weet
+ * alleen de server, en die zet hem er in `meet_opslaan` zelf bij.
+ */
+export const BROWSER_SOORTEN = MEET_SOORTEN.filter(
+  (soort) => soort !== 'inlog',
+) as readonly MeetSoort[]
 
 export const MEET_APPARATEN = ['telefoon', 'tablet', 'computer'] as const
 export type MeetApparaat = (typeof MEET_APPARATEN)[number]
@@ -158,7 +170,7 @@ export function geldigeGebeurtenis(ruw: unknown): Gebeurtenis | null {
   if (!UUID.test(sessie)) return null
 
   const soort = rij.soort
-  if (typeof soort !== 'string' || !(MEET_SOORTEN as readonly string[]).includes(soort)) {
+  if (typeof soort !== 'string' || !(BROWSER_SOORTEN as readonly string[]).includes(soort)) {
     return null
   }
 
