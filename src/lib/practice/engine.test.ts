@@ -224,7 +224,6 @@ describe('answersMatch', () => {
     expect(answersMatch('-2x + 1', '2x - 1')).toBe(false)
     expect(answersMatch('1 - 2x', '2x - 1')).toBe(false)
     expect(answersMatch('2x^2 - 1', '2x - 1')).toBe(false)
-    expect(answersMatch('2 + 3x^2', '3x^2 + 2')).toBe(false)
     expect(answersMatch('2(x - 1)', '2x - 2')).toBe(false)
     expect(answersMatch('0,33x', '(1/3)x')).toBe(false)
     // 5/2x toont de site als een breuk met 2x onder de streep.
@@ -232,6 +231,47 @@ describe('answersMatch', () => {
     expect(answersMatch('y = 2', '2x')).toBe(false)
     expect(answersMatch('y = 2x', '2')).toBe(false)
     expect(answersMatch('', '2x - 1')).toBe(false)
+    // 1/2x^2 toont de site als een breuk met 2x^2 onder de streep.
+    expect(answersMatch('1/2x^2', '(1/2)x^2')).toBe(false)
+    expect(answersMatch('(-x)^2', 'x^2')).toBe(false)
+    expect(answersMatch('(-x)^2', '-x^2')).toBe(false)
+  })
+
+  // Kromme door de toppen: y = -x^2 + 8 en 8 - x^2 zijn dezelfde formule.
+  // Dit gaat zonder een lijst van andere schrijfwijzen.
+  it('rekent een veelterm hetzelfde, ook met de termen andersom', () => {
+    expect(answersMatch('2 + 3x^2', '3x^2 + 2')).toBe(true)
+    expect(answersMatch('y = 8 - x^2', '-x^2 + 8')).toBe(true)
+    expect(answersMatch('y=-x^2+8', '-x^2 + 8')).toBe(true)
+    expect(answersMatch('-x^2 + 8', '8 - x^2')).toBe(true)
+    expect(answersMatch('-1x^2', '-x^2')).toBe(true)
+    expect(answersMatch('(-1)x^2', '-x^2')).toBe(true)
+    expect(answersMatch('-(x^2)', '-x^2')).toBe(true)
+    expect(answersMatch('-2*x^3', '-2x^3')).toBe(true)
+    expect(answersMatch('-2x^(3)', '-2x^3')).toBe(true)
+    expect(answersMatch('x²', 'x^2')).toBe(true)
+    expect(answersMatch('-x³', '-x^3')).toBe(true)
+    expect(answersMatch('y = -x⁴', '-x^4')).toBe(true)
+    expect(answersMatch('2x^2 + 3x^2', '5x^2')).toBe(true)
+    expect(answersMatch('-(1/2)x^3', '-x^3/2')).toBe(true)
+    expect(answersMatch('(-1/2)x^3', '-(1/2)x^3')).toBe(true)
+    expect(answersMatch('-0,5x^3', '-(1/2)x^3')).toBe(true)
+    expect(answersMatch('-0.5x^3', '-x^3/2')).toBe(true)
+    expect(answersMatch('-(1)/(2)x^3', '-(1/2)x^3')).toBe(true)
+    expect(answersMatch('(-x^3)/2', '-x^3/2')).toBe(true)
+    expect(answersMatch('2(x^2)', '2x^2')).toBe(true)
+    expect(answersMatch('(3/2)x - (1/2)x^3', '-(1/2)x^3 + (3/2)x')).toBe(true)
+    expect(answersMatch('3x/2 - x^3/2', '-(1/2)x^3 + (3/2)x')).toBe(true)
+    expect(answersMatch('y = 1,5x - 0,5x^3', '-(1/2)x^3 + (3/2)x')).toBe(true)
+    expect(answersMatch('-2x - x^2', '-x^2 - 2x')).toBe(true)
+    expect(answersMatch('-(x^2) - 2x', '-x^2 - 2x')).toBe(true)
+
+    expect(answersMatch('-x^2 + 9', '-x^2 + 8')).toBe(false)
+    expect(answersMatch('2x^3', '-2x^3')).toBe(false)
+    expect(answersMatch('x^2', '-x^2')).toBe(false)
+    expect(answersMatch('(1/3)x^3', '-(1/2)x^3')).toBe(false)
+    expect(answersMatch('x^4', '-x^4')).toBe(false)
+    expect(answersMatch('', '-x^2')).toBe(false)
   })
 
   // Zes opgaven hadden LaTeX in het antwoordveld. Een leerling typt (1/2) en pi.
