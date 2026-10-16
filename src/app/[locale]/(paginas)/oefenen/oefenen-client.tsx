@@ -121,6 +121,8 @@ type Question = {
   latex_body: string | null
   answer_prefix: string | null
   difficulty: 1 | 2 | 3
+  source_label: string | null
+  source_url: string | null
   steps: Array<{ id: string; step_order: number; step_description: string }>
 }
 

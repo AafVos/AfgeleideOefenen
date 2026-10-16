@@ -39,8 +39,32 @@ function TileGrid({
       {tiles.map((tile) => {
         const tileHref = `${baseHref}&q=${encodeURIComponent(tile.questionId)}`
         const active = activeQuestionId === tile.questionId
+        const kaart = cn(
+          'overflow-hidden rounded-xl border transition',
+          active && 'ring-2 ring-accent ring-offset-2 ring-offset-[var(--color-bg)]',
+          tile.lastCorrect === true && 'border-emerald-300/70 bg-emerald-50',
+          tile.lastCorrect === false && 'border-rose-300/70 bg-rose-50/90',
+          tile.lastCorrect == null && 'border-border bg-surface',
+        )
+        const bron = tile.sourceLabel
         return (
-          <li key={tile.questionId}>
+          <li key={tile.questionId} className={kaart}>
+            {bron ? (
+              <div className="px-3 pt-2">
+                {tile.sourceUrl ? (
+                  <a
+                    href={tile.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center text-left text-xs leading-snug text-accent underline-offset-2 hover:underline"
+                  >
+                    {bron}
+                  </a>
+                ) : (
+                  <p className="py-2 text-xs leading-snug text-text-muted">{bron}</p>
+                )}
+              </div>
+            ) : null}
             <KlikLink
               href={tileHref as '/oefenen'}
               prefetch={false}
@@ -63,18 +87,13 @@ function TileGrid({
                   : undefined
               }
               className={cn(
-                'block min-h-[6.75rem] rounded-xl border px-3 py-3 transition',
-                active &&
-                  'ring-2 ring-accent ring-offset-2 ring-offset-[var(--color-bg)]',
-                tile.lastCorrect === true &&
-                  'border-emerald-300/70 bg-emerald-50 hover:border-emerald-400',
-                tile.lastCorrect === false &&
-                  'border-rose-300/70 bg-rose-50/90 hover:border-rose-400',
-                tile.lastCorrect == null &&
-                  'border-border bg-surface hover:bg-surface-2',
+                'block min-h-[6.75rem] px-3 py-3',
+                tile.lastCorrect === true && 'hover:bg-emerald-100/60',
+                tile.lastCorrect === false && 'hover:bg-rose-100/70',
+                tile.lastCorrect == null && 'hover:bg-surface-2',
               )}
               aria-current={active ? 'page' : undefined}
-              aria-label={`${labels.exercise} ${tile.ordinal}.${tile.preview ? ` ${tile.preview}` : ''}${tile.lastCorrect === true ? ` ${labels.lastCorrect}` : ''}${tile.lastCorrect === false ? ` ${labels.lastWrong}` : ''}${tile.lastCorrect == null ? ` ${labels.notTried}` : ''}`}
+              aria-label={`${labels.exercise} ${tile.ordinal}.${bron ? ` ${bron}.` : ''}${tile.preview ? ` ${tile.preview}` : ''}${tile.lastCorrect === true ? ` ${labels.lastCorrect}` : ''}${tile.lastCorrect === false ? ` ${labels.lastWrong}` : ''}${tile.lastCorrect == null ? ` ${labels.notTried}` : ''}`}
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="text-xs font-medium text-text-muted">

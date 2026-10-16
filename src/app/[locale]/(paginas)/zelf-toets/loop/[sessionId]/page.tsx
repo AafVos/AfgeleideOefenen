@@ -106,7 +106,7 @@ export default async function ZelfToetsRunnerPage({
   const [{ data: question }, { data: steps }] = await Promise.all([
     supabase
       .from('questions_new')
-      .select('id, latex_body, difficulty')
+      .select('id, latex_body, difficulty, source_label, source_url')
       .eq('id', state.nextQuestionId)
       .maybeSingle(),
     supabase
@@ -154,6 +154,8 @@ export default async function ZelfToetsRunnerPage({
           id: question.id,
           latex_body: question.latex_body,
           difficulty: question.difficulty,
+          source_label: question.source_label,
+          source_url: question.source_url,
         }}
         steps={steps ?? []}
         showAnswers={state.showAnswers}

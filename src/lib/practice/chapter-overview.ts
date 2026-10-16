@@ -60,6 +60,9 @@ export type NewExerciseTile = {
   lastCorrect: boolean | null
   /** Context of tekst vóór het antwoordvak: een verhaaltje of toepassing. */
   verhaal: boolean
+  /** Bronregel van een echte examenvraag. Leeg bij een eigen opgave. */
+  sourceLabel: string | null
+  sourceUrl: string | null
 }
 
 function stripForPreview(raw: string, maxLen: number): string {
@@ -141,13 +144,15 @@ export type VraagVoorTegel = {
   order_index: number | null
   latex_body: string | null
   answer_prefix: string | null
+  source_label: string | null
+  source_url: string | null
 }
 
 /** Alle opgaven. De volgorde van de tegels bepaalt `naarTegels`, niet deze query. */
 export async function loadAlleVragen(db: DB): Promise<VraagVoorTegel[]> {
   const { data, error } = await db
     .from('questions_new')
-    .select('id, cluster_id, difficulty, order_index, latex_body, answer_prefix')
+    .select('id, cluster_id, difficulty, order_index, latex_body, answer_prefix, source_label, source_url')
   if (error) throw new Error(error.message)
   return (data ?? []) as VraagVoorTegel[]
 }
@@ -239,6 +244,8 @@ export function naarTegels(
     preview: stripForPreview(vraag.latex_body ?? '', 56),
     lastCorrect: laatsteGoed.get(vraag.id) ?? null,
     verhaal: vraagIsToepassing(vraag.latex_body, vraag.answer_prefix),
+    sourceLabel: vraag.source_label,
+    sourceUrl: vraag.source_url,
   }))
 }
 
@@ -251,12 +258,14 @@ export async function loadQuestionNew(
   latex_body: string | null
   answer_prefix: string | null
   difficulty: 1 | 2 | 3
+  source_label: string | null
+  source_url: string | null
   steps: Array<{ id: string; step_order: number; step_description: string }>
 } | null> {
   const [vraag, stappen] = await Promise.all([
     db
       .from('questions_new')
-      .select('id, cluster_id, difficulty, latex_body, answer_prefix')
+      .select('id, cluster_id, difficulty, latex_body, answer_prefix, source_label, source_url')
       .eq('id', questionId)
       .maybeSingle(),
     db
@@ -277,6 +286,8 @@ export async function loadQuestionNew(
     latex_body: q.latex_body,
     answer_prefix: q.answer_prefix,
     difficulty: clampDiff(q.difficulty),
+    source_label: q.source_label,
+    source_url: q.source_url,
     steps: (steps ?? []) as Array<{
       id: string
       step_order: number

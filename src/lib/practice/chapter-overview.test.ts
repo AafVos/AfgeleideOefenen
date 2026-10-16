@@ -13,6 +13,8 @@ function vraag(deel: Partial<VraagVoorTegel> & Pick<VraagVoorTegel, 'id' | 'clus
     order_index: 1,
     latex_body: '$f(x) = x$',
     answer_prefix: null,
+    source_label: null,
+    source_url: null,
     ...deel,
   }
 }
@@ -52,6 +54,23 @@ describe('naarTegels', () => {
     expect(tegels.map((tegel) => tegel.ordinal)).toEqual([1, 2, 3])
     expect(tegels.find((tegel) => tegel.questionId === 'eerst')?.lastCorrect).toBe(true)
     expect(tegels.find((tegel) => tegel.questionId === 'laat')?.lastCorrect).toBeNull()
+  })
+
+  it('geeft de bron van een examenvraag door aan de tegel', () => {
+    const tegels = naarTegels(
+      [
+        vraag({
+          id: 'examen',
+          cluster_id: 'c1',
+          source_label: 'CE vwo wiskunde B 2024 · tijdvak 1 · vraag 6',
+          source_url: 'https://www.examenblad.nl/2024/vwo/documenten/cse-1/vw-1025-a-24-1-o',
+        }),
+      ],
+      ['c1'],
+      new Map(),
+    )
+    expect(tegels[0]?.sourceLabel).toBe('CE vwo wiskunde B 2024 · tijdvak 1 · vraag 6')
+    expect(tegels[0]?.sourceUrl).toContain('examenblad.nl')
   })
 })
 

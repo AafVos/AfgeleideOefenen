@@ -178,6 +178,8 @@ export type Database = {
           difficulty: Difficulty
           is_ai_generated: boolean
           order_index: number | null
+          source_label: string | null
+          source_url: string | null
           created_at: string
         }
         Insert: {
@@ -192,6 +194,8 @@ export type Database = {
           difficulty: Difficulty
           is_ai_generated?: boolean
           order_index?: number | null
+          source_label?: string | null
+          source_url?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['questions_new']['Insert']>
