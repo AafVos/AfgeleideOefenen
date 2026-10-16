@@ -101,6 +101,13 @@ Zo valt het op als iemand iets in het Supabase-dashboard heeft veranderd zonder
   opgeschreven; het hele verschil zie je met `npx supabase config diff` op je
   eigen computer.
 
+## Elke ochtend: staan de geheimen op de Worker?
+
+`.github/workflows/worker-omgeving.yml` vergelijkt de namen van de geheimen
+op de Worker `afgeleide-oefenen` met `scripts/worker-omgeving.json`. Ontbreekt
+er een, dan komt er een issue met alleen die naam. De controle slaat zichzelf
+over als het geheim `CLOUDFLARE_API_TOKEN` niet in GitHub staat.
+
 ## Elke ochtend: wat is er samen live gegaan?
 
 `.github/workflows/dagelijkse-release.yml` maakt elke ochtend (en met de hand

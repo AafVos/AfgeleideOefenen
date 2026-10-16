@@ -23,8 +23,9 @@
   "observability": {
     "enabled": true
   }
-  // Geheimen (Supabase service role, Resend, Gemini, webhook) staan als
-  // Worker-secrets in Cloudflare, nooit in dit bestand.
+  // Geheimen staan als Worker-secrets in Cloudflare, nooit in dit bestand.
+  // De volledige lijst (naam, bouw of runtime, geheim of niet) staat in
+  // scripts/worker-omgeving.json en docs/omgeving.md.
   // NEXT_PUBLIC_*-waarden worden tijdens de build ingebakken: die staan bij
   // de build-variabelen van Workers Builds.
 }
