@@ -24,6 +24,9 @@ describe('uitlegvideo-adressen', () => {
     expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel')
     expect(getUitlegVideo('quotientregel')?.theoriePad).toBe('/theorie/quotientregel')
     expect(getUitlegVideo('somregel-of-productregel')?.theoriePad).toBe('/theorie/productregel')
+    expect(getUitlegVideo('somregel-of-productregel')?.oefenen).toBe(
+      '/oefenen?chapter=h2&topic=h2_termsgewijs&cluster=polynoom_differentieren',
+    )
   })
 
   it('zet bij elke video een eigen uitleg', () => {

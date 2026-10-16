@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
 import { DeelKnop } from '@/components/deel-knop'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import type { VideoUitleg } from '@/lib/videos'
 import { MathKeyboard } from '@/components/math-keyboard'
@@ -36,6 +37,7 @@ type VideoItem = {
   src: string
   href: string
   hasPractice: boolean
+  oefenen: string
   theorieHref: string | null
 }
 
@@ -57,7 +59,6 @@ type Labels = {
   nextQuestion: string
   previousQuestion: string
   morePractice: string
-  loginToPractice: string
   askTitle: string
   askIntro: string
   askCta: string
@@ -400,11 +401,9 @@ export function UitlegVideosClient({
               <OefenKaart key={active.slug} vragen={vragen} oefenHref={oefenHref} labels={labels} />
             </div>
           ) : !isLoggedIn ? (
-            <p className="mt-3 text-text-muted">
-              <Link href={loginHref as '/inloggen'} className="text-accent underline underline-offset-2">
-                {labels.loginToPractice}
-              </Link>
-            </p>
+            <div className="mt-4">
+              <ProbeerKnop oefenen={active.oefenen} />
+            </div>
           ) : null}
         </section>
       ) : null}
