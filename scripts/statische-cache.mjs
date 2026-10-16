@@ -23,7 +23,7 @@ const ingang = `// ${merkteken}
 // een bestand. De zware Next-bundel (worker-next.js) wordt pas geladen als
 // die echt nodig is. Iemand die is ingelogd gaat wel door die bundel, zodat
 // de kop klopt.
-import { anoniemeStartpagina, anoniemeTheorieBestand } from "../src/lib/startpagina-snel.ts";
+import { anoniemeStartpagina, anoniemeTheorieBestand, theorieZonderPersoonlijk } from "../src/lib/startpagina-snel.ts";
 
 export { DOQueueHandler } from "./.build/durable-objects/queue.js";
 export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
@@ -68,6 +68,13 @@ export default {
         return antwoord;
       }
       await bestand.body?.cancel();
+    }
+
+    const url = new URL(request.url);
+    const zonder = theorieZonderPersoonlijk(url.pathname);
+    if (zonder) {
+      url.pathname = zonder;
+      request = new Request(url, request);
     }
 
     const next = await import("./worker-next.js");
@@ -117,6 +124,10 @@ function schrijfStartpagina() {
 }
 
 const THEORIE_WORTEL = 'src/app/[locale]/(paginas)/theorie'
+// Een ingelogde leerling mag het losse bestand niet houden: dat heeft de
+// kop van een bezoeker. Het script stuurt hem naar het adres waarop de
+// gewone server de pagina opbouwt.
+const sessieScript = `<script>/*theorie-sessie*/(function(){var delen=document.cookie.split(";");for(var i=0;i<delen.length;i++){var naam=delen[i].split("=")[0].trim();if(/^sb-.+-auth-token(?:\\.\\d+)?$/.test(naam)){var pad=location.pathname;if(pad.length>1&&pad.slice(-1)==="/")pad=pad.slice(0,-1);location.replace(pad+"/persoonlijk"+location.search+location.hash);return}}})()</script>`
 const THEORIE_TITEL = {
   index: 'Differentiëren: alle regels op één pagina',
 }
@@ -251,7 +262,23 @@ async function schrijfTheoriepaginas() {
       if (!html.includes('href="/nl/inloggen"')) {
         throw new Error(`${pagina.pad} is niet de versie zonder sessie.`)
       }
-      fs.writeFileSync(path.join(map, pagina.bestand), html)
+      const metScript = html.includes('theorie-sessie')
+        ? html
+        : html.replace('<head>', `<head>${sessieScript}`)
+      fs.writeFileSync(path.join(map, pagina.bestand), metScript)
+      // Zonder dit bestand start de worker. Met het bestand geeft Cloudflare
+      // de pagina zelf, net als de startpagina.
+      const openbaar =
+        pagina.bestand === 'index.html'
+          ? path.join(bestanden, 'nl/theorie/index.html')
+          : path.join(
+              bestanden,
+              'nl/theorie',
+              pagina.bestand.replace(/\.html$/, ''),
+              'index.html',
+            )
+      fs.mkdirSync(path.dirname(openbaar), { recursive: true })
+      fs.writeFileSync(openbaar, metScript)
     }
   } finally {
     stop()
@@ -303,7 +330,10 @@ function bundelZwareWorker(bron) {
 function maakKleineIngang() {
   if (!fs.existsSync(worker)) return
   const tekst = fs.readFileSync(worker, 'utf8')
-  if (tekst.includes(merkteken)) return
+  if (tekst.includes(merkteken)) {
+    if (tekst !== ingang) fs.writeFileSync(worker, ingang)
+    return
+  }
 
   const bron = path.join(wortel, 'worker-bron.js')
   fs.renameSync(worker, bron)

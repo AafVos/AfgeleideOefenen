@@ -62,5 +62,23 @@ export function anoniemeTheorieBestand(request: Request): string | null {
   const pathname = new URL(request.url).pathname
   const gevonden = THEORIE_PAD.exec(pathname)
   if (!gevonden) return null
+  // /persoonlijk is het adres waarop een ingelogde leerling de gewone
+  // pagina krijgt. Daar hoort geen klaargezet bestand bij.
+  if (gevonden[1] === 'persoonlijk') return null
   return gevonden[1] ? `${gevonden[1]}.html` : 'index.html'
+}
+
+/**
+ * /nl/theorie/kettingregel/persoonlijk → /nl/theorie/kettingregel.
+ * Alleen voor de theoriepagina's, zodat een ingelogde leerling de gewone
+ * pagina krijgt en niet een los bestand.
+ */
+export function theorieZonderPersoonlijk(pathname: string): string | null {
+  if (!pathname.endsWith('/persoonlijk')) return null
+  const basis = pathname.slice(0, -'/persoonlijk'.length)
+  if (basis === '/nl/theorie') return basis
+  if (/^\/nl\/theorie\/[a-z0-9-]+$/.test(basis) && !basis.endsWith('/persoonlijk')) {
+    return basis
+  }
+  return null
 }
