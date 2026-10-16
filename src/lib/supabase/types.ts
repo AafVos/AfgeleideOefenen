@@ -5,6 +5,12 @@
  * vóór de overstap) zijn weg sinds migratie 0033.
  */
 
+import type {
+  Gebeurtenis as MeetGebeurtenisRij,
+  MeetApparaat,
+  MeetSoort,
+} from '@/lib/meten/gebeurtenis'
+
 /** `locked` is weg sinds migratie 0034 (het oude leerpad). */
 export type ProgressStatus = 'in_progress' | 'mastered'
 export type ProfileRole = 'student' | 'admin'
@@ -356,6 +362,49 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['known_wrong_answers_new']['Insert']>
         Relationships: []
       }
+      /** Klikmeting zonder koekjes. Migratie 0072. Alleen de service-role schrijft hier. */
+      site_gebeurtenissen: {
+        Row: {
+          id: number
+          tijdstip: string
+          sessie_id: string
+          soort: MeetSoort
+          pad: string
+          doel: string | null
+          waarde: number | null
+          apparaat: MeetApparaat
+          verwijzer: string | null
+          ingelogd: boolean
+        }
+        Insert: {
+          id?: never
+          tijdstip?: string
+          sessie_id: string
+          soort: MeetSoort
+          pad: string
+          doel?: string | null
+          waarde?: number | null
+          apparaat: MeetApparaat
+          verwijzer?: string | null
+          ingelogd?: boolean
+        }
+        Update: Partial<Database['public']['Tables']['site_gebeurtenissen']['Insert']>
+        Relationships: []
+      }
+      site_dagtotalen: {
+        Row: {
+          dag: string
+          soort: MeetSoort
+          apparaat: MeetApparaat
+          pad: string
+          doel: string
+          aantal: number
+          sessies: number
+        }
+        Insert: Database['public']['Tables']['site_dagtotalen']['Row']
+        Update: Partial<Database['public']['Tables']['site_dagtotalen']['Row']>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -365,6 +414,16 @@ export type Database = {
           question_id: string
           is_correct: boolean
         }>
+      }
+      /** Migratie 0072: gebeurtenissen wegschrijven, met de grens per tabblad. */
+      meet_opslaan: {
+        Args: { gebeurtenissen: MeetGebeurtenisRij[] }
+        Returns: number
+      }
+      /** Migratie 0072: dagtotalen bijwerken en alles ouder dan 90 dagen weg. */
+      site_meting_onderhoud: {
+        Args: Record<string, never>
+        Returns: number
       }
     }
     Enums: Record<string, never>

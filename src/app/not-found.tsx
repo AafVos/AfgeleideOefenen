@@ -29,7 +29,8 @@ export default async function NotFound() {
   return (
     <NextIntlClientProvider messages={messages}>
       <SiteHeader locale={TAAL} />
-      <main className="flex-1">
+      {/* Merkteken voor de klikmeting: hieraan ziet die dat dit een 404 is. */}
+      <main className="flex-1" data-meet-404="">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center">
           <p className="mb-3 text-sm font-medium uppercase tracking-wider text-accent">
             {t('eyebrow')}

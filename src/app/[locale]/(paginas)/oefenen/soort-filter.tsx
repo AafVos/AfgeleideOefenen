@@ -40,6 +40,7 @@ export function SoortFilter({
             type="button"
             role="radio"
             aria-checked={aan}
+            data-meet={`oefenen-filter-${knop.id}`}
             onClick={() => onKies(knop.id)}
             className={cn(
               'inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium',

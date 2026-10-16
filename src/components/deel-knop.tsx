@@ -38,6 +38,7 @@ export function DeelKnop({ compact = false }: { compact?: boolean }) {
         type="button"
         onClick={() => void deel()}
         data-tour="delen"
+        data-meet="delen"
         className={
           compact
             ? 'inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm text-text hover:bg-surface-2'

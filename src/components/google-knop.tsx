@@ -58,6 +58,7 @@ export function GoogleKnop({ oefenpad }: { oefenpad: string | null }) {
     <div className="space-y-4">
       <button
         type="button"
+        data-meet="google-aanmelden"
         onClick={start}
         disabled={bezig}
         className="inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-md border border-border bg-surface px-4 py-2.5 font-medium text-text shadow-sm transition hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-60"

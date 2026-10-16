@@ -8,12 +8,15 @@ const STANDAARD =
 export function ProbeerKnop({
   oefenen,
   className = STANDAARD,
+  dataMeet = 'probeer-3-sommen',
 }: {
   oefenen: string
   className?: string
+  /** Vaste naam voor de klikmeting, zie src/lib/meten/. */
+  dataMeet?: string
 }) {
   return (
-    <Link href={proberenVanOefenen(oefenen)} className={className}>
+    <Link href={proberenVanOefenen(oefenen)} data-meet={dataMeet} className={className}>
       Probeer 3 sommen
     </Link>
   )

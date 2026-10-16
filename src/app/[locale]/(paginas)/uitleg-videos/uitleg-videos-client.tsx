@@ -99,6 +99,7 @@ function VideoLink({ video, isActive }: { video: VideoItem; isActive: boolean })
       <Link
         href={video.href as '/uitleg-videos'}
         scroll={false}
+        data-meet="video-kiezen"
         aria-current={isActive ? 'true' : undefined}
         className={`flex min-h-11 items-start gap-2.5 rounded-xl border p-3 transition ${
           isActive
@@ -134,6 +135,7 @@ function Hoofdstukgroep({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
+        data-meet="video-groep"
         aria-expanded={open}
         className="flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-text transition hover:text-accent"
       >
@@ -299,6 +301,7 @@ export function UitlegVideosClient({
           <button
             type="button"
             onClick={naarVraagFormulier}
+            data-meet="video-stel-een-vraag"
             className="mt-3 min-h-11 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/90"
           >
             {labels.askCta}
@@ -344,6 +347,7 @@ export function UitlegVideosClient({
               {active.theorieHref ? (
                 <Link
                   href={active.theorieHref as '/theorie'}
+                  data-meet="video-naar-theorie"
                   className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
                 >
                   {labels.writtenLink}
@@ -446,11 +450,16 @@ function AccountNodigMelding({
     <div className="rounded-xl border border-accent-2/40 bg-accent-2-light px-4 py-3">
       <p className="text-sm text-accent-2">{labels.askNoAccount}</p>
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        <Link href={loginHref as '/inloggen'} className="text-accent underline underline-offset-2">
+        <Link
+          href={loginHref as '/inloggen'}
+          data-meet="video-inloggen"
+          className="text-accent underline underline-offset-2"
+        >
           {labels.askLogin}
         </Link>
         <Link
           href={registerHref as '/registreren'}
+          data-meet="video-registreren"
           className="text-accent underline underline-offset-2"
         >
           {labels.askRegister}
@@ -544,11 +553,17 @@ function OefenKaart({
 
   const navigatie = (
     <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-      <Button className="min-h-11 px-4" onClick={() => gaNaarVraag(index - 1)} disabled={index === 0}>
+      <Button
+        className="min-h-11 px-4"
+        data-meet="video-vorige-vraag"
+        onClick={() => gaNaarVraag(index - 1)}
+        disabled={index === 0}
+      >
         ← {labels.previousQuestion}
       </Button>
       <Button
         className="min-h-11 px-4"
+        data-meet="video-volgende-vraag"
         onClick={() => gaNaarVraag(index + 1)}
         disabled={index === vragen.length - 1}
       >
@@ -569,6 +584,7 @@ function OefenKaart({
               key={v.id}
               type="button"
               onClick={() => gaNaarVraag(i)}
+              data-meet="video-vraag-kiezen"
               aria-current={isActive ? 'true' : undefined}
               className={`rounded-xl border p-3 text-left transition ${
                 isActive
@@ -626,7 +642,12 @@ function OefenKaart({
             <MathKeyboard onInsert={handleInsert} disabled={pending} />
           </label>
           <ErrorBanner>{error}</ErrorBanner>
-          <Button type="submit" disabled={pending || !answer.trim()} className="min-h-11 px-4">
+          <Button
+            type="submit"
+            data-meet="video-nakijken"
+            disabled={pending || !answer.trim()}
+            className="min-h-11 px-4"
+          >
             {pending ? labels.checking : labels.check}
           </Button>
         </form>
@@ -693,7 +714,11 @@ function OefenKaart({
       </div>
 
       <p className="mt-3 text-sm">
-        <Link href={oefenHref as '/oefenen'} className="text-accent underline underline-offset-2">
+        <Link
+          href={oefenHref as '/oefenen'}
+          data-meet="video-meer-oefenen"
+          className="text-accent underline underline-offset-2"
+        >
           {labels.morePractice} →
         </Link>
       </p>
@@ -820,7 +845,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
       </div>
 
       <ErrorBanner>{fotoFout ?? state.error}</ErrorBanner>
-      <Button type="submit" disabled={fotoBezig} className="min-h-11 px-4">
+      <Button type="submit" data-meet="video-vraag-versturen" disabled={fotoBezig} className="min-h-11 px-4">
         {labels.askSend}
       </Button>
     </form>
