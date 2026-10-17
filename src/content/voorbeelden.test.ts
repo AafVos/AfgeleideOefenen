@@ -40,6 +40,8 @@ describe('antwoordpagina-s', () => {
       'x-tot-de-derde',
       'een-gedeeld-door-x',
     ])
+    // Een standaardafgeleide ken je uit je hoofd. Ook hier geen binnenfunctie die gewoon x is.
+    const standaardafgeleide = new Set(['e-tot-de-x', 'ln-x', 'sin-x', 'cos-x', 'tan-x'])
     for (const voorbeeld of voorbeelden) {
       expect(voorbeeld.stappen).toHaveLength(4)
       expect(voorbeeld.stappen[0]).toMatch(/^Stap 0\./)
@@ -52,6 +54,10 @@ describe('antwoordpagina-s', () => {
         expect(tekst).toMatch(/machtsregel/)
         expect(tekst).toMatch(/\$a =/)
         expect(tekst).toMatch(/\$n =/)
+        expect(tekst).not.toMatch(/\$h\(/)
+        expect(tekst).not.toMatch(/\$g/)
+      } else if (standaardafgeleide.has(voorbeeld.slug)) {
+        expect(tekst).toMatch(/standaardafgeleide/)
         expect(tekst).not.toMatch(/\$h\(/)
         expect(tekst).not.toMatch(/\$g/)
       } else {
