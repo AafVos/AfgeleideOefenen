@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { losSelectieOp } from '@/lib/practice/oefenen-indeling'
 import {
-  bouwOnderwerpKeuze,
   bouwZelfToetsBoom,
-  clusterIdsVanOnderwerpen,
   linkNaToets,
   type ZelfToetsIndelingInvoer,
 } from '@/lib/practice/zelf-toets-indeling'
@@ -129,14 +127,11 @@ describe('zelf-toets per theorieblok', () => {
       .paragrafen.find((p) => p.label === '2.4')!
       .blokken.find((b) => b.slug === 'h2-4a')!
 
-    const vanOnderwerpen = clusterIdsVanOnderwerpen(
-      [raaklijn.id, helling.id],
-      data.topics,
-      data.clusters,
-    )
-
-    expect(blok.clusters.map((item) => item.id)).toEqual(vanOnderwerpen)
-    expect(vanOnderwerpen).toEqual(['c-richting', 'c-vergelijking', 'c-helling'])
+    expect(blok.clusters.map((item) => item.id)).toEqual([
+      'c-richting',
+      'c-vergelijking',
+      'c-helling',
+    ])
     expect(blok.clusters.find((item) => item.slug === 'vergelijking')?.id).toBe(
       'c-vergelijking',
     )
@@ -239,17 +234,5 @@ describe('zelf-toets per theorieblok', () => {
         'onderwerp',
       ),
     ).toBe('/oefenen?chapter=h2&topic=raaklijn&cluster=vergelijking')
-  })
-})
-
-describe('oude zelf-toetsindeling', () => {
-  it('groepeert nog steeds per onderwerp', () => {
-    const oud = bouwOnderwerpKeuze(data.chapters, data.topics, data.clusters)
-    expect(oud.map((h) => h.slug)).toEqual(['h2', 'beweging'])
-    expect(oud[0]!.onderwerpen.map((o) => o.title)).toEqual(['Raaklijn', 'Helling'])
-    expect(oud[0]!.onderwerpen[0]!.clusters.map((c) => c.id)).toEqual([
-      'c-richting',
-      'c-vergelijking',
-    ])
   })
 })

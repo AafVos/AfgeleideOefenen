@@ -10,9 +10,6 @@ import {
  * onderwerpen die eraan hangen. Daarbinnen kan de leerling ook één soort
  * som kiezen. Hoofdstukken zonder blokken, zoals Beweging, blijven de
  * lijst van onderwerpen.
- *
- * De oude indeling blijft in `bouwOnderwerpKeuze`, achter dezelfde
- * schakelaar als de oefenpagina.
  */
 
 export type ToetsCluster = {
@@ -56,14 +53,6 @@ export type ToetsHoofdstuk = {
   paragrafen: ToetsParagraaf[]
   /** Onderwerpen die niet aan een theorieblok hangen. */
   losseOnderwerpen: ToetsOnderwerp[]
-}
-
-/** Oude keuze: hoofdstuk, onderwerp, soort som. */
-export type OnderwerpKeuze = {
-  id: string
-  slug: string
-  title: string
-  onderwerpen: ToetsOnderwerp[]
 }
 
 type HoofdstukInvoer = {
@@ -217,23 +206,6 @@ export function bouwZelfToetsBoom(data: ZelfToetsIndelingInvoer): ToetsHoofdstuk
   return hoofdstukken
 }
 
-/** Oude boom: per hoofdstuk de onderwerpen, zonder paragrafen. */
-export function bouwOnderwerpKeuze(
-  chapters: HoofdstukInvoer[],
-  topics: OnderwerpInvoer[],
-  clusters: ClusterInvoer[],
-): OnderwerpKeuze[] {
-  return [...chapters].sort(vergelijkHoofdstukVolgorde).map((chapter) => ({
-    id: chapter.id,
-    slug: chapter.slug,
-    title: chapter.title,
-    onderwerpen: topics
-      .filter((topic) => topic.chapter_id === chapter.id)
-      .sort((a, b) => a.order_index - b.order_index)
-      .map((topic) => onderwerpVan(topic, clusters)),
-  }))
-}
-
 export function clusterIdsVanHoofdstuk(hoofdstuk: ToetsHoofdstuk): string[] {
   const uitBlokken = hoofdstuk.paragrafen.flatMap((paragraaf) =>
     paragraaf.blokken.flatMap((blok) => blok.clusters.map((cluster) => cluster.id)),
@@ -242,24 +214,6 @@ export function clusterIdsVanHoofdstuk(hoofdstuk: ToetsHoofdstuk): string[] {
     onderwerp.clusters.map((cluster) => cluster.id),
   )
   return [...uitBlokken, ...uitLos]
-}
-
-/** Alle soorten sommen van de onderwerpen, in de volgorde van die onderwerpen. */
-export function clusterIdsVanOnderwerpen(
-  topicIds: string[],
-  topics: { id: string; order_index: number }[],
-  clusters: { id: string; topic_id: string; order_index: number }[],
-): string[] {
-  const gekozen = new Set(topicIds)
-  const ids: string[] = []
-  for (const topic of [...topics].sort((a, b) => a.order_index - b.order_index)) {
-    if (!gekozen.has(topic.id)) continue
-    const vanTopic = clusters
-      .filter((cluster) => cluster.topic_id === topic.id)
-      .sort((a, b) => a.order_index - b.order_index)
-    for (const cluster of vanTopic) ids.push(cluster.id)
-  }
-  return ids
 }
 
 export type ToetsResultaatGroep = {
