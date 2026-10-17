@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 
 import { Link } from '@/i18n/navigation'
 import { hrefMetOefenpad, veiligOefenpad } from '@/lib/auth/oefenpad'
-import { canoniek } from '@/lib/seo'
+import { canoniek, nietIndexeren } from '@/lib/seo'
 
 import { ForgotForm } from './forgot-form'
 
@@ -16,6 +16,7 @@ export async function generateMetadata({
   return {
     title: t('title'),
     alternates: canoniek(locale, '/wachtwoord-vergeten'),
+    robots: nietIndexeren(),
   }
 }
 
