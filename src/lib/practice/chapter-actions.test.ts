@@ -40,6 +40,8 @@ const QUESTION = {
 let progress: ProgressRow
 let answers: AnswerRow[]
 let aiSaysCorrect: boolean
+/** De extra controle valt om (netwerk of Gemini). */
+let aiValtOm: boolean
 /** Engelse tekst die een mislukte antwoordinvoeg moet teruggeven. */
 let antwoordInvoegfout: string | null
 /** Fout bij het aanmaken van voortgang. De eerste lezing vindt dan niets. */
@@ -149,13 +151,16 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 
 vi.mock('@/lib/ai/check-answer-new', () => ({
-  checkWrongAnswerNew: async () => ({
-    errorExplanation: aiSaysCorrect ? '' : 'Je hebt de macht laten staan.',
-    category: null,
-    fromCache: false,
-    isMathematicallyCorrect: aiSaysCorrect,
-    generatedSteps: [],
-  }),
+  checkWrongAnswerNew: async () => {
+    if (aiValtOm) throw new Error('fetch failed')
+    return {
+      errorExplanation: aiSaysCorrect ? '' : 'Je hebt de macht laten staan.',
+      category: null,
+      fromCache: false,
+      isMathematicallyCorrect: aiSaysCorrect,
+      generatedSteps: [],
+    }
+  },
 }))
 
 const { flagQuestionNewAction, skipStudyQuestionAction, submitStudyAnswerAction } =
@@ -173,6 +178,7 @@ describe('submitStudyAnswerAction', () => {
     progress = freshProgress(2, 2)
     answers = []
     aiSaysCorrect = false
+    aiValtOm = false
     verseBoekhouding()
   })
 
@@ -211,6 +217,30 @@ describe('submitStudyAnswerAction', () => {
     expect(progress.total_correct).toBe(2)
   })
 
+  it('zegt het tegen de leerling als de extra controle mislukt', async () => {
+    aiValtOm = true
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await submitStudyAnswerAction('q1', '3x')
+
+    expect(result).toMatchObject({
+      kind: 'incorrect',
+      melding: 'Het lukte even niet om te controleren of je antwoord anders opgeschreven toch goed is.',
+    })
+    // Het antwoord is wél bewaard, en telt gewoon als poging.
+    expect(answers).toHaveLength(1)
+    expect(progress.total_answered).toBe(3)
+    expect(JSON.stringify(result)).not.toContain('fetch failed')
+
+    vi.restoreAllMocks()
+  })
+
+  it('meldt niets extra als het antwoord gewoon fout is', async () => {
+    const result = await submitStudyAnswerAction('q1', '3x')
+
+    expect(result).toMatchObject({ kind: 'incorrect', melding: null })
+  })
+
   it('slaat op hoe lang de leerling over de opgave deed', async () => {
     await submitStudyAnswerAction('q1', '6x', 42.4)
 
@@ -242,6 +272,7 @@ describe('skipStudyQuestionAction', () => {
     progress = freshProgress(2, 2)
     answers = []
     aiSaysCorrect = false
+    aiValtOm = false
     verseBoekhouding()
   })
 
@@ -292,6 +323,7 @@ describe('fouttekst van de database', () => {
     progress = freshProgress(2, 2)
     answers = []
     aiSaysCorrect = false
+    aiValtOm = false
     verseBoekhouding()
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })

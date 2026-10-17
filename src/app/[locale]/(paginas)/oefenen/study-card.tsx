@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner, NakijkMelding } from '@/components/ui'
 import {
   skipStudyQuestionAction,
   startStudySessionAction,
@@ -60,6 +60,7 @@ type State =
       correctAnswer: string
       latexCorrectAnswer: string | null
       errorExplanation: string | null
+      melding: string | null
     }
   /** De leerling wist het niet en vroeg de uitwerking op (zie AFG-102). */
   | {
@@ -195,6 +196,7 @@ export function StudyCard({
         correctAnswer: result.correctAnswer,
         latexCorrectAnswer: result.latexCorrectAnswer,
         errorExplanation: result.errorExplanation,
+        melding: result.melding,
       })
     })
   }
@@ -455,6 +457,7 @@ export function StudyCard({
           <WrongFeedback
             steps={steps}
             explanation={state.errorExplanation}
+            melding={state.melding}
             revealed={revealed}
             onReveal={() => setRevealed(true)}
             onNext={next}
@@ -570,6 +573,7 @@ function FoutUitleg({ text }: { text: string | null }) {
 function WrongFeedback({
   steps,
   explanation,
+  melding,
   revealed,
   onReveal,
   onNext,
@@ -578,6 +582,7 @@ function WrongFeedback({
 }: {
   steps: Step[]
   explanation: string | null
+  melding: string | null
   revealed: boolean
   onReveal: () => void
   onNext: () => void
@@ -585,7 +590,12 @@ function WrongFeedback({
   pending: boolean
 }) {
   const t = useTranslations('PracticeCard')
-  const uitleg = <FoutUitleg text={explanation} />
+  const uitleg = (
+    <>
+      <FoutUitleg text={explanation} />
+      <NakijkMelding text={melding} />
+    </>
+  )
 
   if (!revealed) {
     return (
