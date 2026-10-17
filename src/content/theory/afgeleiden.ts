@@ -146,7 +146,11 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           { problem: 'f(x) = (4x+3)^3', answer: "f'(x) = 12(4x+3)^2", steps: ['Binnenste: $h(x) = 4x+3$, dus $h\'(x) = 4$', 'Buitenste macht 3: $3(4x+3)^2 \\cdot 4 = 12(4x+3)^2$'] },
           { problem: 'f(x) = (x^2+1)^3', answer: "f'(x) = 6x(x^2+1)^2", steps: ['Binnenste: $h(x) = x^2+1$, dus $h\'(x) = 2x$', "$f'(x) = 3(x^2+1)^2 \\cdot 2x = 6x(x^2+1)^2$"] },
           { problem: 'f(x) = \\sqrt{3x+1}', answer: "f'(x) = \\dfrac{3}{2\\sqrt{3x+1}}", steps: ['Herschrijf: $(3x+1)^{1/2}$, dus $h(x) = 3x+1$ en $h\'(x) = 3$', "Afgeleide: $\\tfrac{1}{2}(3x+1)^{-1/2} \\cdot 3 = \\dfrac{3}{2\\sqrt{3x+1}}$"] },
-          { problem: '\\sqrt{x^2+1}', answer: "\\dfrac{x}{\\sqrt{x^2+1}}" },
+          {
+            problem: 'f(x) = \\sqrt{x^2+1}',
+            answer: "f'(x) = \\dfrac{x}{\\sqrt{x^2+1}}",
+            steps: ['Herschrijf: $(x^2+1)^{1/2}$, dus $h(x) = x^2+1$ en $h\'(x) = 2x$', "Afgeleide: $\\tfrac{1}{2}(x^2+1)^{-1/2} \\cdot 2x = \\dfrac{x}{\\sqrt{x^2+1}}$"],
+          },
         ],
       },
     ],
