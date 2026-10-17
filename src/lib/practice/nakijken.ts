@@ -166,7 +166,19 @@ export async function bewaarAntwoord(
   return data.id
 }
 
-/** Rekent een al opgeslagen antwoord alsnog goed na de extra controle. */
-export async function rekenAlsnogGoed(db: DB, answerId: string): Promise<void> {
-  await db.from('session_answers_new').update({ is_correct: true }).eq('id', answerId)
+/**
+ * Rekent een al opgeslagen antwoord alsnog goed na de extra controle.
+ *
+ * Lukt dat niet, dan blijft de rij op fout staan terwijl de leerling "goed"
+ * ziet. Dat is geen reden om hem een foutmelding te geven — zijn antwoord
+ * wás goed en de voortgang gaat gewoon omhoog — maar het mag ook niet
+ * stilletjes verdwijnen, dus het gaat in de log.
+ */
+export async function rekenAlsnogGoed(db: DB, plek: string, answerId: string): Promise<void> {
+  const { error } = await db
+    .from('session_answers_new')
+    .update({ is_correct: true })
+    .eq('id', answerId)
+
+  if (error) console.error(plek, error.code ?? '', error.message ?? '')
 }

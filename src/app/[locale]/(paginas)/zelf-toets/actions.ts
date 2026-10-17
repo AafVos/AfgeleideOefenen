@@ -246,7 +246,8 @@ export async function submitCustomTestAnswerAction(
         })
       },
     })
-    if (uitslag.viaExtraControle) await rekenAlsnogGoed(supabase, answerId)
+    if (uitslag.viaExtraControle)
+      await rekenAlsnogGoed(supabase, '[zelf-toets] alsnog goed rekenen mislukt:', answerId)
   } catch (e) {
     return vangOpslag('[zelf-toets] nakijken mislukt:', e)
   }

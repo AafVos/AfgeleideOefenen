@@ -139,7 +139,8 @@ export async function submitStudyAnswerAction(
       },
     })
 
-    if (uitslag.viaExtraControle) await rekenAlsnogGoed(supabase, answerId)
+    if (uitslag.viaExtraControle)
+      await rekenAlsnogGoed(supabase, '[oefenen] alsnog goed rekenen mislukt:', answerId)
 
     if (uitslag.goed) {
       const [progress, clusterTitle] = await Promise.all([
@@ -386,7 +387,7 @@ async function bumpProgressOnIncorrect(
 ) {
   const p = await getOrCreateProgress(db, userId, topicId, clusterId)
   const next = progressAfterIncorrect(p.status, p.correct_streak)
-  await db
+  const { error } = await db
     .from('user_progress_new')
     .update({
       total_answered: p.total_answered + 1,
@@ -394,6 +395,10 @@ async function bumpProgressOnIncorrect(
       status: next.status,
     })
     .eq('id', p.id)
+  if (error) {
+    console.error('[voortgang] bijwerken na fout antwoord mislukt:', error.message)
+    throw new OpslagMislukt()
+  }
 }
 
 /**
@@ -409,11 +414,15 @@ async function bumpProgressOnSkip(
 ) {
   const p = await getOrCreateProgress(db, userId, topicId, clusterId)
   const next = progressAfterIncorrect(p.status, p.correct_streak)
-  await db
+  const { error } = await db
     .from('user_progress_new')
     .update({
       correct_streak: next.correct_streak,
       status: next.status,
     })
     .eq('id', p.id)
+  if (error) {
+    console.error('[voortgang] bijwerken na overslaan mislukt:', error.message)
+    throw new OpslagMislukt()
+  }
 }

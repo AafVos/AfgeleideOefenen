@@ -30,8 +30,26 @@ vi.mock('@/lib/ai/check-answer-new', () => ({
   },
 }))
 
-const { EXTRA_CONTROLE_MISLUKT, kijkAntwoordNa, OpslagMislukt, vangOpslag } =
+const { EXTRA_CONTROLE_MISLUKT, kijkAntwoordNa, OpslagMislukt, rekenAlsnogGoed, vangOpslag } =
   await import('./nakijken')
+
+type DbFout = { code: string; message: string }
+
+/** Nepdatabase met één `update().eq()`, die wel of niet een fout teruggeeft. */
+function nepDb(fout: DbFout | null) {
+  const bijgewerkt: Record<string, unknown>[] = []
+  const db = {
+    from: () => ({
+      update: (v: Record<string, unknown>) => ({
+        eq: async () => {
+          if (!fout) bijgewerkt.push(v)
+          return { data: null, error: fout }
+        },
+      }),
+    }),
+  }
+  return { db: db as unknown as Parameters<typeof rekenAlsnogGoed>[0], bijgewerkt }
+}
 
 function nakijken(userAnswer: string, bewaar?: (goed: boolean) => Promise<void>) {
   return kijkAntwoordNa({
@@ -174,5 +192,32 @@ describe('vangOpslag', () => {
     vangOpslag('[test]', new OpslagMislukt())
 
     expect(vi.mocked(console.error)).not.toHaveBeenCalled()
+  })
+})
+
+describe('rekenAlsnogGoed', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('zet het antwoord op goed', async () => {
+    const { db, bijgewerkt } = nepDb(null)
+
+    await rekenAlsnogGoed(db, '[test]', 'a1')
+
+    expect(bijgewerkt).toEqual([{ is_correct: true }])
+    expect(vi.mocked(console.error)).not.toHaveBeenCalled()
+  })
+
+  it('logt het als de database het niet aanneemt', async () => {
+    const { db } = nepDb({ code: '42501', message: 'permission denied for table x' })
+
+    await rekenAlsnogGoed(db, '[test] alsnog goed rekenen mislukt:', 'a1')
+
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain('permission denied')
   })
 })
