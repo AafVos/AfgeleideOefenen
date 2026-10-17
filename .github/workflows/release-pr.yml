@@ -1,0 +1,75 @@
+# Elke ochtend de pull request die `volgende` naar `main` brengt.
+#
+# Gewoon werk gaat naar `volgende` en staat daar op de voorbeeldversie. Eén
+# keer per dag gaat alles in één pull request naar `main`. Die merget Aaf
+# zelf — deze workflow maakt hem alleen, en werkt de tekst bij zolang hij
+# open staat.
+#
+# Staat `volgende` niet voor op `main`, dan doet de workflow niets en blijft
+# hij groen.
+#
+# Waarom de verplichte controles toch draaien op deze pull request: een pull
+# request die met GITHUB_TOKEN is gemaakt, start geen andere workflows. De
+# controles hangen daarom niet aan de pull request maar aan de commit zelf —
+# controle.yml draait ook bij een push op `volgende`, en GitHub kijkt voor de
+# verplichte checks naar de kop-commit. Die staat er dus al voordat deze
+# workflow 's ochtends langskomt. Een eigen token is daarvoor niet nodig.
+name: Release-pull-request
+
+on:
+  # Elke ochtend om 05:00 UTC — 07:00 Nederlandse tijd in de zomer, 06:00 in
+  # de winter. Even vroeg als de andere ochtendcontroles.
+  schedule:
+    - cron: "0 5 * * *"
+  # Met de hand, vanaf het tabblad Actions.
+  workflow_dispatch:
+  # Op een pull request alleen een droogloop: je ziet wat de tekst zou worden
+  # zonder dat er een release-pull-request ontstaat.
+  pull_request:
+    paths:
+      - .github/workflows/release-pr.yml
+      - scripts/release-pr.sh
+
+# Twee runs tegelijk zouden twee pull requests kunnen maken.
+concurrency:
+  group: release-pr-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  proef:
+    name: Proef van de release-pull-request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Tonen wat de pull request zou worden
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/release-pr.sh --droog
+
+  release-pr:
+    name: Release-pull-request
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Pull request maken of bijwerken
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/release-pr.sh

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kijkt of HEAD botst met de gegeven tak (standaard origin/main).
+# Kijkt of HEAD botst met de doeltak (standaard origin/volgende).
 #
 # Afsluitcode 0: geen conflict. De tak mag best achterlopen; de controle in
 # controle.yml draait dan op de samengevoegde versie.
@@ -7,7 +7,7 @@
 # Elke andere code: het nakijken zelf mislukte.
 set -euo pipefail
 
-basis="${1:-origin/main}"
+basis="${1:-origin/volgende}"
 
 set +e
 uitvoer=$(git merge-tree --write-tree --name-only HEAD "$basis" 2>&1)
@@ -45,7 +45,7 @@ bestanden=$(printf '%s\n' "$uitvoer" | awk '
   { print }
 ')
 
-echo "::error::Deze tak botst met $basis. Lint, types en de weg van een leerling starten niet zolang dat zo is. Voeg main samen of rebase, en duw opnieuw."
+echo "::error::Deze tak botst met $basis. Lint, types en de weg van een leerling starten niet zolang dat zo is. Voeg $basis samen of rebase erop, en duw opnieuw."
 if [ -n "$bestanden" ]; then
   echo "Bestanden die botsen:"
   printf '%s\n' "$bestanden"

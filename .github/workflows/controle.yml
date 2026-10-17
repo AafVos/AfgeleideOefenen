@@ -5,10 +5,17 @@
 # "The `next lint` command has been removed. ... `next build` no longer runs
 # linting."). Deze workflow vult dat gat.
 #
-# Botst de pull request met main, dan maakt GitHub de samengevoegde versie
-# (refs/pull/<nummer>/merge) niet aan en start deze workflow helemaal niet.
-# De checks hieronder blijven dan weg: niet rood, gewoon afwezig. De workflow
-# botst-met-main.yml draait op de tak zelf en wordt in dat geval rood.
+# Botst de pull request met zijn doeltak, dan maakt GitHub de samengevoegde
+# versie (refs/pull/<nummer>/merge) niet aan en start deze workflow helemaal
+# niet. De checks hieronder blijven dan weg: niet rood, gewoon afwezig. De
+# workflow botst-met-doeltak.yml draait op de tak zelf en wordt in dat geval
+# rood.
+#
+# Deze controle draait ook bij een push op `volgende`. Dat is geen dubbel
+# werk: een squash-merge maakt een nieuwe commit die nog niemand getest
+# heeft, en de dagelijkse release-pull-request (volgende → main) heeft juist
+# op die commit groene controles nodig. Een pull request die met GITHUB_TOKEN
+# gemaakt is start zelf geen workflows, dus die checks moeten er al staan.
 #
 # De live site is de Cloudflare Worker `afgeleide-oefenen`. Workers Builds
 # bouwt elke pull request en zet `main` live. De Workers-bouw hier is dezelfde
@@ -20,7 +27,11 @@ name: Controle
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, volgende]
+  # Met de hand, als de checks op een commit ontbreken. Dat gebeurt nadat een
+  # bot `main` in `volgende` heeft samengevoegd: een bot start geen workflows.
+  #   gh workflow run controle.yml --ref volgende
+  workflow_dispatch:
 
 # Eén tak hoeft maar één keer tegelijk gecontroleerd te worden: duw je snel
 # achter elkaar, dan stopt de oude run.

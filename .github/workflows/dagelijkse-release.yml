@@ -10,7 +10,13 @@
 name: Dagelijkse release
 
 on:
-  # Elke ochtend om 05:00 UTC — dat is 07:00 Nederlandse tijd in de zomer,
+  # Zodra de release-pull-request op main gemerged is. Sinds de dagelijkse
+  # release verandert main alleen op dat moment, dus dan is het lijstje
+  # compleet. Bestaat de datum-tag al, dan doet de run niets.
+  push:
+    branches: [main]
+  # Vangnet, en voor een dag waarop main langs een andere weg veranderde:
+  # elke ochtend om 05:00 UTC — dat is 07:00 Nederlandse tijd in de zomer,
   # 06:00 in de winter. Zelfde moment als het dashboard vergelijken.
   schedule:
     - cron: "0 5 * * *"
