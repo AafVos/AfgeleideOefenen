@@ -244,7 +244,7 @@ export function ConfigForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
-          className="w-full max-w-sm rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted/50"
+          className="w-full max-w-sm rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted"
           placeholder={defaultName}
         />
       </div>
