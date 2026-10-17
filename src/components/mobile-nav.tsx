@@ -53,6 +53,10 @@ export function MobileNav({
                 {role === 'admin' && (
                   <NavLink href="/admin" meet="menu-admin" onClick={() => setOpen(false)}>{t('admin')}</NavLink>
                 )}
+                <div className="flex flex-col space-y-0.5 border-t border-border mt-1 pt-1">
+                  <NavLink href={`/${locale}/instellingen`} meet="menu-instellingen" onClick={() => setOpen(false)}>{t('settings')}</NavLink>
+                  <NavLink href={`/${locale}/feedback`} meet="menu-feedback" onClick={() => setOpen(false)}>{t('feedback')}</NavLink>
+                </div>
                 <div className="border-t border-border mt-1 pt-1">
                   {username && (
                     <p className="px-3 py-1.5 text-xs text-text-muted truncate">{username}</p>
