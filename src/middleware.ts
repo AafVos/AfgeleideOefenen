@@ -56,6 +56,9 @@ export async function middleware(request: NextRequest) {
 
   // Een adres zonder taalcode — een gedeelde link, een adres uit de sitemap,
   // of gewoon / — krijgt /nl ervoor, anders loopt het dood op een 404.
+  // Status 301 (niet 308): zo blijft het één permanente sprong naar de
+  // echte startpagina, in plaats van een tussenstap die Google als eigen
+  // resultaat kan vasthouden.
   if (
     eerste !== TAAL &&
     eerste !== '_next' &&
@@ -63,7 +66,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const url = request.nextUrl.clone()
     url.pathname = pathname === '/' ? `/${TAAL}` : `/${TAAL}${pathname}`
-    return NextResponse.redirect(url, 308)
+    return NextResponse.redirect(url, 301)
   }
 
   return await updateSession(request)
