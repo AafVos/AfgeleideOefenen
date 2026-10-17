@@ -166,11 +166,11 @@ export default async function HomePage() {
                 ['topic7Title', 'topic7Body', '/theorie#hoofdstuk-h9'],
               ] as const
             ).map(([titleKey, bodyKey, href]) => (
-              <li key={titleKey}>
+              <li key={titleKey} className="flex">
                 <Link
                   href={href}
                   data-meet="start-onderwerp"
-                  className="block min-h-11 rounded-xl border border-border bg-surface p-4 hover:bg-surface-2"
+                  className="block min-h-11 w-full rounded-xl border border-border bg-surface p-4 hover:bg-surface-2"
                 >
                   <p className="font-medium text-text underline decoration-border underline-offset-4">
                     {t(titleKey)}
