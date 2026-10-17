@@ -1,11 +1,10 @@
 'use server'
 
 import { SITE_CONFIG } from '@/config/site'
-import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
 import { EMAIL_FROM, meldAdres } from '@/lib/email/adressen'
 import { maakMailer } from '@/lib/email/mailer'
-import { answersMatch } from '@/lib/practice/engine'
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { kijkAntwoordNa } from '@/lib/practice/nakijken'
+import { createClient } from '@/lib/supabase/server'
 
 function escapeHtml(s: string): string {
   return s
@@ -162,6 +161,8 @@ export type VideoAnswerResult =
       correctAnswer: string
       latexCorrectAnswer: string | null
       steps: Array<{ id: string; step_order: number; step_description: string }>
+      /** Korte zin als er iets niet lukte, bijvoorbeeld de extra controle. */
+      melding: string | null
     }
 
 /**
@@ -188,23 +189,15 @@ export async function checkVideoAnswerAction(
     .maybeSingle()
   if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
 
-  const alts: string[] = question.answer_alternatives ?? []
-  let isCorrect = answersMatch(answer, question.answer, alts)
+  // Niets opslaan: er is geen sessie, dus `kijkAntwoordNa` krijgt geen `bewaar`.
+  const uitslag = await kijkAntwoordNa({
+    questionId: question.id,
+    userAnswer: answer,
+    correctAnswer: question.answer,
+    alternatives: question.answer_alternatives,
+  })
 
-  // Fout volgens de tekstmatch? Vraag de AI of het een geldige alternatieve notatie is.
-  if (!isCorrect) {
-    try {
-      const service = createServiceRoleClient()
-      const aiResult = await checkWrongAnswerNew(service, question.id, answer)
-      if (!('error' in aiResult) && aiResult.isMathematicallyCorrect) {
-        isCorrect = true
-      }
-    } catch (e) {
-      console.error('[check-video-answer]', e)
-    }
-  }
-
-  if (isCorrect) return { kind: 'correct' }
+  if (uitslag.goed) return { kind: 'correct' }
 
   const { data: steps } = await supabase
     .from('question_steps_new')
@@ -221,5 +214,6 @@ export async function checkVideoAnswerAction(
       step_order: number
       step_description: string
     }>,
+    melding: uitslag.melding,
   }
 }

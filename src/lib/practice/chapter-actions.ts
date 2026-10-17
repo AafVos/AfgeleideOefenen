@@ -1,31 +1,22 @@
 'use server'
 
-import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 import {
-  answersMatch,
   cleanTimeSpentSec,
   progressAfterCorrect,
   progressAfterIncorrect,
 } from './engine'
+import {
+  bewaarAntwoord,
+  kijkAntwoordNa,
+  OPSLAAN_MISLUKT,
+  OpslagMislukt,
+  rekenAlsnogGoed,
+  vangOpslag,
+} from './nakijken'
 
 type DB = Awaited<ReturnType<typeof createClient>>
-
-/** Zin op het scherm als opslaan mislukt. De tekst van de database blijft in de log. */
-const OPSLAAN_MISLUKT = 'Opslaan is niet gelukt. Probeer het nog eens.'
-
-class OpslagMislukt extends Error {
-  constructor() {
-    super(OPSLAAN_MISLUKT)
-    this.name = 'OpslagMislukt'
-  }
-}
-
-function vangOpslag(plek: string, e: unknown): { kind: 'error'; message: string } {
-  if (!(e instanceof OpslagMislukt)) console.error(plek, e)
-  return { kind: 'error', message: OPSLAAN_MISLUKT }
-}
 
 async function clusterTitel(db: DB, clusterId: string): Promise<string> {
   const { data } = await db
@@ -48,6 +39,8 @@ export type StudyResult =
       correctAnswer: string
       latexCorrectAnswer: string | null
       errorExplanation: string | null
+      /** Korte zin als er iets niet lukte, bijvoorbeeld de extra controle. */
+      melding: string | null
     }
   | { kind: 'error'; message: string }
 
@@ -118,9 +111,6 @@ export async function submitStudyAnswerAction(
     .maybeSingle()
   if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
 
-  const alts: string[] = question.answer_alternatives ?? []
-  const isCorrect = answersMatch(userAnswer, question.answer, alts)
-
   try {
     const sessionId = await getOrCreateSession(
       supabase,
@@ -129,71 +119,29 @@ export async function submitStudyAnswerAction(
       question.cluster_id,
     )
 
-    const { data: answerRow, error: answerError } = await supabase
-      .from('session_answers_new')
-      .insert({
-        session_id: sessionId,
-        question_id: question.id,
-        user_answer: userAnswer,
-        is_correct: isCorrect,
-        time_spent_sec: cleanTimeSpentSec(timeSpentSec),
-      })
-      .select('id')
-      .single()
+    // De voortgang gaat pas na de extra controle bij: een goed antwoord in een
+    // andere notatie mag niet eerst als fout geteld worden en daarna nog eens
+    // als goed. Zie `kijkAntwoordNa` voor de volgorde.
+    let answerId = ''
+    const uitslag = await kijkAntwoordNa({
+      questionId: question.id,
+      userAnswer,
+      correctAnswer: question.answer,
+      alternatives: question.answer_alternatives,
+      bewaar: async (goed) => {
+        answerId = await bewaarAntwoord(supabase, '[oefenen] antwoord opslaan mislukt:', {
+          sessionId,
+          questionId: question.id,
+          userAnswer,
+          isCorrect: goed,
+          timeSpentSec,
+        })
+      },
+    })
 
-    if (answerError || !answerRow) {
-      console.error(
-        '[oefenen] antwoord opslaan mislukt:',
-        answerError?.code ?? '',
-        answerError?.message ?? '',
-      )
-      return { kind: 'error', message: OPSLAAN_MISLUKT }
-    }
+    if (uitslag.viaExtraControle) await rekenAlsnogGoed(supabase, answerId)
 
-    if (isCorrect) {
-      const [progress, clusterTitle] = await Promise.all([
-        bumpProgressOnCorrect(
-          supabase,
-          user.id,
-          question.topic_id,
-          question.cluster_id,
-        ),
-        clusterTitel(supabase, question.cluster_id),
-      ])
-      return {
-        kind: 'correct',
-        streak: progress.correct_streak,
-        mastered: progress.status === 'mastered',
-        clusterTitle,
-      }
-    }
-
-    // Nog niet goed volgens de database. Eerst de AI-controle en de uitleg
-    // ophalen (cache-first; schrijfacties gaan via service role), pas daarna de
-    // voortgang bijwerken: een goed antwoord in een andere notatie mag niet
-    // eerst als fout geteld worden en daarna nog eens als goed.
-    let errorExplanation: string | null = null
-    let aiSaysCorrect = false
-    try {
-      const service = createServiceRoleClient()
-      const aiResult = await checkWrongAnswerNew(service, question.id, userAnswer)
-      if ('error' in aiResult) {
-        console.error('[check-answer-new]', aiResult.error)
-      } else {
-        errorExplanation = aiResult.errorExplanation || null
-        aiSaysCorrect = aiResult.isMathematicallyCorrect
-      }
-    } catch (e) {
-      console.error('[check-answer-new] unexpected', e)
-    }
-
-    // AI zegt wiskundig correct (alternatieve notatie): alsnog goed rekenen
-    if (aiSaysCorrect) {
-      await supabase
-        .from('session_answers_new')
-        .update({ is_correct: true })
-        .eq('id', answerRow.id)
-
+    if (uitslag.goed) {
       const [progress, clusterTitle] = await Promise.all([
         bumpProgressOnCorrect(
           supabase,
@@ -216,10 +164,11 @@ export async function submitStudyAnswerAction(
 
     return {
       kind: 'incorrect',
-      answerId: answerRow.id,
+      answerId,
       correctAnswer: question.answer,
       latexCorrectAnswer: question.latex_answer ?? null,
-      errorExplanation,
+      errorExplanation: uitslag.uitleg,
+      melding: uitslag.melding,
     }
   } catch (e) {
     return vangOpslag('[oefenen] nakijken mislukt:', e)

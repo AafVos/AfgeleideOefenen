@@ -170,6 +170,21 @@ export function ErrorBanner({ children }: { children: React.ReactNode }) {
   )
 }
 
+/**
+ * Korte mededeling bij het nakijken: er ging iets niet helemaal, maar de
+ * leerling kan gewoon door. Rustiger dan `ErrorBanner`, zodat een hik in de
+ * extra controle niet als een echte fout overkomt — en niet stilletjes
+ * verdwijnt.
+ */
+export function NakijkMelding({ text }: { text: string | null }) {
+  if (!text) return null
+  return (
+    <p className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-muted">
+      {text}
+    </p>
+  )
+}
+
 export function Badge({
   children,
   tone = 'neutral',
