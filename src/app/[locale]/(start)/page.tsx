@@ -114,6 +114,15 @@ export default async function HomePage() {
               ),
             })}
           </p>
+          <p className="mt-4">
+            <a
+              href="#regels"
+              data-meet="start-herfstvakantie"
+              className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
+            >
+              {t('herfstvakantie')}
+            </a>
+          </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
