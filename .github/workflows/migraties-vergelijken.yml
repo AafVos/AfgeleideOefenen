@@ -1,0 +1,189 @@
+# Kijkt één keer per dag of elke migratie die in de repo staat, ook echt op de
+# database gedraaid is.
+#
+# Waarom dit nodig is: de controle "Weg van een leerling" draait alle migraties
+# op een verse lokale database. Daar valt dus nooit op dat er eentje wel in
+# `supabase/migrations/` staat maar nooit op de echte database is gezet. Dat is
+# twee keer gebeurd (0061 en 0071); bij 0071 stonden zestien eindexamenvragen
+# maandenlang wel in de repo en niet op de site.
+#
+# Alleen lezen: één `select` op het register, verder niets. Deze workflow draait
+# nooit zelf een migratie — dat blijft mensenwerk, met een reservekopie erbij
+# als er iets weggehaald of veranderd wordt.
+name: Migraties vergelijken
+
+on:
+  # Elke ochtend, na de andere twee ochtendcontroles.
+  schedule:
+    - cron: "30 5 * * *"
+  # En met de hand, vanaf het tabblad Actions, bijvoorbeeld vlak nadat er een
+  # migratie gedraaid is.
+  workflow_dispatch:
+
+concurrency:
+  group: migraties-vergelijken
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # Nodig om de melding hieronder als issue te openen, bij te werken en weer te
+  # sluiten.
+  issues: write
+
+jobs:
+  vergelijken:
+    name: Migraties in de repo vergelijken met de database
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      # De titel waaraan de melding te herkennen is. Verander je hem, dan vindt
+      # de volgende run de openstaande melding niet meer terug en komt er een
+      # tweede bij.
+      TITEL: "Een migratie uit de repo is niet op de database gedraaid"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Met opzet `main`: die tak is wat live staat. Een migratie die nog in
+          # een pull request zit, hoort nog niet gedraaid te zijn.
+          ref: main
+
+      # Zonder verbindingsgegevens kan deze controle het register niet lezen.
+      # Dan stopt hij met uitleg in plaats van met een foutmelding waar niemand
+      # iets aan heeft — net als de andere twee ochtendcontroles.
+      - name: Kijken of het geheim er is
+        id: geheim
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "::warning::Het geheim SUPABASE_DB_URL staat niet in GitHub → Settings → Secrets. Zonder die gegevens kan deze controle het migratieregister niet lezen."
+            {
+              echo "Deze controle is overgeslagen: het geheim \`SUPABASE_DB_URL\` ontbreekt."
+              echo
+              echo "Zet er de verbindingsgegevens van de echte database in — de variant die"
+              echo "over IPv4 werkt (de \"session pooler\"), want een GitHub-runner heeft geen IPv6."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "draaien=nee" >> "$GITHUB_OUTPUT"
+          else
+            echo "draaien=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v7
+        if: ${{ steps.geheim.outputs.draaien == 'ja' }}
+        with:
+          # Zelfde reden als in controle.yml: de Node-versie staat in .nvmrc.
+          node-version-file: .nvmrc
+
+      # `psql` zit in de ubuntu-image, maar dat is niets om op te bouwen: valt
+      # hij er een keer uit, dan haalt deze stap hem alsnog binnen.
+      - name: psql klaarzetten
+        if: ${{ steps.geheim.outputs.draaien == 'ja' }}
+        run: |
+          set -euo pipefail
+          if ! command -v psql > /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+
+      - name: Register vergelijken
+        id: vergelijk
+        if: ${{ steps.geheim.outputs.draaien == 'ja' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -uo pipefail
+
+          # 0 = alles gedraaid, 2 = er ontbreekt er minstens één, 1 = echte fout.
+          node scripts/controleer-migraties.mjs > migraties.txt
+          code=$?
+
+          case "$code" in
+            0)
+              echo "mist=nee" >> "$GITHUB_OUTPUT"
+              echo "Elke migratie uit \`supabase/migrations/\` staat ook in het register op de database." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            2)
+              echo "mist=ja" >> "$GITHUB_OUTPUT"
+              # Een waarschuwing, geen rood. Rood hier zou elke ochtend een
+              # mislukte run opleveren voor iets wat niemand vandaag kapot
+              # gemaakt heeft.
+              echo "::warning::Er staat een migratie in de repo die niet op de database gedraaid is. Zie de melding in Issues."
+              {
+                echo "## Nog niet gedraaid"
+                echo
+                echo '```'
+                cat migraties.txt
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              # Hier wél rood: een controle die stilletjes niets doet, is erger
+              # dan geen controle. Zo krijgt Aaf een mail van GitHub.
+              echo "::error::Het vergelijken zelf ging mis (afsluitcode $code)."
+              exit 1
+              ;;
+          esac
+
+      # Een waarschuwing in een logboek leest niemand. Bij een verschil komt er
+      # daarom een issue in de repo; die stuurt GitHub wél door. Staat hij er al,
+      # dan wordt alleen de tekst bijgewerkt — dat geeft geen nieuwe melding en
+      # voorkomt elke ochtend hetzelfde bericht.
+      - name: Melding openen of bijwerken
+        if: ${{ steps.vergelijk.outputs.mist == 'ja' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "Deze melding is automatisch gemaakt door de workflow **Migraties vergelijken**."
+            echo
+            echo "Deze bestanden staan in \`supabase/migrations/\` op \`main\`, maar niet in"
+            echo "\`supabase_migrations.schema_migrations\` op de database. Wat erin staat, bereikt"
+            echo "leerlingen dus niet."
+            echo
+            echo '```'
+            cat migraties.txt
+            echo '```'
+            echo
+            echo "Zo zet je er een live (zie ook \`AGENTS.md\`):"
+            echo
+            echo "1. Haalt de migratie iets weg (\`DROP\`, \`DELETE\`, \`TRUNCATE\`, \`ALTER … DROP\`) of"
+            echo "   verandert hij bestaande rijen (\`UPDATE\`)? Maak eerst een reservekopie van de"
+            echo "   tabellen die hij raakt."
+            echo "2. \`psql \"\$AFG_DB_URL\" -v ON_ERROR_STOP=1 --single-transaction -f supabase/migrations/<bestand>.sql\`"
+            echo "3. Registreren:"
+            echo "   \`insert into supabase_migrations.schema_migrations (version, name) values ('<nummer>', '<naam>') on conflict do nothing;\`"
+            echo "4. Nakijken met een \`select\` dat het er echt staat."
+            echo
+            echo "> Deze controle draait **nooit** zelf een migratie. Die database draagt de echte"
+            echo "> accounts en voortgang van leerlingen."
+            echo
+            echo "Laatste controle: [run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+          } > melding.md
+
+          nummer=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.TITEL)][0].number // empty')
+
+          if [ -n "$nummer" ]; then
+            echo "Melding #$nummer staat al open; alleen de tekst bijwerken."
+            gh issue edit "$nummer" --body-file melding.md
+          else
+            gh issue create --title "$TITEL" --body-file melding.md
+          fi
+
+      # Is alles alsnog gedraaid, dan hoeft de melding er niet te blijven staan.
+      - name: Melding sluiten als alles gedraaid is
+        if: ${{ steps.vergelijk.outputs.mist == 'nee' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          nummer=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.TITEL)][0].number // empty')
+          if [ -n "$nummer" ]; then
+            gh issue close "$nummer" \
+              --comment "Elke migratie uit de repo staat weer in het register op de database. Automatisch gesloten."
+          fi
