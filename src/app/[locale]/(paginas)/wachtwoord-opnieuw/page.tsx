@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { veiligOefenpad } from '@/lib/auth/oefenpad'
-import { canoniek } from '@/lib/seo'
+import { canoniek, nietIndexeren } from '@/lib/seo'
 
 import { NewPasswordForm } from './new-password-form'
 
@@ -15,6 +15,7 @@ export async function generateMetadata({
   return {
     title: t('title'),
     alternates: canoniek(locale, '/wachtwoord-opnieuw'),
+    robots: nietIndexeren(),
   }
 }
 

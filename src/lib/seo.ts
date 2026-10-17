@@ -51,6 +51,17 @@ export function canoniek(locale: string, pad = ''): Metadata['alternates'] {
 }
 
 /**
+ * Voor pagina's die al in `src/app/robots.ts` buiten de index staan.
+ *
+ * Die blokkade via robots.txt wordt niet door elke crawler gevolgd, dus zet
+ * dit er ook zelf bij. Elke pagina hierin moet dit zelf zetten, net als
+ * `canoniek`.
+ */
+export function nietIndexeren(): Metadata['robots'] {
+  return { index: false, follow: true }
+}
+
+/**
  * Het deel-kaartje van één openbare pagina: titel, korte tekst en hetzelfde
  * adres als de canonieke link. Zonder dit veld toont een gedeelde link de
  * tekst van de startpagina.
