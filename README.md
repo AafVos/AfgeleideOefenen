@@ -349,12 +349,20 @@ een pull request, zoals hieronder.
 
 ## Hoe iets live komt
 
-1. Eigen tak vanaf de nieuwste `main`, pull request met `gh pr create`.
+1. Eigen tak vanaf de nieuwste `volgende`, pull request met
+   `gh pr create --base volgende`.
 2. De controles in GitHub moeten groen zijn. Cloudflare Workers Builds bouwt
    de pull request en zet er een voorbeeldversie op een `*.workers.dev`-adres
    bij.
-3. Merge naar `main`. Workers Builds zet die versie live op
-   afgeleideoefenen.nl (worker `afgeleide-oefenen`).
+3. Merge naar `volgende`. De stand van die tak staat op
+   <https://volgende-afgeleide-oefenen.alhvos.workers.dev>.
+4. Eén keer per dag maakt een workflow de pull request `volgende` → `main`.
+   Die merget Aaf zelf, met **Create a merge commit**. Workers Builds zet die
+   versie live op afgeleideoefenen.nl (worker `afgeleide-oefenen`).
+
+Alleen iets kritieks (de site of het inloggen doet het niet, het nakijken
+rekent verkeerd, een lek, of `main` is stuk) gaat rechtstreeks naar `main`.
+Zie "Dagelijkse release: van `volgende` naar `main`" in `AGENTS.md`.
 
 Deployen met `wrangler` of `opennextjs-cloudflare deploy` doe je niet.
 
