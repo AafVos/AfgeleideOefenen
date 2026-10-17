@@ -351,14 +351,17 @@ een pull request, zoals hieronder.
 
 1. Eigen tak vanaf de nieuwste `volgende`, pull request met
    `gh pr create --base volgende`.
-2. De controles in GitHub moeten groen zijn. Cloudflare Workers Builds bouwt
-   de pull request en zet er een voorbeeldversie op een `*.workers.dev`-adres
-   bij.
-3. Merge naar `volgende`. De stand van die tak staat op
-   <https://volgende-afgeleide-oefenen.alhvos.workers.dev>.
+2. De controles in GitHub moeten groen zijn.
+3. Merge naar `volgende`.
 4. Eén keer per dag maakt een workflow de pull request `volgende` → `main`.
    Die merget Aaf zelf, met **Create a merge commit**. Workers Builds zet die
    versie live op afgeleideoefenen.nl (worker `afgeleide-oefenen`).
+
+Er is **geen voorbeeldversie** van een tak of van `volgende` op een
+`*.workers.dev`-adres: Workers Builds bouwt wel elke tak, maar die bouw faalt,
+dus er komt geen versie te staan. Bekijk je werk lokaal met `npm run dev` of
+`npm run cf:preview`. Wat er moet gebeuren om het terug te krijgen staat onder
+"Er is geen voorbeeldversie van `volgende`" in `AGENTS.md`.
 
 Alleen iets kritieks (de site of het inloggen doet het niet, het nakijken
 rekent verkeerd, een lek, of `main` is stuk) gaat rechtstreeks naar `main`.

@@ -22,11 +22,10 @@ if [ -z "$repo" ]; then
 fi
 server="${GITHUB_SERVER_URL:-https://github.com}"
 
-# De voorbeeldversie van een tak bij Workers Builds heet
-# <tak>-<worker>.<account>.workers.dev. Die adressen staan ook in
-# supabase/config.toml onder [remotes.productie.auth], anders zou inloggen
-# op de voorbeeldversie niet werken.
-voorbeeld="https://volgende-afgeleide-oefenen.alhvos.workers.dev"
+# Er staat hier bewust geen link naar een voorbeeldversie van `volgende`.
+# <tak>-<worker>.<account>.workers.dev geeft 404 zolang de bouw van
+# niet-productietakken bij Workers Builds faalt. Zie "Er is geen
+# voorbeeldversie van `volgende`" in AGENTS.md.
 
 # Nederlandse datum, ook als de runner op UTC staat.
 titel_datum=$(python3 -c '
@@ -179,11 +178,6 @@ ontbreekt="${ontbreekt%, }"
   fi
   echo
 
-  echo "## Zelf bekijken"
-  echo
-  echo "De voorbeeldversie van \`volgende\`: <$voorbeeld>"
-  echo
-
   if [ -n "$ontbreekt" ]; then
     echo "> [!WARNING]"
     echo "> Op deze stand van \`volgende\` ontbreekt: $ontbreekt."
@@ -195,7 +189,6 @@ ontbreekt="${ontbreekt%, }"
 
   echo "## Even nalopen"
   echo
-  echo "- [ ] De voorbeeldversie opent, en oefenen werkt op telefoon én computer."
   echo "- [ ] Wat hierboven onder \"Zichtbaar voor leerlingen\" staat, klopt met wat je verwacht."
   echo "- [ ] De verplichte controles zijn groen."
   echo "- [ ] Mergen met **Create a merge commit**."

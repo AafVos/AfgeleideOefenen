@@ -31,15 +31,13 @@ gewoon werk naartoe gaat.
 
 * **Gewoon werk.** Tak vanaf `origin/volgende`, pull request naar `volgende`
   (`gh pr create --base volgende`). Controles groen → mergen (squash).
-  Workers Builds zet de stand van `volgende` op
-  <https://volgende-afgeleide-oefenen.alhvos.workers.dev>.
 * **Eén keer per dag** maakt `.github/workflows/release-pr.yml` om 05:00 UTC
   (of met de hand vanaf het tabblad Actions) de pull request `volgende` →
-  `main`, met daarin wat erin zit, welke migraties, en de link naar die
-  voorbeeldversie. Staat hij al open, dan wordt alleen de tekst bijgewerkt.
-  Aaf bekijkt hem en merget zelf. **Die ene pull request merge je met "Create
-  a merge commit", niet met squash** — anders kent `volgende` de commit op
-  `main` niet en lopen de takken uit elkaar.
+  `main`, met daarin wat erin zit en welke migraties. Staat hij al open, dan
+  wordt alleen de tekst bijgewerkt. Aaf bekijkt hem en merget zelf. **Die ene
+  pull request merge je met "Create a merge commit", niet met squash** —
+  anders kent `volgende` de commit op `main` niet en lopen de takken uit
+  elkaar.
 * **Kritiek gaat rechtstreeks naar `main`.** Kritiek is: de site, het
   inloggen of het registreren doet het niet; het nakijken rekent een goed
   antwoord fout of een fout antwoord goed; een beveiligings- of privacylek of
@@ -53,6 +51,40 @@ gewoon werk naartoe gaat.
   samenvoeging. Botst het, dan komt er een melding in Issues met de bestanden
   die botsen — daar moet dan met de hand een pull request naar `volgende`
   voor komen.
+
+### Er is geen voorbeeldversie van `volgende` (en ook niet van een tak)
+
+Eerder stond hier dat Workers Builds de stand van `volgende` op
+`volgende-afgeleide-oefenen.alhvos.workers.dev` zet. **Dat adres
+bestaat niet.** Het geeft 404, en dat gold ook voor de adressen per tak. Er
+werd dus naar een dood adres gelinkt; die links zijn eruit gehaald.
+
+Wat er wél gebeurt: Workers Builds bouwt elke pull request-tak, maar die bouw
+**faalt** (zie het bot-bericht "Deploying Preview to Cloudflare" bij een pull
+request, en de check `Workers Builds: afgeleide-oefenen`). Zolang die faalt
+wordt er geen versie geüpload en is er dus geen voorbeeldversie. De adressen
+zelf zijn goed: de worker heeft preview-URL's aanstaan — een onbekend adres
+antwoordt met `x-preview-user-error: true`, niet met "worker bestaat niet".
+
+Bekijk je werk dus lokaal: `npm run dev`, of `npm run cf:preview` voor de
+Workers-versie.
+
+**Wat er moet gebeuren om het terug te krijgen** (alleen Aaf kan dit; het kan
+niet vanuit deze repo, want de instellingen van Workers Builds staan in het
+Cloudflare-dashboard en er staat geen `CLOUDFLARE_API_TOKEN` in GitHub):
+
+1. In het dashboard bij de worker `afgeleide-oefenen` → Settings → Builds: de
+   bouwlog van een gefaalde tak-bouw lezen en de oorzaak wegnemen. Waarschijnlijk
+   ontbreken de bouwvariabelen (`NEXT_PUBLIC_*`, zie `scripts/worker-omgeving.json`)
+   voor niet-productietakken, of het commando voor niet-productietakken klopt
+   niet — dat hoort `npx wrangler versions upload` te zijn, niet `deploy`.
+2. Controleren dat bouwen voor niet-productietakken aan staat, zodat ook de
+   tak `volgende` zelf gebouwd wordt (nu staat er op de kop-commit van
+   `volgende` geen Workers-Builds-check).
+3. Werkt het, zet de link dan weer terug in dit bestand, in `README.md` en in
+   `scripts/release-pr.sh`. De inlog-adressen staan al goed: in
+   `supabase/config.toml` dekt `https://*-afgeleide-oefenen.alhvos.workers.dev/**`
+   elke tak.
 
 ### Waarom het zo in elkaar zit
 
