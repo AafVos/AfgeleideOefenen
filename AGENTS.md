@@ -162,6 +162,40 @@ gedraaid zijn, staat in `supabase_migrations.schema_migrations` (versie en
 naam). Migratie `0029_schema_migrations.sql` maakt die tabel aan en vult hem
 met 0001 t/m 0028, de bestanden waarvan het resultaat al aanwezig was.
 
+Mergen is niet hetzelfde als draaien: zie "Elke ochtend: is elke migratie ook
+echt gedraaid?" hieronder.
+
+## Elke ochtend: is elke migratie ook echt gedraaid?
+
+`.github/workflows/migraties-vergelijken.yml` vergelijkt de bestanden in
+`supabase/migrations/` op `main` met de rijen in
+`supabase_migrations.schema_migrations` op de echte database. Staat er een
+bestand in de repo dat daar niet in voorkomt, dan komt er een issue met alleen
+die bestandsnamen erin. Is alles alsnog gedraaid, dan sluit de controle de
+melding zelf.
+
+Dit is nodig omdat "Weg van een leerling" alle migraties op een verse lokale
+database draait: daar klopt het altijd. Een migratie die gemerged is maar nooit
+op productie gezet, viel zo nergens op — bij `0071_eindexamenvragen_aanvulling`
+stonden zestien eindexamenvragen maandenlang wel in de repo en niet op de site,
+en bij `0061` ging het daarvoor net zo.
+
+* **Alleen lezen.** De controle draait zelf nooit een migratie; dat blijft
+  mensenwerk, met een reservekopie erbij als er iets weggehaald of veranderd
+  wordt (zie `scripts/controleer-migraties.mjs`).
+* Hij kijkt naar `main`, dus naar wat live staat. Een migratie die nog in een
+  pull request zit, hoort nog niet gedraaid te zijn.
+* Hij heeft het geheim `SUPABASE_DB_URL` nodig (GitHub → Settings → Secrets):
+  de verbindingsgegevens van de echte database, de variant die over IPv4 werkt
+  (de "session pooler"), want een GitHub-runner heeft geen IPv6. Staat dat
+  geheim er niet, dan slaat de controle zichzelf over met uitleg.
+* Deze repo is openbaar, en het logboek van de run dus ook. In de uitvoer staan
+  alleen bestandsnamen van migraties; de verbindingsgegevens worden eruit
+  gehaald en er wordt nooit iets uit de tabellen zelf gelezen.
+
+Zelf nakijken kan ook:
+`SUPABASE_DB_URL="$AFG_DB_URL" node scripts/controleer-migraties.mjs`.
+
 ## Een keer per nacht: wijkt het dashboard af?
 
 `.github/workflows/dashboard-vergelijken.yml` draait elke ochtend (en met de
