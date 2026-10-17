@@ -521,8 +521,8 @@ function OnderwerpWeergave({
                   data-meet="oefenen-hoofdstuk"
                   className={
                     chActive
-                      ? 'flex w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
-                      : 'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
+                      ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
+                      : 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
                   }
                 >
                   {chTopics.length > 0 ? (
@@ -566,8 +566,8 @@ function OnderwerpWeergave({
                               data-meet="oefenen-soort-som"
                               className={
                                 isActive
-                                  ? 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
-                                  : 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
+                                  ? 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
+                                  : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
                               }
                             >
                               <span
@@ -587,8 +587,8 @@ function OnderwerpWeergave({
                             data-meet="oefenen-onderwerp"
                             className={
                               tpActive
-                                ? 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
-                                : 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
+                                ? 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
+                                : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
                             }
                           >
                             {tpClusters.length > 0 ? (
@@ -618,8 +618,8 @@ function OnderwerpWeergave({
                                       data-meet="oefenen-soort-som"
                                       className={
                                         clActive
-                                          ? 'flex w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs font-medium text-accent'
-                                          : 'flex w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs text-text-muted hover:text-text'
+                                          ? 'flex min-h-11 w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs font-medium text-accent'
+                                          : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs text-text-muted hover:text-text'
                                       }
                                     >
                                       <span
@@ -788,7 +788,7 @@ function OnderwerpWeergave({
                               aria-current={active ? 'page' : undefined}
                               aria-label={`${g.chapter.title} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
                               className={cn(
-                                'flex size-9 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
+                                'flex size-11 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
                                 active &&
                                   'ring-2 ring-offset-1 ring-offset-[var(--color-bg)]',
                                 active &&
