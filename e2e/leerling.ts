@@ -169,9 +169,13 @@ function nakijkKnop(page: Page): Locator {
   return page.getByRole('button', { name: 'Nakijken', exact: true })
 }
 
-/** Antwoord intypen en op Nakijken drukken. */
+/**
+ * Antwoord intypen en op Nakijken drukken. Werkt op /oefenen, de zelf-toets
+ * en /proberen: die laatste heeft een neutraal voorbeeld in het antwoordvak
+ * (verklapt anders het antwoord), de andere twee een voorbeeldinvoer.
+ */
 export async function geefAntwoord(page: Page, antwoord: string) {
-  const invoer = page.getByPlaceholder('Bijv. 12x^2')
+  const invoer = page.getByPlaceholder(/Bijv\. 12x\^2|Typ je antwoord/)
   const nakijken = nakijkKnop(page)
 
   // De knop staat uit zolang het antwoordveld leeg is. Gaat hij aan, dan
