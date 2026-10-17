@@ -307,6 +307,7 @@ Settings**.
 | `npm run typecheck` | TypeScript-controle (`tsc --noEmit`)    |
 | `npm test`        | Vitest (unit tests, eenmalig)             |
 | `npm run test:watch` | Vitest in watch-modus                  |
+| `npm run test:e2e`   | Playwright e2e-tests (weg van een leerling) |
 | `npm run cf:build`   | Bouw voor Cloudflare Workers           |
 | `npm run cf:preview` | Die bouw lokaal starten in Workers     |
 
