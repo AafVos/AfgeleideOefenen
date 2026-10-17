@@ -4,8 +4,9 @@ import { blokIdVanSoort, vergelijkHoofdstukVolgorde } from '@/lib/practice/oefen
  * Voortgang op het dashboard.
  *
  * Bij de boekindeling staat de voortgang per paragraaf en theorieblok.
- * Het percentage is dezelfde gewogen som als per soort som, één laag hoger
- * opgeteld. Elke soort som telt precies één keer mee in het hoofdstuk.
+ * Het percentage is overal hetzelfde: het deel van de soorten sommen dat
+ * beheerst is (`telBeheerst`). Elke soort som telt precies één keer mee in
+ * het hoofdstuk.
  *
  * De oude indeling (per onderwerp) blijft beschikbaar via
  * `bouwOnderwerpVoortgang`. Het dashboard kiest met `oefenIndeling()`.
@@ -14,8 +15,6 @@ import { blokIdVanSoort, vergelijkHoofdstukVolgorde } from '@/lib/practice/oefen
 export type ClusterVoortgang = {
   id: string
   title: string
-  totalAnswered: number
-  totalCorrect: number
   isKnown: boolean
   correctStreak: number
 }
@@ -23,8 +22,6 @@ export type ClusterVoortgang = {
 export type VoortgangRij = {
   cluster_id: string
   status: string | null
-  total_answered: number | null
-  total_correct: number | null
   correct_streak?: number | null
 }
 
@@ -125,16 +122,28 @@ type ClusterInvoer = {
   theory_block_id?: string | null
 }
 
-export function weegClusters(clusters: ClusterVoortgang[]) {
+/**
+ * Hoeveel soorten sommen zijn er beheerst, en welk deel is dat?
+ *
+ * Eén som voor het hele dashboard: de ring bovenaan, elke balk en elke
+ * "x/y"-telling rekenen hiermee. Het percentage is precies `x` gedeeld door
+ * `y`, zodat een leerling nooit een bijna volle balk naast "0/10 beheerst"
+ * ziet staan (AFG-421). Eerder telde een soort som die nog niet beheerst was
+ * gedeeltelijk mee met het aandeel goede antwoorden; dat gaf twee getallen
+ * naast elkaar die elkaar tegenspraken.
+ */
+export function telBeheerst(clusters: ReadonlyArray<Pick<ClusterVoortgang, 'isKnown'>>) {
   const mastered = clusters.filter((c) => c.isKnown).length
   const total = clusters.length
-  const weighted = clusters.reduce((sum, c) => {
-    if (c.isKnown) return sum + 1
-    if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
-    return sum
-  }, 0)
-  const pct = total > 0 ? Math.round((weighted / total) * 100) : 0
-  return { mastered, total, weighted, pct }
+  // Afronden mag 0% of 100% niet uit het niets maken: het dashboard kleurt
+  // 100% groen, en dat hoort alleen als echt alles beheerst is.
+  const pct =
+    mastered === 0
+      ? 0
+      : mastered === total
+        ? 100
+        : Math.min(99, Math.max(1, Math.round((mastered / total) * 100)))
+  return { mastered, total, pct }
 }
 
 export function hrefVoorBlok(slug: string): string {
@@ -153,8 +162,6 @@ function clusterVan(
   return {
     id: cluster.id,
     title: cluster.title,
-    totalAnswered: rij?.total_answered ?? 0,
-    totalCorrect: rij?.total_correct ?? 0,
     isKnown: rij?.status === 'mastered',
     correctStreak: rij?.correct_streak ?? 0,
   }

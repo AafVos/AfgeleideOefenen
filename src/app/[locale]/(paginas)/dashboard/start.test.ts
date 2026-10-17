@@ -13,8 +13,6 @@ function cluster(slug: string): ClusterData {
     slug,
     title: slug,
     topicId: 'topic',
-    totalAnswered: 0,
-    totalCorrect: 0,
     isKnown: false,
   }
 }
