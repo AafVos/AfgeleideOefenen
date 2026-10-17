@@ -46,6 +46,7 @@ import {
   toonSoortFilter,
   type SoortKeuze,
 } from '@/lib/practice/soort-filter'
+import { volgendeTegel } from '@/lib/practice/volgende-tegel'
 import { getVideoForCluster } from '@/lib/videos'
 
 import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
@@ -374,8 +375,9 @@ function OnderwerpWeergave({
       .filter((g) => g.tiles.length > 0)
   }, [chapters, allTopics, allClusters, allTilesState, clustersByTopic])
 
-  const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
-  const nextTile = tiles[(currentIdx + 1) % tiles.length] ?? tiles[0] ?? null
+  // In deze weergave staat geen soort-filter: de zichtbare tegels zijn ook de
+  // volgorde van het boek.
+  const nextTile = volgendeTegel(tiles, tiles, question?.id ?? null)
   const nextHref = nextTile
     ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}`
     : baseHref
@@ -731,7 +733,7 @@ function OnderwerpWeergave({
                       chapterGroups
                         .flatMap((g) => g.tiles)
                         .find((t) => t.questionId === question.id)?.ordinal ??
-                      (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
+                      tiles.find((t) => t.questionId === question.id)?.ordinal
                     }
                     onAnswered={(questionId, isCorrect) => {
                       setTiles((prev) =>
@@ -1101,20 +1103,22 @@ function BlokWeergave({
     () => (selectie ? kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState) : []),
     [selectie, allTopics, allClusters, allTilesState],
   )
+  // Alle tegels van dit onderdeel in boekvolgorde; `tiles` is daarvan het deel
+  // dat het soort-filter doorlaat.
+  const alleTegelsVanOnderdeel = useMemo(
+    () => tegelsVanKopjes(vraagKopjes, allTilesState),
+    [vraagKopjes, allTilesState],
+  )
   const tiles = useMemo(
-    () =>
-      tegelsVanKopjes(vraagKopjes, allTilesState).filter((tegel) =>
-        pastBijSoort(tegel.verhaal, soort),
-      ),
-    [vraagKopjes, allTilesState, soort],
+    () => alleTegelsVanOnderdeel.filter((tegel) => pastBijSoort(tegel.verhaal, soort)),
+    [alleTegelsVanOnderdeel, soort],
   )
 
   const baseHref = selectie
     ? hrefMetSoort(`/oefenen?${queryVoorSelectie(selectie)}`, soort)
     : hrefMetSoort('/oefenen', soort)
   const huidigeVraag = bezigId && vraag?.id !== bezigId ? null : vraag
-  const currentIdx = huidigeVraag ? tiles.findIndex((t) => t.questionId === huidigeVraag.id) : -1
-  const nextTile = tiles.length ? (tiles[(currentIdx + 1) % tiles.length] ?? null) : null
+  const nextTile = volgendeTegel(tiles, alleTegelsVanOnderdeel, huidigeVraag?.id ?? null)
   const vraagOpen = vraag !== null || bezigId !== null || laadFout !== null
 
   function openVoorAnker(id: string) {
@@ -1771,8 +1775,7 @@ function BlokWeergave({
                     }
                     video={getVideoForCluster(huidigeVraag.cluster_id)}
                     questionNumber={
-                      tiles.find((t) => t.questionId === huidigeVraag.id)?.ordinal ??
-                      (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
+                      alleTegelsVanOnderdeel.find((t) => t.questionId === huidigeVraag.id)?.ordinal
                     }
                     onAnswered={(questionId, isCorrect) => {
                       setAllTilesState((prev) =>
