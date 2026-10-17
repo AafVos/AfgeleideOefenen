@@ -47,6 +47,10 @@ let antwoordInvoegfout: string | null
 /** Fout bij het aanmaken van voortgang. De eerste lezing vindt dan niets. */
 let voortgangInvoegfout: DbFout | null
 let voortgangLezingen: number
+/** Fout bij het bijwerken van de voortgang. */
+let voortgangBijwerkfout: DbFout | null
+/** Fout bij het alsnog goed rekenen van een al opgeslagen antwoord. */
+let alsnogGoedFout: DbFout | null
 /** Engelse tekst die een mislukte melding moet teruggeven. */
 let vlagFout: string | null
 
@@ -92,12 +96,18 @@ function from(table: string) {
         answers.push(row)
         return { data: { id: row.id }, error: null }
       }
-      if (op === 'update') Object.assign(answers[answers.length - 1], values)
+      if (op === 'update') {
+        if (alsnogGoedFout) return { data: null, error: alsnogGoedFout }
+        Object.assign(answers[answers.length - 1], values)
+      }
       return { data: null, error: null }
     }
 
     if (table === 'user_progress_new') {
-      if (op === 'update') Object.assign(progress, values)
+      if (op === 'update') {
+        if (voortgangBijwerkfout) return { data: null, error: voortgangBijwerkfout }
+        Object.assign(progress, values)
+      }
       if (op === 'insert' && voortgangInvoegfout) {
         return { data: null, error: voortgangInvoegfout }
       }
@@ -170,6 +180,8 @@ function verseBoekhouding() {
   antwoordInvoegfout = null
   voortgangInvoegfout = null
   voortgangLezingen = 0
+  voortgangBijwerkfout = null
+  alsnogGoedFout = null
   vlagFout = null
 }
 
@@ -372,6 +384,59 @@ describe('fouttekst van de database', () => {
       message: 'Opslaan is niet gelukt. Probeer het nog eens.',
     })
     expect(JSON.stringify(result)).not.toContain('permission denied')
+  })
+
+  it('merkt het als de voortgang na een fout antwoord niet bijgewerkt kan worden', async () => {
+    voortgangBijwerkfout = {
+      code: '42501',
+      message: 'permission denied for table user_progress_new',
+    }
+
+    const result = await submitStudyAnswerAction('q1', '3x')
+
+    // Niet stilletjes "fout" laten zien terwijl de reeks blijft staan.
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('permission denied')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain('permission denied')
+    expect(progress.correct_streak).toBe(2)
+  })
+
+  it('merkt het als de voortgang na overslaan niet bijgewerkt kan worden', async () => {
+    voortgangBijwerkfout = {
+      code: '42501',
+      message: 'permission denied for table user_progress_new',
+    }
+
+    const result = await skipStudyQuestionAction('q1')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('permission denied')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain('permission denied')
+    expect(progress.correct_streak).toBe(2)
+  })
+
+  it('logt het als een alsnog goed gerekend antwoord niet bijgewerkt kan worden', async () => {
+    aiSaysCorrect = true
+    alsnogGoedFout = {
+      code: '42501',
+      message: 'permission denied for table session_answers_new',
+    }
+
+    const result = await submitStudyAnswerAction('q1', '3cdot2x')
+
+    // Het antwoord wás goed, dus de leerling krijgt gewoon "goed" te zien en
+    // zijn voortgang gaat omhoog. Dat de rij op fout bleef staan, staat wel in
+    // de log.
+    expect(result).toMatchObject({ kind: 'correct', streak: 3 })
+    expect(answers[0].is_correct).toBe(false)
+    expect(JSON.stringify(result)).not.toContain('permission denied')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain('permission denied')
   })
 
   it('zet een mislukte melding om in een Nederlandse zin', async () => {
