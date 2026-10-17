@@ -113,15 +113,34 @@ export function TheorieClient({
   const [sidebarChoice, setSidebarChoice] = useState<boolean | null>(null)
   const sidebarOpen = sidebarChoice ?? isDesktop
   const [activeSlug, setActiveSlug] = useState<string | null>(chapters[0]?.slug ?? null)
+  const [activeCardId, setActiveCardId] = useState<string | null>(null)
   const [openCards, setOpenCards] = useState<Set<string>>(new Set())
   const chaptersRef = useRef(chapters)
   const activeRef = useRef(activeSlug)
   const inhoudRef = useRef<HTMLDivElement>(null)
+  const chapterBtnRefs = useRef(new Map<string, HTMLButtonElement>())
+  const cardBtnRefs = useRef(new Map<string, HTMLButtonElement>())
+  // Zolang dit aan staat (vlak na een klik, tot het scrollen stil ligt),
+  // laat de IntersectionObserver de markering met rust — anders springt hij
+  // tijdens het scrollen zelf even naar een hoofdstuk dat onderweg passeert.
+  const programmatischRef = useRef(false)
+  const scrollEindeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     chaptersRef.current = chapters
     activeRef.current = activeSlug
   })
+
+  const markeerScrollEinde = useCallback(() => {
+    if (scrollEindeTimerRef.current) clearTimeout(scrollEindeTimerRef.current)
+    scrollEindeTimerRef.current = setTimeout(() => {
+      programmatischRef.current = false
+    }, 150)
+  }, [])
+
+  useEffect(() => () => {
+    if (scrollEindeTimerRef.current) clearTimeout(scrollEindeTimerRef.current)
+  }, [])
 
   function toggleCard(key: string) {
     setOpenCards((prev) => {
@@ -132,19 +151,22 @@ export function TheorieClient({
     })
   }
 
-  const toonHoofdstuk = useCallback((slug: string, elementId: string | null) => {
+  const toonHoofdstuk = useCallback((slug: string, kaartId: string | null) => {
     const mobiel = !window.matchMedia(desktopQuery).matches
     // Op een telefoon klapt de lijst eerst dicht. Scroll pas daarna, anders
     // schuift het hoofdstuk mee omhoog en verdwijnt de kop uit beeld.
     if (mobiel) setSidebarChoice(false)
+    programmatischRef.current = true
+    markeerScrollEinde()
     setActiveSlug(slug)
-    if (!elementId) return
+    setActiveCardId(kaartId)
+    const elementId = kaartId ? `kaart-${slug}-${kaartId}` : `hoofdstuk-${slug}`
     const scroll = () => {
       document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
     if (mobiel) requestAnimationFrame(() => requestAnimationFrame(scroll))
     else scroll()
-  }, [])
+  }, [markeerScrollEinde])
 
   const pasAnkerToe = useCallback((hash: string) => {
     const anker = leesAnker(hash, chaptersRef.current)
@@ -153,10 +175,7 @@ export function TheorieClient({
       if (!hash && eerste && eerste !== activeRef.current) setActiveSlug(eerste)
       return
     }
-    const elementId = anker.kaartId
-      ? `kaart-${anker.slug}-${anker.kaartId}`
-      : `hoofdstuk-${anker.slug}`
-    toonHoofdstuk(anker.slug, elementId)
+    toonHoofdstuk(anker.slug, anker.kaartId)
   }, [toonHoofdstuk])
 
   function zetAnker(hash: string) {
@@ -196,27 +215,76 @@ export function TheorieClient({
     }
   }, [pasAnkerToe])
 
-  // Tijdens het scrollen licht het hoofdstuk op dat bovenaan in beeld is.
+  // Een klik scrolt soepel naar het doel; zolang dat loopt, negeren we de
+  // observer hieronder. Deze listener merkt op wanneer het scrollen stopt.
+  // `capture: true` op window vangt ook het scrollen van `<main>` (telefoon)
+  // en van de inhoud-div (computer) op, want scroll-events van onderliggende
+  // elementen bubbelen niet, maar worden tijdens de capture-fase wel gezien.
+  useEffect(() => {
+    window.addEventListener('scroll', markeerScrollEinde, { passive: true, capture: true })
+    return () => window.removeEventListener('scroll', markeerScrollEinde, { capture: true })
+  }, [markeerScrollEinde])
+
+  // Tijdens het scrollen licht het hoofdstuk én de kaart op die in het
+  // bovenste derde van het scherm staan — zo loopt de markering netjes mee,
+  // ook door de onderdelen van een hoofdstuk heen.
   useEffect(() => {
     const root = isDesktop ? inhoudRef.current : null
-    const secties = chapters
-      .map((ch) => document.getElementById(`hoofdstuk-${ch.slug}`))
-      .filter((el): el is HTMLElement => el != null)
-    if (secties.length === 0) return
+    type Doel = { el: HTMLElement; slug: string; kaartId: string | null }
+    const doelen: Doel[] = []
+    for (const ch of chapters) {
+      // Niet de hele sectie observeren: die heeft `content-visibility: auto`
+      // en dus de hoogte van het hele hoofdstuk (alle kaarten), waardoor hij
+      // tot ver voorbij het hoofdstuk nog "zichtbaar" zou lijken. Alleen de
+      // kop zelf heeft de juiste, kleine hoogte.
+      const kop = document.getElementById(`hoofdstuk-${ch.slug}`)?.querySelector<HTMLElement>('h2')
+      if (kop) doelen.push({ el: kop, slug: ch.slug, kaartId: null })
+      for (const card of ch.cards) {
+        const el = document.getElementById(`kaart-${ch.slug}-${card.id}`)
+        if (el) doelen.push({ el, slug: ch.slug, kaartId: card.id })
+      }
+    }
+    if (doelen.length === 0) return
+
+    const zichtbaar = new Map<Element, { intersecting: boolean; top: number }>()
     const observer = new IntersectionObserver(
       (entries) => {
-        const zichtbaar = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
-        if (!zichtbaar) return
-        const slug = zichtbaar.target.id.slice('hoofdstuk-'.length)
-        setActiveSlug((huidig) => (huidig === slug ? huidig : slug))
+        for (const entry of entries) {
+          zichtbaar.set(entry.target, { intersecting: entry.isIntersecting, top: entry.boundingClientRect.top })
+        }
+        if (programmatischRef.current) return
+        // Het verst doorgescrolde onderdeel wint. Bij twee kaarten naast
+        // elkaar (desktop-raster) staan ze op dezelfde hoogte: dan telt de
+        // eerste in de leesvolgorde (links), niet de laatste in de DOM.
+        let actief: Doel | null = null
+        let besteTop = -Infinity
+        for (const kandidaat of doelen) {
+          const info = zichtbaar.get(kandidaat.el)
+          if (!info?.intersecting) continue
+          if (info.top > besteTop + 4) {
+            besteTop = info.top
+            actief = kandidaat
+          }
+        }
+        if (!actief) return
+        setActiveSlug((huidig) => (huidig === actief!.slug ? huidig : actief!.slug))
+        setActiveCardId((huidig) => (huidig === actief!.kaartId ? huidig : actief!.kaartId))
       },
-      { root, rootMargin: '-8% 0px -55% 0px', threshold: [0, 0.15] },
+      // Bovenste derde van het scherm telt als "actief".
+      { root, rootMargin: '0% 0px -66% 0px', threshold: 0 },
     )
-    for (const sectie of secties) observer.observe(sectie)
+    for (const doel of doelen) observer.observe(doel.el)
     return () => observer.disconnect()
   }, [chapters, isDesktop])
+
+  // De balk zelf scrolt mee zodat het actieve hoofdstuk/onderdeel in beeld blijft.
+  useEffect(() => {
+    if (!isDesktop || !sidebarOpen) return
+    const el = activeCardId
+      ? cardBtnRefs.current.get(`${activeSlug}/${activeCardId}`)
+      : (activeSlug ? chapterBtnRefs.current.get(activeSlug) : null)
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [activeSlug, activeCardId, isDesktop, sidebarOpen])
 
   return (
     <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-hidden">
@@ -275,6 +343,10 @@ export function TheorieClient({
               return (
                 <li key={ch.slug}>
                   <button
+                    ref={(el) => {
+                      if (el) chapterBtnRefs.current.set(ch.slug, el)
+                      else chapterBtnRefs.current.delete(ch.slug)
+                    }}
                     type="button"
                     onClick={() => zetAnker(`#hoofdstuk-${ch.slug}`)}
                     data-meet="theorie-hoofdstuk"
@@ -297,19 +369,38 @@ export function TheorieClient({
 
                   {active && ch.cards.length > 0 && (
                     <ul className="mb-1 mt-0.5">
-                      {ch.cards.map((card) => (
-                        <li key={card.id}>
-                          <button
-                            type="button"
-                            onClick={() => zetAnker(`#kaart-${ch.slug}-${card.id}`)}
-                            data-meet="theorie-kaart-in-zijbalk"
-                            className="flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text"
-                          >
-                            <span className="size-1.5 shrink-0 rounded-full bg-border" />
-                            <span className="truncate text-left">{card.title}</span>
-                          </button>
-                        </li>
-                      ))}
+                      {ch.cards.map((card) => {
+                        const cardActive = card.id === activeCardId
+                        return (
+                          <li key={card.id}>
+                            <button
+                              ref={(el) => {
+                                const key = `${ch.slug}/${card.id}`
+                                if (el) cardBtnRefs.current.set(key, el)
+                                else cardBtnRefs.current.delete(key)
+                              }}
+                              type="button"
+                              onClick={() => zetAnker(`#kaart-${ch.slug}-${card.id}`)}
+                              data-meet="theorie-kaart-in-zijbalk"
+                              aria-current={cardActive ? 'true' : undefined}
+                              className={
+                                cardActive
+                                  ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent-light py-1.5 pl-7 pr-3 text-xs font-medium text-accent'
+                                  : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
+                              }
+                            >
+                              <span
+                                className={
+                                  cardActive
+                                    ? 'size-1.5 shrink-0 rounded-full bg-accent'
+                                    : 'size-1.5 shrink-0 rounded-full bg-border'
+                                }
+                              />
+                              <span className="truncate text-left">{card.title}</span>
+                            </button>
+                          </li>
+                        )
+                      })}
                     </ul>
                   )}
                 </li>
