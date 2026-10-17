@@ -395,6 +395,15 @@ export function WelcomeTour({ tourSeen }: { tourSeen: boolean }) {
       document.querySelectorAll('.tour-ring').forEach((el) => el.classList.remove('tour-ring'))
       const el = doelRef.current
       if (el) el.classList.add('tour-ring')
+      // Op de oefenpagina zelf licht geen stap het menu-item "Oefenen" meer
+      // uit (de ring staat dan op de inhoud); zonder dit blijft het net zo
+      // onopvallend als een pagina waar de rondleiding niet komt. Alleen
+      // wanneer er al een doel gevonden is: zonder doel (de welkomststap)
+      // dimt een volledig scherm (z-40) hoger dan deze ring, dus zou hij
+      // daar juist onder verdwijnen.
+      if (el && window.location.pathname.includes('/oefenen')) {
+        vindDoel('oefenen')?.classList.add('tour-ring')
+      }
       const breedte = Math.min(GUIDE_WIDTH, window.innerWidth - 16)
       const hoogte = doosRef.current?.offsetHeight ?? 200
       setPlek(berekenPlek(el, hoogte, breedte))
