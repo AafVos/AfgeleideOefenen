@@ -148,6 +148,8 @@ export default async function HomePage() {
           </p>
         </section>
 
+        <HomeDemo />
+
         <section id="regels" className="mt-16 scroll-mt-6">
           <p className="text-lg text-text">{t('zoekzin')}</p>
           <p className="mt-2 text-text-muted">{t('toetsweek')}</p>
@@ -218,8 +220,6 @@ export default async function HomePage() {
             })}
           </p>
         </section>
-
-        <HomeDemo />
 
         <section className="mt-20 grid gap-6 sm:grid-cols-3">
           <Feature title={t('feature1Title')} body={t('feature1Body')} />
