@@ -8,7 +8,7 @@ import { cn } from '@/components/ui'
 import {
   hrefVoorBlok,
   hrefVoorOnderwerp,
-  weegClusters,
+  telBeheerst,
   type ClusterVoortgang,
   type NieuwHoofdstuk,
   type OnderwerpRij,
@@ -21,8 +21,6 @@ export type ClusterData = {
   slug: string
   title: string
   topicId: string
-  totalAnswered: number
-  totalCorrect: number
   isKnown: boolean
   /** Goed op rij voor deze soort. Ontbreekt het, dan is de reeks 0. */
   correctStreak?: number
@@ -43,18 +41,6 @@ export type ChapterData = {
   topics: TopicData[]
 }
 
-function computeProgress(clusters: ClusterData[]) {
-  const mastered = clusters.filter((c) => c.isKnown).length
-  const total = clusters.length
-  const weighted = clusters.reduce((sum, c) => {
-    if (c.isKnown) return sum + 1
-    if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
-    return sum
-  }, 0)
-  const pct = total > 0 ? Math.round((weighted / total) * 100) : 0
-  return { mastered, total, pct }
-}
-
 export function ChapterBlock({
   chapter,
   defaultOpen = false,
@@ -66,7 +52,7 @@ export function ChapterBlock({
   const [open, setOpen] = useState(defaultOpen)
 
   const allClusters = chapter.topics.flatMap((t) => t.clusters)
-  const { mastered, total, pct } = computeProgress(allClusters)
+  const { mastered, total, pct } = telBeheerst(allClusters)
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -108,7 +94,7 @@ export function ChapterBlock({
       {open && (
         <ul className="pb-2 pt-1">
           {chapter.topics.map((topic) => {
-            const { mastered: tMastered, total: tTotal, pct: tPct } = computeProgress(topic.clusters)
+            const { mastered: tMastered, total: tTotal, pct: tPct } = telBeheerst(topic.clusters)
             return (
               <li key={topic.id} className="px-4 py-2 text-sm">
                 <div className="flex items-center gap-3">
@@ -179,7 +165,7 @@ function ReeksZinnen({
 }
 
 function VoortgangCijfers({ clusters }: { clusters: ClusterVoortgang[] }) {
-  const { mastered, total, pct } = weegClusters(clusters)
+  const { mastered, total, pct } = telBeheerst(clusters)
   if (total === 0) return null
   return (
     <>
@@ -199,7 +185,7 @@ function VoortgangCijfers({ clusters }: { clusters: ClusterVoortgang[] }) {
 }
 
 function OnderwerpRegel({ onderwerp }: { onderwerp: OnderwerpRij }) {
-  const { pct } = weegClusters(onderwerp.clusters)
+  const { pct } = telBeheerst(onderwerp.clusters)
   return (
     <li className="px-4 py-2 text-sm">
       <div className="flex min-h-11 items-center gap-3">
@@ -229,7 +215,7 @@ export function NieuwHoofdstukBlock({
   defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
-  const { mastered, total, pct } = weegClusters(chapter.clusters)
+  const { mastered, total, pct } = telBeheerst(chapter.clusters)
   const paragrafen = chapter.paragrafen
     .map((paragraaf) => ({
       ...paragraaf,
