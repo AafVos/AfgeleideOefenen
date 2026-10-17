@@ -113,6 +113,7 @@ export async function UitlegVideosInhoud({
         askPhoto: t('askPhoto'),
         askPhotoHint: t('askPhotoHint'),
         askPhotoRemove: t('askPhotoRemove'),
+        askPhotoAlt: t('askPhotoAlt'),
         askPhotoBusy: t('askPhotoBusy'),
         askPhotoTooBig: t('askPhotoTooBig'),
         groupGeneral: t('groupGeneral'),
