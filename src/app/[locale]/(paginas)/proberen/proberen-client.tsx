@@ -194,7 +194,7 @@ export function ProberenClient({
                 ref={invoerRef}
                 value={antwoord}
                 onChange={(e) => setAntwoord(e.target.value)}
-                placeholder="Bijv. 12x^2"
+                placeholder="Typ je antwoord"
                 disabled={bezig}
                 className="w-full rounded-lg border border-border bg-surface px-4 py-3 font-mono text-lg text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
                 inputMode="text"

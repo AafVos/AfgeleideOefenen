@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
+import nl from '../../../messages/nl.json'
+
 import { proefsomKlopt } from './proefsom'
+
+const NIVEAUS = ['easy', 'medium', 'hard'] as const
 
 describe('proefsom op de startpagina', () => {
   it('keurt een macht met haakjes van het toetsenbord goed', () => {
@@ -22,4 +26,13 @@ describe('proefsom op de startpagina', () => {
     expect(proefsomKlopt('medium', '3cos(3x)')).toBe(true)
     expect(proefsomKlopt('hard', '(x^2 + 2x)e^x')).toBe(true)
   })
+
+  it.each(NIVEAUS)(
+    'het voorbeeld in het antwoordvak van de %s proefsom verklapt het antwoord niet',
+    (niveau) => {
+      const placeholder = nl.HomeDemo[`${niveau}Placeholder` as 'easyPlaceholder']
+      const voorbeeld = placeholder.replace(/^Bijv\.\s*/, '')
+      expect(proefsomKlopt(niveau, voorbeeld)).toBe(false)
+    },
+  )
 })
