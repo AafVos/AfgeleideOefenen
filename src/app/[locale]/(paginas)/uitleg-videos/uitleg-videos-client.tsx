@@ -68,6 +68,7 @@ type Labels = {
   askPhoto: string
   askPhotoHint: string
   askPhotoRemove: string
+  askPhotoAlt: string
   askPhotoBusy: string
   askPhotoTooBig: string
   groupGeneral: string
@@ -831,7 +832,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previews[i]}
-                  alt={foto.name}
+                  alt={labels.askPhotoAlt}
                   className="size-24 rounded-lg border border-border object-cover"
                 />
                 <button
