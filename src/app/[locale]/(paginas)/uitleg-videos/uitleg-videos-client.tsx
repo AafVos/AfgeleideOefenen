@@ -8,7 +8,7 @@ import { ProbeerKnop } from '@/components/probeer-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import type { VideoUitleg } from '@/lib/videos'
 import { MathKeyboard } from '@/components/math-keyboard'
-import { Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner, NakijkMelding } from '@/components/ui'
 import { verkleinFoto } from '@/lib/images/compress'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
@@ -478,6 +478,7 @@ type VraagResultaat =
       correctAnswer: string
       latexCorrectAnswer: string | null
       steps: Array<{ id: string; step_order: number; step_description: string }>
+      melding: string | null
     }
 
 function OefenKaart({
@@ -543,6 +544,7 @@ function OefenKaart({
             correctAnswer: result.correctAnswer,
             latexCorrectAnswer: result.latexCorrectAnswer,
             steps: result.steps,
+            melding: result.melding,
           },
         }))
       }
@@ -688,6 +690,11 @@ function OefenKaart({
               })()}
             </span>
           </div>
+          {resultaat.melding && (
+            <div className="mt-3">
+              <NakijkMelding text={resultaat.melding} />
+            </div>
+          )}
           {resultaat.steps.length > 0 && (
             <div className="mt-4 rounded-lg border border-border bg-white/90 shadow-sm">
               <div className="px-4 py-3">

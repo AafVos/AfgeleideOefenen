@@ -3,10 +3,15 @@
 import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 
-import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
-import { answersMatch, cleanTimeSpentSec } from '@/lib/practice/engine'
 import { pickQuestionsForTest, type QuestionSource } from '@/lib/practice/custom-test'
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import {
+  bewaarAntwoord,
+  kijkAntwoordNa,
+  type Nakijkuitslag,
+  rekenAlsnogGoed,
+  vangOpslag,
+} from '@/lib/practice/nakijken'
+import { createClient } from '@/lib/supabase/server'
 
 const MAX_QUESTIONS = 50
 const VALID_SOURCES: QuestionSource[] = ['new', 'all', 'wrong']
@@ -164,6 +169,8 @@ export type CustomTestAnswerResult =
       done: boolean
       correctAnswer: string
       latexCorrectAnswer: string | null
+      /** Korte zin als er iets niet lukte, bijvoorbeeld de extra controle. */
+      melding: string | null
     }
   | { kind: 'error'; message: string }
 
@@ -221,44 +228,27 @@ export async function submitCustomTestAnswerAction(
     .maybeSingle()
   if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
 
-  const alts: string[] = question.answer_alternatives ?? []
-  let isCorrect = answersMatch(userAnswer, question.answer, alts)
-
-  const { data: answerRow, error: answerErr } = await supabase
-    .from('session_answers_new')
-    .insert({
-      session_id: sessionId,
-      question_id: question.id,
-      user_answer: userAnswer,
-      is_correct: isCorrect,
-      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
+  let uitslag: Nakijkuitslag
+  try {
+    let answerId = ''
+    uitslag = await kijkAntwoordNa({
+      questionId: question.id,
+      userAnswer,
+      correctAnswer: question.answer,
+      alternatives: question.answer_alternatives,
+      bewaar: async (goed) => {
+        answerId = await bewaarAntwoord(supabase, '[zelf-toets] antwoord opslaan mislukt:', {
+          sessionId,
+          questionId: question.id,
+          userAnswer,
+          isCorrect: goed,
+          timeSpentSec,
+        })
+      },
     })
-    .select('id')
-    .single()
-  if (answerErr || !answerRow) {
-    console.error(
-      '[zelf-toets] antwoord opslaan mislukt:',
-      answerErr?.code ?? '',
-      answerErr?.message ?? '',
-    )
-    return { kind: 'error', message: 'Opslaan is niet gelukt. Probeer het nog eens.' }
-  }
-
-  // For wrong answers, ask the AI if it's actually a valid alternative
-  if (!isCorrect) {
-    try {
-      const service = createServiceRoleClient()
-      const aiResult = await checkWrongAnswerNew(service, question.id, userAnswer)
-      if (!('error' in aiResult) && aiResult.isMathematicallyCorrect) {
-        await supabase
-          .from('session_answers_new')
-          .update({ is_correct: true })
-          .eq('id', answerRow.id)
-        isCorrect = true
-      }
-    } catch (e) {
-      console.error('[zelf-toets check]', e)
-    }
+    if (uitslag.viaExtraControle) await rekenAlsnogGoed(supabase, answerId)
+  } catch (e) {
+    return vangOpslag('[zelf-toets] nakijken mislukt:', e)
   }
 
   // Determine if this was the last question
@@ -281,7 +271,7 @@ export async function submitCustomTestAnswerAction(
       .eq('id', sessionId)
   }
 
-  if (isCorrect) {
+  if (uitslag.goed) {
     return { kind: 'correct', done }
   }
   return {
@@ -289,5 +279,6 @@ export async function submitCustomTestAnswerAction(
     done,
     correctAnswer: question.answer,
     latexCorrectAnswer: question.latex_answer ?? null,
+    melding: uitslag.melding,
   }
 }
