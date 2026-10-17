@@ -7,7 +7,7 @@ import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
 import { KlikLink } from '@/components/klik-link'
 import { cn } from '@/components/ui'
 
-import { weegClusters, type DashboardIndeling } from '@/lib/dashboard/indeling'
+import { telBeheerst, type DashboardIndeling } from '@/lib/dashboard/indeling'
 
 import { ChapterBlock, NieuwHoofdstukBlock, type ChapterData } from './topic-block'
 
@@ -48,18 +48,11 @@ export function DashboardGrid({
     () => chapterData.flatMap((ch) => ch.topics.flatMap((t) => t.clusters)),
     [chapterData],
   )
-  const mastered = allClusters.filter((c) => c.isKnown).length
-  const total = allClusters.length
-  const weightedProgress = allClusters.reduce((sum, c) => {
-    if (c.isKnown) return sum + 1
-    if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
-    return sum
-  }, 0)
-  const pctOverall = total > 0 ? Math.round((weightedProgress / total) * 100) : 0
+  const { mastered, total, pct: pctOverall } = telBeheerst(allClusters)
   const pctAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
   const hoofdstukBeheerst = blokIndeling
     ? blokIndeling.hoofdstukken.some((chapter) => {
-        const { mastered, total } = weegClusters(chapter.clusters)
+        const { mastered, total } = telBeheerst(chapter.clusters)
         return total > 0 && mastered === total
       })
     : chapterData.some((chapter) => {

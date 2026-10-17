@@ -85,7 +85,7 @@ export default async function DashboardPage() {
       .order('order_index'),
     supabase
       .from('user_progress_new')
-      .select('cluster_id, status, total_answered, total_correct, correct_streak')
+      .select('cluster_id, status, correct_streak')
       .eq('user_id', user.id),
     telOefendagen(
       (van, tot) =>
