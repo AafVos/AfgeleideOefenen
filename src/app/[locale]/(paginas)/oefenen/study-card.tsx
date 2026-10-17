@@ -238,6 +238,7 @@ export function StudyCard({
           <Link
             href={`/uitleg-videos/${encodeURIComponent(video.slug)}` as '/uitleg-videos'}
             title={video.title}
+            data-meet="oefenen-video-bij-opgave"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent-light px-2.5 py-1 text-xs font-medium text-accent transition hover:border-accent/60"
           >
             <IconVideo />
@@ -366,6 +367,7 @@ export function StudyCard({
                 <Button
                   type="submit"
                   data-tour="nakijken"
+                  data-meet="oefenen-nakijken"
                   className="min-h-11 px-5"
                   disabled={(pending && submitting) || !answer.trim()}
                 >
@@ -378,6 +380,7 @@ export function StudyCard({
                 <Button
                   type="button"
                   variant="secondary"
+                  data-meet="oefenen-weet-ik-niet"
                   className="min-h-11 px-5"
                   onClick={skip}
                   disabled={pending && submitting}
@@ -426,13 +429,19 @@ export function StudyCard({
                 }))}
           </p>
           <div className="mt-4 flex items-center gap-2">
-            <Button onClick={next} disabled={pending} className="min-h-11 px-5">
+            <Button
+              onClick={next}
+              disabled={pending}
+              data-meet="oefenen-volgende"
+              className="min-h-11 px-5"
+            >
               {pending ? t('navigating') : t('nextQuestion')}
             </Button>
             <button
               type="button"
               onClick={retry}
               disabled={pending}
+              data-meet="oefenen-opnieuw"
               className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
             >
               {t('retryButton')}
@@ -515,13 +524,19 @@ function AfterAnswerButtons({
   const t = useTranslations('PracticeCard')
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <Button onClick={onNext} disabled={pending} className="min-h-11 px-5">
+      <Button
+        onClick={onNext}
+        disabled={pending}
+        data-meet="oefenen-volgende"
+        className="min-h-11 px-5"
+      >
         {pending ? t('navigating') : t('nextPlus')}
       </Button>
       <Button
         variant="secondary"
         onClick={onRetry}
         disabled={pending}
+        data-meet="oefenen-opnieuw"
         className="min-h-11 px-5"
       >
         {t('retryButton')}
@@ -577,13 +592,19 @@ function WrongFeedback({
       <div className="space-y-4">
         {uitleg}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={onRetry} disabled={pending} className="min-h-11 px-5">
+          <Button
+            onClick={onRetry}
+            disabled={pending}
+            data-meet="oefenen-opnieuw"
+            className="min-h-11 px-5"
+          >
             {t('retryButton')}
           </Button>
           <Button
             variant="secondary"
             onClick={onReveal}
             disabled={pending}
+            data-meet="oefenen-antwoord-zien"
             className="min-h-11 px-5"
           >
             {t('showAnswer')}

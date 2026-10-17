@@ -139,6 +139,7 @@ export function ProberenClient({
         <div className="mt-8 flex flex-wrap items-start gap-3">
           <Link
             href="/registreren?van=proberen"
+            data-meet="proefsom-registreren"
             className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
           >
             Account aanmaken
@@ -214,6 +215,7 @@ export function ProberenClient({
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="submit"
+                data-meet="proefsom-nakijken"
                 className="min-h-11 px-5"
                 disabled={bezig || !antwoord.trim()}
               >
@@ -222,6 +224,7 @@ export function ProberenClient({
               <Button
                 type="button"
                 variant="secondary"
+                data-meet="proefsom-weet-ik-niet"
                 className="min-h-11 px-5"
                 disabled={bezig}
                 onClick={() => verstuur(true)}
@@ -271,12 +274,18 @@ export function ProberenClient({
               </>
             ) : (
               <div className="flex flex-wrap items-center gap-3">
-                <Button type="button" className="min-h-11 px-5" onClick={opnieuw}>
+                <Button
+                  type="button"
+                  data-meet="proefsom-opnieuw"
+                  className="min-h-11 px-5"
+                  onClick={opnieuw}
+                >
                   Opnieuw proberen
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
+                  data-meet="proefsom-antwoord-zien"
                   className="min-h-11 px-5"
                   onClick={() => setFase({ ...fase, zichtbaar: true })}
                 >
@@ -356,10 +365,21 @@ function Verder({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <Button type="button" className="min-h-11 px-5" onClick={onVolgende}>
+      <Button
+        type="button"
+        data-meet={laatste ? 'proefsom-klaar' : 'proefsom-volgende'}
+        className="min-h-11 px-5"
+        onClick={onVolgende}
+      >
         {laatste ? 'Klaar' : 'Volgende som'}
       </Button>
-      <Button type="button" variant="secondary" className="min-h-11 px-5" onClick={onOpnieuw}>
+      <Button
+        type="button"
+        variant="secondary"
+        data-meet="proefsom-opnieuw"
+        className="min-h-11 px-5"
+        onClick={onOpnieuw}
+      >
         Opnieuw proberen
       </Button>
     </div>

@@ -77,6 +77,7 @@ export function UserMenu({
     <div
       ref={rootRef}
       className="relative ml-4"
+      data-meet="menu-account"
       onMouseEnter={openMenu}
       onMouseLeave={scheduleClose}
     >
@@ -85,6 +86,7 @@ export function UserMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={displayName}
+        data-meet="menu-account"
         onClick={() => (open ? setOpen(false) : openMenu())}
         className={`flex size-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white transition hover:bg-accent/90 ${
           open ? 'ring-2 ring-accent/30' : ''
@@ -105,6 +107,7 @@ export function UserMenu({
           <div className="my-1.5 border-t border-border" />
           <Link
             href={`/${locale}/instellingen`}
+            data-meet="menu-instellingen"
             onClick={() => setOpen(false)}
             className={itemClass}
           >
@@ -116,6 +119,7 @@ export function UserMenu({
           </Link>
           <Link
             href={`/${locale}/feedback`}
+            data-meet="menu-feedback"
             onClick={() => setOpen(false)}
             className={itemClass}
           >
@@ -126,7 +130,7 @@ export function UserMenu({
           </Link>
           <div className="my-1.5 border-t border-border" />
           <form action="/uitloggen" method="post">
-            <button type="submit" className={itemClass}>
+            <button type="submit" data-meet="menu-uitloggen" className={itemClass}>
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <path d="m16 17 5-5-5-5" />

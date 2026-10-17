@@ -26,6 +26,7 @@ export function MobileNav({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         data-tour="menu"
+        data-meet="menu-hamburger"
         className="flex size-11 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
       >
         {open ? (
@@ -44,13 +45,13 @@ export function MobileNav({
           <nav className="flex flex-col p-2 space-y-0.5">
             {isLoggedIn ? (
               <>
-                <NavLink href={`/${locale}/theorie`} onClick={() => setOpen(false)}>{t('theory')}</NavLink>
-                <NavLink href={`/${locale}/uitleg-videos`} onClick={() => setOpen(false)}>{t('videos')}</NavLink>
-                <NavLink href={`/${locale}/oefenen`} onClick={() => setOpen(false)}>{t('freeExercise')}</NavLink>
-                <NavLink href={`/${locale}/zelf-toets`} onClick={() => setOpen(false)}>{t('zelfToets')}</NavLink>
-                <NavLink href={`/${locale}/dashboard`} onClick={() => setOpen(false)}>{t('dashboard')}</NavLink>
+                <NavLink href={`/${locale}/theorie`} meet="menu-theorie" onClick={() => setOpen(false)}>{t('theory')}</NavLink>
+                <NavLink href={`/${locale}/uitleg-videos`} meet="menu-videos" onClick={() => setOpen(false)}>{t('videos')}</NavLink>
+                <NavLink href={`/${locale}/oefenen`} meet="menu-oefenen" onClick={() => setOpen(false)}>{t('freeExercise')}</NavLink>
+                <NavLink href={`/${locale}/zelf-toets`} meet="menu-zelftoets" onClick={() => setOpen(false)}>{t('zelfToets')}</NavLink>
+                <NavLink href={`/${locale}/dashboard`} meet="menu-dashboard" onClick={() => setOpen(false)}>{t('dashboard')}</NavLink>
                 {role === 'admin' && (
-                  <NavLink href="/admin" onClick={() => setOpen(false)}>{t('admin')}</NavLink>
+                  <NavLink href="/admin" meet="menu-admin" onClick={() => setOpen(false)}>{t('admin')}</NavLink>
                 )}
                 <div className="border-t border-border mt-1 pt-1">
                   {username && (
@@ -59,6 +60,7 @@ export function MobileNav({
                   <form action="/uitloggen" method="post">
                     <button
                       type="submit"
+                      data-meet="menu-uitloggen"
                       className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-muted hover:bg-surface-2 hover:text-text"
                     >
                       {t('logout')}
@@ -68,10 +70,10 @@ export function MobileNav({
               </>
             ) : (
               <>
-                <NavLink href={`/${locale}/theorie`} onClick={() => setOpen(false)}>{t('theory')}</NavLink>
-                <NavLink href={`/${locale}/uitleg-videos`} onClick={() => setOpen(false)}>{t('videos')}</NavLink>
-                <NavLink href={`/${locale}/inloggen`} onClick={() => setOpen(false)}>{t('login')}</NavLink>
-                <NavLink href={`/${locale}/registreren`} onClick={() => setOpen(false)}>{t('register')}</NavLink>
+                <NavLink href={`/${locale}/theorie`} meet="menu-theorie" onClick={() => setOpen(false)}>{t('theory')}</NavLink>
+                <NavLink href={`/${locale}/uitleg-videos`} meet="menu-videos" onClick={() => setOpen(false)}>{t('videos')}</NavLink>
+                <NavLink href={`/${locale}/inloggen`} meet="menu-inloggen" onClick={() => setOpen(false)}>{t('login')}</NavLink>
+                <NavLink href={`/${locale}/registreren`} meet="menu-registreren" onClick={() => setOpen(false)}>{t('register')}</NavLink>
               </>
             )}
           </nav>
@@ -84,16 +86,20 @@ export function MobileNav({
 function NavLink({
   href,
   onClick,
+  meet,
   children,
 }: {
   href: string
   onClick: () => void
+  /** Vaste naam voor de klikmeting. Dezelfde als in de balk op de computer. */
+  meet?: string
   children: React.ReactNode
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
+      data-meet={meet}
       className="rounded-lg px-3 py-2.5 text-sm text-text-muted hover:bg-surface-2 hover:text-text"
     >
       {children}

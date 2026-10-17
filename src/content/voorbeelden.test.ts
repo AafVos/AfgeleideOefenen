@@ -32,7 +32,16 @@ describe('antwoordpagina-s', () => {
     }
   })
 
-  it('werkt elk voorbeeld uit in stap 0 tot en met 3, met f, g en h', () => {
+  it('werkt elk voorbeeld uit in stap 0 tot en met 3, met f', () => {
+    // Een zuivere macht van x volgt de machtsregel. Geen binnenfunctie die gewoon x is.
+    const machtsregelOpX = new Set([
+      'wortel-x',
+      'x-kwadraat',
+      'x-tot-de-derde',
+      'een-gedeeld-door-x',
+    ])
+    // Een standaardafgeleide ken je uit je hoofd. Ook hier geen binnenfunctie die gewoon x is.
+    const standaardafgeleide = new Set(['e-tot-de-x', 'ln-x', 'sin-x', 'cos-x', 'tan-x'])
     for (const voorbeeld of voorbeelden) {
       expect(voorbeeld.stappen).toHaveLength(4)
       expect(voorbeeld.stappen[0]).toMatch(/^Stap 0\./)
@@ -41,8 +50,20 @@ describe('antwoordpagina-s', () => {
       expect(voorbeeld.stappen[3]).toMatch(/^Stap 3\./)
       const tekst = [...voorbeeld.stappen, voorbeeld.fout].join(' ')
       expect(tekst).toMatch(/\$f/)
-      expect(tekst).toMatch(/\$g/)
-      expect(tekst).toMatch(/\$h/)
+      if (machtsregelOpX.has(voorbeeld.slug)) {
+        expect(tekst).toMatch(/machtsregel/)
+        expect(tekst).toMatch(/\$a =/)
+        expect(tekst).toMatch(/\$n =/)
+        expect(tekst).not.toMatch(/\$h\(/)
+        expect(tekst).not.toMatch(/\$g/)
+      } else if (standaardafgeleide.has(voorbeeld.slug)) {
+        expect(tekst).toMatch(/standaardafgeleide/)
+        expect(tekst).not.toMatch(/\$h\(/)
+        expect(tekst).not.toMatch(/\$g/)
+      } else {
+        expect(tekst).toMatch(/\$g/)
+        expect(tekst).toMatch(/\$h/)
+      }
       expect(tekst).not.toMatch(/\$[uv]\(/)
       expect(tekst).not.toMatch(/\b[uv]\(/)
       expect(voorbeeld.fout.length).toBeGreaterThan(20)

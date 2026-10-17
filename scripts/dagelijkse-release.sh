@@ -59,14 +59,18 @@ notities=$(mktemp)
 fout=$(mktemp)
 trap 'rm -f "$onderwerpen" "$notities" "$fout"' EXIT
 
+# Geen --first-parent: main krijgt zijn werk via één samenvoeging per dag (de
+# release van `volgende`), en langs de eerste ouder zie je daar alleen die ene
+# regel van. We willen de pull requests die erin zaten. --no-merges laat de
+# samenvoegingen zelf weg; wat overblijft zijn de squash-commits.
 if [ -n "$vorige_tag" ]; then
   git fetch --no-tags origin "refs/tags/${vorige_tag}:refs/tags/${vorige_tag}"
-  git log --first-parent --reverse --pretty=tformat:'%s' "${vorige_tag}..${sha}" > "$onderwerpen"
+  git log --no-merges --reverse --pretty=tformat:'%s' "${vorige_tag}..${sha}" > "$onderwerpen"
   eerste=0
 else
   # Nog geen peildatum. Niet de hele geschiedenis: alleen het afgelopen etmaal,
   # en wel een tag op de huidige main, zodat de volgende ochtend daarvandaan telt.
-  git log --first-parent --reverse --since='24 hours ago' --pretty=tformat:'%s' "$sha" > "$onderwerpen"
+  git log --no-merges --reverse --since='24 hours ago' --pretty=tformat:'%s' "$sha" > "$onderwerpen"
   eerste=1
 fi
 
@@ -90,14 +94,6 @@ while IFS= read -r subject || [ -n "$subject" ]; do
     nummer=$(printf '%s\n' "$subject" | sed -E 's/.* \(#([0-9]+)\)[[:space:]]*$/\1/')
     kop=$(printf '%s\n' "$subject" | sed -E 's/ \(#[0-9]+\)[[:space:]]*$//')
     printf -- '- %s (#%s)\n' "$kop" "$nummer" >> "$notities"
-  elif printf '%s\n' "$subject" | grep -Eq '^Merge pull request #[0-9]+'; then
-    nummer=$(printf '%s\n' "$subject" | sed -E 's/^Merge pull request #([0-9]+).*/\1/')
-    kop=$(gh pr view "$nummer" --repo "$repo" --json title --jq .title 2>/dev/null || true)
-    if [ -n "$kop" ]; then
-      printf -- '- %s (#%s)\n' "$kop" "$nummer" >> "$notities"
-    else
-      printf -- '- %s\n' "$subject" >> "$notities"
-    fi
   else
     printf -- '- %s\n' "$subject" >> "$notities"
   fi

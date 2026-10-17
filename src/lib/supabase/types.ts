@@ -5,6 +5,12 @@
  * vóór de overstap) zijn weg sinds migratie 0033.
  */
 
+import type {
+  Gebeurtenis as MeetGebeurtenisRij,
+  MeetApparaat,
+  MeetSoort,
+} from '@/lib/meten/gebeurtenis'
+
 /** `locked` is weg sinds migratie 0034 (het oude leerpad). */
 export type ProgressStatus = 'in_progress' | 'mastered'
 export type ProfileRole = 'student' | 'admin'
@@ -356,6 +362,55 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['known_wrong_answers_new']['Insert']>
         Relationships: []
       }
+      /** Klikmeting zonder koekjes. Migratie 0072. Alleen de service-role schrijft hier. */
+      site_gebeurtenissen: {
+        Row: {
+          id: number
+          tijdstip: string
+          sessie_id: string
+          soort: MeetSoort
+          pad: string
+          doel: string | null
+          waarde: number | null
+          apparaat: MeetApparaat
+          verwijzer: string | null
+          ingelogd: boolean
+          /** Plek binnen het tabblad, vanaf 1. Migratie 0073. */
+          volgnummer: number | null
+          /** Alleen bij een ingelogde leerling. Migratie 0073. */
+          schuilnaam: string | null
+        }
+        Insert: {
+          id?: never
+          tijdstip?: string
+          sessie_id: string
+          soort: MeetSoort
+          pad: string
+          doel?: string | null
+          waarde?: number | null
+          apparaat: MeetApparaat
+          verwijzer?: string | null
+          ingelogd?: boolean
+          volgnummer?: number | null
+          schuilnaam?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['site_gebeurtenissen']['Insert']>
+        Relationships: []
+      }
+      site_dagtotalen: {
+        Row: {
+          dag: string
+          soort: MeetSoort
+          apparaat: MeetApparaat
+          pad: string
+          doel: string
+          aantal: number
+          sessies: number
+        }
+        Insert: Database['public']['Tables']['site_dagtotalen']['Row']
+        Update: Partial<Database['public']['Tables']['site_dagtotalen']['Row']>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -365,6 +420,25 @@ export type Database = {
           question_id: string
           is_correct: boolean
         }>
+      }
+      /**
+       * Migratie 0072, uitgebreid in 0073: gebeurtenissen wegschrijven, met
+       * de grens per tabblad, het volgnummer binnen de sessie en de
+       * schuilnaam van een ingelogde leerling.
+       */
+      meet_opslaan: {
+        Args: { gebeurtenissen: MeetGebeurtenisRij[]; schuilnaam?: string | null }
+        Returns: number
+      }
+      /** Migratie 0073: de schuilnaam van één leerling, voor de overzichten. */
+      meet_schuilnaam: {
+        Args: { gebruiker: string | null }
+        Returns: string | null
+      }
+      /** Migratie 0072: dagtotalen bijwerken en alles ouder dan 90 dagen weg. */
+      site_meting_onderhoud: {
+        Args: Record<string, never>
+        Returns: number
       }
     }
     Enums: Record<string, never>

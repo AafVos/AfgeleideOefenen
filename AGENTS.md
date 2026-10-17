@@ -24,6 +24,88 @@ bij elke pull request (`.github/workflows/controle.yml`). Daar start Supabase be
 overgeslagen als een pull request alleen tekst verandert. Lokaal start
 `npx supabase start` gewoon alles, inclusief Studio.
 
+## Dagelijkse release: van `volgende` naar `main`
+
+Er zijn twee beschermde takken. `main` is de live site. `volgende` is waar
+gewoon werk naartoe gaat.
+
+* **Gewoon werk.** Tak vanaf `origin/volgende`, pull request naar `volgende`
+  (`gh pr create --base volgende`). Controles groen → mergen (squash).
+* **Eén keer per dag** maakt `.github/workflows/release-pr.yml` om 05:00 UTC
+  (of met de hand vanaf het tabblad Actions) de pull request `volgende` →
+  `main`, met daarin wat erin zit en welke migraties. Staat hij al open, dan
+  wordt alleen de tekst bijgewerkt. Aaf bekijkt hem en merget zelf. **Die ene
+  pull request merge je met "Create a merge commit", niet met squash** —
+  anders kent `volgende` de commit op `main` niet en lopen de takken uit
+  elkaar.
+* **Kritiek gaat rechtstreeks naar `main`.** Kritiek is: de site, het
+  inloggen of het registreren doet het niet; het nakijken rekent een goed
+  antwoord fout of een fout antwoord goed; een beveiligings- of privacylek of
+  gegevens die verloren gaan; de bouw of de controles op `main` zijn stuk.
+  Verder niets. Twijfel je, dan is het niet kritiek. Tak vanaf `origin/main`,
+  pull request naar `main` met `[Kritiek]` vooraan de titel, zelf mergen
+  zodra de controles groen zijn.
+* **Terug naar `volgende`.** Na elke push op `main` haalt
+  `.github/workflows/terug-naar-volgende.yml` die stand terug in `volgende`.
+  Na een release is dat gewoon doorschuiven; na een kritieke fix een echte
+  samenvoeging. Botst het, dan komt er een melding in Issues met de bestanden
+  die botsen — daar moet dan met de hand een pull request naar `volgende`
+  voor komen.
+
+### Er is geen voorbeeldversie van `volgende` (en ook niet van een tak)
+
+Eerder stond hier dat Workers Builds de stand van `volgende` op
+`volgende-afgeleide-oefenen.alhvos.workers.dev` zet. **Dat adres
+bestaat niet.** Het geeft 404, en dat gold ook voor de adressen per tak. Er
+werd dus naar een dood adres gelinkt; die links zijn eruit gehaald.
+
+Wat er wél gebeurt: Workers Builds bouwt elke pull request-tak, maar die bouw
+**faalt** (zie het bot-bericht "Deploying Preview to Cloudflare" bij een pull
+request, en de check `Workers Builds: afgeleide-oefenen`). Zolang die faalt
+wordt er geen versie geüpload en is er dus geen voorbeeldversie. De adressen
+zelf zijn goed: de worker heeft preview-URL's aanstaan — een onbekend adres
+antwoordt met `x-preview-user-error: true`, niet met "worker bestaat niet".
+
+Bekijk je werk dus lokaal: `npm run dev`, of `npm run cf:preview` voor de
+Workers-versie.
+
+**Wat er moet gebeuren om het terug te krijgen** (alleen Aaf kan dit; het kan
+niet vanuit deze repo, want de instellingen van Workers Builds staan in het
+Cloudflare-dashboard en er staat geen `CLOUDFLARE_API_TOKEN` in GitHub):
+
+1. In het dashboard bij de worker `afgeleide-oefenen` → Settings → Builds: de
+   bouwlog van een gefaalde tak-bouw lezen en de oorzaak wegnemen. Waarschijnlijk
+   ontbreken de bouwvariabelen (`NEXT_PUBLIC_*`, zie `scripts/worker-omgeving.json`)
+   voor niet-productietakken, of het commando voor niet-productietakken klopt
+   niet — dat hoort `npx wrangler versions upload` te zijn, niet `deploy`.
+2. Controleren dat bouwen voor niet-productietakken aan staat, zodat ook de
+   tak `volgende` zelf gebouwd wordt (nu staat er op de kop-commit van
+   `volgende` geen Workers-Builds-check).
+3. Werkt het, zet de link dan weer terug in dit bestand, in `README.md` en in
+   `scripts/release-pr.sh`. De inlog-adressen staan al goed: in
+   `supabase/config.toml` dekt `https://*-afgeleide-oefenen.alhvos.workers.dev/**`
+   elke tak.
+
+### Waarom het zo in elkaar zit
+
+* **`controle.yml` draait ook bij een push op `volgende`.** Een pull request
+  die met `GITHUB_TOKEN` gemaakt is, start geen workflows, dus de
+  release-pull-request krijgt zelf geen controles. GitHub kijkt voor de
+  verplichte checks naar de kop-commit, en die staan er dankzij die push al
+  op. Een squash-merge maakt bovendien een nieuwe commit die nog niemand
+  getest heeft, dus dubbel werk is het niet. Ontbreken ze toch een keer, dan
+  zegt de release-pull-request dat erbij; rechtzetten met
+  `gh workflow run controle.yml --ref volgende`.
+* **Terug naar `volgende` duwt met een deploy-key**, niet met
+  `GITHUB_TOKEN`. De app GitHub Actions kan alleen in een organisatie
+  uitzondering in een ruleset worden, en deze repo staat op een persoonlijk
+  account. In de ruleset "volgende beschermen" staat daarom één
+  uitzondering: deploy-keys. De enige die er is, is
+  `terug-naar-volgende (workflow)`; de privésleutel staat in het geheim
+  `TERUG_NAAR_VOLGENDE_SLEUTEL`. Ontbreekt dat geheim, dan slaat de workflow
+  zichzelf over met uitleg. Alle andere wegen naar `volgende` lopen gewoon
+  via een pull request.
+
 ## Lokaal op Workers
 
 De live site draait op Cloudflare Workers (worker `afgeleide-oefenen`), via
@@ -39,16 +121,16 @@ npm run cf:preview
 met `wrangler` of `opennextjs-cloudflare deploy`. Na een merge doet Workers
 Builds dat.
 
-Botst een pull request met `main`, dan maakt GitHub de samengevoegde versie
-niet aan en start die controle helemaal niet. Niet rood en niet "in
-afwachting": in `gh pr checks` blijven dan alleen de controles over die op
-de tak zelf draaien, zoals Workers Builds. De check
-"Botst met main" (`.github/workflows/botst-met-main.yml`) draait op de tak
-zelf en wordt dan rood, met de bestanden die botsen. Voeg `main` samen of
-rebase, en duw opnieuw — daarna start de controle vanzelf.
+Botst een pull request met zijn doeltak (meestal `volgende`), dan maakt
+GitHub de samengevoegde versie niet aan en start die controle helemaal niet.
+Niet rood en niet "in afwachting": in `gh pr checks` blijven dan alleen de
+controles over die op de tak zelf draaien, zoals Workers Builds. De check
+"Botst met de doeltak" (`.github/workflows/botst-met-doeltak.yml`) draait op
+de tak zelf en wordt dan rood, met de bestanden die botsen. Voeg de doeltak
+samen of rebase erop, en duw opnieuw — daarna start de controle vanzelf.
 
-Ontbreekt de controle-run (omdat `main` na je laatste push is verschoven, of
-omdat de rode check hierboven er ook niet is), kijk dan eerst of de pull
+Ontbreekt de controle-run (omdat de doeltak na je laatste push is verschoven,
+of omdat de rode check hierboven er ook niet is), kijk dan eerst of de pull
 request botst:
 
 ```bash
@@ -56,9 +138,9 @@ gh pr view <nummer> --json mergeable,mergeStateStatus
 ```
 
 Staat `mergeable` op `false`, of `mergeStateStatus` op `dirty`, dan is dat de
-reden. Zelfde stap: `main` erbij halen en opnieuw duwen. Achterlopen zonder
-conflict is geen probleem: de controle draait dan gewoon op de samengevoegde
-versie.
+reden. Zelfde stap: de doeltak erbij halen en opnieuw duwen. Achterlopen
+zonder conflict is geen probleem: de controle draait dan gewoon op de
+samengevoegde versie.
 
 ## Indeling van de oefenpagina
 
@@ -89,6 +171,10 @@ Zo valt het op als iemand iets in het Supabase-dashboard heeft veranderd zonder
 
 * **Alleen lezen.** Deze controle doet nooit `supabase config push`; dat project
   draagt de echte accounts en voortgang van leerlingen.
+* Hij kijkt naar `main`, dus naar wat live staat. Verander je
+  `supabase/config.toml` (of `scripts/worker-omgeving.json`) in `volgende`,
+  dan kan er één ochtend een verschil gemeld worden dat na de release vanzelf
+  weer weg is.
 * **Bij verschil komt er een issue in de repo**, geen rode controle. Een
   waarschuwing in een logboek leest niemand, en een pull request van iemand
   anders hoort niet te blijven hangen door iets wat die persoon niet
@@ -110,10 +196,16 @@ over als het geheim `CLOUDFLARE_API_TOKEN` niet in GitHub staat.
 
 ## Elke ochtend: wat is er samen live gegaan?
 
-`.github/workflows/dagelijkse-release.yml` maakt elke ochtend (en met de hand
-vanaf het tabblad Actions) een GitHub Release met de datum als tag, bijvoorbeeld
-`v2026-10-13`. In de tekst staan de titels van wat er sinds de vorige release
-op `main` is gemerged.
+`.github/workflows/dagelijkse-release.yml` maakt een GitHub Release met de
+datum als tag, bijvoorbeeld `v2026-10-13`. In de tekst staan de titels van de
+pull requests die sinds de vorige release op `main` terecht zijn gekomen. Dat
+is het lijstje achteraf; de release-pull-request hierboven is het lijstje
+vooraf.
+
+Hij draait zodra er iets op `main` gemerged wordt — dus meteen nadat Aaf de
+release-pull-request merget — en daarnaast elke ochtend als vangnet, plus met
+de hand vanaf het tabblad Actions. Bestaat de tag van vandaag al, dan doet een
+tweede run niets.
 
 Elke merge op `main` blijft meteen live. Er komt geen versienummer in
 `package.json`. Is er niets nieuws, dan komt er geen release. De eerste keer,

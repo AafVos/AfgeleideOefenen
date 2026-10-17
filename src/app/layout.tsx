@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import Script from 'next/script'
 
+import { Meten } from '@/components/meten'
+
 import './globals.css'
 
 // Publiek token van Cloudflare Web Analytics. Leeg of weg: geen tellerscript,
@@ -44,6 +46,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-bg text-text">
         {children}
+        {/* Eigen klikmeting, zonder koekjes. Laadt pas als de pagina er
+            staat en meet niets op /admin. Zie src/lib/meten/. */}
+        <Meten />
       </body>
       {beaconToken ? (
         <Script

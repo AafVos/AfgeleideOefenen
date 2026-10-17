@@ -75,5 +75,12 @@
     "wanneer": "runtime",
     "geheim": true,
     "verplicht": true
+  },
+  {
+    "naam": "MEET_SCHUILNAAM_GEHEIM",
+    "doel": "Geheim waarmee de klikmeting de schuilnaam van een ingelogde leerling uitrekent. Dezelfde waarde hoort in de Vault als meet_schuilnaam_geheim. Zonder deze regel blijft de schuilnaam leeg en meet de site alleen per tabblad.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": false
   }
 ]

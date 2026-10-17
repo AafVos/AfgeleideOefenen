@@ -8,15 +8,15 @@ function verzoek(pad: string) {
 }
 
 describe('taalcode', () => {
-  it('stuurt / permanent naar /nl', async () => {
+  it('stuurt / met één 301 naar /nl', async () => {
     const antwoord = await middleware(verzoek('/'))
-    expect(antwoord.status).toBe(308)
+    expect(antwoord.status).toBe(301)
     expect(antwoord.headers.get('location')).toBe('http://localhost/nl')
   })
 
-  it('stuurt een adres zonder taalcode permanent naar /nl', async () => {
+  it('stuurt een adres zonder taalcode met 301 naar /nl', async () => {
     const antwoord = await middleware(verzoek('/theorie/kettingregel'))
-    expect(antwoord.status).toBe(308)
+    expect(antwoord.status).toBe(301)
     expect(antwoord.headers.get('location')).toBe(
       'http://localhost/nl/theorie/kettingregel',
     )

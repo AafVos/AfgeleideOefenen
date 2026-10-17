@@ -104,6 +104,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
       overviewLabel={t('overview')}
       items={theorieItems}
       dataTour="theorie"
+      dataMeet="menu-theorie"
     />
   )
 
@@ -111,6 +112,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
     <Link
       href={`/${locale}/uitleg-videos`}
       data-tour="videos"
+      data-meet="menu-videos"
       className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
     >
       <IconPlayCircle />
@@ -124,6 +126,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
       <div className="flex h-full w-full items-center justify-between gap-4 px-4">
         <Link
           href={`/${locale}`}
+          data-meet="menu-merk"
           className="min-w-0 shrink font-serif text-lg font-medium tracking-tight text-text"
         >
           {t('brand')}<span className="text-accent">{t('brandSuffix')}</span>
@@ -139,10 +142,12 @@ export async function SiteHeader({ locale }: { locale: string }) {
             overviewLabel={t('overview')}
             items={oefenenItems}
             dataTour="oefenen"
+            dataMeet="menu-oefenen"
           />
           <Link
             href={`/${locale}/zelf-toets`}
             data-tour="zelftoets"
+            data-meet="menu-zelftoets"
             className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
           >
             <IconClipboardCheck />
@@ -151,6 +156,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
           <Link
             href={`/${locale}/dashboard`}
             data-tour="voortgang"
+            data-meet="menu-dashboard"
             className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
           >
             <IconChart />
@@ -159,6 +165,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
           {role === 'admin' && (
             <Link
               href="/admin"
+              data-meet="menu-admin"
               className="shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-text-muted hover:bg-surface-2 hover:text-text"
             >
               {t('admin')}
