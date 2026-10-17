@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { bestemmingNaInloggen } from '@/lib/auth/bestemming'
 import { moetNaamVragen } from '@/lib/auth/google'
 import { veiligOefenpad } from '@/lib/auth/oefenpad'
-import { canoniek } from '@/lib/seo'
+import { canoniek, nietIndexeren } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 
 import { NaamForm } from './naam-form'
@@ -16,7 +16,11 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Gebruikersnaam' })
-  return { title: t('title'), alternates: canoniek(locale, '/gebruikersnaam') }
+  return {
+    title: t('title'),
+    alternates: canoniek(locale, '/gebruikersnaam'),
+    robots: nietIndexeren(),
+  }
 }
 
 export default async function GebruikersnaamPage({

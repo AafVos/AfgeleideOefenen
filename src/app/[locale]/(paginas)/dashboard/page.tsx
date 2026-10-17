@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { bouwDashboardIndeling, bouwOnderwerpVoortgang } from '@/lib/dashboard/indeling'
 import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
 import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
-import { canoniek } from '@/lib/seo'
+import { canoniek, nietIndexeren } from '@/lib/seo'
 import { getCurrentProfile } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
@@ -20,7 +20,11 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'Dashboard' })
-  return { title: t('title'), alternates: canoniek(locale, '/dashboard') }
+  return {
+    title: t('title'),
+    alternates: canoniek(locale, '/dashboard'),
+    robots: nietIndexeren(),
+  }
 }
 
 export default async function DashboardPage() {
