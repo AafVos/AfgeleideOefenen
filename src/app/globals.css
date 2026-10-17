@@ -89,8 +89,12 @@ body {
   .tour-arm-wave, .tour-eyes, .tour-inner { animation: none; }
 }
 
-/* Ring om het uitgelichte element tijdens de rondleiding */
+/* Ring om het uitgelichte element tijdens de rondleiding. De z-index tilt
+   het element boven de dimmende overlay (z-20) uit, anders verdwijnt een
+   knop die niet in de header staat onder die overlay. */
 .tour-ring {
+  position: relative;
+  z-index: 21;
   border-radius: 10px;
   background: var(--color-accent-light);
   box-shadow: 0 0 0 3px var(--color-accent);
