@@ -48,10 +48,11 @@ function magInTerugCache(pathname: string) {
   return TERUGKNOP_PADEN.some((p) => pad === p || pad.startsWith(`${p}/`))
 }
 
-// Next.js 16 noemt dit liever `proxy.ts`. Dat bestand draait altijd op Node
-// en wordt op Workers een zware, aparte bundel. Deze lichtere versie is wat
-// Cloudflare aankan.
-export async function middleware(request: NextRequest) {
+// Dit heette tot nu toe `middleware.ts`. Next.js 16 heeft die naam afgekeurd
+// en vraagt om `proxy.ts`. Gevolg van de nieuwe naam: dit draait altijd op
+// Node (een `runtime`-instelling mag hier niet meer staan), dus op Workers
+// wordt het een aparte Node-bundel in plaats van de lichtere edge-versie.
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Het WhatsApp-plaatje heeft geen sessie nodig.
