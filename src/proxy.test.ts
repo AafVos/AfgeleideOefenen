@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { describe, expect, it } from 'vitest'
 
-import { middleware } from './middleware'
+import { proxy } from './proxy'
 
 function verzoek(pad: string) {
   return new NextRequest(`http://localhost${pad}`)
@@ -9,13 +9,13 @@ function verzoek(pad: string) {
 
 describe('taalcode', () => {
   it('stuurt / met één 301 naar /nl', async () => {
-    const antwoord = await middleware(verzoek('/'))
+    const antwoord = await proxy(verzoek('/'))
     expect(antwoord.status).toBe(301)
     expect(antwoord.headers.get('location')).toBe('http://localhost/nl')
   })
 
   it('stuurt een adres zonder taalcode met 301 naar /nl', async () => {
-    const antwoord = await middleware(verzoek('/theorie/kettingregel'))
+    const antwoord = await proxy(verzoek('/theorie/kettingregel'))
     expect(antwoord.status).toBe(301)
     expect(antwoord.headers.get('location')).toBe(
       'http://localhost/nl/theorie/kettingregel',
@@ -25,13 +25,13 @@ describe('taalcode', () => {
 
 describe('oude /en-adressen', () => {
   it('stuurt /en met 301 naar /nl', async () => {
-    const antwoord = await middleware(verzoek('/en'))
+    const antwoord = await proxy(verzoek('/en'))
     expect(antwoord.status).toBe(301)
     expect(antwoord.headers.get('location')).toBe('http://localhost/nl')
   })
 
   it('stuurt /en/uitleg-videos met 301 naar /nl/uitleg-videos', async () => {
-    const antwoord = await middleware(verzoek('/en/uitleg-videos'))
+    const antwoord = await proxy(verzoek('/en/uitleg-videos'))
     expect(antwoord.status).toBe(301)
     expect(antwoord.headers.get('location')).toBe(
       'http://localhost/nl/uitleg-videos',
@@ -50,7 +50,7 @@ describe('terugknop van de browser', () => {
     '/nl/theorie',
     '/nl/theorie/machtsregel',
   ])('laat %s zonder no-store door', async (pad) => {
-    const antwoord = await middleware(verzoek(pad))
+    const antwoord = await proxy(verzoek(pad))
     expect(antwoord.status).toBe(200)
     expect(antwoord.headers.get('cache-control')).toBe(zonderStore)
   })
@@ -60,18 +60,18 @@ describe('terugknop van de browser', () => {
   it.each(['/nl/theorie/persoonlijk', '/nl/theorie/machtsregel/persoonlijk'])(
     'laat %s zonder no-store door',
     async (pad) => {
-      const antwoord = await middleware(verzoek(pad))
+      const antwoord = await proxy(verzoek(pad))
       expect(antwoord.headers.get('cache-control')).toBe(zonderStore)
     },
   )
 
   it('laat /nl/inloggen met rust, want die zet Next zelf', async () => {
-    const antwoord = await middleware(verzoek('/nl/inloggen'))
+    const antwoord = await proxy(verzoek('/nl/inloggen'))
     expect(antwoord.headers.get('cache-control')).toBeNull()
   })
 
   it('geeft een pagina waar je voor moet inloggen geen eigen cache-regel', async () => {
-    const antwoord = await middleware(verzoek('/nl/dashboard'))
+    const antwoord = await proxy(verzoek('/nl/dashboard'))
     expect(antwoord.headers.get('cache-control')).toBeNull()
   })
 })
