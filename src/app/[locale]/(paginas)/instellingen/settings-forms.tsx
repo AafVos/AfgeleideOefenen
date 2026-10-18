@@ -4,6 +4,8 @@ import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
+import { ErrorBanner } from '@/components/ui'
+
 import {
   updatePasswordAction,
   updateUsernameAction,
@@ -14,14 +16,7 @@ const initialState: SettingsState = { error: null, success: null }
 
 function StateBanner({ state }: { state: SettingsState }) {
   if (state.error) {
-    return (
-      <p
-        role="alert"
-        className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
-      >
-        {state.error}
-      </p>
-    )
+    return <ErrorBanner>{state.error}</ErrorBanner>
   }
   if (state.success) {
     return (
