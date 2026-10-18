@@ -9,14 +9,17 @@ import { checkWrongAnswerNew } from './check-answer-new'
 // Cache van het nakijken.
 //
 // Alleen de boekhouding wordt getest: een nepdatabase in het geheugen en
-// de neppe controle uit stub.ts. Gemini wordt niet aangeroepen.
+// de neppe controle uit stub.ts. Gemini wordt niet echt aangeroepen; in de
+// tests hieronder die wél langs dat pad gaan, staat er een nepantwoord
+// klaar (zie het tweede blok, "checkWrongAnswerNew met een antwoord van
+// Gemini").
 //
 // Het bestand heet `check-answer-new.ts.test.ts`, zodat
 // `npx vitest run src/lib/ai/check-answer-new.ts` deze test vindt.
 // =====================================================================
 
 const gemini = vi.hoisted(() => ({
-  generateJson: vi.fn(async () => {
+  generateJson: vi.fn<(prompt: string, opties?: unknown) => Promise<unknown>>(async () => {
     throw new Error('Gemini mag niet aangeroepen worden')
   }),
 }))
@@ -163,16 +166,21 @@ function verwachtGeenGemini() {
   expect(gemini.generateJson).not.toHaveBeenCalled()
 }
 
+/** Lege tabellen en een schone teller voor Gemini. */
+function schoneStart() {
+  vragen.length = 0
+  fouteAntwoorden.length = 0
+  stappen.length = 0
+  tabellen.topics_new.length = 0
+  tabellen.topic_clusters_new.length = 0
+  gemini.generateJson.mockReset()
+  vi.stubEnv('NODE_ENV', 'test')
+}
+
 describe('checkWrongAnswerNew', () => {
   beforeEach(() => {
-    vragen.length = 0
-    fouteAntwoorden.length = 0
-    stappen.length = 0
-    tabellen.topics_new.length = 0
-    tabellen.topic_clusters_new.length = 0
-    gemini.generateJson.mockClear()
+    schoneStart()
     vi.stubEnv('AI_CHECK_MODE', 'stub')
-    vi.stubEnv('NODE_ENV', 'test')
   })
 
   afterEach(() => {
@@ -324,5 +332,145 @@ describe('checkWrongAnswerNew', () => {
     expect(vragen).toEqual([])
     expect(fouteAntwoorden).toEqual([])
     verwachtGeenGemini()
+  })
+})
+
+// =====================================================================
+// Hetzelfde, maar nu met de neppe controle uit. De nepdatabase blijft, en
+// in plaats van Gemini staat er per test een vast antwoord klaar. Zo komen
+// ook het foutpad van Gemini en het wegschrijven van het stappenplan aan
+// de beurt.
+// =====================================================================
+
+describe('checkWrongAnswerNew met een antwoord van Gemini', () => {
+  beforeEach(() => {
+    schoneStart()
+    // Niet 'stub': dan loopt de code langs generateJson, en dat is de mock.
+    vi.stubEnv('AI_CHECK_MODE', 'echt')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('geeft de fout van Gemini terug en schrijft niets weg', async () => {
+    const rij = zetVraag()
+    gemini.generateJson.mockResolvedValueOnce({
+      ok: false,
+      error: 'Gemini antwoordde niet.',
+    })
+
+    const result = await checkWrongAnswerNew(db, 'q1', '2x')
+
+    expect(result).toEqual({ error: 'Gemini antwoordde niet.' })
+    expect(gemini.generateJson).toHaveBeenCalledTimes(1)
+    expect(fouteAntwoorden).toEqual([])
+    expect(stappen).toEqual([])
+    expect(rij.answer_alternatives).toEqual([])
+  })
+
+  it('schrijft het stappenplan genummerd weg en slaat lege stappen over', async () => {
+    // f(x) = 2x^3 heeft afgeleide 6x^2; 2x is fout.
+    zetVraag()
+    gemini.generateJson.mockResolvedValueOnce({
+      ok: true,
+      raw: '{}',
+      data: {
+        is_mathematically_correct: false,
+        category: 'macht vergeten',
+        error_explanation: 'Je hebt de macht laten staan.',
+        solution_steps: [
+          '  Haal de factor $2$ naar voren.  ',
+          '   ',
+          'Machtsregel: $x^3$ wordt $3x^2$.',
+          'Vermenigvuldig: $2 \\cdot 3x^2 = 6x^2$.',
+        ],
+      },
+    })
+
+    const result = await checkWrongAnswerNew(db, 'q1', '2x')
+
+    const verwachteStappen = [
+      { step_order: 1, step_description: 'Haal de factor $2$ naar voren.' },
+      { step_order: 2, step_description: 'Machtsregel: $x^3$ wordt $3x^2$.' },
+      { step_order: 3, step_description: 'Vermenigvuldig: $2 \\cdot 3x^2 = 6x^2$.' },
+    ]
+
+    expect(result).toEqual({
+      errorExplanation: 'Je hebt de macht laten staan.',
+      category: 'macht vergeten',
+      fromCache: false,
+      isMathematicallyCorrect: false,
+      generatedSteps: verwachteStappen,
+    })
+    expect(stappen).toHaveLength(3)
+    for (const [i, verwacht] of verwachteStappen.entries()) {
+      expect(stappen[i]).toMatchObject({ question_id: 'q1', ...verwacht })
+    }
+    expect(fouteAntwoorden).toHaveLength(1)
+    expect(fouteAntwoorden[0]).toMatchObject({
+      question_id: 'q1',
+      wrong_answer: '2x',
+      error_explanation: 'Je hebt de macht laten staan.',
+      category: 'macht vergeten',
+    })
+  })
+
+  it('schrijft geen tweede stappenplan als er al een is', async () => {
+    zetVraag()
+    stappen.push({
+      id: 's1',
+      question_id: 'q1',
+      step_order: 1,
+      step_description: 'Dit stappenplan stond er al.',
+    })
+    gemini.generateJson.mockResolvedValueOnce({
+      ok: true,
+      raw: '{}',
+      data: {
+        is_mathematically_correct: false,
+        category: 'macht vergeten',
+        error_explanation: 'Je hebt de macht laten staan.',
+        solution_steps: ['Deze stap hoort niet opgeslagen te worden.'],
+      },
+    })
+
+    const result = await checkWrongAnswerNew(db, 'q1', '2x')
+
+    expect(result).toMatchObject({ generatedSteps: [] })
+    expect(stappen).toHaveLength(1)
+    expect(stappen[0]).toMatchObject({ step_description: 'Dit stappenplan stond er al.' })
+
+    // De prompt vraagt in dat geval om een leeg stappenplan.
+    expect(gemini.generateJson.mock.calls[0][0]).toContain(
+      'Er is al een stappenplan voor deze vraag',
+    )
+  })
+
+  it('slaat geen stappenplan op als het antwoord wiskundig goed is', async () => {
+    const rij = zetVraag({ answer: '-x^-2', latex_body: 'f(x) = x^{-1}' })
+    gemini.generateJson.mockResolvedValueOnce({
+      ok: true,
+      raw: '{}',
+      data: {
+        is_mathematically_correct: true,
+        category: '',
+        error_explanation: '',
+        solution_steps: ['Deze stap hoort niet opgeslagen te worden.'],
+      },
+    })
+
+    const result = await checkWrongAnswerNew(db, 'q1', '-1/x^2')
+
+    expect(result).toEqual({
+      errorExplanation: '',
+      category: null,
+      fromCache: false,
+      isMathematicallyCorrect: true,
+      generatedSteps: [],
+    })
+    expect(rij.answer_alternatives).toEqual(['-1/x^2'])
+    expect(stappen).toEqual([])
+    expect(fouteAntwoorden).toEqual([])
   })
 })
