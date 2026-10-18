@@ -190,7 +190,8 @@ Cloudflare Web Analytics om: die telt alleen paginabezoeken.
   mee aan.
 * **Kijken wat eruit komt:** de views `meet_bezoekers_per_dag`,
   `meet_apparaat_per_dag`, `meet_trechter` (startpagina → proefsom →
-  registreren → eerste som), `meet_doelen_top`, `meet_dode_klikken`,
+  registreren → eerste som; de proefsom telt zowel op `/proberen` als op de
+  startpagina zelf), `meet_doelen_top`, `meet_dode_klikken`,
   `meet_woedeklikken`, `meet_fouten`, `meet_scroll_per_pagina`,
   `meet_routes_top` (de twintig meestgelopen routes, eerste zes stappen),
   `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en dagen
