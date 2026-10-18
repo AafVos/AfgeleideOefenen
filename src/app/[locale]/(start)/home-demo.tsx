@@ -243,7 +243,7 @@ export function HomeDemo() {
   ]
 
   return (
-    <section className="mt-14">
+    <section id="proefsom" className="mt-3 scroll-mt-6 sm:mt-8">
       <div className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
         <span className="text-xs font-medium uppercase tracking-wider text-accent">
           {t('eyebrow')}

@@ -83,19 +83,19 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="mx-auto max-w-3xl px-4 py-16">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:py-16">
         <section className="text-center">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wider text-accent">
+          <p className="mb-1 text-sm font-medium uppercase tracking-wider text-accent sm:mb-3">
             {t('eyebrow')}
           </p>
-          <h1 className="font-serif text-4xl leading-tight text-text sm:text-5xl">
+          <h1 className="font-serif text-3xl leading-tight text-text sm:text-5xl">
             {t('h1Start')}{' '}
             <span className="whitespace-nowrap text-accent">{t('h1Accent')}</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-text-muted">
+          <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-6">
             {t('lead')}
           </p>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-text-muted sm:mt-4">
             {t.rich('subLead', {
               oefenen: (chunks) => (
                 <span className="text-text">{chunks}</span>
@@ -114,9 +114,9 @@ export default async function HomePage() {
               ),
             })}
           </p>
-          <p className="mt-4">
+          <p className="mt-2 sm:mt-4">
             <a
-              href="#regels"
+              href="#proefsom"
               data-meet="start-herfstvakantie"
               className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
             >
@@ -124,9 +124,9 @@ export default async function HomePage() {
             </a>
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
             <a
-              href="#regels"
+              href="#proefsom"
               data-meet="start-regels"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
@@ -147,7 +147,12 @@ export default async function HomePage() {
               {t('ctaLogin')}
             </Link>
           </div>
-          <p className="mt-3 text-sm text-text-muted">{t('tagline')}</p>
+        </section>
+
+        <HomeDemo />
+
+        <section className="mt-10 text-center">
+          <p className="text-sm text-text-muted">{t('tagline')}</p>
           <p className="mt-4">
             <IntegraalVerwijzing
               tekst={t('integraal')}
@@ -156,8 +161,6 @@ export default async function HomePage() {
             />
           </p>
         </section>
-
-        <HomeDemo />
 
         <section id="regels" className="mt-16 scroll-mt-6">
           <p className="text-lg text-text">{t('zoekzin')}</p>
