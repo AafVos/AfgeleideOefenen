@@ -47,19 +47,28 @@ describe('terugknop van de browser', () => {
     '/nl/privacy',
     '/nl/uitleg-videos',
     '/nl/uitleg-videos/quotientregel',
+    '/nl/theorie',
+    '/nl/theorie/machtsregel',
   ])('laat %s zonder no-store door', async (pad) => {
     const antwoord = await middleware(verzoek(pad))
     expect(antwoord.status).toBe(200)
     expect(antwoord.headers.get('cache-control')).toBe(zonderStore)
   })
 
-  it.each(['/nl/theorie', '/nl/inloggen'])(
-    'laat %s met rust, want die zet Next zelf',
+  // De worker haalt `/persoonlijk` er normaal al af. Komt het adres er toch
+  // zo langs, dan hoort de regel er net zo goed op te staan.
+  it.each(['/nl/theorie/persoonlijk', '/nl/theorie/machtsregel/persoonlijk'])(
+    'laat %s zonder no-store door',
     async (pad) => {
       const antwoord = await middleware(verzoek(pad))
-      expect(antwoord.headers.get('cache-control')).toBeNull()
+      expect(antwoord.headers.get('cache-control')).toBe(zonderStore)
     },
   )
+
+  it('laat /nl/inloggen met rust, want die zet Next zelf', async () => {
+    const antwoord = await middleware(verzoek('/nl/inloggen'))
+    expect(antwoord.headers.get('cache-control')).toBeNull()
+  })
 
   it('geeft een pagina waar je voor moet inloggen geen eigen cache-regel', async () => {
     const antwoord = await middleware(verzoek('/nl/dashboard'))

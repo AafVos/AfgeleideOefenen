@@ -26,7 +26,18 @@ const ZONDER_TAALCODE = [
 // noemt de naam van wie is ingelogd, dus een gedeelde cache mag ze niet
 // bewaren — en `no-cache` zorgt dat de browser bij een gewoon bezoek altijd
 // eerst bij de server navraagt.
-const TERUGKNOP_PADEN = ['/hoe-het-werkt', '/privacy', '/uitleg-videos']
+//
+// `/theorie` staat er ook in. Een bezoeker zonder account krijgt die pagina
+// als los bestand van Cloudflare en komt hier niet langs; een ingelogde
+// leerling wel, via `/nl/theorie/.../persoonlijk`. De worker haalt
+// `/persoonlijk` eraf voordat Next de pagina opbouwt, maar beide vormen
+// vallen hieronder.
+const TERUGKNOP_PADEN = [
+  '/hoe-het-werkt',
+  '/privacy',
+  '/theorie',
+  '/uitleg-videos',
+]
 const TERUGKNOP_CACHE = 'private, no-cache, max-age=0, must-revalidate'
 
 /** `/nl/uitleg-videos/kettingregel` → ja; `/nl/dashboard` → nee. */
