@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const db = vi.hoisted(() => ({
   user: { id: 'u1' } as { id: string } | null,
+  locale: 'nl',
   profielFout: null as { code: string; message: string } | null,
   metaFout: null as { message: string } | null,
   updates: [] as unknown[],
@@ -30,10 +31,19 @@ vi.mock('@/lib/email/welkom', () => ({
   stuurWelkomstmail: async () => ({ verstuurd: false, reden: 'geen-sleutel' }),
 }))
 
+// `requireUser()` haalt de gebruiker hierlangs op en bepaalt de taal van de
+// redirect met `getLocale()`.
+vi.mock('next-intl/server', () => ({
+  getLocale: async () => db.locale,
+}))
+
+vi.mock('@/lib/supabase/request-cache', () => ({
+  getCurrentUser: async () => db.user,
+}))
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
     auth: {
-      getUser: async () => ({ data: { user: db.user } }),
       updateUser: async (arg: unknown) => {
         db.meta.push(arg)
         return { error: db.metaFout }
@@ -62,6 +72,7 @@ function formulier(velden: Record<string, string>): FormData {
 
 beforeEach(() => {
   db.user = { id: 'u1' }
+  db.locale = 'nl'
   db.profielFout = null
   db.metaFout = null
   db.updates = []
@@ -94,6 +105,17 @@ describe('kiesNaamAction', () => {
     const result = await kiesNaamAction(leeg, formulier({ username: 'a'.repeat(41) }))
     expect(result.errorKey).toBe('errorTeLang')
     expect(db.updates).toEqual([])
+  })
+
+  it('stuurt een uitgelogde leerling naar het inlogscherm in zijn eigen taal', async () => {
+    db.user = null
+    db.locale = 'en'
+
+    await expect(kiesNaamAction(leeg, formulier({ username: 'Sanne' }))).rejects.toThrow(
+      'REDIRECT:/en/inloggen',
+    )
+    expect(db.updates).toEqual([])
+    expect(db.meta).toEqual([])
   })
 
   it('zet een dubbele naam om in een Nederlandse sleutel', async () => {
