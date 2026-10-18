@@ -25,7 +25,11 @@ import {
   type Klikplek,
   type MeetSoort,
 } from './gebeurtenis'
-import { EIGEN_MELDING, type EigenMelding } from './melden'
+import {
+  EIGEN_MELDING,
+  haalKlaargezetteRegistratie,
+  type EigenMelding,
+} from './melden'
 
 const SLEUTEL = 'meet-sessie'
 const ADRES = '/api/meet'
@@ -262,13 +266,17 @@ export function startMeten(): Meter | null {
     zet('fout', 'belofte')
   }
 
+  function registratie(doel: string | null) {
+    zet('registratie', doel)
+    // Niet wachten op de klok: hierna gaat de leerling vaak meteen weg.
+    verstuur()
+  }
+
   /** Een melding uit de site zelf, bijvoorbeeld een geslaagde aanmelding. */
   function eigenMelding(gebeurtenis: Event) {
     const inhoud = (gebeurtenis as CustomEvent<Partial<EigenMelding>>).detail
     if (inhoud?.soort !== 'registratie') return
-    zet('registratie', inhoud.doel ?? null)
-    // Niet wachten op de klok: hierna gaat de leerling vaak meteen weg.
-    verstuur()
+    registratie(inhoud.doel ?? null)
   }
 
   function zichtbaarheid() {
@@ -288,6 +296,12 @@ export function startMeten(): Meter | null {
   const klok = window.setInterval(verstuur, WACHTTIJD)
 
   pagina()
+
+  // Kwam dit tabblad net terug van "Doorgaan met Google" met een gloednieuw
+  // account? Dan heeft de server dat in een koekje gezet; het formulier dat
+  // het anders meldt is hier niet langsgekomen.
+  const klaargezet = haalKlaargezetteRegistratie()
+  if (klaargezet) registratie(klaargezet)
 
   return {
     pagina,
