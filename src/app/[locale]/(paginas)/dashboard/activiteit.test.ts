@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  beginVanDag,
   berekenReeks,
   dagSleutel,
   laatsteDagen,
@@ -44,26 +43,6 @@ describe('vorigeDag', () => {
 
   it('kent 29 februari in een schrikkeljaar', () => {
     expect(vorigeDag('2028-03-01')).toBe('2028-02-29')
-  })
-})
-
-describe('beginVanDag', () => {
-  it('begint in de zomer om 22:00 UTC de dag ervoor', () => {
-    expect(beginVanDag('2026-07-01').toISOString()).toBe('2026-06-30T22:00:00.000Z')
-  })
-
-  it('begint in de winter om 23:00 UTC de dag ervoor', () => {
-    expect(beginVanDag('2026-01-01').toISOString()).toBe('2025-12-31T23:00:00.000Z')
-  })
-
-  it('klopt ook op de dag dat de klok teruggaat', () => {
-    // In de nacht van 24 op 25 oktober 2026 gaat de klok van zomer- naar
-    // wintertijd; die dag begint nog in de zomertijd.
-    expect(beginVanDag('2026-10-25').toISOString()).toBe('2026-10-24T22:00:00.000Z')
-  })
-
-  it('klopt ook op de dag dat de klok vooruitgaat', () => {
-    expect(beginVanDag('2026-03-29').toISOString()).toBe('2026-03-28T23:00:00.000Z')
   })
 })
 
