@@ -237,6 +237,11 @@ vi.mock('@/lib/supabase/server', () => ({
   createServiceRoleClient: () => makeClient(),
 }))
 
+// Hierlangs haalt `requireUser()` de ingelogde leerling op.
+vi.mock('@/lib/supabase/request-cache', () => ({
+  getCurrentUser: async () => ({ id: userId }),
+}))
+
 vi.mock('@/lib/practice/custom-test', () => ({
   pickQuestionsForTest: async () => db.picked,
 }))

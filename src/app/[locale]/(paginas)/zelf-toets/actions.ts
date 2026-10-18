@@ -1,8 +1,5 @@
 'use server'
 
-import { redirect } from 'next/navigation'
-import { getLocale } from 'next-intl/server'
-
 import { pickQuestionsForTest, type QuestionSource } from '@/lib/practice/custom-test'
 import {
   bewaarAntwoord,
@@ -11,6 +8,7 @@ import {
   rekenAlsnogGoed,
   vangOpslag,
 } from '@/lib/practice/nakijken'
+import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
 const MAX_QUESTIONS = 50
@@ -117,11 +115,7 @@ export async function createCustomTestAction(
   payload: CreateTestPayload,
 ): Promise<{ error: string } | { sessionId: string }> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  const locale = await getLocale()
-  if (!user) redirect(`/${locale}/inloggen`)
+  const user = await requireUser()
 
   if (!Array.isArray(payload.clusterIds) || payload.clusterIds.length === 0) {
     return { error: 'Kies minstens één onderwerp.' }
