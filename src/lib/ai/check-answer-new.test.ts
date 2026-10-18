@@ -13,9 +13,6 @@ import { checkWrongAnswerNew } from './check-answer-new'
 // tests hieronder die wél langs dat pad gaan, staat er een nepantwoord
 // klaar (zie het tweede blok, "checkWrongAnswerNew met een antwoord van
 // Gemini").
-//
-// Het bestand heet `check-answer-new.ts.test.ts`, zodat
-// `npx vitest run src/lib/ai/check-answer-new.ts` deze test vindt.
 // =====================================================================
 
 const gemini = vi.hoisted(() => ({
