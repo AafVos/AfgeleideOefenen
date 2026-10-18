@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { cn } from '@/components/ui'
 import type { OverviewCard } from '@/content/theory/afgeleiden'
+import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { heeftSessiekoekje } from '@/lib/supabase/sessie-koekje'
 
 export type TheorieChapter = {
@@ -417,8 +418,15 @@ export function TheorieClient({
       >
         <div className="mx-auto max-w-5xl space-y-12 px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
-          <div>
+          <div className="flex flex-wrap items-center gap-4">
             <DeelKnop />
+            <Link
+              href={DIFFERENTIEERREGELS_PAD}
+              data-meet="theorie-alle-differentieerregels"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-accent underline underline-offset-2"
+            >
+              Alle differentieerregels op een rij
+            </Link>
           </div>
 
           {chapters.map((chapter) => (
