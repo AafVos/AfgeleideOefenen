@@ -467,7 +467,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         examples: [
           {
             problem: 'f(x) = x^3 - 3x^2 + x',
-            answer: 'buigpunt bij $x = 1$',
+            answer: '\\text{buigpunt bij } x = 1',
             steps: [
               "$f'(x) = 3x^2 - 6x + 1$",
               "$f''(x) = 6x - 6$",
@@ -476,7 +476,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           },
           {
             problem: 'f(x) = x^3',
-            answer: 'buigpunt bij $x = 0$',
+            answer: '\\text{buigpunt bij } x = 0',
             steps: ["$f''(x) = 6x$", "$f''(0) = 0$ en $f''$ wisselt van teken"],
           },
         ],
@@ -496,7 +496,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
         examples: [
           {
             problem: 'f(x) = x^3 - 3x',
-            answer: 'maximum bij $x = -1$, minimum bij $x = 1$',
+            answer: '\\text{maximum bij } x = -1,\\ \\text{minimum bij } x = 1',
             steps: [
               "$f'(x) = 3x^2 - 3$, dus $x = -1$ of $x = 1$",
               "$f''(x) = 6x$",
@@ -505,7 +505,7 @@ export const THEORY_OVERVIEW: OverviewChapter[] = [
           },
           {
             problem: 'f(x) = x^2 + 2',
-            answer: 'minimum bij $x = 0$',
+            answer: '\\text{minimum bij } x = 0',
             steps: ["$f'(x) = 2x = 0$ geeft $x = 0$", "$f''(x) = 2 > 0$, dus een minimum"],
           },
         ],
