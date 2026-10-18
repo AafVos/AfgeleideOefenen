@@ -16,7 +16,7 @@ export const SITE_URL = bepaalSiteUrl()
 /** Deeltitel en tekst van de startpagina. Andere pagina's zetten hun eigen. */
 export const DEEL_TITEL_START = 'Differentiëren oefenen — wiskunde B VWO'
 export const DEEL_TEKST_START =
-  'Differentiëren oefenen voor wiskunde B VWO — gratis, met uitleg bij elke fout. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln. Ideaal voor het eindexamen.'
+  'Differentiëren oefenen voor wiskunde B VWO: maak gratis drie sommen zonder account, met uitleg bij elke fout. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln.'
 
 function bepaalSiteUrl(): string {
   const metWww = `https://www.${SITE_CONFIG.domain}`
