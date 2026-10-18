@@ -38,11 +38,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // De site was ooit ook Engels. Oude /en-adressen blijven werken: ze gaan
-  // permanent naar dezelfde pagina onder /nl.
+  // permanent (301) naar dezelfde pagina onder /nl.
   if (pathname === '/en' || pathname.startsWith('/en/')) {
     const url = request.nextUrl.clone()
     url.pathname = `/${TAAL}${pathname.slice('/en'.length)}`
-    return NextResponse.redirect(url, 308)
+    return NextResponse.redirect(url, 301)
   }
 
   const [, eerste = '', tweede = ''] = pathname.split('/')
