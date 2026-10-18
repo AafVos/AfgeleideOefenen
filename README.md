@@ -284,7 +284,7 @@ Settings**.
 │   ├── content/theory/             # Theorietekst in de code
 │   ├── i18n/                       # Taal: alleen Nederlands
 │   ├── lib/                        # Oefenen, nakijken, mail, database
-│   └── middleware.ts               # Sessie en taalcode
+│   └── proxy.ts                    # Sessie en taalcode
 ├── messages/nl.json                # De Nederlandse zinnen
 ├── supabase/
 │   ├── migrations/                 # Databasewijzigingen, op volgorde
