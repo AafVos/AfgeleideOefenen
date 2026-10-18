@@ -18,6 +18,25 @@ const ZONDER_TAALCODE = [
   'og',
 ]
 
+// Openbare pagina's met voor iedereen dezelfde inhoud. Next geeft elke
+// pagina die hij per bezoek opbouwt `no-store` mee, en daarmee weigert de
+// browser hem in zijn terug-cache te zetten: de terugknop bouwt de hele
+// pagina dan opnieuw op in plaats van hem terug te zetten zoals hij was.
+// Voor deze pagina's hoeft dat niet. Ze blijven wel `private` — de kop
+// noemt de naam van wie is ingelogd, dus een gedeelde cache mag ze niet
+// bewaren — en `no-cache` zorgt dat de browser bij een gewoon bezoek altijd
+// eerst bij de server navraagt.
+const TERUGKNOP_PADEN = ['/hoe-het-werkt', '/privacy', '/uitleg-videos']
+const TERUGKNOP_CACHE = 'private, no-cache, max-age=0, must-revalidate'
+
+/** `/nl/uitleg-videos/kettingregel` → ja; `/nl/dashboard` → nee. */
+function magInTerugCache(pathname: string) {
+  const pad = pathname.startsWith(`/${TAAL}/`)
+    ? pathname.slice(`/${TAAL}`.length)
+    : pathname
+  return TERUGKNOP_PADEN.some((p) => pad === p || pad.startsWith(`${p}/`))
+}
+
 // Next.js 16 noemt dit liever `proxy.ts`. Dat bestand draait altijd op Node
 // en wordt op Workers een zware, aparte bundel. Deze lichtere versie is wat
 // Cloudflare aankan.
@@ -69,7 +88,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301)
   }
 
-  return await updateSession(request)
+  const antwoord = await updateSession(request)
+
+  // Alleen als de pagina echt wordt opgebouwd. Een doorverwijzing naar het
+  // inlogscherm houdt zijn eigen koppen.
+  if (antwoord.status === 200 && magInTerugCache(pathname)) {
+    antwoord.headers.set('cache-control', TERUGKNOP_CACHE)
+  }
+
+  return antwoord
 }
 
 export const config = {
