@@ -4,6 +4,8 @@ import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
+import { ErrorBanner } from '@/components/ui'
+
 import { kiesNaamAction, type NaamState } from './actions'
 
 const initialState: NaamState = { errorKey: null }
@@ -27,14 +29,7 @@ export function NaamForm({ oefenpad }: { oefenpad: string | null }) {
         />
       </label>
 
-      {state.errorKey ? (
-        <p
-          role="alert"
-          className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
-        >
-          {t(state.errorKey)}
-        </p>
-      ) : null}
+      {state.errorKey ? <ErrorBanner>{t(state.errorKey)}</ErrorBanner> : null}
 
       <VerderKnop />
     </form>

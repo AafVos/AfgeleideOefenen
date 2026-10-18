@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
 import { GoogleKnop } from '@/components/google-knop'
+import { ErrorBanner } from '@/components/ui'
 
 import { loginAction, resendConfirmationAction, type LoginState } from './actions'
 
@@ -53,12 +54,7 @@ export function LoginForm({
       />
 
       {(callbackError || state.errorKey) && (
-        <p
-          role="alert"
-          className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
-        >
-          {callbackError ?? t(state.errorKey!)}
-        </p>
+        <ErrorBanner>{callbackError ?? t(state.errorKey!)}</ErrorBanner>
       )}
 
       {state.unconfirmedEmail && (
