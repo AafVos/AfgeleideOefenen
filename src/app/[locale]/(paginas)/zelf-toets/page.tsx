@@ -83,7 +83,7 @@ export default async function ZelfToetsPage() {
                         ? `/zelf-toets/resultaat/${test.id}`
                         : `/zelf-toets/loop/${test.id}`
                     }
-                    className="shrink-0 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-2"
+                    className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-2"
                   >
                     {isDone ? t('viewResult') : t('continueTest')}
                   </Link>

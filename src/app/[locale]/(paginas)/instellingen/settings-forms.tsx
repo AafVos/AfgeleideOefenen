@@ -37,7 +37,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -73,7 +73,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
           <button
             type="button"
             onClick={() => setOpenedAt(state)}
-            className="ml-3 font-medium text-accent hover:underline"
+            className="ml-3 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
           >
             {t('change')}
           </button>
@@ -106,7 +106,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
           <button
             type="button"
             onClick={() => setOpenedAt(null)}
-            className="text-sm font-medium text-text-muted hover:text-text"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-text-muted hover:text-text"
           >
             {t('cancel')}
           </button>
