@@ -122,7 +122,12 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           </label>
 
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={!answer.trim()} className="min-h-11 px-5">
+            <Button
+              type="submit"
+              disabled={!answer.trim()}
+              data-meet="home-proefsom-nakijken"
+              className="min-h-11 px-5"
+            >
               {t('submit')}
             </Button>
             <span className="text-xs text-text-muted">{t('hint')}</span>
@@ -137,16 +142,22 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
               href={DRIE_SOMMEN}
+              data-meet="home-proefsom-drie-sommen"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
             >
               {t('correctCta')}
             </Link>
-            <Link href="/registreren" className="text-sm text-accent underline-offset-2 hover:underline">
+            <Link
+              href="/registreren"
+              data-meet="home-proefsom-registreren"
+              className="text-sm text-accent underline-offset-2 hover:underline"
+            >
               {t('orAccount')}
             </Link>
             <button
               type="button"
               onClick={retry}
+              data-meet="home-proefsom-opnieuw"
               className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white"
             >
               {t('tryAnother')}
@@ -194,16 +205,22 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
               href={DRIE_SOMMEN}
+              data-meet="home-proefsom-drie-sommen"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
             >
               {t('wrongCta')}
             </Link>
-            <Link href="/registreren" className="text-sm text-accent-2 underline-offset-2 hover:underline">
+            <Link
+              href="/registreren"
+              data-meet="home-proefsom-registreren"
+              className="text-sm text-accent-2 underline-offset-2 hover:underline"
+            >
               {t('orAccount')}
             </Link>
             <button
               type="button"
               onClick={retry}
+              data-meet="home-proefsom-opnieuw"
               className="inline-flex min-h-11 items-center rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white"
             >
               {t('tryAgain')}
@@ -241,6 +258,7 @@ export function HomeDemo() {
             key={tab.id}
             type="button"
             onClick={() => setActive(tab.id)}
+            data-meet="home-proefsom-niveau"
             className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
               active === tab.id
                 ? 'bg-accent text-white shadow-sm'
