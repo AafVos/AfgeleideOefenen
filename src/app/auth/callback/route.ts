@@ -1,11 +1,24 @@
 import { after, NextResponse, type NextRequest } from 'next/server'
 
 import { bestemmingNaBevestigen, bestemmingNaInloggen } from '@/lib/auth/bestemming'
-import { googleFoutSleutel, moetNaamVragen } from '@/lib/auth/google'
+import { googleFoutSleutel, isNieuweAanmelding, moetNaamVragen } from '@/lib/auth/google'
 import { oefenpadUitAdres, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
+import { REGISTRATIE_PARAMETER } from '@/lib/meten/melden'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
+
+/**
+ * Een aanmelding via Google komt niet langs het registratieformulier, dus
+ * meldt dat formulier ook niets aan de klikmeting. Deze parameter vertelt het
+ * tabblad dat er zojuist een account is aangemaakt; `src/lib/meten/meter.ts`
+ * pikt hem op en haalt hem meteen uit de adresregel. Er staat alleen `google`
+ * in, niets over wie de leerling is.
+ */
+function metNieuweAanmelding(url: URL, nieuw: boolean) {
+  if (nieuw) url.searchParams.set(REGISTRATIE_PARAMETER, 'google')
+  return url
+}
 
 function metOefenpad(url: URL, nextParam: string | null) {
   const pad = oefenpadUitAdres(nextParam)
@@ -53,16 +66,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
+    // Beide uitgangen hieronder geven dit mee, ook de omweg langs de naamvraag.
+    const nieuw = isNieuweAanmelding(data.user)
+
     await zetGekozenGebruikersnaam(supabase, data.user)
 
     if (moetNaamVragen(data.user)) {
-      return NextResponse.redirect(metOefenpad(new URL('/nl/gebruikersnaam', origin), nextParam))
+      return NextResponse.redirect(
+        metNieuweAanmelding(
+          metOefenpad(new URL('/nl/gebruikersnaam', origin), nextParam),
+          nieuw,
+        ),
+      )
     }
 
     const userId = data.user.id
     after(() => stuurWelkomstmail(userId))
     const doel = await bestemmingNaInloggen(supabase, oefenpad, 'nl')
-    return NextResponse.redirect(`${origin}${doel}`)
+    return NextResponse.redirect(metNieuweAanmelding(new URL(doel, origin), nieuw))
   }
 
   // E-mailbevestiging: de code inwisselen voor een sessie, zodat de leerling
