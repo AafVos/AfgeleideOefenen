@@ -306,9 +306,9 @@ describe('createCustomTestAction', () => {
     expect(db.sessions[0]?.name).toBe('Zelf-toets')
   })
 
-  it('vraagt om minstens één onderwerp', async () => {
+  it('vraagt om minstens één theorieblok', async () => {
     const res = await createCustomTestAction({ ...payload, clusterIds: [] })
-    expect(res).toEqual({ error: 'Kies minstens één onderwerp.' })
+    expect(res).toEqual({ error: 'Kies minstens één theorieblok.' })
     expect(db.sessions).toEqual([])
   })
 
