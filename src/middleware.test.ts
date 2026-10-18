@@ -38,3 +38,31 @@ describe('oude /en-adressen', () => {
     )
   })
 })
+
+describe('terugknop van de browser', () => {
+  const zonderStore = 'private, no-cache, max-age=0, must-revalidate'
+
+  it.each([
+    '/nl/hoe-het-werkt',
+    '/nl/privacy',
+    '/nl/uitleg-videos',
+    '/nl/uitleg-videos/quotientregel',
+  ])('laat %s zonder no-store door', async (pad) => {
+    const antwoord = await middleware(verzoek(pad))
+    expect(antwoord.status).toBe(200)
+    expect(antwoord.headers.get('cache-control')).toBe(zonderStore)
+  })
+
+  it.each(['/nl/theorie', '/nl/inloggen'])(
+    'laat %s met rust, want die zet Next zelf',
+    async (pad) => {
+      const antwoord = await middleware(verzoek(pad))
+      expect(antwoord.headers.get('cache-control')).toBeNull()
+    },
+  )
+
+  it('geeft een pagina waar je voor moet inloggen geen eigen cache-regel', async () => {
+    const antwoord = await middleware(verzoek('/nl/dashboard'))
+    expect(antwoord.headers.get('cache-control')).toBeNull()
+  })
+})
