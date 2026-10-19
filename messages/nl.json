@@ -575,7 +575,8 @@
     "accountConfirmed": "of je je e-mailadres hebt bevestigd",
     "accountLastLogin": "wanneer je voor het laatst bent ingelogd",
     "accountTour": "of je de korte rondleiding al gezien hebt",
-    "accountNot": "We vragen niet naar je echte naam, je school, je klas of je leeftijd.",
+    "accountHerinnering": "of je een herinnering per mail wilt als je een tijdje niet geoefend hebt, en wanneer die laatst verstuurd is",
+    "accountNot": "We vragen niet naar je echte naam, je school of je klas. Naar je leeftijd vragen we alleen als je de herinneringsmail aanzet: één vraag of je 16 of ouder bent. Het antwoord daarop bewaren we niet.",
     "practiceH3": "Je oefeningen",
     "practiceLead": "Als je oefent of een zelf-toets maakt, bewaren we:",
     "practiceAnswer": "het antwoord dat je intypte",
@@ -592,6 +593,7 @@
     "videoBody": "Vraag je op de pagina 'Vraag een uitlegvideo aan' uitleg bij een examenvraag, dan bewaart de site wel iets: het examenjaar, het tijdvak, het vraagnummer en je toelichting. Zo zien we welke vraag het vaakst gevraagd wordt. Je naam staat daar niet bij en je hoeft er niet voor in te loggen.",
     "videoEmail": "Je e-mailadres komt er alleen bij als je zelf aanvinkt dat je bericht wilt zodra de video er is. Dat adres gebruiken we alleen daarvoor en geven we aan niemand. Vink je niets aan, dan bewaren we geen adres.",
     "mailNewUser": "Maak je een account, dan krijg jij een mail om je adres te bevestigen, en daarna een welkomstmail. De maker van de site krijgt een seintje met je e-mailadres, wanneer je je hebt aangemeld, en je gebruikersnaam als je die invulde. Vraag je een nieuw wachtwoord, dan krijg je daar ook een mail over.",
+    "mailHerinnering": "Zet je de herinnering aan, dan krijg je een mailtje als je een week niet geoefend hebt: hoogstens één per twee weken en nooit meer dan drie in totaal. Hij staat standaard uit, en onderaan die mail staat een link om hem weer uit te zetten.",
     "cacheH3": "Een fout antwoord zonder jouw naam",
     "cacheBody": "Is een antwoord fout, dan kan de site dat kale antwoord bewaren bij de opgave, zonder je naam of e-mailadres. De volgende leerling met hetzelfde antwoord krijgt dan meteen uitleg. Een andere schrijfwijze van een goed antwoord bewaren we op dezelfde manier. Dat antwoord blijft staan, ook als je account later weg is.",
     "flagH3": "Een melding over een opgave",
@@ -601,7 +603,7 @@
     "metenSchuilnaam": "Ben je ingelogd, dan zetten we er een schuilnaam bij: zestien tekens die uit je account berekend zijn met een geheime sleutel, bijvoorbeeld 0cb66a76537cbfb0. Daaraan zien we dat dezelfde leerling op meerdere dagen oefent, zonder dat we je naam, je e-mailadres of je gebruikersnummer bewaren. Terugrekenen wie erachter zit kan niet zonder die sleutel, en die ligt niet bij de gegevens. Ben je niet ingelogd, dan is er helemaal niets dat je tabblad overleeft.",
     "whereH2": "Waar het staat",
     "whereSupabase": "Supabase bewaart je account en je oefeningen. Dat is de database van de site.",
-    "whereResend": "Resend verstuurt de mails die de site zelf stuurt: de welkomstmail, het seintje bij een nieuw account, feedback, een vraag en een video-verzoek met foto. De mail om je adres te bevestigen en om je wachtwoord opnieuw in te stellen verstuurt Supabase.",
+    "whereResend": "Resend verstuurt de mails die de site zelf stuurt: de welkomstmail, de herinnering als je een tijdje niet geoefend hebt, het seintje bij een nieuw account, feedback, een vraag en een video-verzoek met foto. De mail om je adres te bevestigen en om je wachtwoord opnieuw in te stellen verstuurt Supabase.",
     "whereGemini": "Google Gemini krijgt, als je antwoord niet meteen klopt, de opgave en jouw antwoord. Je naam en e-mailadres gaan niet mee. Zo kijkt de site of je antwoord toch goed is, en legt hij uit wat er misging.",
     "whereCloudflare": "Cloudflare zet de site online. Daar blijven technische logboeken over, zoals het adres van je internetverbinding en welke pagina je opvroeg. Dat is nodig om de site te laten werken en een storing te kunnen zien.",
     "whereNot": "We verkopen je gegevens niet. Er staat geen reclame op de site.",
@@ -623,7 +625,7 @@
     "rightsParent": "Ben je ouder of verzorger? Laat het bericht vanaf het account van je kind sturen, zodat we zeker weten om welk account het gaat.",
     "rightsComplaint": "Je kunt ook een klacht indienen bij de <link>Autoriteit Persoonsgegevens</link>.",
     "minorsH2": "Leerlingen",
-    "minorsBody": "De site is bedoeld voor leerlingen van het vwo, vaak tussen de 15 en 18 jaar. We vragen je leeftijd niet. Je school kan hier niet inloggen om jouw antwoorden te zien. De maker van de site kan de gegevens wel inzien als dat nodig is om een fout te repareren of een vraag van jou te beantwoorden."
+    "minorsBody": "De site is bedoeld voor leerlingen van het vwo, vaak tussen de 15 en 18 jaar. We vragen je leeftijd alleen als je de herinneringsmail aanzet; ben je nog geen 16, dan hoort daar toestemming van je ouders bij en zetten we hem niet aan. Je school kan hier niet inloggen om jouw antwoorden te zien. De maker van de site kan de gegevens wel inzien als dat nodig is om een fout te repareren of een vraag van jou te beantwoorden."
   },
   "HerinneringUit": {
     "title": "Herinneringen uit",

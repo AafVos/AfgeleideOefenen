@@ -42,6 +42,7 @@ export default async function PrivacyPage() {
           <li>{t('accountConfirmed')}</li>
           <li>{t('accountLastLogin')}</li>
           <li>{t('accountTour')}</li>
+          <li>{t('accountHerinnering')}</li>
         </ul>
         <p className="mt-3">{t('accountNot')}</p>
 
@@ -61,6 +62,7 @@ export default async function PrivacyPage() {
         <p className="mt-3">{t('mailBody')}</p>
         <p className="mt-3">{t('mailPhoto')}</p>
         <p className="mt-3">{t('mailNewUser')}</p>
+        <p className="mt-3">{t('mailHerinnering')}</p>
 
         <h3 className="mt-8 font-serif text-xl text-text">{t('videoH3')}</h3>
         <p className="mt-3">{t('videoBody')}</p>
