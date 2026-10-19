@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
@@ -7,6 +8,7 @@ import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 
 import { HomeDemo } from './home-demo'
+import { YoutubeWelkom } from './youtube-welkom'
 
 // Voor iedereen hetzelfde. Een ingelogde leerling komt hier niet: de
 // middleware stuurt hem meteen naar het dashboard. Zo hoeft deze pagina
@@ -95,6 +97,11 @@ export default async function HomePage() {
           <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-6">
             {t('lead')}
           </p>
+
+          <Suspense fallback={null}>
+            <YoutubeWelkom />
+          </Suspense>
+
           <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-text-muted sm:mt-4">
             {t.rich('subLead', {
               oefenen: (chunks) => (
