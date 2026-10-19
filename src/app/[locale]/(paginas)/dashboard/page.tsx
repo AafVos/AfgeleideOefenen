@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/server'
 
 import { berekenReeks, dagSleutel, laatsteDagen, reeksLooptAf, telOefendagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
+import { onderdeelVanCluster, opfrisCluster, opfrisGrens } from './opfrissen'
 import {
   eersteOnderdeel,
   eersteOpgaveId,
@@ -45,7 +46,8 @@ export default async function DashboardPage() {
   // 14 dagen; "Dagen op rij", "Goed beantwoord" en "Vragen" gaan over
   // alles wat de leerling ooit gedaan heeft.
   // De dagen lopen van middernacht tot middernacht in Nederlandse tijd.
-  const vandaag = dagSleutel(new Date())
+  const nu = new Date()
+  const vandaag = dagSleutel(nu)
   const veertienDagen = laatsteDagen(vandaag, 14)
 
   // "Ik weet het niet" staat met een lege is_correct in de database: de
@@ -67,6 +69,7 @@ export default async function DashboardPage() {
     { data: blocks },
     { data: clusters },
     { data: progressRows },
+    { data: recenteSessies },
     tellingPerDag,
     antwoordTotaal,
     goedTotaal,
@@ -96,8 +99,20 @@ export default async function DashboardPage() {
       .order('order_index'),
     supabase
       .from('user_progress_new')
-      .select('cluster_id, status, correct_streak')
+      .select('cluster_id, status, correct_streak, mastered_at')
       .eq('user_id', user.id),
+    // Welke soorten sommen er de afgelopen weken nog geoefend zijn, voor de
+    // regel "Even opfrissen?" (zie AFG-488). Per soort som komt er hoogstens
+    // één sessie per dag bij, dus deze lijst blijft klein; de limiet is een
+    // noodrem. Een zelf-toets hangt niet aan één soort som en telt niet mee.
+    supabase
+      .from('user_sessions_new')
+      .select('cluster_id')
+      .eq('user_id', user.id)
+      .not('cluster_id', 'is', null)
+      .gte('started_at', opfrisGrens(nu).toISOString())
+      .order('started_at', { ascending: false })
+      .limit(1000),
     telOefendagen(
       (van, tot) =>
         beantwoord()
@@ -205,6 +220,30 @@ export default async function DashboardPage() {
         }
       : null
 
+  // Een zachte uitnodiging om iets op te frissen wat al weken beheerst is en
+  // sindsdien niet meer langskwam (zie AFG-488). De status verandert hier
+  // niet van: beheerst blijft beheerst, wat de leerling ook antwoordt.
+  const opfrisClusterId = nogNietsGedaan
+    ? null
+    : opfrisCluster(
+        progressRows ?? [],
+        new Set((recenteSessies ?? []).map((sessie) => sessie.cluster_id!)),
+        nu,
+      )
+  const opfrisOnderdeel = opfrisClusterId
+    ? onderdeelVanCluster(chapterData, opfrisClusterId)
+    : null
+  const opfrisVraagId = opfrisOnderdeel
+    ? await volgendeOpgaveId(supabase, opfrisOnderdeel.clusterId, laatsteAntwoorden)
+    : null
+  const opfrissen =
+    opfrisOnderdeel && opfrisVraagId
+      ? {
+          href: opgaveLink(opfrisOnderdeel, opfrisVraagId),
+          clusterTitle: opfrisOnderdeel.clusterTitle,
+        }
+      : null
+
   return (
     <div className="mx-auto max-w-[1400px] px-3 py-6">
       <div className="mb-2">
@@ -224,6 +263,7 @@ export default async function DashboardPage() {
         totalCorrect={totalCorrect}
         start={start}
         verder={verder}
+        opfrissen={opfrissen}
         blokIndeling={blokIndeling}
       />
     </div>
