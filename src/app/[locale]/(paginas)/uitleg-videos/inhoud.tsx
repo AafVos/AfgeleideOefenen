@@ -85,6 +85,7 @@ export async function UitlegVideosInhoud({
       loginHref={`/${locale}/inloggen`}
       registerHref={`/${locale}/registreren`}
       oefenHref={`/${locale}/oefenen`}
+      videoAanvraagHref={`/${locale}/video-aanvragen`}
       videoAlsKop={slug !== null}
       labels={{
         h1: t('h1'),
@@ -126,6 +127,7 @@ export async function UitlegVideosInhoud({
         askNoAccount: t('askNoAccount'),
         askLogin: t('askLogin'),
         askRegister: t('askRegister'),
+        videoAanvraagLink: t('videoAanvraagLink'),
       }}
     />
   )

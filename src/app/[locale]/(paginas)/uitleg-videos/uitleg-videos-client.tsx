@@ -81,6 +81,7 @@ type Labels = {
   askNoAccount: string
   askLogin: string
   askRegister: string
+  videoAanvraagLink: string
 }
 
 const initialVraagState: VideoVraagState = { error: null, sent: false }
@@ -235,6 +236,7 @@ export function UitlegVideosClient({
   loginHref,
   registerHref,
   oefenHref,
+  videoAanvraagHref,
   videoAlsKop,
   labels,
 }: {
@@ -245,6 +247,7 @@ export function UitlegVideosClient({
   loginHref: string
   registerHref: string
   oefenHref: string
+  videoAanvraagHref: string
   /** Op een videopagina is de videotitel de enige hoofdkop. Het overzicht houdt "Uitlegvideo's". */
   videoAlsKop: boolean
   labels: Labels
@@ -392,6 +395,15 @@ export function UitlegVideosClient({
                   />
                 ))}
               </div>
+              <p className="mt-3 text-sm">
+                <Link
+                  href={videoAanvraagHref as '/video-aanvragen'}
+                  data-meet="video-naar-aanvragen"
+                  className="text-accent underline-offset-2 hover:underline"
+                >
+                  {labels.videoAanvraagLink}
+                </Link>
+              </p>
             </div>
           )}
         </aside>
