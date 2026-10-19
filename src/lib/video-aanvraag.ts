@@ -15,6 +15,12 @@ export const TIJDVAKKEN = [1, 2, 3] as const
 /** Hoeveel aanvragen één bezoeker per dag mag doen. */
 export const MAX_PER_DAG = 3
 
+/** Telwoorden tot tien, voor in de foutmelding bij een volle teller. */
+const TELWOORDEN = ['nul', 'één', 'twee', 'drie', 'vier', 'vijf', 'zes', 'zeven', 'acht', 'negen', 'tien']
+
+/** MAX_PER_DAG voluit in woorden, zodat de foutmelding meeverandert met de constante. */
+export const MAX_PER_DAG_IN_WOORDEN = TELWOORDEN[MAX_PER_DAG] ?? String(MAX_PER_DAG)
+
 /** Hoe lang die teller meetelt. */
 export const TELLER_UREN = 24
 

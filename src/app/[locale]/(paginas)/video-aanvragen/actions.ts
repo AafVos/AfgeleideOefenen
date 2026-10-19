@@ -11,6 +11,7 @@ import {
   isVol,
   leesAanvraag,
   leesTeller,
+  MAX_PER_DAG_IN_WOORDEN,
   schrijfTeller,
   TELLER_UREN,
   vraagRegel,
@@ -55,8 +56,7 @@ export async function vraagExamenVideoAction(
   const teller = leesTeller(koekjes.get(TELLER_KOEKJE)?.value, nu)
   if (isVol(teller)) {
     return {
-      error:
-        'Je hebt vandaag al drie video’s aangevraagd. Morgen mag er weer een.',
+      error: `Je hebt vandaag al ${MAX_PER_DAG_IN_WOORDEN} video’s aangevraagd. Morgen mag er weer een.`,
       sent: false,
     }
   }

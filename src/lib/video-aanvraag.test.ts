@@ -8,6 +8,7 @@ import {
   leesAanvraag,
   leesTeller,
   MAX_PER_DAG,
+  MAX_PER_DAG_IN_WOORDEN,
   schrijfTeller,
   TELLER_UREN,
   vraagRegel,
@@ -150,5 +151,10 @@ describe('teller', () => {
   it('is vol na het maximum', () => {
     expect(isVol({ aantal: MAX_PER_DAG - 1, begonnenOp: nu })).toBe(false)
     expect(isVol({ aantal: MAX_PER_DAG, begonnenOp: nu })).toBe(true)
+  })
+
+  it('noemt MAX_PER_DAG voluit in woorden, zodat de foutmelding meeverandert', () => {
+    expect(MAX_PER_DAG_IN_WOORDEN).toBe('drie')
+    expect(MAX_PER_DAG).toBe(3)
   })
 })
