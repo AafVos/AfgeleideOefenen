@@ -571,7 +571,8 @@
     "learnTitle": "Wat je leert",
     "ruleTitle": "De regel",
     "exampleTitle": "Een voorbeeld",
-    "writtenLink": "Lees de geschreven uitleg"
+    "writtenLink": "Lees de geschreven uitleg",
+    "videoAanvraagLink": "Examenvraag niet in dit lijstje? Vraag een uitlegvideo aan"
   },
   "NotFound": {
     "eyebrow": "Fout 404",
