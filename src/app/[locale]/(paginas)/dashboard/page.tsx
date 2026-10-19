@@ -12,7 +12,7 @@ import { getCurrentProfile } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
-import { berekenReeks, dagSleutel, laatsteDagen, telOefendagen } from './activiteit'
+import { berekenReeks, dagSleutel, laatsteDagen, reeksLooptAf, telOefendagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
 import {
   eersteOnderdeel,
@@ -138,7 +138,12 @@ export default async function DashboardPage() {
     count: tellingPerDag.get(date) ?? 0,
   }))
 
-  const streakDays = berekenReeks(new Set(tellingPerDag.keys()), vandaag)
+  const dagenMetAntwoord = new Set(tellingPerDag.keys())
+  const streakDays = berekenReeks(dagenMetAntwoord, vandaag)
+  // "Loss aversion": wie een reeks heeft maar vandaag nog niet oefende, krijgt
+  // een rustig regeltje dat hij hem kan kwijtraken (zie AFG-486). Geen
+  // pushmelding of mail, alleen zichtbaar voor wie al op het dashboard is.
+  const streakAtRisk = reeksLooptAf(dagenMetAntwoord, vandaag)
 
   const bron = {
     chapters: chapters ?? [],
@@ -213,6 +218,7 @@ export default async function DashboardPage() {
       <DashboardGrid
         chapterData={chapterData}
         streakDays={streakDays}
+        streakAtRisk={streakAtRisk}
         activity={activity}
         totalAnswered={totalAnswered}
         totalCorrect={totalCorrect}

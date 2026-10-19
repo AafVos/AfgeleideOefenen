@@ -260,6 +260,7 @@
     "statMastered": "Beheerst",
     "statMasteredSub": "onderdelen",
     "statStreak": "Dagen op rij",
+    "streakAtRisk": "Je reeks loopt af als je vandaag niet oefent.",
     "statCorrect": "Goed beantwoord",
     "statAnswered": "Vragen",
     "statAnsweredSub": "totaal beantwoord",

@@ -39,6 +39,7 @@ export type VerderData = {
 export function DashboardGrid({
   chapterData,
   streakDays = 0,
+  streakAtRisk = false,
   activity = [],
   totalAnswered = 0,
   totalCorrect = 0,
@@ -48,6 +49,8 @@ export function DashboardGrid({
 }: {
   chapterData: ChapterData[]
   streakDays?: number
+  /** Reeks loopt af als er vandaag niet geoefend wordt (zie AFG-486). */
+  streakAtRisk?: boolean
   activity?: ActivityDay[]
   totalAnswered?: number
   totalCorrect?: number
@@ -94,7 +97,7 @@ export function DashboardGrid({
             label={t('statMastered')}
             sub={t('statMasteredSub')}
           />
-          <KpiCard label={t('statStreak')} value={String(streakDays)} tone="warn" />
+          <StreakCard days={streakDays} atRisk={streakAtRisk} />
           <KpiCard label={t('statCorrect')} value={`${pctAccuracy}%`} tone="accent" />
           <KpiCard
             label={t('statAnswered')}
@@ -248,15 +251,33 @@ function KpiCard({
   label: string
   value: string
   sub?: string
-  tone: 'accent' | 'warn' | 'neutral'
+  tone: 'accent' | 'neutral'
 }) {
-  const valueColor =
-    tone === 'accent' ? 'text-accent' : tone === 'warn' ? 'text-accent-2' : 'text-text'
+  const valueColor = tone === 'accent' ? 'text-accent' : 'text-text'
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">{label}</div>
       <div className={cn('font-serif text-2xl', valueColor)}>{value}</div>
       {sub && <div className="text-xs text-text-muted">{sub}</div>}
+    </div>
+  )
+}
+
+/**
+ * De "dagen op rij"-tegel: net iets opvallender dan de andere drie KPI's,
+ * want dit is het "kom terug"-signaal en geen zomaar een getal (zie
+ * AFG-486). Loopt de reeks gevaar (nog niet geoefend vandaag), dan komt
+ * daar een rustige regel bij — geen paniekmakerij, gewoon een tekstregel.
+ */
+function StreakCard({ days, atRisk }: { days: number; atRisk: boolean }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="rounded-xl border border-accent-2/30 bg-accent-2-light p-4">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">
+        {t('statStreak')}
+      </div>
+      <div className="font-serif text-3xl text-accent-2">{days}</div>
+      {atRisk && <p className="mt-1 text-xs text-text-muted">{t('streakAtRisk')}</p>}
     </div>
   )
 }
