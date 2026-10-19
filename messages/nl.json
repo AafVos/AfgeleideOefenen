@@ -282,7 +282,17 @@
     "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl",
     "activityTitle": "Afgelopen 14 dagen",
     "activityStart": "14 dagen geleden",
-    "activityEnd": "vandaag"
+    "activityEnd": "vandaag",
+    "herinneringTitle": "Herinnering per mail",
+    "herinneringUit": "Staat uit. Zet hem aan, dan krijg je een mailtje als je een week niet geoefend hebt.",
+    "herinneringAanzetten": "Zet aan",
+    "herinneringLeeftijd": "Dit kan alleen vanaf 16 jaar. Ben je 16 of ouder?",
+    "herinneringJa": "Ja, zet aan",
+    "herinneringNee": "Nee",
+    "herinneringTeJong": "Dan zetten we hem niet aan. Je ziet je voortgang gewoon op deze pagina.",
+    "herinneringAan": "Staat aan. Je krijgt hoogstens één mail per twee weken, en nooit meer dan drie keer.",
+    "herinneringUitzetten": "Zet uit",
+    "herinneringMislukt": "Dat lukte niet. Probeer het zo nog eens."
   },
   "HomeDemo": {
     "eyebrow": "Probeer direct",
@@ -614,5 +624,13 @@
     "rightsComplaint": "Je kunt ook een klacht indienen bij de <link>Autoriteit Persoonsgegevens</link>.",
     "minorsH2": "Leerlingen",
     "minorsBody": "De site is bedoeld voor leerlingen van het vwo, vaak tussen de 15 en 18 jaar. We vragen je leeftijd niet. Je school kan hier niet inloggen om jouw antwoorden te zien. De maker van de site kan de gegevens wel inzien als dat nodig is om een fout te repareren of een vraag van jou te beantwoorden."
+  },
+  "HerinneringUit": {
+    "title": "Herinneringen uit",
+    "geluktH1": "Je krijgt geen herinneringen meer",
+    "geluktBody": "We sturen je geen mail meer als je een tijdje niet geoefend hebt. Je kunt hem altijd weer aanzetten op je voortgangspagina.",
+    "misluktH1": "Deze link werkt niet meer",
+    "misluktBody": "Misschien is hij al gebruikt. Je kunt herinneringen ook aan- en uitzetten op je voortgangspagina.",
+    "naarDashboard": "Naar je voortgang"
   }
 }

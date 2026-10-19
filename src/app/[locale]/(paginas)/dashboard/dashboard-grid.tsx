@@ -9,6 +9,7 @@ import { cn } from '@/components/ui'
 
 import { telBeheerst, type DashboardIndeling } from '@/lib/dashboard/indeling'
 
+import { HerinneringKaart } from './herinnering-kaart'
 import { ChapterBlock, NieuwHoofdstukBlock, type ChapterData } from './topic-block'
 
 export type ActivityDay = { date: string; count: number }
@@ -57,6 +58,7 @@ export function DashboardGrid({
   verder = null,
   opfrissen = null,
   blokIndeling = null,
+  herinneringAan = false,
 }: {
   chapterData: ChapterData[]
   streakDays?: number
@@ -69,6 +71,8 @@ export function DashboardGrid({
   verder?: VerderData | null
   /** Iets wat al lang beheerst is en wel weer eens langs mag (AFG-488). */
   opfrissen?: OpfrisData | null
+  /** Staat de herinneringsmail aan? (zie AFG-487) */
+  herinneringAan?: boolean
   /** Boekindeling. Ontbreekt hij, dan blijft de lijst per onderwerp. */
   blokIndeling?: DashboardIndeling | null
 }) {
@@ -161,6 +165,7 @@ export function DashboardGrid({
         {!start && (
           <div className="space-y-3">
             <ActivityCard activity={activity} />
+            <HerinneringKaart aan={herinneringAan} />
           </div>
         )}
       </div>
