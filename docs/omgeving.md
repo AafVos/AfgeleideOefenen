@@ -13,6 +13,7 @@ bestand, in een commit of in een melding.
 | `NEXT_PUBLIC_SUPABASE_URL` | Adres van Supabase | bouw | nee | ja |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Openbare sleutel van Supabase | bouw | nee | ja |
 | `NEXT_PUBLIC_SITE_URL` | Adres van de site | bouw | nee | ja |
+| `NEXT_PUBLIC_SITE_VARIANT` | Welke site: `afgeleide` of `wiskundemetaaf`. Leeg = `afgeleide` | bouw | nee | nee |
 | `NEXT_PUBLIC_GOOGLE_LOGIN` | Knop Doorgaan met Google (`1` = aan) | bouw | nee | nee |
 | `NEXT_PUBLIC_CF_BEACON_TOKEN` | Meetbezoek van Cloudflare | bouw | nee | nee |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server mag namens de site in de database | runtime | ja | ja |

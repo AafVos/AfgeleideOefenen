@@ -7,6 +7,7 @@ import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 
+import { ExamenStart } from './examen-start'
 import { HomeDemo } from './home-demo'
 import { YoutubeWelkom } from './youtube-welkom'
 
@@ -31,6 +32,10 @@ export async function generateMetadata({
 }
 
 export default async function HomePage() {
+  // wiskundemetaaf.nl heeft een eigen startpagina: die gaat over het examen,
+  // niet over differentiëren per onderwerp.
+  if (SITE_CONFIG.variant === 'wiskundemetaaf') return <ExamenStart />
+
   const t = await getTranslations('Home')
 
   const domain = SITE_CONFIG.domain

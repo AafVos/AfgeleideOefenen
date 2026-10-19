@@ -5,6 +5,7 @@
  * vóór de overstap) zijn weg sinds migratie 0033.
  */
 
+import type { SiteVariant } from '@/config/site'
 import type {
   Gebeurtenis as MeetGebeurtenisRij,
   MeetApparaat,
@@ -379,6 +380,8 @@ export type Database = {
           volgnummer: number | null
           /** Alleen bij een ingelogde leerling. Migratie 0073. */
           schuilnaam: string | null
+          /** Welke site het bezoek binnenkreeg. Migratie 0081. */
+          site: SiteVariant
         }
         Insert: {
           id?: never
@@ -393,6 +396,7 @@ export type Database = {
           ingelogd?: boolean
           volgnummer?: number | null
           schuilnaam?: string | null
+          site?: SiteVariant
         }
         Update: Partial<Database['public']['Tables']['site_gebeurtenissen']['Insert']>
         Relationships: []
@@ -400,6 +404,8 @@ export type Database = {
       site_dagtotalen: {
         Row: {
           dag: string
+          /** Welke site. Migratie 0081. */
+          site: SiteVariant
           soort: MeetSoort
           apparaat: MeetApparaat
           pad: string
@@ -411,8 +417,51 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['site_dagtotalen']['Row']>
         Relationships: []
       }
+      /** Video-verzoeken bij een examenvraag. Migratie 0080. */
+      video_aanvragen: {
+        Row: {
+          id: number
+          aangevraagd_op: string
+          site: SiteVariant
+          jaar: number
+          tijdvak: number
+          vraagnummer: string
+          toelichting: string | null
+          /** Alleen als de leerling zelf bericht wil. */
+          email: string | null
+          mag_mailen: boolean
+          afgehandeld: boolean
+        }
+        Insert: {
+          id?: never
+          aangevraagd_op?: string
+          site?: SiteVariant
+          jaar: number
+          tijdvak: number
+          vraagnummer: string
+          toelichting?: string | null
+          email?: string | null
+          mag_mailen?: boolean
+          afgehandeld?: boolean
+        }
+        Update: Partial<Database['public']['Tables']['video_aanvragen']['Insert']>
+        Relationships: []
+      }
     }
-    Views: Record<string, never>
+    Views: {
+      /** Migratie 0080: hoe vaak elke examenvraag gevraagd is. */
+      video_aanvragen_per_vraag: {
+        Row: {
+          jaar: number
+          tijdvak: number
+          vraagnummer: string
+          aantal: number
+          laatste: string
+          afgehandeld: boolean
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       laatste_antwoord_per_vraag: {
         Args: Record<string, never>
@@ -427,7 +476,12 @@ export type Database = {
        * schuilnaam van een ingelogde leerling.
        */
       meet_opslaan: {
-        Args: { gebeurtenissen: MeetGebeurtenisRij[]; schuilnaam?: string | null }
+        Args: {
+          gebeurtenissen: MeetGebeurtenisRij[]
+          schuilnaam?: string | null
+          /** Welke site. Migratie 0081. */
+          site?: SiteVariant
+        }
         Returns: number
       }
       /** Migratie 0073: de schuilnaam van één leerling, voor de overzichten. */

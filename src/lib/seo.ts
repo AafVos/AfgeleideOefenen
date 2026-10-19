@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { SITE_CONFIG } from '@/config/site'
+import { SITE_CONFIG, type SiteVariant } from '@/config/site'
 import { DEELPLAATJE } from '@/lib/deelplaatje'
 
 /**
@@ -13,10 +13,29 @@ import { DEELPLAATJE } from '@/lib/deelplaatje'
  */
 export const SITE_URL = bepaalSiteUrl()
 
-/** Deeltitel en tekst van de startpagina. Andere pagina's zetten hun eigen. */
-export const DEEL_TITEL_START = 'Differentiëren oefenen — wiskunde B VWO'
-export const DEEL_TEKST_START =
-  'Differentiëren oefenen voor wiskunde B VWO: maak gratis drie sommen zonder account, met uitleg bij elke fout. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln.'
+/**
+ * Deeltitel en tekst van de startpagina, per site. Andere pagina's zetten
+ * hun eigen titel en tekst.
+ */
+const START_TEKST = {
+  afgeleide: {
+    titel: 'Differentiëren oefenen — wiskunde B VWO',
+    tekst:
+      'Differentiëren oefenen voor wiskunde B VWO: maak gratis drie sommen zonder account, met uitleg bij elke fout. Oefen de afgeleide met de machtsregel, productregel, quotiëntregel, kettingregel, goniometrie, e-macht en ln.',
+    paginaTitel: 'Differentiëren oefenen — afgeleide wiskunde B VWO',
+  },
+  wiskundemetaaf: {
+    titel: 'Eindexamen vwo wiskunde B oefenen met echte examenvragen en uitleg',
+    tekst:
+      'Eindexamen vwo wiskunde B oefenen met echte examenvragen en uitleg. Je ziet wanneer het examen is, oefent vragen uit oude examens en vraagt zelf een uitlegvideo aan bij de vraag die je niet snapt.',
+    paginaTitel: 'Eindexamen vwo wiskunde B oefenen met echte examenvragen en uitleg',
+  },
+} as const satisfies Record<SiteVariant, { titel: string; tekst: string; paginaTitel: string }>
+
+export const DEEL_TITEL_START: string = START_TEKST[SITE_CONFIG.variant].titel
+export const DEEL_TEKST_START: string = START_TEKST[SITE_CONFIG.variant].tekst
+/** De titel in het tabblad als een pagina er zelf geen zet. */
+export const TITEL_STANDAARD: string = START_TEKST[SITE_CONFIG.variant].paginaTitel
 
 function bepaalSiteUrl(): string {
   const metWww = `https://www.${SITE_CONFIG.domain}`

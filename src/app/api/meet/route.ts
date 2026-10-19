@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { after } from 'next/server'
 
+import { SITE_CONFIG } from '@/config/site'
 import { geldigeZending, isBot } from '@/lib/meten/gebeurtenis'
 import { schuilnaam } from '@/lib/meten/schuilnaam'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
@@ -76,6 +77,9 @@ export async function POST(req: Request) {
   const { error } = await supabase.rpc('meet_opslaan', {
     gebeurtenissen: rijen.map((rij) => ({ ...rij, ingelogd })),
     schuilnaam: naam,
+    // Welke van de twee sites dit is, weet de server zelf. De browser mag
+    // dat niet zeggen: dan kon iedereen de tellingen door elkaar gooien.
+    site: SITE_CONFIG.variant,
   })
   if (error) {
     // Een meting die niet aankomt mag nooit een leerling in de weg zitten.
