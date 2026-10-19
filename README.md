@@ -116,7 +116,7 @@ Wie een mail niet ziet aankomen, moet dus eerst weten wélke mail het is.
 
 | Soort mail | Wie verstuurt | Waar instellen |
 |------------|---------------|----------------|
-| Welkomstmail, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY`, `EMAIL_FROM` en `NOTIFY_EMAIL` in de omgevingsvariabelen |
+| Welkomstmail, herinnering bij stilte, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY`, `EMAIL_FROM` en `NOTIFY_EMAIL` in de omgevingsvariabelen |
 | Bevestig je e-mailadres, wachtwoord vergeten | **Supabase**, niet de site | `supabase/config.toml` (zie [De instellingen van de echte site](#de-instellingen-van-de-echte-site)); de SMTP-gegevens in Supabase → **Authentication → Emails → SMTP Settings** |
 
 De mail van het inloggen loopt via `supabase.auth.signUp()`, `supabase.auth.resend()`
@@ -141,6 +141,32 @@ De sjablonen van die mails staan in [`supabase/email-templates/`](./supabase/ema
 Zolang ze nog niet één keer naar het echte project zijn geschreven, staan ze
 daar met de hand in geplakt onder **Authentication → Emails** — zie de volgende
 paragraaf.
+
+### De herinnering bij stilte
+
+Een leerling kan op zijn voortgangspagina aanzetten dat hij een mailtje krijgt
+als hij een week niet geoefend heeft. Dat is **opt-in**: hij staat standaard
+uit, en de leerling krijgt eerst de vraag of hij 16 of ouder is. Onder de 16
+hoort er toestemming van een ouder bij, en zolang daar niets voor is, blijft
+de herinnering uit.
+
+De regels staan in `src/lib/herinnering/kiezen.ts`: zeven dagen stil, daarna
+hoogstens één mail per veertien dagen en nooit meer dan drie in totaal. Is
+alles al beheerst, dan is er niets om naartoe te wijzen en gaat er niets uit.
+Onderaan de mail staat een afmeldlink (`/nl/herinnering-uit`) die werkt zonder
+in te loggen.
+
+Dit is de eerste geplande taak van de site. Cloudflare roept de Worker elke
+dag om 16:00 UTC aan (`triggers.crons` in `wrangler.jsonc`); de
+`scheduled`-ingang in `scripts/statische-cache.mjs` geeft dat door aan
+`/api/cron/herinneringen`. Die route wordt bewaakt met `WEBHOOK_SECRET`,
+hetzelfde geheim als de webhooks van Supabase — er hoeft dus geen nieuw geheim
+bij. Met de hand draaien kan ook:
+
+```bash
+curl -X POST -H "x-webhook-secret: $WEBHOOK_SECRET" \
+  http://localhost:3000/api/cron/herinneringen
+```
 
 ---
 
