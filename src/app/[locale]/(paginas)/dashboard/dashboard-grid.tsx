@@ -36,6 +36,16 @@ export type VerderData = {
   topicTitle: string
 }
 
+/**
+ * Een soort som die al weken beheerst is en sindsdien niet meer langskwam
+ * (zie AFG-488). Vrijblijvend: negeren mag, en de status verandert er niet
+ * van.
+ */
+export type OpfrisData = {
+  href: string
+  clusterTitle: string
+}
+
 export function DashboardGrid({
   chapterData,
   streakDays = 0,
@@ -45,6 +55,7 @@ export function DashboardGrid({
   totalCorrect = 0,
   start = null,
   verder = null,
+  opfrissen = null,
   blokIndeling = null,
 }: {
   chapterData: ChapterData[]
@@ -56,6 +67,8 @@ export function DashboardGrid({
   totalCorrect?: number
   start?: StartData | null
   verder?: VerderData | null
+  /** Iets wat al lang beheerst is en wel weer eens langs mag (AFG-488). */
+  opfrissen?: OpfrisData | null
   /** Boekindeling. Ontbreekt hij, dan blijft de lijst per onderwerp. */
   blokIndeling?: DashboardIndeling | null
 }) {
@@ -84,6 +97,7 @@ export function DashboardGrid({
           <p className="text-sm text-text">{t('verderKlaar')}</p>
         </div>
       )}
+      {!start && opfrissen && <OpfrisRegel opfrissen={opfrissen} />}
 
       {start ? (
         <StartCard start={start} />
@@ -209,6 +223,32 @@ function VerderCard({ verder }: { verder: VerderData }) {
           topic: verder.topicTitle,
         })}
       </p>
+    </div>
+  )
+}
+
+/**
+ * "Even opfrissen?" — één rustige regel over een soort som die al weken
+ * beheerst is en sindsdien niet meer langskwam (zie AFG-488). Bewust zonder
+ * knop in de accentkleur en zonder wegklikken: wie hem negeert, is hem na de
+ * volgende oefenbeurt vanzelf kwijt, en zijn beheersing blijft hoe dan ook
+ * staan.
+ */
+function OpfrisRegel({ opfrissen }: { opfrissen: OpfrisData }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="mb-5 rounded-xl border border-border bg-surface px-4 py-3">
+      <p className="text-sm text-text">
+        {t('opfrissenTekst', { cluster: opfrissen.clusterTitle })}
+      </p>
+      <p className="mt-1 text-xs text-text-muted">{t('opfrissenUitleg')}</p>
+      <KlikLink
+        href={opfrissen.href}
+        bezigTekst="Opgave openen"
+        className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+      >
+        {t('opfrissenLink')}
+      </KlikLink>
     </div>
   )
 }
