@@ -178,15 +178,15 @@ function VideoUitlegBlok({
   return (
     <section className="mt-5 space-y-5 text-base leading-relaxed text-text">
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {labels.learnTitle}
-        </h3>
+        </h2>
         <p className="mt-1">{uitleg.leer}</p>
       </div>
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {labels.ruleTitle}
-        </h3>
+        </h2>
         <div className="mt-2 space-y-2 overflow-x-auto rounded-lg bg-accent-light/60 px-4 py-3 text-[0.95em]">
           {uitleg.regel.map((regel) => (
             <p key={regel}>
@@ -196,9 +196,9 @@ function VideoUitlegBlok({
         </div>
       </div>
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {labels.exampleTitle}
-        </h3>
+        </h2>
         <ol className="mt-2 space-y-2">
           {uitleg.stappen.map((stap, i) => (
             <li key={stap} className="flex items-start gap-2">
