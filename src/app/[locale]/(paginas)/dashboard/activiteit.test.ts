@@ -4,6 +4,7 @@ import {
   berekenReeks,
   dagSleutel,
   laatsteDagen,
+  reeksLooptAf,
   reeksStaatVast,
   telOefendagen,
   vorigeDag,
@@ -90,6 +91,27 @@ describe('berekenReeks', () => {
   it('telt gewoon door over de maandgrens', () => {
     const dagen = new Set(['2026-06-29', '2026-06-30', '2026-07-01'])
     expect(berekenReeks(dagen, '2026-07-02')).toBe(3)
+  })
+})
+
+describe('reeksLooptAf', () => {
+  it('waarschuwt als er een reeks is maar vandaag nog niet geoefend is', () => {
+    const dagen = new Set(['2026-06-29', '2026-06-30'])
+    expect(reeksLooptAf(dagen, '2026-07-01')).toBe(true)
+  })
+
+  it('waarschuwt niet als er vandaag al geoefend is', () => {
+    const dagen = new Set(['2026-06-30', '2026-07-01'])
+    expect(reeksLooptAf(dagen, '2026-07-01')).toBe(false)
+  })
+
+  it('waarschuwt niet als er nog helemaal geen reeks is', () => {
+    const dagen = new Set(['2026-06-28'])
+    expect(reeksLooptAf(dagen, '2026-07-01')).toBe(false)
+  })
+
+  it('waarschuwt niet zonder enige activiteit', () => {
+    expect(reeksLooptAf(new Set(), '2026-07-01')).toBe(false)
   })
 })
 

@@ -1,16 +1,26 @@
 import { getTranslations } from 'next-intl/server'
 
-import { bouwDashboardIndeling, bouwOnderwerpVoortgang } from '@/lib/dashboard/indeling'
-import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
+import {
+  bouwDashboardIndeling,
+  bouwOnderwerpVoortgang,
+  clusterVolgorde,
+} from '@/lib/dashboard/indeling'
+import { blokkenVanParagrafen, loadLaatsteAntwoorden } from '@/lib/practice/chapter-overview'
 import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
 import { canoniek, nietIndexeren } from '@/lib/seo'
 import { getCurrentProfile } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
-import { berekenReeks, dagSleutel, laatsteDagen, telOefendagen } from './activiteit'
+import { berekenReeks, dagSleutel, laatsteDagen, reeksLooptAf, telOefendagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
-import { eersteOnderdeel, eersteOpgaveId, opgaveLink } from './start'
+import {
+  eersteOnderdeel,
+  eersteOpgaveId,
+  opgaveLink,
+  volgendeOnderdeel,
+  volgendeOpgaveId,
+} from './start'
 import type { ChapterData } from './topic-block'
 
 export async function generateMetadata({
@@ -60,6 +70,7 @@ export default async function DashboardPage() {
     tellingPerDag,
     antwoordTotaal,
     goedTotaal,
+    laatsteAntwoorden,
   ] = await Promise.all([
     getTranslations('Dashboard'),
     // Registreren bewaart de naam in `username`. Oudere profielen hebben
@@ -109,6 +120,10 @@ export default async function DashboardPage() {
       .select('user_sessions_new!inner(user_id)', { count: 'exact', head: true })
       .eq('user_sessions_new.user_id', user.id)
       .eq('is_correct', true),
+    // Het laatste goed/fout per opgave, voor de knop "Ga verder met". Gaat
+    // dat mis, dan blijft het dashboard gewoon staan en wijst de knop naar de
+    // makkelijkste opgave van die soort som.
+    loadLaatsteAntwoorden(supabase).catch(() => new Map<string, boolean>()),
   ])
 
   const gekozenNaam = profile?.username?.trim()
@@ -123,7 +138,12 @@ export default async function DashboardPage() {
     count: tellingPerDag.get(date) ?? 0,
   }))
 
-  const streakDays = berekenReeks(new Set(tellingPerDag.keys()), vandaag)
+  const dagenMetAntwoord = new Set(tellingPerDag.keys())
+  const streakDays = berekenReeks(dagenMetAntwoord, vandaag)
+  // "Loss aversion": wie een reeks heeft maar vandaag nog niet oefende, krijgt
+  // een rustig regeltje dat hij hem kan kwijtraken (zie AFG-486). Geen
+  // pushmelding of mail, alleen zichtbaar voor wie al op het dashboard is.
+  const streakAtRisk = reeksLooptAf(dagenMetAntwoord, vandaag)
 
   const bron = {
     chapters: chapters ?? [],
@@ -166,6 +186,25 @@ export default async function DashboardPage() {
         }
       : null
 
+  // Wie al begonnen is, krijgt één knop naar de eerstvolgende soort som die
+  // hij nog niet beheerst (zie AFG-484). Zonder die knop moest hij bij elke
+  // terugkomst zelf de hele boom van /oefenen doorzoeken.
+  const verderOnderdeel = nogNietsGedaan
+    ? null
+    : volgendeOnderdeel(chapterData, blokIndeling ? clusterVolgorde(blokIndeling) : [])
+  const verderVraagId = verderOnderdeel
+    ? await volgendeOpgaveId(supabase, verderOnderdeel.clusterId, laatsteAntwoorden)
+    : null
+  const verder =
+    verderOnderdeel && verderVraagId
+      ? {
+          href: opgaveLink(verderOnderdeel, verderVraagId),
+          clusterTitle: verderOnderdeel.clusterTitle,
+          chapterTitle: verderOnderdeel.chapterTitle,
+          topicTitle: verderOnderdeel.topicTitle,
+        }
+      : null
+
   return (
     <div className="mx-auto max-w-[1400px] px-3 py-6">
       <div className="mb-2">
@@ -179,10 +218,12 @@ export default async function DashboardPage() {
       <DashboardGrid
         chapterData={chapterData}
         streakDays={streakDays}
+        streakAtRisk={streakAtRisk}
         activity={activity}
         totalAnswered={totalAnswered}
         totalCorrect={totalCorrect}
         start={start}
+        verder={verder}
         blokIndeling={blokIndeling}
       />
     </div>

@@ -146,6 +146,33 @@ export function telBeheerst(clusters: ReadonlyArray<Pick<ClusterVoortgang, 'isKn
   return { mastered, total, pct }
 }
 
+/**
+ * Alle soorten sommen in de volgorde van het boek: hoofdstuk, paragraaf,
+ * theorieblok, soort som. Daarna de onderwerpen die niet aan een theorieblok
+ * hangen. Dit is precies de volgorde waarin ze op het dashboard en op de
+ * oefenpagina onder elkaar staan, zodat "Ga verder met" dezelfde eerstvolgende
+ * soort som aanwijst als de leerling zelf zou vinden (AFG-484).
+ */
+export function clusterVolgorde(indeling: DashboardIndeling): string[] {
+  const volgorde: string[] = []
+  const gezien = new Set<string>()
+  const zet = (clusters: ReadonlyArray<Pick<ClusterVoortgang, 'id'>>) => {
+    for (const cluster of clusters) {
+      if (gezien.has(cluster.id)) continue
+      gezien.add(cluster.id)
+      volgorde.push(cluster.id)
+    }
+  }
+
+  for (const hoofdstuk of indeling.hoofdstukken) {
+    for (const paragraaf of hoofdstuk.paragrafen) {
+      for (const blok of paragraaf.blokken) zet(blok.clusters)
+    }
+    for (const onderwerp of hoofdstuk.losseOnderwerpen) zet(onderwerp.clusters)
+  }
+  return volgorde
+}
+
 export function hrefVoorBlok(slug: string): string {
   return `/oefenen?blok=${encodeURIComponent(slug)}`
 }

@@ -101,6 +101,17 @@ export function berekenReeks(
 }
 
 /**
+ * Loopt de reeks gevaar? Er is een reeks (minstens één dag), maar vandaag is
+ * er nog niet geoefend. Blijft dat zo tot middernacht, dan breekt hij.
+ */
+export function reeksLooptAf(
+  dagenMetAntwoord: ReadonlySet<string>,
+  vandaag: string,
+): boolean {
+  return !dagenMetAntwoord.has(vandaag) && berekenReeks(dagenMetAntwoord, vandaag) > 0
+}
+
+/**
  * Staat de reeks al vast, of kunnen oudere antwoorden hem nog verlengen?
  *
  * `oudsteGezien` is de oudste dag waarvan we de antwoorden al binnen

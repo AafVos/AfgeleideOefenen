@@ -51,6 +51,58 @@ export function eersteOnderdeel(
 }
 
 /**
+ * Waar een leerling verdergaat die al eerder geoefend heeft (zie AFG-484).
+ *
+ * De eerstvolgende soort som die nog niet beheerst is, in boekvolgorde.
+ * `volgorde` is de lijst soorten sommen zoals ze op het dashboard en de
+ * oefenpagina onder elkaar staan (`clusterVolgorde`). Wat daar niet in staat
+ * komt erachter, in de volgorde van `chapters`, zodat er nooit een soort som
+ * buiten beeld valt.
+ *
+ * Is alles beheerst, dan komt er niets terug: dan hoort er ook geen kaart te
+ * staan.
+ */
+export function volgendeOnderdeel(
+  chapters: ChapterData[],
+  volgorde: string[] = [],
+): EersteOnderdeel | null {
+  const perCluster = new Map<string, { onderdeel: EersteOnderdeel; isKnown: boolean }>()
+  const eigenVolgorde: string[] = []
+
+  for (const chapter of chapters) {
+    for (const topic of chapter.topics) {
+      for (const cluster of topic.clusters) {
+        if (perCluster.has(cluster.id)) continue
+        eigenVolgorde.push(cluster.id)
+        perCluster.set(cluster.id, {
+          isKnown: cluster.isKnown,
+          onderdeel: {
+            chapterId: chapter.id,
+            chapterSlug: chapter.slug,
+            chapterTitle: chapter.title,
+            topicSlug: topic.slug,
+            topicTitle: topic.title,
+            clusterId: cluster.id,
+            clusterSlug: cluster.slug,
+            clusterTitle: cluster.title,
+          },
+        })
+      }
+    }
+  }
+
+  const gezien = new Set<string>()
+  for (const clusterId of [...volgorde, ...eigenVolgorde]) {
+    if (gezien.has(clusterId)) continue
+    gezien.add(clusterId)
+    const regel = perCluster.get(clusterId)
+    if (!regel || regel.isKnown) continue
+    return regel.onderdeel
+  }
+  return null
+}
+
+/**
  * De link naar één opgave op de oefenpagina. Hoofdstuk, onderwerp en soort
  * som moeten erbij: de oefenpagina opent `q` alleen als die opgave ook in de
  * gekozen soort som zit.
@@ -89,4 +141,31 @@ export async function eersteOpgaveId(
     .maybeSingle()
 
   return data?.id ?? null
+}
+
+/**
+ * De opgave waar een leerling verdergaat binnen een soort som: de eerste die
+ * nu niet groen is, in dezelfde volgorde als de tegels. Groen is dezelfde
+ * kleur als op de oefenpagina: het laatste antwoord was goed. Een opgave die
+ * hij eerst goed had en later fout, komt dus weer langs.
+ *
+ * Staat alles op groen (maar is de soort nog niet beheerst, want daar horen
+ * drie goede op rij bij), dan weer de makkelijkste.
+ */
+export async function volgendeOpgaveId(
+  db: SupabaseClient<Database>,
+  clusterId: string,
+  laatsteAntwoorden: Map<string, boolean>,
+): Promise<string | null> {
+  const { data: vragen } = await db
+    .from('questions_new')
+    .select('id')
+    .eq('cluster_id', clusterId)
+    .order('difficulty', { ascending: true })
+    .order('order_index', { ascending: true })
+
+  const opVolgorde = (vragen ?? []).map((vraag) => vraag.id)
+  if (opVolgorde.length === 0) return null
+
+  return opVolgorde.find((id) => laatsteAntwoorden.get(id) !== true) ?? opVolgorde[0]!
 }

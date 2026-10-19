@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   bouwDashboardIndeling,
   bouwOnderwerpVoortgang,
+  clusterVolgorde,
   hrefVoorBlok,
   telBeheerst,
   type VoortgangRij,
@@ -251,5 +252,27 @@ describe('percentage en "x/y beheerst" spreken elkaar niet tegen', () => {
 
   it('geeft 0% bij een lijst zonder soorten sommen', () => {
     expect(telBeheerst([])).toEqual({ mastered: 0, total: 0, pct: 0 })
+  })
+})
+
+// =====================================================================
+// De boekvolgorde van alle soorten sommen (zie AFG-484).
+// =====================================================================
+
+describe('clusterVolgorde', () => {
+  it('loopt hoofdstuk, paragraaf, blok en dan de losse onderwerpen af', () => {
+    expect(clusterVolgorde(indeling())).toEqual([
+      'c-raaklijn-a',
+      'c-raaklijn-b',
+      'c-helling',
+      'c-extremen',
+      'c-los',
+      'c-snelheid',
+    ])
+  })
+
+  it('noemt een soort som die aan twee plekken hangt maar één keer', () => {
+    const volgorde = clusterVolgorde(indeling())
+    expect(new Set(volgorde).size).toBe(volgorde.length)
   })
 })
