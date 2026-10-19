@@ -117,6 +117,10 @@ const env = {
   // versturen over en controleert de test niets.
   RESEND_BASE_URL: nepResend.url,
   RESEND_API_KEY: 're_nep',
+  // De links in de mail die de site stuurt wijzen naar de testserver en niet
+  // naar de echte site. Zo kan een test er ook echt op klikken — en kan een
+  // link uit een test nooit op de echte site uitkomen.
+  NEXT_PUBLIC_SITE_URL: `http://localhost:${process.env.E2E_PORT ?? 3177}`,
   // Verzonnen geheim voor de webhooks; niets uit productie.
   WEBHOOK_SECRET: 'e2e-nep-geheim',
   // De knop "Doorgaan met Google" blijft uit. Die hoort pas aan als de

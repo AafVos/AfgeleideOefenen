@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext } from '@playwright/test'
 
-import { TESTLEERLING, logIn, testDatabase, uniekAdres } from './leerling'
+import { WEGWERP_WACHTWOORD, logIn, testDatabase, uniekAdres } from './leerling'
 import { linkUitMail, sitemails, wachtOpSitemail } from './postbus'
 
 /**
@@ -12,6 +12,10 @@ import { linkUitMail, sitemails, wachtOpSitemail } from './postbus'
  *
  * De mail gaat via Resend en komt dus in de neppe Resend van `scripts/e2e.mjs`
  * terecht, niet in de testpostbus van Supabase.
+ *
+ * Elke test maakt een eigen wegwerpaccount. De vaste testleerling gebruiken we
+ * hier bewust niet: of die net geoefend heeft, hangt af van welke tests er
+ * eerder liepen, en juist dát bepaalt of er een herinnering uit mag.
  */
 
 const CRON_PAD = '/api/cron/herinneringen'
@@ -23,51 +27,95 @@ function webhookGeheim(): string {
   return geheim
 }
 
-/** De taak draaien zoals de Worker dat 's nachts doet. */
+/** De taak draaien zoals de Worker dat 's avonds doet. */
 async function draaiTaak(request: APIRequestContext, geheim = webhookGeheim()) {
   return request.post(CRON_PAD, { headers: { 'x-webhook-secret': geheim } })
 }
 
-/**
- * Een vers account dat verder nergens in de tests gebruikt wordt, zodat de
- * voortgang van de vaste testleerling deze test niet kan beïnvloeden. Het
- * adres begint met `nieuw-`, dus `e2e/schone-start.ts` ruimt het weer op.
- */
-async function stilleLeerling(stilDagen: number) {
+type NieuwAccount = {
+  /** Hoeveel dagen geleden de herinnering aangezet is. Weglaten = uit. */
+  stilDagen?: number
+  /** Zet een voortgangsregel klaar, zodat het dashboard niet het startblok toont. */
+  alBegonnen?: boolean
+}
+
+/** Een vers account dat verder nergens in de tests gebruikt wordt. */
+async function maakLeerling(opties: NieuwAccount = {}) {
   const db = testDatabase()
   const email = uniekAdres()
   const { data, error } = await db.auth.admin.createUser({
     email,
-    password: 'oefenen123',
+    password: WEGWERP_WACHTWOORD,
     email_confirm: true,
   })
   if (error || !data.user) throw new Error(error?.message ?? 'account niet aangemaakt')
+  const id = data.user.id
 
-  // Herinnering aan, en al zo lang stil dat hij vanavond aan de beurt is.
-  // Deze leerling heeft nog nooit geoefend, dus de stilte telt vanaf het
-  // aanzetten.
+  // De rondleiding heeft deze leerling gezien; anders dekt hij de kaart af.
+  const aan = opties.stilDagen !== undefined
   const { error: updateFout } = await db
     .from('profiles')
     .update({
-      herinnering_mail: true,
-      herinnering_aan_sinds: new Date(Date.now() - stilDagen * DAG_MS).toISOString(),
+      tour_seen_at: new Date().toISOString(),
+      herinnering_mail: aan,
+      // Deze leerling heeft nog nooit geoefend, dus de stilte telt vanaf het
+      // moment dat hij de herinnering aanzette.
+      herinnering_aan_sinds: aan
+        ? new Date(Date.now() - opties.stilDagen! * DAG_MS).toISOString()
+        : null,
     })
-    .eq('id', data.user.id)
+    .eq('id', id)
   if (updateFout) throw new Error(updateFout.message)
+
+  if (opties.alBegonnen) await zetVoortgangKlaar(id)
 
   const { data: profiel } = await db
     .from('profiles')
     .select('herinnering_sleutel')
-    .eq('id', data.user.id)
+    .eq('id', id)
     .single()
 
-  return { id: data.user.id, email, sleutel: profiel!.herinnering_sleutel as string }
+  return { id, email, sleutel: profiel!.herinnering_sleutel as string }
 }
 
-test('de leerling zet de herinnering zelf aan, na de vraag of hij 16 is', async ({
+/**
+ * Eén voortgangsregel. Het dashboard laat de rechterkolom — en dus de kaart —
+ * pas zien zodra een leerling ergens aan begonnen is; daarvóór staat er één
+ * startknop en verder niets (zie AFG-114).
+ */
+async function zetVoortgangKlaar(userId: string) {
+  const db = testDatabase()
+  const { data: cluster, error } = await db
+    .from('topic_clusters_new')
+    .select('id, topic_id')
+    .order('order_index')
+    .limit(1)
+    .single()
+  if (error || !cluster) throw new Error(error?.message ?? 'geen soort som gevonden')
+
+  const { error: insertFout } = await db.from('user_progress_new').insert({
+    user_id: userId,
+    topic_id: cluster.topic_id,
+    cluster_id: cluster.id,
+    status: 'in_progress',
+  })
+  if (insertFout) throw new Error(insertFout.message)
+}
+
+async function staatAan(userId: string): Promise<boolean> {
+  const { data } = await testDatabase()
+    .from('profiles')
+    .select('herinnering_mail')
+    .eq('id', userId)
+    .single()
+  return data?.herinnering_mail === true
+}
+
+test('de leerling zet de herinnering zelf aan, na de vraag of hij 16 is @telefoon', async ({
   page,
 }) => {
-  await logIn(page)
+  const leerling = await maakLeerling({ alBegonnen: true })
+  await logIn(page, { email: leerling.email, wachtwoord: WEGWERP_WACHTWOORD })
 
   const kaart = page.getByText('Herinnering per mail').locator('..')
   await expect(kaart.getByText('Staat uit.')).toBeVisible()
@@ -79,12 +127,12 @@ test('de leerling zet de herinnering zelf aan, na de vraag of hij 16 is', async 
   // Wie nee zegt, krijgt hem niet.
   await kaart.getByRole('button', { name: 'Nee' }).click()
   await expect(kaart.getByText('Dan zetten we hem niet aan.')).toBeVisible()
-  expect(await staatAan(TESTLEERLING.id)).toBe(false)
+  expect(await staatAan(leerling.id)).toBe(false)
 
   await kaart.getByRole('button', { name: 'Zet aan' }).click()
   await kaart.getByRole('button', { name: 'Ja, zet aan' }).click()
   await expect(kaart.getByText('Staat aan.')).toBeVisible()
-  expect(await staatAan(TESTLEERLING.id)).toBe(true)
+  expect(await staatAan(leerling.id)).toBe(true)
 
   // En hij blijft aan staan na een herlaadactie.
   await page.reload()
@@ -93,23 +141,14 @@ test('de leerling zet de herinnering zelf aan, na de vraag of hij 16 is', async 
   // Uitzetten kan op dezelfde plek.
   await kaart.getByRole('button', { name: 'Zet uit' }).click()
   await expect(kaart.getByText('Staat uit.')).toBeVisible()
-  expect(await staatAan(TESTLEERLING.id)).toBe(false)
+  expect(await staatAan(leerling.id)).toBe(false)
 })
-
-async function staatAan(userId: string): Promise<boolean> {
-  const { data } = await testDatabase()
-    .from('profiles')
-    .select('herinnering_mail')
-    .eq('id', userId)
-    .single()
-  return data?.herinnering_mail === true
-}
 
 test('de nachtelijke taak stuurt één herinnering en laat zich afmelden', async ({
   page,
   request,
 }) => {
-  const leerling = await stilleLeerling(9)
+  const leerling = await maakLeerling({ stilDagen: 9 })
 
   // Zonder het juiste geheim doet de taak niets.
   const afgewezen = await draaiTaak(request, 'niet-het-geheim')
@@ -146,7 +185,7 @@ test('de nachtelijke taak stuurt één herinnering en laat zich afmelden', async
 })
 
 test('wie pas net begon, krijgt nog geen herinnering', async ({ request }) => {
-  const leerling = await stilleLeerling(2)
+  const leerling = await maakLeerling({ stilDagen: 2 })
 
   const uitslag = await draaiTaak(request)
   expect(uitslag.status()).toBe(200)
