@@ -5,7 +5,7 @@ import {
   bouwOnderwerpVoortgang,
   clusterVolgorde,
 } from '@/lib/dashboard/indeling'
-import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
+import { blokkenVanParagrafen, loadLaatsteAntwoorden } from '@/lib/practice/chapter-overview'
 import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
 import { canoniek, nietIndexeren } from '@/lib/seo'
 import { getCurrentProfile } from '@/lib/supabase/request-cache'
@@ -70,6 +70,7 @@ export default async function DashboardPage() {
     tellingPerDag,
     antwoordTotaal,
     goedTotaal,
+    laatsteAntwoorden,
   ] = await Promise.all([
     getTranslations('Dashboard'),
     // Registreren bewaart de naam in `username`. Oudere profielen hebben
@@ -119,6 +120,10 @@ export default async function DashboardPage() {
       .select('user_sessions_new!inner(user_id)', { count: 'exact', head: true })
       .eq('user_sessions_new.user_id', user.id)
       .eq('is_correct', true),
+    // Het laatste goed/fout per opgave, voor de knop "Ga verder met". Gaat
+    // dat mis, dan blijft het dashboard gewoon staan en wijst de knop naar de
+    // makkelijkste opgave van die soort som.
+    loadLaatsteAntwoorden(supabase).catch(() => new Map<string, boolean>()),
   ])
 
   const gekozenNaam = profile?.username?.trim()
@@ -183,7 +188,7 @@ export default async function DashboardPage() {
     ? null
     : volgendeOnderdeel(chapterData, blokIndeling ? clusterVolgorde(blokIndeling) : [])
   const verderVraagId = verderOnderdeel
-    ? await volgendeOpgaveId(supabase, user.id, verderOnderdeel.clusterId)
+    ? await volgendeOpgaveId(supabase, verderOnderdeel.clusterId, laatsteAntwoorden)
     : null
   const verder =
     verderOnderdeel && verderVraagId

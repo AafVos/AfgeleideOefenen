@@ -145,14 +145,17 @@ export async function eersteOpgaveId(
 
 /**
  * De opgave waar een leerling verdergaat binnen een soort som: de eerste die
- * hij nog niet goed heeft, in dezelfde volgorde als de tegels. Heeft hij ze
- * allemaal al een keer goed (maar de soort nog niet beheerst, want daar horen
+ * nu niet groen is, in dezelfde volgorde als de tegels. Groen is dezelfde
+ * kleur als op de oefenpagina: het laatste antwoord was goed. Een opgave die
+ * hij eerst goed had en later fout, komt dus weer langs.
+ *
+ * Staat alles op groen (maar is de soort nog niet beheerst, want daar horen
  * drie goede op rij bij), dan weer de makkelijkste.
  */
 export async function volgendeOpgaveId(
   db: SupabaseClient<Database>,
-  userId: string,
   clusterId: string,
+  laatsteAntwoorden: Map<string, boolean>,
 ): Promise<string | null> {
   const { data: vragen } = await db
     .from('questions_new')
@@ -164,13 +167,5 @@ export async function volgendeOpgaveId(
   const opVolgorde = (vragen ?? []).map((vraag) => vraag.id)
   if (opVolgorde.length === 0) return null
 
-  const { data: goed } = await db
-    .from('session_answers_new')
-    .select('question_id, user_sessions_new!inner(user_id)')
-    .eq('user_sessions_new.user_id', userId)
-    .eq('is_correct', true)
-    .in('question_id', opVolgorde)
-
-  const alGoed = new Set((goed ?? []).map((rij) => rij.question_id))
-  return opVolgorde.find((id) => !alGoed.has(id)) ?? opVolgorde[0]!
+  return opVolgorde.find((id) => laatsteAntwoorden.get(id) !== true) ?? opVolgorde[0]!
 }
