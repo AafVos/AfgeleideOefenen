@@ -18,10 +18,13 @@ type ProgressRow = {
 
 type AnswerRow = {
   id: string
+  session_id: string
+  question_id: string
   user_answer: string | null
   is_correct: boolean | null
   hints_used: number
   time_spent_sec: number | null
+  answered_at: string
 }
 
 type DbFout = { code: string; message: string }
@@ -44,6 +47,8 @@ let aiSaysCorrect: boolean
 let aiValtOm: boolean
 /** Engelse tekst die een mislukte antwoordinvoeg moet teruggeven. */
 let antwoordInvoegfout: string | null
+/** Fout bij het opzoeken of dit antwoord net al opgeslagen is. */
+let antwoordZoekfout: DbFout | null
 /** Fout bij het aanmaken van voortgang. De eerste lezing vindt dan niets. */
 let voortgangInvoegfout: DbFout | null
 let voortgangLezingen: number
@@ -69,6 +74,21 @@ function freshProgress(correctStreak: number, totalAnswered: number): ProgressRo
 function from(table: string) {
   let op: 'select' | 'insert' | 'update' = 'select'
   let values: Record<string, unknown> = {}
+  const gelijk: Record<string, unknown> = {}
+  let vanaf: { kolom: string; waarde: string } | null = null
+
+  /** De opgeslagen antwoorden die aan de `eq`- en `gte`-filters voldoen. */
+  function gefilterdeAntwoorden(): AnswerRow[] {
+    return answers.filter((row) => {
+      for (const [kolom, waarde] of Object.entries(gelijk)) {
+        if (row[kolom as keyof AnswerRow] !== waarde) return false
+      }
+      if (vanaf && String(row[vanaf.kolom as keyof AnswerRow]) < vanaf.waarde) {
+        return false
+      }
+      return true
+    })
+  }
 
   function run(): QueryResult {
     if (table === 'questions_new') return { data: QUESTION, error: null }
@@ -88,10 +108,13 @@ function from(table: string) {
         }
         const row: AnswerRow = {
           id: `a${answers.length + 1}`,
+          session_id: (values.session_id ?? '') as string,
+          question_id: (values.question_id ?? '') as string,
           user_answer: (values.user_answer ?? null) as string | null,
           is_correct: (values.is_correct ?? null) as boolean | null,
           hints_used: (values.hints_used ?? 0) as number,
           time_spent_sec: (values.time_spent_sec ?? null) as number | null,
+          answered_at: new Date().toISOString(),
         }
         answers.push(row)
         return { data: { id: row.id }, error: null }
@@ -99,8 +122,11 @@ function from(table: string) {
       if (op === 'update') {
         if (alsnogGoedFout) return { data: null, error: alsnogGoedFout }
         Object.assign(answers[answers.length - 1], values)
+        return { data: null, error: null }
       }
-      return { data: null, error: null }
+      if (antwoordZoekfout) return { data: null, error: antwoordZoekfout }
+      const gevonden = gefilterdeAntwoorden()
+      return { data: gevonden[gevonden.length - 1] ?? null, error: null }
     }
 
     if (table === 'user_progress_new') {
@@ -127,9 +153,15 @@ function from(table: string) {
 
   const builder = {
     select: () => builder,
-    eq: () => builder,
+    eq: (kolom: string, waarde: unknown) => {
+      gelijk[kolom] = waarde
+      return builder
+    },
     is: () => builder,
-    gte: () => builder,
+    gte: (kolom: string, waarde: string) => {
+      vanaf = { kolom, waarde }
+      return builder
+    },
     order: () => builder,
     limit: () => builder,
     insert: (v: Record<string, unknown>) => {
@@ -178,6 +210,7 @@ const { flagQuestionNewAction, skipStudyQuestionAction, submitStudyAnswerAction 
 
 function verseBoekhouding() {
   antwoordInvoegfout = null
+  antwoordZoekfout = null
   voortgangInvoegfout = null
   voortgangLezingen = 0
   voortgangBijwerkfout = null
@@ -276,6 +309,87 @@ describe('submitStudyAnswerAction', () => {
     // De opgave telt wel mee.
     expect(progress.total_answered).toBe(4)
     expect(progress.total_correct).toBe(3)
+  })
+})
+
+describe('twee keer hetzelfde antwoord insturen', () => {
+  beforeEach(() => {
+    progress = freshProgress(1, 1)
+    answers = []
+    aiSaysCorrect = false
+    aiValtOm = false
+    verseBoekhouding()
+  })
+
+  it('telt een dubbel verstuurd goed antwoord maar één keer', async () => {
+    const eerste = await submitStudyAnswerAction('q1', '6x')
+    const tweede = await submitStudyAnswerAction('q1', '6x')
+
+    expect(eerste).toMatchObject({ kind: 'correct', streak: 2 })
+    // De leerling krijgt gewoon weer "goed" te zien, geen foutmelding.
+    expect(tweede).toMatchObject({ kind: 'correct', streak: 2 })
+    expect(answers).toHaveLength(1)
+    expect(progress.correct_streak).toBe(2)
+    expect(progress.total_answered).toBe(2)
+    expect(progress.total_correct).toBe(2)
+  })
+
+  it('maakt een opgave niet beheerst met twee antwoorden in plaats van drie', async () => {
+    progress = freshProgress(2, 2)
+
+    await submitStudyAnswerAction('q1', '6x')
+    await submitStudyAnswerAction('q1', '6x')
+
+    expect(progress.correct_streak).toBe(3)
+    expect(progress.status).toBe('mastered')
+  })
+
+  it('telt een dubbel verstuurd fout antwoord maar één keer', async () => {
+    const eerste = await submitStudyAnswerAction('q1', '3x')
+    const tweede = await submitStudyAnswerAction('q1', '3x')
+
+    expect(eerste).toMatchObject({ kind: 'incorrect', correctAnswer: '6x' })
+    expect(tweede).toMatchObject({ kind: 'incorrect', correctAnswer: '6x' })
+    expect(answers).toHaveLength(1)
+    expect(progress.total_answered).toBe(2)
+  })
+
+  it('telt een nieuwe poging met een ander antwoord wel mee', async () => {
+    await submitStudyAnswerAction('q1', '3x')
+    const tweede = await submitStudyAnswerAction('q1', '6x')
+
+    expect(tweede).toMatchObject({ kind: 'correct', streak: 1 })
+    expect(answers).toHaveLength(2)
+    expect(progress.total_answered).toBe(3)
+    expect(progress.total_correct).toBe(2)
+  })
+
+  it('telt hetzelfde antwoord later op de dag wel weer mee', async () => {
+    await submitStudyAnswerAction('q1', '6x')
+    // Rustig opnieuw geprobeerd, ruim na het dubbelklik-venster.
+    answers[0].answered_at = new Date(Date.now() - 60_000).toISOString()
+
+    const tweede = await submitStudyAnswerAction('q1', '6x')
+
+    expect(tweede).toMatchObject({ kind: 'correct', streak: 3 })
+    expect(answers).toHaveLength(2)
+    expect(progress.total_answered).toBe(3)
+  })
+
+  it('houdt het antwoord van de leerling bij een mislukte zoekopdracht gewoon vast', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    antwoordZoekfout = {
+      code: '42501',
+      message: 'permission denied for table session_answers_new',
+    }
+
+    const result = await submitStudyAnswerAction('q1', '6x')
+
+    expect(result).toMatchObject({ kind: 'correct', streak: 2 })
+    expect(answers).toHaveLength(1)
+    expect(JSON.stringify(result)).not.toContain('permission denied')
+
+    vi.restoreAllMocks()
   })
 })
 

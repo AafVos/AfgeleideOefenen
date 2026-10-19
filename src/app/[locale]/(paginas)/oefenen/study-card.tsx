@@ -101,6 +101,10 @@ export function StudyCard({
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const [lastAttempt, setLastAttempt] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
+  // Twee klikken vlak na elkaar: `submitting` staat dan nog op false, want
+  // React tekent pas aan het eind van de tel opnieuw en de knop is dus nog
+  // niet grijs. Een ref staat meteen goed (AFG-505).
+  const bezigRef = useRef(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const feedbackRef = useRef<HTMLDivElement | null>(null)
   const { secondsSpent, restart: restartTimer } = useTimeSpent()
@@ -162,8 +166,9 @@ export function StudyCard({
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!answer.trim() || state.phase !== 'input') return
+    if (!answer.trim() || state.phase !== 'input' || bezigRef.current) return
 
+    bezigRef.current = true
     setSubmitting(true)
     const submitted = answer
     const seconds = secondsSpent()
@@ -173,6 +178,7 @@ export function StudyCard({
         submitted,
         seconds,
       )
+      bezigRef.current = false
       setSubmitting(false)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })
@@ -207,12 +213,14 @@ export function StudyCard({
    * dat de leerling eerst iets moet verzinnen om fout te laten rekenen.
    */
   function skip() {
-    if (state.phase !== 'input' || submitting) return
+    if (state.phase !== 'input' || submitting || bezigRef.current) return
 
+    bezigRef.current = true
     setSubmitting(true)
     const seconds = secondsSpent()
     startTransition(async () => {
       const result: SkipResult = await skipStudyQuestionAction(question.id, seconds)
+      bezigRef.current = false
       setSubmitting(false)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })

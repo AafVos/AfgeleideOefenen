@@ -119,6 +119,23 @@ export async function submitStudyAnswerAction(
       question.cluster_id,
     )
 
+    // Twee keer op "Nakijken" geklikt, of dezelfde opgave in twee tabbladen:
+    // dan telt het maar één keer. Zie `zelfdeInzendingVanNet`.
+    const alGeteld = await zelfdeInzendingVanNet(
+      supabase,
+      sessionId,
+      question.id,
+      userAnswer,
+    )
+    if (alGeteld) {
+      return await uitslagVanEerdereInzending(
+        supabase,
+        user.id,
+        question,
+        alGeteld,
+      )
+    }
+
     // De voortgang gaat pas na de extra controle bij: een goed antwoord in een
     // andere notatie mag niet eerst als fout geteld worden en daarna nog eens
     // als goed. Zie `kijkAntwoordNa` voor de volgorde.
@@ -173,6 +190,99 @@ export async function submitStudyAnswerAction(
     }
   } catch (e) {
     return vangOpslag('[oefenen] nakijken mislukt:', e)
+  }
+}
+
+/**
+ * Hoe lang na een inzending precies hetzelfde antwoord op dezelfde opgave
+ * nog als dezelfde inzending telt.
+ *
+ * Kort genoeg om een echte tweede poging niet in de weg te zitten: de
+ * leerling moet dan eerst de uitslag lezen, op "Opnieuw proberen" klikken en
+ * het antwoord opnieuw intypen. Lang genoeg voor een trage verbinding, waar
+ * het eerste verzoek nog onderweg is als het tweede binnenkomt.
+ */
+const ZELFDE_INZENDING_MS = 10_000
+
+/**
+ * Is dit antwoord net al opgeslagen voor deze sessie en deze opgave?
+ *
+ * Twee keer op "Nakijken" klikken voordat de knop grijs wordt, of dezelfde
+ * opgave in twee tabbladen openen, gaf anders twee rijen in
+ * `session_answers_new` én twee keer een ophoging van de reeks. Drie goed op
+ * rij was dan haalbaar met twee antwoorden, en het aantal vragen op het
+ * dashboard klopte niet meer (AFG-505).
+ *
+ * Alleen letterlijk hetzelfde antwoord telt als dubbel. Een nieuwe poging met
+ * een ander antwoord hoort gewoon mee te tellen — daar is de knop "Opnieuw
+ * proberen" voor. Daarom kan hier geen unieke sleutel op de tabel: bij het
+ * gewone oefenen mag dezelfde opgave binnen één sessie vaker beantwoord
+ * worden, anders dan bij de zelf-toets.
+ */
+async function zelfdeInzendingVanNet(
+  db: DB,
+  sessionId: string,
+  questionId: string,
+  userAnswer: string,
+): Promise<{ id: string; is_correct: boolean | null } | null> {
+  const since = new Date(Date.now() - ZELFDE_INZENDING_MS).toISOString()
+
+  const { data, error } = await db
+    .from('session_answers_new')
+    .select('id, is_correct')
+    .eq('session_id', sessionId)
+    .eq('question_id', questionId)
+    .eq('user_answer', userAnswer)
+    .gte('answered_at', since)
+    .order('answered_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    // Niet kunnen kijken is geen reden om het antwoord te weigeren: dan maar
+    // de oude situatie, met het antwoord gewoon opgeslagen.
+    console.error('[oefenen] dubbel antwoord opzoeken mislukt:', error.message)
+    return null
+  }
+  return data
+}
+
+/**
+ * De leerling krijgt bij een dubbele inzending gewoon de uitslag van zijn
+ * antwoord te zien — alleen wordt er niets bijgeteld. Een foutmelding zou
+ * hier raar zijn: hij heeft niets verkeerd gedaan.
+ */
+async function uitslagVanEerdereInzending(
+  db: DB,
+  userId: string,
+  question: {
+    topic_id: string
+    cluster_id: string
+    answer: string
+    latex_answer: string | null
+  },
+  eerder: { id: string; is_correct: boolean | null },
+): Promise<StudyResult> {
+  if (eerder.is_correct) {
+    const [voortgang, clusterTitle] = await Promise.all([
+      leesVoortgang(db, userId, question.cluster_id),
+      clusterTitel(db, question.cluster_id),
+    ])
+    return {
+      kind: 'correct',
+      streak: voortgang?.correct_streak ?? 0,
+      mastered: voortgang?.status === 'mastered',
+      clusterTitle,
+    }
+  }
+
+  return {
+    kind: 'incorrect',
+    answerId: eerder.id,
+    correctAnswer: question.answer,
+    latexCorrectAnswer: question.latex_answer ?? null,
+    errorExplanation: null,
+    melding: null,
   }
 }
 
