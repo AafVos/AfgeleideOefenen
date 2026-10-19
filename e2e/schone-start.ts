@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-import { TESTLEERLING, WEGWERP_ADRES_BEGIN } from './leerling'
+import { NIEUWE_LEERLINGEN, TESTLEERLINGEN, WEGWERP_ADRES_BEGIN } from './leerling'
 import { leegPostbus, leegSitepostbus } from './postbus'
 
 /**
@@ -75,18 +75,30 @@ export default async function schoneStart() {
     .filter((q) => !behoudStappen.has(q.topic_id))
     .map((q) => q.id)
 
-  // Voortgang van de testleerling weg (sessies nemen hun antwoorden mee).
-  await db.from('user_sessions_new').delete().eq('user_id', TESTLEERLING.id)
-  await db.from('user_progress_new').delete().eq('user_id', TESTLEERLING.id)
+  // Voortgang van alle testleerlingen weg (sessies nemen hun antwoorden mee).
+  // Het zijn er meer dan één: elke werker heeft zijn eigen leerling.
+  const oefenIds = TESTLEERLINGEN.map((l) => l.id)
+  await db.from('user_sessions_new').delete().in('user_id', oefenIds)
+  await db.from('user_progress_new').delete().in('user_id', oefenIds)
   // Ook de gemelde opgaven: een leerling mag dezelfde opgave maar één keer
   // melden, dus anders meldt de volgende run niets meer.
-  await db.from('question_flags_new').delete().eq('user_id', TESTLEERLING.id)
+  await db.from('question_flags_new').delete().in('user_id', oefenIds)
 
-  // De rondleiding heeft deze leerling gezien; anders dekt hij knoppen af.
+  // De rondleiding hebben deze leerlingen gezien; anders dekt hij knoppen af.
   await db
     .from('profiles')
     .update({ tour_seen_at: new Date().toISOString() })
-    .eq('id', TESTLEERLING.id)
+    .in('id', oefenIds)
+
+  // En de kersverse leerlingen hebben hem juist nog nooit gezien: daar gaat
+  // e2e/rondleiding.spec.ts over. Een vorige run heeft hem weggeklikt.
+  await db
+    .from('profiles')
+    .update({ tour_seen_at: null })
+    .in(
+      'id',
+      NIEUWE_LEERLINGEN.map((l) => l.id),
+    )
 
   // Wat de AI-controle eerder opsloeg, hoort niet in een volgende run mee te
   // tellen: dan zou "goed antwoord in andere notatie" al vanuit de database

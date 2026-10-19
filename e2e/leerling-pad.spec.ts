@@ -1,12 +1,12 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
 
 import {
-  TESTLEERLING,
   dashboardKaart,
   dashboardRegel,
   geefAntwoord,
   kiesOpgave,
   logIn,
+  test,
   testDatabase,
 } from './leerling'
 
@@ -18,8 +18,8 @@ import {
  * tests niet omvallen als de echte oefenstof verandert.
  */
 
-test.beforeEach(async ({ page }) => {
-  await logIn(page)
+test.beforeEach(async ({ page, leerling }) => {
+  await logIn(page, leerling)
 })
 
 test('een goed antwoord wordt goedgekeurd @telefoon', async ({ page }) => {
@@ -33,9 +33,11 @@ test('een goed antwoord wordt goedgekeurd @telefoon', async ({ page }) => {
   await geefAntwoord(page, '12x^2')
 
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
-  // Geen vast getal: deze test draait twee keer (computer én telefoon) op
-  // dezelfde oefenleerling, dus de reeks staat de tweede keer een hoger.
-  // Bij twee goed op rij vervangt "nog één goed" de gewone reekszin.
+  // Geen vast getal: deze test draait twee keer (computer én telefoon), en
+  // of die twee dezelfde oefenleerling krijgen hangt ervan af op welke
+  // werker ze landen. Komen ze op dezelfde, dan staat de reeks de tweede
+  // keer een hoger. Bij twee goed op rij vervangt "nog één goed" de gewone
+  // reekszin.
   await expect(
     page.getByText(/\d van de 3 goed op rij|Nog één goed, dan beheers je/),
   ).toBeVisible()
@@ -141,6 +143,7 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
 
 test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon', async ({
   page,
+  leerling,
 }) => {
   // f(x) = x^5  →  f'(x) = 5x^4. De leerling weet het niet en typt niets.
   await kiesOpgave(page, { soortSom: 'Ik weet het niet (e2e)', nummer: 7 })
@@ -179,7 +182,7 @@ test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon'
   const { data, error } = await testDatabase()
     .from('session_answers_new')
     .select('user_answer, is_correct, hints_used, user_sessions_new!inner(user_id)')
-    .eq('user_sessions_new.user_id', TESTLEERLING.id)
+    .eq('user_sessions_new.user_id', leerling.id)
     .is('is_correct', null)
   expect(error).toBeNull()
   expect(data?.length ?? 0).toBeGreaterThan(0)
@@ -194,13 +197,14 @@ test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon'
   const { data: voortgang } = await testDatabase()
     .from('user_progress_new')
     .select('total_answered, total_correct, topic_clusters_new!inner(slug)')
-    .eq('user_id', TESTLEERLING.id)
+    .eq('user_id', leerling.id)
     .eq('topic_clusters_new.slug', 'e2e_niet_weten')
   expect(voortgang?.[0]).toMatchObject({ total_answered: 0, total_correct: 0 })
 })
 
 test('een leerling kan een opgave melden die niet klopt @telefoon', async ({
   page,
+  leerling,
 }) => {
   await kiesOpgave(page, {
     onderwerp: 'Nakijken (e2e)',
@@ -219,7 +223,7 @@ test('een leerling kan een opgave melden die niet klopt @telefoon', async ({
   const { data, error } = await testDatabase()
     .from('question_flags_new')
     .select('reason')
-    .eq('user_id', TESTLEERLING.id)
+    .eq('user_id', leerling.id)
   expect(error).toBeNull()
   expect(data?.map((r) => r.reason)).toContain('Hier klopt iets niet (e2e)')
 })

@@ -1,13 +1,13 @@
-import { expect, test, type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 
 import {
   WEGWERP_WACHTWOORD,
   geefAntwoord,
   kiesOpgave,
-  TESTLEERLING,
   logIn,
   logUit,
   sluitRondleiding,
+  test,
   testDatabase,
   uniekAdres,
 } from './leerling'
@@ -234,6 +234,7 @@ const GEKOZEN_SOORT = '/oefenen?chapter=h2&topic=h2_termsgewijs'
 
 test('wie niet ingelogd is, houdt de gekozen soort tot na het inloggen @telefoon', async ({
   page,
+  leerling,
 }) => {
   await page.goto(`/nl${GEKOZEN_SOORT}`)
   await expect(page).toHaveURL(/\/nl\/inloggen/)
@@ -242,8 +243,8 @@ test('wie niet ingelogd is, houdt de gekozen soort tot na het inloggen @telefoon
   expect(inlog.searchParams.get('chapter')).toBeNull()
   expect(inlog.searchParams.get('topic')).toBeNull()
 
-  await page.locator('input[name="email"]').fill(TESTLEERLING.email)
-  await page.locator('input[name="password"]').fill(TESTLEERLING.wachtwoord)
+  await page.locator('input[name="email"]').fill(leerling.email)
+  await page.locator('input[name="password"]').fill(leerling.wachtwoord)
   await page.getByRole('button', { name: 'Inloggen' }).click()
 
   await expect(page).toHaveURL(/\/nl\/oefenen\?/)
@@ -280,8 +281,11 @@ test('een gekozen soort blijft bewaard tot na de bevestigingsmail', async ({ pag
   ).toBeVisible()
 })
 
-test('wie al ingelogd is, gaat vanaf de theorie direct naar oefenen', async ({ page }) => {
-  await logIn(page)
+test('wie al ingelogd is, gaat vanaf de theorie direct naar oefenen', async ({
+  page,
+  leerling,
+}) => {
+  await logIn(page, leerling)
   await page.goto(`/nl${GEKOZEN_SOORT}`)
   await expect(page).toHaveURL(/\/nl\/oefenen\?/)
   const geland = new URL(page.url())

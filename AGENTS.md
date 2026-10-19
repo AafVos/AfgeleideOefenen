@@ -262,8 +262,10 @@ Ze draaien **nooit** tegen de echte site of de echte database. Alles is
 lokaal:
 
 * een **lokale Supabase** met de migraties en `supabase/seed.sql`;
-* een **vaste testleerling** uit die seed: `leerling@test.local` /
-  `oefenen123` (lokaal, dus geen geheim);
+* **vaste testleerlingen** uit die seed, één per werker:
+  `leerling1@test.local` t/m `leerling4@test.local`, en daarnaast
+  `nieuw1@test.local` t/m `nieuw4@test.local` voor wie de rondleiding nog
+  nooit gezien heeft. Wachtwoord `oefenen123` (lokaal, dus geen geheim);
 * **vaste testopgaven** in een eigen testhoofdstuk uit die seed, zodat de
   tests niet omvallen als de echte oefenstof verandert;
 * **wegwerpaccounts** die de tests zelf aanmaken (`nieuw-<tijd>@test.local`);
@@ -323,10 +325,33 @@ npm run test:e2e -- --project=computer   # alleen computerformaat
 npm run test:e2e -- --headed             # meekijken in de browser
 npm run test:e2e -- --ui                 # klikken door de testuitslag
 E2E_PORT=3178 npm run test:e2e           # als poort 3177 bezet is
+E2E_WORKERS=1 npm run test:e2e           # één browser tegelijk, rustiger kijken
 ```
 
 De tests draaien op computerformaat (1280×800); de belangrijkste weg draait
 daarnaast nog een keer op telefoonformaat (390×844).
+
+### Vier browsers tegelijk, vier testleerlingen
+
+De tests draaien met vier werkers naast elkaar. Elke werker krijgt zijn eigen
+paar accounts uit de seed via de fixtures `leerling` en `nieuweLeerling`
+(`e2e/leerling.ts`), zodat twee tests nooit in dezelfde voortgang zitten te
+schrijven. Binnen één bestand blijven de tests wél op volgorde
+(`fullyParallel: false`): in `leerling-pad.spec.ts` bouwt de ene test de reeks
+op waar de volgende op rekent.
+
+Wat dat betekent als je een test schrijft:
+
+* pak de leerling uit de fixture, nooit een vast adres:
+  `test('…', async ({ page, leerling }) => { await logIn(page, leerling) })`;
+* gebruik `leerling.id` in een database-controle, zodat je de rijen van je
+  eigen werker leest;
+* hoort je test bij een andere al bestaande test (dezelfde voortgang, dezelfde
+  opgave), zet hem dan in hetzelfde bestand. Twee bestanden kunnen tegelijk
+  draaien.
+
+Het aantal staat in `e2e/werkers.ts` en in de lus bovenaan
+`supabase/seed.sql`. Die twee horen gelijk te zijn.
 
 ### Regels bij het uitbreiden
 

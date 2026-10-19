@@ -24,110 +24,147 @@
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
--- Vaste testleerling: leerling@test.local / oefenen123
+-- Vaste testleerlingen: één per werker
 -- ---------------------------------------------------------------------
--- De lege tekstvelden zijn geen opsmuk: Supabase Auth struikelt over NULL in
--- confirmation_token en de andere token-kolommen ("Database error querying
--- schema") en weigert dan het inloggen.
-insert into auth.users (
-  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-  confirmation_token, recovery_token, email_change_token_new, email_change
-)
-values (
-  '00000000-0000-0000-0000-000000000000',
-  'e2e00000-0000-4000-8000-000000000001',
-  'authenticated',
-  'authenticated',
-  'leerling@test.local',
-  crypt('oefenen123', gen_salt('bf')),
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"display_name":"Test Leerling"}'::jsonb,
-  now(),
-  now(),
-  '', '', '', ''
-)
-on conflict (id) do update
-  set email              = excluded.email,
-      encrypted_password = excluded.encrypted_password,
-      email_confirmed_at = excluded.email_confirmed_at,
-      updated_at         = now();
+-- De e2e-tests draaien naast elkaar (zie `workers` in playwright.config.ts).
+-- Zouden twee werkers dezelfde leerling gebruiken, dan schreven ze door
+-- elkaars voortgang heen en werd de uitslag een gok. Daarom staat er per
+-- werker een eigen paar klaar:
+--
+--   leerling1@test.local … leerling4@test.local  — de oefenleerling; de
+--     rondleiding heeft hij al gezien, zodat die geen knoppen afdekt;
+--   nieuw1@test.local … nieuw4@test.local        — kersvers, heeft de
+--     rondleiding nog nooit gezien (zie e2e/rondleiding.spec.ts).
+--
+-- Wachtwoord voor allemaal: oefenen123. Dat is geen geheim: deze accounts
+-- bestaan alleen op je eigen computer en in de testomgeving.
+--
+-- Hetzelfde aantal staat in `AANTAL_TESTLEERLINGEN` in e2e/leerling.ts. Zet
+-- je er hier meer neer, zet het daar dan ook hoger (en blijf onder de tien:
+-- het nummer wordt hieronder als één cijfer in de uuid geplakt).
+do $$
+declare
+  n          int;
+  gebruiker  uuid;
+  identiteit uuid;
+  adres      text;
+begin
+  for n in 1..4 loop
+    -- De oefenleerling.
+    gebruiker  := ('e2e00000-0000-4000-8000-00000001000' || n)::uuid;
+    identiteit := ('e2e00000-0000-4000-8000-00000001100' || n)::uuid;
+    adres      := 'leerling' || n || '@test.local';
 
--- Zonder identity-rij weigert Supabase Auth het inloggen met wachtwoord.
-insert into auth.identities (
-  id, user_id, provider_id, identity_data, provider,
-  last_sign_in_at, created_at, updated_at
-)
-values (
-  'e2e00000-0000-4000-8000-000000000002',
-  'e2e00000-0000-4000-8000-000000000001',
-  'e2e00000-0000-4000-8000-000000000001',
-  '{"sub":"e2e00000-0000-4000-8000-000000000001","email":"leerling@test.local","email_verified":true,"phone_verified":false}'::jsonb,
-  'email',
-  now(),
-  now(),
-  now()
-)
-on conflict (provider_id, provider) do nothing;
+    -- De lege tekstvelden zijn geen opsmuk: Supabase Auth struikelt over NULL
+    -- in confirmation_token en de andere token-kolommen ("Database error
+    -- querying schema") en weigert dan het inloggen.
+    insert into auth.users (
+      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change
+    )
+    values (
+      '00000000-0000-0000-0000-000000000000',
+      gebruiker,
+      'authenticated',
+      'authenticated',
+      adres,
+      crypt('oefenen123', gen_salt('bf')),
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      jsonb_build_object('display_name', 'Test Leerling ' || n),
+      now(),
+      now(),
+      '', '', '', ''
+    )
+    on conflict (id) do update
+      set email              = excluded.email,
+          encrypted_password = excluded.encrypted_password,
+          email_confirmed_at = excluded.email_confirmed_at,
+          updated_at         = now();
 
--- De rondleiding is al gezien, zodat die geen knoppen afdekt in de tests.
-update public.profiles
-   set display_name = 'Test Leerling',
-       tour_seen_at = now()
- where id = 'e2e00000-0000-4000-8000-000000000001';
+    -- Zonder identity-rij weigert Supabase Auth het inloggen met wachtwoord.
+    insert into auth.identities (
+      id, user_id, provider_id, identity_data, provider,
+      last_sign_in_at, created_at, updated_at
+    )
+    values (
+      identiteit,
+      gebruiker,
+      gebruiker::text,
+      jsonb_build_object(
+        'sub', gebruiker::text,
+        'email', adres,
+        'email_verified', true,
+        'phone_verified', false
+      ),
+      'email',
+      now(), now(), now()
+    )
+    on conflict (provider_id, provider) do nothing;
 
--- ---------------------------------------------------------------------
--- Tweede testleerling: nieuw@test.local / oefenen123
--- ---------------------------------------------------------------------
--- Een kersverse leerling die de rondleiding nog nooit heeft gezien. Apart
--- account, zodat de rondleiding niet in de weg zit bij de tests hierboven.
-insert into auth.users (
-  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-  confirmation_token, recovery_token, email_change_token_new, email_change
-)
-values (
-  '00000000-0000-0000-0000-000000000000',
-  'e2e00000-0000-4000-8000-000000000003',
-  'authenticated',
-  'authenticated',
-  'nieuw@test.local',
-  crypt('oefenen123', gen_salt('bf')),
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"display_name":"Nieuwe Leerling"}'::jsonb,
-  now(),
-  now(),
-  '', '', '', ''
-)
-on conflict (id) do update
-  set email              = excluded.email,
-      encrypted_password = excluded.encrypted_password,
-      email_confirmed_at = excluded.email_confirmed_at,
-      updated_at         = now();
+    -- De rondleiding is al gezien, zodat die geen knoppen afdekt in de tests.
+    update public.profiles
+       set display_name = 'Test Leerling ' || n,
+           tour_seen_at = now()
+     where id = gebruiker;
 
-insert into auth.identities (
-  id, user_id, provider_id, identity_data, provider,
-  last_sign_in_at, created_at, updated_at
-)
-values (
-  'e2e00000-0000-4000-8000-000000000004',
-  'e2e00000-0000-4000-8000-000000000003',
-  'e2e00000-0000-4000-8000-000000000003',
-  '{"sub":"e2e00000-0000-4000-8000-000000000003","email":"nieuw@test.local","email_verified":true,"phone_verified":false}'::jsonb,
-  'email',
-  now(),
-  now(),
-  now()
-)
-on conflict (provider_id, provider) do nothing;
+    -- De kersverse leerling van dezelfde werker.
+    gebruiker  := ('e2e00000-0000-4000-8000-00000003000' || n)::uuid;
+    identiteit := ('e2e00000-0000-4000-8000-00000003100' || n)::uuid;
+    adres      := 'nieuw' || n || '@test.local';
 
--- Nog nooit rondgeleid: hier hoort Aaf dus zelf in beeld te komen.
-update public.profiles
-   set display_name = 'Nieuwe Leerling',
-       tour_seen_at = null
- where id = 'e2e00000-0000-4000-8000-000000000003';
+    insert into auth.users (
+      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change
+    )
+    values (
+      '00000000-0000-0000-0000-000000000000',
+      gebruiker,
+      'authenticated',
+      'authenticated',
+      adres,
+      crypt('oefenen123', gen_salt('bf')),
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      jsonb_build_object('display_name', 'Nieuwe Leerling ' || n),
+      now(),
+      now(),
+      '', '', '', ''
+    )
+    on conflict (id) do update
+      set email              = excluded.email,
+          encrypted_password = excluded.encrypted_password,
+          email_confirmed_at = excluded.email_confirmed_at,
+          updated_at         = now();
+
+    insert into auth.identities (
+      id, user_id, provider_id, identity_data, provider,
+      last_sign_in_at, created_at, updated_at
+    )
+    values (
+      identiteit,
+      gebruiker,
+      gebruiker::text,
+      jsonb_build_object(
+        'sub', gebruiker::text,
+        'email', adres,
+        'email_verified', true,
+        'phone_verified', false
+      ),
+      'email',
+      now(), now(), now()
+    )
+    on conflict (provider_id, provider) do nothing;
+
+    -- Nog nooit rondgeleid: hier hoort Aaf dus zelf in beeld te komen.
+    update public.profiles
+       set display_name = 'Nieuwe Leerling ' || n,
+           tour_seen_at = null
+     where id = gebruiker;
+  end loop;
+end $$;
 
 -- ---------------------------------------------------------------------
 -- Vaste oefenstof voor de tests: één hoofdstuk, twee onderwerpen

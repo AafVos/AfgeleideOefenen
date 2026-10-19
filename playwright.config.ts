@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
+import { AANTAL_TESTLEERLINGEN } from './e2e/werkers'
+
 /**
  * Instellingen voor de e2e-tests: een echte browser die door de site klikt
  * zoals een leerling.
@@ -25,9 +27,19 @@ const BASE_URL = `http://localhost:${PORT}`
 export default defineConfig({
   testDir: './e2e',
   globalSetup: './e2e/schone-start.ts',
-  // Eén leerling, één database: tests mogen elkaar niet in de weg zitten.
+  // Vier browsers tegelijk, elk met zijn eigen testleerling uit
+  // `supabase/seed.sql` (fixtures `leerling` en `nieuweLeerling` in
+  // e2e/leerling.ts). Daardoor zit niemand in elkaars voortgang.
+  //
+  // `fullyParallel` blijft uit: binnen één bestand lopen de tests op volgorde,
+  // en dat is nodig. In leerling-pad.spec.ts bouwt de ene test de reeks op
+  // waar de volgende op rekent.
+  //
+  // Vier past bij een GitHub-runner (vier kernen). Zit je computer vol:
+  // E2E_WORKERS=2 npm run test:e2e. Hoger dan het aantal testleerlingen heeft
+  // geen zin: dan delen twee werkers er weer een.
   fullyParallel: false,
-  workers: 1,
+  workers: Math.min(Number(process.env.E2E_WORKERS ?? 4), AANTAL_TESTLEERLINGEN),
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   // De ontwikkelserver bouwt een pagina pas als je hem opvraagt; de eerste
