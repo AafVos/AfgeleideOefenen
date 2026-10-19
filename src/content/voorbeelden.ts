@@ -140,9 +140,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'twee-tot-de-x',
-    kop: 'De afgeleide van 2^x',
+    kop: 'De afgeleide van 2^x (2 tot de macht x)',
     omschrijving:
-      'De afgeleide van 2 tot de macht x is 2^x keer ln(2). Je ziet de uitwerking in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van 2 tot de macht x: de uitkomst is 2^x keer ln(2). Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van 2 tot de macht x is 2 tot de macht x keer de natuurlijke log van 2.',
     functie: '2^x',
     antwoord: '2^x \\cdot \\ln(2)',
@@ -163,9 +163,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'een-gedeeld-door-x',
-    kop: 'De afgeleide van 1/x',
+    kop: 'De afgeleide van 1/x (1 gedeeld door x)',
     omschrijving:
-      'De afgeleide van 1 gedeeld door x is min 1 gedeeld door x kwadraat. Je ziet de machtsregel in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van 1 gedeeld door x: de uitkomst is min 1 gedeeld door x kwadraat. Je ziet de machtsregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van 1 gedeeld door x is min 1 gedeeld door x kwadraat.',
     functie: '\\dfrac{1}{x}',
     antwoord: '-\\dfrac{1}{x^2}',
@@ -186,9 +186,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'een-gedeeld-door-x-kwadraat',
-    kop: 'De afgeleide van 1/x^2',
+    kop: 'De afgeleide van 1/x^2 (1 gedeeld door x kwadraat)',
     omschrijving:
-      'De afgeleide van 1 gedeeld door x kwadraat is min 2 gedeeld door x tot de derde. Je ziet de uitwerking in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van 1 gedeeld door x kwadraat: de uitkomst is min 2 gedeeld door x tot de derde. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van 1 gedeeld door x kwadraat is min 2 gedeeld door x tot de derde.',
     functie: '\\dfrac{1}{x^2}',
     antwoord: '-\\dfrac{2}{x^3}',
@@ -209,9 +209,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'een-gedeeld-door-x-plus-1',
-    kop: 'De afgeleide van 1/(x+1)',
+    kop: 'De afgeleide van 1/(x+1) (1 gedeeld door x plus 1)',
     omschrijving:
-      'De afgeleide van 1 gedeeld door (x + 1) is min 1 gedeeld door (x + 1) kwadraat. Je ziet de kettingregel in vier stappen.',
+      'Afgeleide van 1 gedeeld door (x + 1): de uitkomst is min 1 gedeeld door (x + 1) kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van 1 gedeeld door (x + 1) is min 1 gedeeld door (x + 1) kwadraat.',
     functie: '\\dfrac{1}{x+1}',
     antwoord: '-\\dfrac{1}{(x+1)^2}',
@@ -278,9 +278,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'een-gedeeld-door-wortel-x',
-    kop: 'De afgeleide van 1/wortel x',
+    kop: 'De afgeleide van 1/wortel x (1 gedeeld door wortel x)',
     omschrijving:
-      'De afgeleide van 1 gedeeld door wortel x is min 1 gedeeld door 2x wortel x. Je ziet de uitwerking in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van 1 gedeeld door wortel x: de uitkomst is min 1 gedeeld door 2x wortel x. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van 1 gedeeld door wortel x is min 1 gedeeld door 2x wortel x.',
     functie: '\\dfrac{1}{\\sqrt{x}}',
     antwoord: '-\\dfrac{1}{2x\\sqrt{x}}',
@@ -348,9 +348,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'e-tot-de-x',
-    kop: 'De afgeleide van e^x',
+    kop: 'De afgeleide van e^x (e tot de macht x)',
     omschrijving:
-      'De afgeleide van e tot de macht x is e tot de macht x zelf. Je ziet de uitwerking in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van e tot de macht x: de uitkomst is e tot de macht x zelf. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van e tot de macht x is e tot de macht x.',
     functie: 'e^x',
     antwoord: 'e^x',
@@ -371,9 +371,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'e-tot-de-2x',
-    kop: 'De afgeleide van e^2x',
+    kop: 'De afgeleide van e^2x (e tot de macht 2x)',
     omschrijving:
-      'De afgeleide van e tot de macht 2x is 2 keer e tot de macht 2x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van e tot de macht 2x: de uitkomst is 2 keer e tot de macht 2x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van e tot de macht 2x is 2 keer e tot de macht 2x.',
     functie: 'e^{2x}',
     antwoord: '2e^{2x}',
@@ -394,9 +394,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'e-tot-de-x-kwadraat',
-    kop: 'De afgeleide van e^(x^2)',
+    kop: 'De afgeleide van e^(x^2) (e tot de macht x kwadraat)',
     omschrijving:
-      'De afgeleide van e tot de macht x kwadraat is 2x keer e tot de macht x kwadraat. Je ziet de kettingregel in vier stappen.',
+      'Afgeleide van e tot de macht x kwadraat: de uitkomst is 2x keer e tot de macht x kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van e tot de macht x kwadraat is 2x keer e tot de macht x kwadraat.',
     functie: 'e^{x^2}',
     antwoord: '2xe^{x^2}',
@@ -417,9 +417,9 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: 'e-tot-de-min-x',
-    kop: 'De afgeleide van e^(-x)',
+    kop: 'De afgeleide van e^(-x) (e tot de macht min x)',
     omschrijving:
-      'De afgeleide van e tot de macht min x is min e tot de macht min x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout.',
+      'Afgeleide van e tot de macht min x: de uitkomst is min e tot de macht min x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.',
     antwoordTekst: 'De afgeleide van e tot de macht min x is min e tot de macht min x.',
     functie: 'e^{-x}',
     antwoord: '-e^{-x}',
