@@ -83,9 +83,17 @@ export default async function schoneStart() {
   await db.from('question_flags_new').delete().eq('user_id', TESTLEERLING.id)
 
   // De rondleiding heeft deze leerling gezien; anders dekt hij knoppen af.
+  // De herinneringsmail staat weer uit, met de tellers op nul: anders zou een
+  // tweede run geen mail meer sturen (zie AFG-487).
   await db
     .from('profiles')
-    .update({ tour_seen_at: new Date().toISOString() })
+    .update({
+      tour_seen_at: new Date().toISOString(),
+      herinnering_mail: false,
+      herinnering_aan_sinds: null,
+      herinnering_laatst_op: null,
+      herinnering_aantal: 0,
+    })
     .eq('id', TESTLEERLING.id)
 
   // Wat de AI-controle eerder opsloeg, hoort niet in een volgende run mee te
