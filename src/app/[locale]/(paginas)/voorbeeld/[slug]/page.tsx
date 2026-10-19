@@ -84,6 +84,11 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           <p className="mt-3 text-text-muted">{voorbeeld.antwoordTekst}</p>
         </section>
 
+        <div className="mt-6 flex flex-col items-start gap-2">
+          <p className="text-sm text-text-muted">Drie sommen over dit onderwerp, zonder account.</p>
+          <ProbeerKnop oefenen={voorbeeld.oefenen} />
+        </div>
+
         <section className="mt-12">
           <h2 className="font-serif text-2xl text-text">Uitwerking</h2>
           <ol className="mt-4 list-none space-y-3 text-text-muted">
@@ -104,10 +109,6 @@ export default async function VoorbeeldPage({ params }: PageProps) {
 
         <div className="mt-12 flex flex-col gap-3">
           <DeelKnop />
-          <ProbeerKnop
-            oefenen={voorbeeld.oefenen}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
-          />
           <Link
             href={voorbeeld.oefenen as '/oefenen'}
             className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
