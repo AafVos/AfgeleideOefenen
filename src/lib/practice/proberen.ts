@@ -50,6 +50,17 @@ export function proberenVanOefenen(oefenen: string): string {
 }
 
 /**
+ * Van de proef terug naar de bijbehorende oefenpagina, zodat een leerling na
+ * het aanmelden met Google verdergaat met dezelfde soort som.
+ */
+export function oefenenVanProberen(selectie: ProefSelectie): string {
+  const params = new URLSearchParams({ chapter: selectie.chapter })
+  if (selectie.topic) params.set('topic', selectie.topic)
+  if (selectie.cluster) params.set('cluster', selectie.cluster)
+  return `/oefenen?${params.toString()}`
+}
+
+/**
  * De drie makkelijkste sommen, stabiel gesorteerd. Zo krijgt iedereen
  * dezelfde proef bij dezelfde soort, ook na een herlaadactie.
  */

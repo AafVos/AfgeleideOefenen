@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 
 import { DeelKnop } from '@/components/deel-knop'
+import { GoogleKnop } from '@/components/google-knop'
 import { MathKeyboard } from '@/components/math-keyboard'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Button } from '@/components/ui'
@@ -10,7 +11,7 @@ import { Link } from '@/i18n/navigation'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import type { ProefOpgave } from '@/lib/practice/proberen-laden'
-import type { ProefSelectie } from '@/lib/practice/proberen'
+import { oefenenVanProberen, type ProefSelectie } from '@/lib/practice/proberen'
 
 import { nakijkProefopgave, type ProefUitslag } from './actions'
 
@@ -40,10 +41,12 @@ export function ProberenClient({
   titel,
   opgaven,
   selectie,
+  googleAan,
 }: {
   titel: string
   opgaven: ProefOpgave[]
   selectie: ProefSelectie
+  googleAan: boolean
 }) {
   const [index, setIndex] = useState(0)
   const [klaar, setKlaar] = useState(false)
@@ -127,6 +130,7 @@ export function ProberenClient({
   }
 
   if (klaar) {
+    const oefenpad = oefenenVanProberen(selectie)
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
         <p className="text-sm font-medium uppercase tracking-wider text-accent">
@@ -136,15 +140,22 @@ export function ProberenClient({
         <p className="mt-6 text-lg text-text">
           Maak een gratis account om je voortgang te bewaren en verder te oefenen
         </p>
-        <div className="mt-8 flex flex-wrap items-start gap-3">
-          <Link
-            href="/registreren?van=proberen"
-            data-meet="proefsom-registreren"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
-          >
-            Account aanmaken
-          </Link>
-          <DeelKnop />
+        <div className="mt-8 max-w-sm">
+          {googleAan && <GoogleKnop oefenpad={oefenpad} />}
+          <div className="flex flex-wrap items-start gap-3">
+            <Link
+              href="/registreren?van=proberen"
+              data-meet="proefsom-registreren"
+              className={
+                googleAan
+                  ? 'inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-surface px-5 py-3 text-sm font-medium text-text shadow-sm hover:bg-surface-2'
+                  : 'inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90'
+              }
+            >
+              Account aanmaken
+            </Link>
+            <DeelKnop />
+          </div>
         </div>
       </div>
     )
