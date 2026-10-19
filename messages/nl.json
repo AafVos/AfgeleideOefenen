@@ -480,7 +480,9 @@
     "finishedHeadlineGood": "Goed bezig",
     "finishedHeadlineKeepGoing": "Toets afgerond",
     "finishedScoreLine": "Je hebt {pct}% goed beantwoord.",
-    "runnerNotFound": "Deze toets-sessie bestaat niet meer."
+    "runnerNotFound": "Deze toets-sessie bestaat niet meer.",
+    "notFinishedTitle": "Deze toets is nog niet af.",
+    "notFinishedBody": "Je ziet je uitslag zodra je alle vragen hebt gemaakt. Je hebt er nu {n} van de {total}."
   },
   "Settings": {
     "title": "Instellingen",

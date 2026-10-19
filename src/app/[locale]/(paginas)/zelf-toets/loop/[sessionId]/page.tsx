@@ -46,7 +46,8 @@ export default async function ZelfToetsRunnerPage({
   }
 
   if (state.ended || !state.nextQuestionId) {
-    const results = await loadTestResults(supabase, user.id, sessionId)
+    const outcome = await loadTestResults(supabase, user.id, sessionId)
+    const results = outcome.status === 'ready' ? outcome.results : null
     const correctCount = results?.correctCount ?? 0
     const totalCount = results?.totalCount ?? state.totalCount
     const pct =

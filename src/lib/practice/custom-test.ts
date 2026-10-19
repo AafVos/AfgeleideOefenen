@@ -289,41 +289,64 @@ export type ResultBreakdown = {
   }>
 }
 
+/**
+ * Wat de resultaatpagina van een zelf-toets te zien krijgt.
+ *
+ * `running` is er omdat een leerling de resultaat-URL ook zelf kan intypen.
+ * Deed hij dat halverwege een toets met "pas aan het einde feedback", dan
+ * zou hij de juiste antwoorden zien van vragen die hij nog moet maken.
+ */
+export type TestResultsOutcome =
+  | { status: 'ready'; results: ResultBreakdown }
+  | { status: 'running'; answeredCount: number; totalCount: number }
+  | { status: 'not-found' }
+
 export async function loadTestResults(
   db: DB,
   userId: string,
   sessionId: string,
-): Promise<ResultBreakdown | null> {
+): Promise<TestResultsOutcome> {
   const { data: session } = await db
     .from('user_sessions_new')
-    .select('id, user_id, session_type')
+    .select('id, user_id, session_type, ended_at')
     .eq('id', sessionId)
     .maybeSingle()
   if (!session || session.user_id !== userId || session.session_type !== 'custom_test') {
-    return null
+    return { status: 'not-found' }
   }
 
-  const { data: testQuestions } = await db
-    .from('custom_test_questions')
-    .select('question_id, order_index')
-    .eq('session_id', sessionId)
-    .order('order_index')
-
-  const questionIds = (testQuestions ?? []).map((q) => q.question_id)
-  if (questionIds.length === 0) {
-    return { totalCount: 0, correctCount: 0, perCluster: [] }
-  }
-
-  const [{ data: questions }, { data: answers }] = await Promise.all([
+  const [{ data: testQuestions }, { data: answers }] = await Promise.all([
     db
-      .from('questions_new')
-      .select('id, cluster_id, latex_body, answer, latex_answer')
-      .in('id', questionIds),
+      .from('custom_test_questions')
+      .select('question_id, order_index')
+      .eq('session_id', sessionId)
+      .order('order_index'),
     db
       .from('session_answers_new')
       .select('question_id, user_answer, is_correct')
       .eq('session_id', sessionId),
   ])
+
+  const questionIds = (testQuestions ?? []).map((q) => q.question_id)
+
+  // Afgerond is: de toets is afgesloten, of alle vragen zijn beantwoord. Dat
+  // tweede vangt de zeldzame sessie op waarbij het afsluiten zelf misging;
+  // de loop-pagina rekent op dezelfde manier.
+  const answeredIds = new Set((answers ?? []).map((a) => a.question_id))
+  const answeredCount = questionIds.filter((id) => answeredIds.has(id)).length
+  const ended = session.ended_at != null || answeredCount >= questionIds.length
+  if (!ended) {
+    return { status: 'running', answeredCount, totalCount: questionIds.length }
+  }
+
+  if (questionIds.length === 0) {
+    return { status: 'ready', results: { totalCount: 0, correctCount: 0, perCluster: [] } }
+  }
+
+  const { data: questions } = await db
+    .from('questions_new')
+    .select('id, cluster_id, latex_body, answer, latex_answer')
+    .in('id', questionIds)
 
   const clusterIds = Array.from(
     new Set((questions ?? []).map((q) => q.cluster_id)),
@@ -413,8 +436,11 @@ export async function loadTestResults(
   }
 
   return {
-    totalCount,
-    correctCount,
-    perCluster: Array.from(groups.values()),
+    status: 'ready',
+    results: {
+      totalCount,
+      correctCount,
+      perCluster: Array.from(groups.values()),
+    },
   }
 }

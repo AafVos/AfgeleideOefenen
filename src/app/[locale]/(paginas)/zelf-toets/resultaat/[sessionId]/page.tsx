@@ -35,8 +35,8 @@ export default async function ZelfToetsResultaatPage({
 
   const t = await getTranslations('ZelfToets')
 
-  const results = await loadTestResults(supabase, user.id, sessionId)
-  if (!results) {
+  const outcome = await loadTestResults(supabase, user.id, sessionId)
+  if (outcome.status === 'not-found') {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12">
         <Card>
@@ -45,6 +45,41 @@ export default async function ZelfToetsResultaatPage({
       </div>
     )
   }
+
+  // Nog bezig: geen uitslag laten zien. Anders ziet een leerling die de
+  // resultaat-URL zelf intypt de juiste antwoorden van vragen die hij nog
+  // moet maken.
+  if (outcome.status === 'running') {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <Card>
+          <p className="font-medium text-text">{t('notFinishedTitle')}</p>
+          <p className="mt-2 text-sm text-text-muted">
+            {t('notFinishedBody', {
+              n: outcome.answeredCount,
+              total: outcome.totalCount,
+            })}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href={`/zelf-toets/loop/${sessionId}`}
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90"
+            >
+              {t('continueTest')}
+            </Link>
+            <Link
+              href="/zelf-toets"
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-text hover:bg-surface-2"
+            >
+              {t('myTests')}
+            </Link>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  const results = outcome.results
 
   const pct =
     results.totalCount > 0
