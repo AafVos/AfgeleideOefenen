@@ -11,8 +11,7 @@
 # groen: de controle test de samengevoegde versie dan alsnog.
 #
 # De doeltak is de basis van de open pull request. Staat die er nog niet,
-# dan `volgende` — daar gaat gewoon werk heen — en voor `volgende` zelf
-# `main`, want die tak gaat alleen naar de dagelijkse release.
+# dan `main`, want daar gaat gewoon werk heen.
 name: Botst met de doeltak
 
 on:
@@ -51,11 +50,7 @@ jobs:
           doel=$(gh pr list --head "$TAK" --state open --json baseRefName \
             --jq '.[0].baseRefName // empty')
           if [ -z "$doel" ]; then
-            if [ "$TAK" = "volgende" ]; then
-              doel=main
-            else
-              doel=volgende
-            fi
+            doel=main
             echo "Nog geen open pull request voor $TAK; we gaan uit van $doel."
           else
             echo "De pull request van $TAK gaat naar $doel."
