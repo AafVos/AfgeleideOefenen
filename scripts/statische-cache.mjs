@@ -80,6 +80,24 @@ export default {
     const next = await import("./worker-next.js");
     return next.default.fetch(request, env, ctx);
   },
+
+  // De nachtelijke taken. Cloudflare roept dit aan volgens triggers.crons in
+  // wrangler.jsonc. Het echte werk staat in een gewone route van de site, dus
+  // hier zetten we alleen een verzoek in elkaar en geven dat aan de Next-bundel
+  // — zonder het netwerk op te gaan.
+  async scheduled(event, env, ctx) {
+    const basis = env.NEXT_PUBLIC_SITE_URL || "https://www.afgeleideoefenen.nl";
+    const verzoek = new Request(basis + "/api/cron/herinneringen", {
+      method: "POST",
+      headers: { "x-webhook-secret": env.WEBHOOK_SECRET || "" },
+    });
+
+    const next = await import("./worker-next.js");
+    const antwoord = await next.default.fetch(verzoek, env, ctx);
+    // Alleen de status in de log: wie er mail kreeg hoort daar niet in.
+    console.log("[herinneringen] status " + antwoord.status);
+    await antwoord.body?.cancel();
+  },
 };
 `
 

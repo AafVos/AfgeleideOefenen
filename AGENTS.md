@@ -246,6 +246,38 @@ Elke merge op `main` blijft meteen live. Er komt geen versienummer in
 als er nog geen datum-release is, staan alleen de pull requests van de
 afgelopen 24 uur erin, en de tag op de huidige `main` is daarna het beginpunt.
 
+## Elke dag om 16:00 UTC: de herinneringsmail
+
+De eerste geplande taak die niet op GitHub draait maar op de Worker zelf
+(AFG-487). `triggers.crons` in `wrangler.jsonc` laat Cloudflare elke dag de
+`scheduled`-ingang aanroepen; die staat in de ingang-sjabloon bovenin
+`scripts/statische-cache.mjs` en geeft het door aan `/api/cron/herinneringen`,
+met het geheim `WEBHOOK_SECRET` in de kop. Er komt dus geen nieuw geheim bij.
+
+* **Opt-in.** `profiles.herinnering_mail` staat standaard uit. De leerling zet
+  hem zelf aan op het dashboard, en krijgt daarbij eerst de vraag of hij 16 of
+  ouder is. Onder de 16 hoort toestemming van een ouder; zolang daar niets
+  voor is, blijft hij uit.
+* **De regels staan los van de database** in `src/lib/herinnering/kiezen.ts`:
+  zeven dagen stil, hoogstens één mail per veertien dagen, nooit meer dan drie
+  in totaal, en hoogstens vijftig per ronde. Is alles beheerst, dan is er
+  niets om naartoe te wijzen en gaat er niets uit.
+* **De tellers zijn van de server.** `herinnering_laatst_op`,
+  `herinnering_aantal` en `herinnering_sleutel` kan een leerling niet zelf
+  zetten; een trigger in migratie 0082 zet ze terug. Anders kon hij zichzelf
+  eindeloos mail laten sturen.
+* **Afmelden kan zonder in te loggen**, via `/nl/herinnering-uit` met het
+  willekeurige nummer uit `herinnering_sleutel` — nooit het gebruikersnummer.
+* **Lokaal nalopen** hoeft niet op een cron te wachten:
+
+  ```bash
+  curl -X POST -H "x-webhook-secret: $WEBHOOK_SECRET" \
+    http://localhost:3000/api/cron/herinneringen
+  ```
+
+  In het antwoord staan alleen aantallen, nooit adressen. `e2e/herinnering.spec.ts`
+  doet precies dit, met de neppe Resend ervoor.
+
 ## De e2e-tests: een echte browser door de site
 
 In `e2e/` staan Playwright-tests die de weg van een leerling nalopen:

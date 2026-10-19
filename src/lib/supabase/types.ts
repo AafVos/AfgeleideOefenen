@@ -31,6 +31,13 @@ export type Database = {
           tour_seen_at: string | null
           /** Alleen docent, youtube, klas, forum of proberen. Migratie 0057 en 0060. */
           herkomst: string | null
+          /** Opt-in e-mailherinnering bij stilte. Migratie 0082. */
+          herinnering_mail: boolean
+          herinnering_aan_sinds: string | null
+          /** Alleen de server schrijft deze drie; een trigger bewaakt dat. */
+          herinnering_laatst_op: string | null
+          herinnering_aantal: number
+          herinnering_sleutel: string
           created_at: string
         }
         Insert: {
@@ -41,6 +48,11 @@ export type Database = {
           display_name?: string | null
           tour_seen_at?: string | null
           herkomst?: string | null
+          herinnering_mail?: boolean
+          herinnering_aan_sinds?: string | null
+          herinnering_laatst_op?: string | null
+          herinnering_aantal?: number
+          herinnering_sleutel?: string
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>

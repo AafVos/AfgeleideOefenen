@@ -265,6 +265,7 @@ export default async function DashboardPage() {
         verder={verder}
         opfrissen={opfrissen}
         blokIndeling={blokIndeling}
+        herinneringAan={profile?.herinnering_mail ?? false}
       />
     </div>
   )

@@ -37,6 +37,8 @@ export type CurrentProfile = {
   username: string | null
   role: string | null
   tour_seen_at: string | null
+  /** Staat de herinneringsmail aan? (migratie 0082, zie AFG-487) */
+  herinnering_mail: boolean | null
 }
 
 /**
@@ -52,7 +54,7 @@ export const getCurrentProfile = cache(
     const supabase = await createClient()
     const { data } = await supabase
       .from('profiles')
-      .select('display_name, username, role, tour_seen_at')
+      .select('display_name, username, role, tour_seen_at, herinnering_mail')
       .eq('id', user.id)
       .maybeSingle()
 
