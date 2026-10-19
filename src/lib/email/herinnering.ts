@@ -52,7 +52,7 @@ export function herinneringHtml(inhoud: HerinneringInhoud): string {
         <tr>
           <td align="center" style="padding: 0 0 20px;">
             <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #1a1a18;">
-              ${SITE_CONFIG.brand}<span style="color: #2d6a4f;">.nl</span>
+              ${SITE_CONFIG.brandVoor}<span style="color: #2d6a4f;">${SITE_CONFIG.brandAccent}</span>
             </span>
           </td>
         </tr>
@@ -158,7 +158,7 @@ export async function stuurHerinnering(
   try {
     const { error } = await resend.emails.send({
       // Merknaam als afzender, geen persoonsnaam: dit is een no-reply-bericht.
-      from: `${SITE_CONFIG.brand} <${EMAIL_FROM}>`,
+      from: `${SITE_CONFIG.brandNaam} <${EMAIL_FROM}>`,
       to: adres,
       subject: onderwerpRegel(inhoud),
       html: herinneringHtml(inhoud),
