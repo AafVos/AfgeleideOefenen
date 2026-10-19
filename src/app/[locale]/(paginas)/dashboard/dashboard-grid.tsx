@@ -241,14 +241,14 @@ function OpfrisRegel({ opfrissen }: { opfrissen: OpfrisData }) {
       <p className="text-sm text-text">
         {t('opfrissenTekst', { cluster: opfrissen.clusterTitle })}
       </p>
+      <p className="mt-1 text-xs text-text-muted">{t('opfrissenUitleg')}</p>
       <KlikLink
         href={opfrissen.href}
         bezigTekst="Opgave openen"
-        className="mt-1 inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+        className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
       >
         {t('opfrissenLink')}
       </KlikLink>
-      <p className="text-xs text-text-muted">{t('opfrissenUitleg')}</p>
     </div>
   )
 }
