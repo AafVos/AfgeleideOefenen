@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
@@ -23,7 +24,9 @@ const AFGELEIDE_URL = 'https://www.afgeleideoefenen.nl/?van=wiskundemetaaf'
  * onderwerp wil oefenen, gaat door naar afgeleideoefenen.nl of
  * integraaloefenen.nl.
  */
-export function ExamenStart() {
+export async function ExamenStart() {
+  const t = await getTranslations('ExamenStart')
+
   const videos = getUitlegVideos()
     .filter((v) => v.soort === 'vraaguitwerking')
     .slice(0, 6)
@@ -61,21 +64,22 @@ export function ExamenStart() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:py-16">
         <section className="text-center">
           <p className="mb-1 text-sm font-medium uppercase tracking-wider text-accent sm:mb-3">
-            Eindexamen vwo wiskunde B
+            {t('eyebrow')}
           </p>
           <h1 className="font-serif text-3xl leading-tight text-text sm:text-5xl">
-            Oefen met{' '}
-            <span className="whitespace-nowrap text-accent">echte examenvragen</span>
+            {t('h1Start')}{' '}
+            <span className="whitespace-nowrap text-accent">{t('h1Accent')}</span>
           </h1>
           <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-6">
-            Vragen uit oude examens, met het antwoord uit het
-            correctievoorschrift en uitleg bij elke stap. Snap je een vraag
-            niet? Dan vraag je er een video bij aan.
+            {t('lead')}
           </p>
 
           <p className="mx-auto mt-4 max-w-xl rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text">
-            Het centraal examen is op{' '}
-            <span className="font-medium">{EXAMENTRAINING_MOMENT}</span>.
+            {t.rich('examMoment', {
+              moment: () => (
+                <span className="font-medium">{EXAMENTRAINING_MOMENT}</span>
+              ),
+            })}
           </p>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
@@ -84,42 +88,40 @@ export function ExamenStart() {
               data-meet="start-examenvragen"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
-              Begin met examenvragen
+              {t('ctaExamenvragen')}
             </Link>
             <Link
               href="/video-aanvragen"
               data-meet="start-video-aanvragen"
               className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
-              Vraag een uitlegvideo aan
+              {t('ctaVideoAanvragen')}
             </Link>
           </div>
-          <p className="mt-3 text-sm text-text-muted">
-            Oefenen doe je met een gratis account. Je voortgang blijft bewaard.
-          </p>
+          <p className="mt-3 text-sm text-text-muted">{t('accountHint')}</p>
         </section>
 
         <section className="mt-14">
           <h2 className="font-serif text-2xl text-text sm:text-3xl">
-            Wat je hier vindt
+            {t('vindtH2')}
           </h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <Kaart
               href={EXAMENVRAGEN_OEFENEN}
               dataMeet="start-kaart-examenvragen"
-              titel="Echte eindexamenvragen"
-              tekst="Vragen uit de examens van de afgelopen jaren, met jaar, tijdvak en vraagnummer erbij. Je antwoord wordt nagekeken en je ziet de stappen."
+              titel={t('kaartExamenvragenTitel')}
+              tekst={t('kaartExamenvragenTekst')}
             />
             <Kaart
               href={EXAMENTRAINING_OEFENEN}
               dataMeet="start-kaart-examenstijl"
-              titel="Examenstijl (H16)"
-              tekst="Zelfgemaakte opgaven in de toon van het examen: helling, raaklijn, toppen, buigpunten. Handig om los te oefenen voordat je een heel examen doet."
+              titel={t('kaartExamenstijlTitel')}
+              tekst={t('kaartExamenstijlTekst')}
             />
           </div>
 
           <h3 className="mt-8 font-serif text-xl text-text">
-            De zeven soorten vragen
+            {t('onderdelenH3')}
           </h3>
           <ul className="mt-3 grid gap-2 text-text-muted sm:grid-cols-2">
             {EXAMENTRAINING_ONDERDELEN.map((onderdeel) => (
@@ -134,7 +136,7 @@ export function ExamenStart() {
               data-meet="start-examentraining"
               className="text-accent underline-offset-2 hover:underline"
             >
-              Lees eerst de uitleg over de examentraining
+              {t('examentrainingLink')}
             </Link>
             {' · '}
             <a
@@ -143,7 +145,7 @@ export function ExamenStart() {
               data-meet="start-examenblad"
               className="text-accent underline-offset-2 hover:underline"
             >
-              Het vak op Examenblad
+              {t('examenbladLink')}
             </a>
           </p>
         </section>
@@ -151,19 +153,20 @@ export function ExamenStart() {
         {videos.length > 0 && (
           <section className="mt-14">
             <h2 className="font-serif text-2xl text-text sm:text-3xl">
-              Uitleg bij een vraag
+              {t('uitlegH2')}
             </h2>
             <p className="mt-3 text-text-muted">
-              Eén opgave, van begin tot eind uitgewerkt. Staat jouw vraag er
-              niet bij?{' '}
-              <Link
-                href="/video-aanvragen"
-                data-meet="start-videos-aanvragen"
-                className="text-accent underline-offset-2 hover:underline"
-              >
-                Vraag hem aan
-              </Link>
-              .
+              {t.rich('uitlegIntro', {
+                link: (chunks) => (
+                  <Link
+                    href="/video-aanvragen"
+                    data-meet="start-videos-aanvragen"
+                    className="text-accent underline-offset-2 hover:underline"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
               {videos.map((video) => (
@@ -193,7 +196,7 @@ export function ExamenStart() {
                 data-meet="start-alle-videos"
                 className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
               >
-                Alle uitlegvideo’s
+                {t('alleVideos')}
               </Link>
             </p>
           </section>
@@ -201,12 +204,9 @@ export function ExamenStart() {
 
         <section className="mt-14 rounded-2xl border border-border bg-surface px-5 py-8 sm:px-6">
           <h2 className="font-serif text-2xl text-text">
-            Liever oefenen per onderwerp?
+            {t('onderwerpH2')}
           </h2>
-          <p className="mt-3 text-text-muted">
-            Het examen is één ding, maar de losse techniek oefen je sneller op
-            de zustersites. Je logt daar in met hetzelfde account.
-          </p>
+          <p className="mt-3 text-text-muted">{t('onderwerpTekst')}</p>
           <ul className="mt-5 space-y-2">
             <li>
               <a
@@ -215,12 +215,12 @@ export function ExamenStart() {
                 data-meet="start-naar-afgeleide"
                 className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
               >
-                afgeleideoefenen.nl — differentiëren, regel voor regel
+                {t('afgeleideLink')}
               </a>
             </li>
             <li>
               <IntegraalVerwijzing
-                tekst="integraaloefenen.nl — integreren en oppervlakte"
+                tekst={t('integraalLink')}
                 dataMeet="start-naar-integraal"
                 className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
               />
@@ -230,11 +230,10 @@ export function ExamenStart() {
 
         <section className="mt-14 text-center">
           <h2 className="font-serif text-2xl text-text sm:text-3xl">
-            Maak een gratis account
+            {t('accountH2')}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-text-muted">
-            Dan onthoudt de site welke examenvragen je al gemaakt hebt, en waar
-            je nog op vastloopt.
+            {t('accountTekst')}
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -242,14 +241,14 @@ export function ExamenStart() {
               data-meet="start-cta-registreren"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
-              Registreren
+              {t('ctaRegistreren')}
             </Link>
             <Link
               href="/inloggen"
               data-meet="start-cta-inloggen"
               className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
-              Inloggen
+              {t('ctaInloggen')}
             </Link>
           </div>
         </section>
