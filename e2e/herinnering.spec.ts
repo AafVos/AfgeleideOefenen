@@ -102,6 +102,11 @@ async function zetVoortgangKlaar(userId: string) {
   if (insertFout) throw new Error(insertFout.message)
 }
 
+/** Alleen de herinneringen; andere mail van de site telt hier niet mee. */
+async function herinneringen(adres: string) {
+  return sitemails(adres, { onderwerpBevat: 'Verder met' })
+}
+
 async function staatAan(userId: string): Promise<boolean> {
   const { data } = await testDatabase()
     .from('profiles')
@@ -153,7 +158,7 @@ test('de nachtelijke taak stuurt één herinnering en laat zich afmelden', async
   // Zonder het juiste geheim doet de taak niets.
   const afgewezen = await draaiTaak(request, 'niet-het-geheim')
   expect(afgewezen.status()).toBe(401)
-  expect(await sitemails(leerling.email)).toHaveLength(0)
+  expect(await herinneringen(leerling.email)).toHaveLength(0)
 
   const eerste = await draaiTaak(request)
   expect(eerste.status()).toBe(200)
@@ -168,7 +173,7 @@ test('de nachtelijke taak stuurt één herinnering en laat zich afmelden', async
   // Meteen nog een ronde stuurt niets: de afkoelperiode loopt nog.
   const tweede = await draaiTaak(request)
   expect(await tweede.json()).toMatchObject({ verstuurd: 0 })
-  expect(await sitemails(leerling.email)).toHaveLength(1)
+  expect(await herinneringen(leerling.email)).toHaveLength(1)
 
   // De afmeldlink werkt zonder in te loggen.
   await page.goto(linkUitMail(mail, '/nl/herinnering-uit'))
@@ -189,5 +194,5 @@ test('wie pas net begon, krijgt nog geen herinnering', async ({ request }) => {
 
   const uitslag = await draaiTaak(request)
   expect(uitslag.status()).toBe(200)
-  expect(await sitemails(leerling.email)).toHaveLength(0)
+  expect(await herinneringen(leerling.email)).toHaveLength(0)
 })
