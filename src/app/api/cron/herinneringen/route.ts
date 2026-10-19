@@ -13,6 +13,7 @@ import {
 import { afmeldPad, oefenPad } from '@/lib/herinnering/links'
 import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
 import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 /**
@@ -73,7 +74,7 @@ async function stuurHerinneringen(nu: Date): Promise<Telling> {
       'id, herinnering_mail, herinnering_aan_sinds, herinnering_laatst_op, herinnering_aantal, herinnering_sleutel',
     )
     .eq('herinnering_mail', true)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   telling.aan = profielen?.length ?? 0
   if (telling.aan === 0) return telling

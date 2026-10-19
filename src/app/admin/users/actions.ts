@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { assertAdmin, gooiAlsFout } from '@/lib/supabase/admin'
+import { assertAdmin } from '@/lib/supabase/admin'
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function setUserRole(userId: string, formData: FormData) {

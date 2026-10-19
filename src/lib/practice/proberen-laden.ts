@@ -1,3 +1,4 @@
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import { createClient } from '@/lib/supabase/server'
 
 import {
@@ -41,7 +42,7 @@ export async function laadProef(selectie: ProefSelectie): Promise<ProefPakket | 
     .select('id, title')
     .eq('slug', selectie.chapter)
     .maybeSingle()
-  if (chapterFout) throw new Error(chapterFout.message)
+  gooiAlsFout(chapterFout)
   if (!chapter) return null
 
   let topicQuery = db
@@ -50,7 +51,7 @@ export async function laadProef(selectie: ProefSelectie): Promise<ProefPakket | 
     .eq('chapter_id', chapter.id)
   if (selectie.topic) topicQuery = topicQuery.eq('slug', selectie.topic)
   const { data: topics, error: topicFout } = await topicQuery
-  if (topicFout) throw new Error(topicFout.message)
+  gooiAlsFout(topicFout)
   if (!topics?.length) return null
 
   let clusterQuery = db
@@ -62,7 +63,7 @@ export async function laadProef(selectie: ProefSelectie): Promise<ProefPakket | 
     )
   if (selectie.cluster) clusterQuery = clusterQuery.eq('slug', selectie.cluster)
   const { data: clusters, error: clusterFout } = await clusterQuery
-  if (clusterFout) throw new Error(clusterFout.message)
+  gooiAlsFout(clusterFout)
   if (!clusters?.length) return null
 
   const { data: vragen, error: vraagFout } = await db
@@ -72,7 +73,7 @@ export async function laadProef(selectie: ProefSelectie): Promise<ProefPakket | 
       'cluster_id',
       clusters.map((cluster) => cluster.id),
     )
-  if (vraagFout) throw new Error(vraagFout.message)
+  gooiAlsFout(vraagFout)
 
   const gekozen = kiesDrieProefopgaven(vragen ?? [])
   if (!gekozen.length) return null
@@ -111,7 +112,7 @@ export async function laadNakijkRij(
     .select('answer, latex_answer, answer_alternatives')
     .eq('id', questionId)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   if (!vraag) return null
 
   const { data: stappen, error: stapFout } = await db
@@ -119,7 +120,7 @@ export async function laadNakijkRij(
     .select('id, step_order, step_description')
     .eq('question_id', questionId)
     .order('step_order')
-  if (stapFout) throw new Error(stapFout.message)
+  gooiAlsFout(stapFout)
 
   return {
     answer: vraag.answer,

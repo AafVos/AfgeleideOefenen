@@ -23,16 +23,3 @@ export async function assertAdmin() {
 
   return { supabase, userId: user.id }
 }
-
-/**
- * Gooit een fout met de Supabase-foutmelding als die er is.
- *
- * Server actions in het beheergedeelte controleren na elke Supabase-aanroep
- * of er een fout is; deze helper voorkomt dat die controle overal apart
- * wordt uitgeschreven.
- */
-export function gooiAlsFout(
-  error: { message: string } | null,
-): asserts error is null {
-  if (error) throw new Error(error.message)
-}
