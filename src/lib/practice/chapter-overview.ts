@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { vraagIsToepassing } from '@/lib/practice/answer-prefix'
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import type { Database } from '@/lib/supabase/types'
 
 type DB = SupabaseClient<Database>
@@ -87,7 +88,7 @@ export async function loadChapters(db: DB): Promise<ChapterInfo[]> {
     .from('chapters')
     .select('id, slug, title, book_part, order_index')
     .order('order_index')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return (data ?? []) as ChapterInfo[]
 }
 
@@ -96,7 +97,7 @@ export async function loadAllTopics(db: DB): Promise<TopicInfo[]> {
     .from('topics_new')
     .select('id, slug, title, chapter_id, order_index, theory_block_id')
     .order('order_index')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return (data ?? []) as TopicInfo[]
 }
 
@@ -106,7 +107,7 @@ export async function loadParagraphs(db: DB): Promise<ParagraphInfo[]> {
     .select('id, chapter_id, slug, label, title, order_index')
     .eq('zichtbaar', true)
     .order('order_index')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return (data ?? []) as ParagraphInfo[]
 }
 
@@ -124,7 +125,7 @@ export async function loadTheoryBlocks(db: DB): Promise<TheoryBlockInfo[]> {
     .from('theory_blocks')
     .select('id, paragraph_id, slug, letter, title, order_index')
     .order('order_index')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return (data ?? []) as TheoryBlockInfo[]
 }
 
@@ -133,7 +134,7 @@ export async function loadAllClusters(db: DB): Promise<ClusterInfo[]> {
     .from('topic_clusters_new')
     .select('id, slug, title, topic_id, order_index, theory_block_id')
     .order('order_index')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return (data ?? []) as ClusterInfo[]
 }
 
@@ -153,7 +154,7 @@ export async function loadAlleVragen(db: DB): Promise<VraagVoorTegel[]> {
   const { data, error } = await db
     .from('questions_new')
     .select('id, cluster_id, difficulty, order_index, latex_body, answer_prefix, source_label, source_url')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return (data ?? []) as VraagVoorTegel[]
 }
 
@@ -168,7 +169,7 @@ export async function loadLaatsteAntwoorden(
   db: DB,
 ): Promise<Map<string, boolean>> {
   const { data, error } = await db.rpc('laatste_antwoord_per_vraag')
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   const perVraag = new Map<string, boolean>()
   for (const row of data ?? []) {
     if (row.is_correct !== true && row.is_correct !== false) continue
@@ -185,7 +186,7 @@ export async function loadLaatsteVraagId(db: DB): Promise<string | null> {
     .order('answered_at', { ascending: false })
     .limit(1)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   return data?.question_id ?? null
 }
 
@@ -274,8 +275,8 @@ export async function loadQuestionNew(
       .eq('question_id', questionId)
       .order('step_order'),
   ])
-  if (vraag.error) throw new Error(vraag.error.message)
-  if (stappen.error) throw new Error(stappen.error.message)
+  gooiAlsFout(vraag.error)
+  gooiAlsFout(stappen.error)
   const q = vraag.data
   if (!q) return null
   const steps = stappen.data

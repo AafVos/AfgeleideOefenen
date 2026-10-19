@@ -1,4 +1,4 @@
-import { gooiAlsFout } from '@/lib/supabase/admin'
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import type { ProfileRole } from '@/lib/supabase/types'
 import type { createServiceRoleClient } from '@/lib/supabase/server'
 
