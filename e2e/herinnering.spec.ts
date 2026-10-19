@@ -182,8 +182,27 @@ test('de nachtelijke taak stuurt één herinnering en laat zich afmelden', async
   ).toBeVisible()
   expect(await staatAan(leerling.id)).toBe(false)
 
-  // Dezelfde link nog een keer meldt niemand opnieuw af.
+  // Dezelfde link nog een keer geeft hetzelfde geruststellende bericht. Een
+  // leerling die twee keer klikt — of een mailprogramma dat de link alvast
+  // ophaalt — hoort geen foutmelding te krijgen.
   await page.goto(`/nl/herinnering-uit?sleutel=${leerling.sleutel}`)
+  await expect(
+    page.getByRole('heading', { name: 'Je krijgt geen herinneringen meer' }),
+  ).toBeVisible()
+  expect(await staatAan(leerling.id)).toBe(false)
+})
+
+test('een afmeldlink met een onbekend nummer meldt niemand af', async ({ page }) => {
+  // Verzonnen nummer: hier hoort geen account bij. De pagina zegt dat de link
+  // niet werkt, en verder niets — of er een account bij hoort, gaat een
+  // voorbijganger niet aan.
+  await page.goto('/nl/herinnering-uit?sleutel=00000000-0000-4000-8000-000000000000')
+  await expect(
+    page.getByRole('heading', { name: 'Deze link werkt niet meer' }),
+  ).toBeVisible()
+
+  // En een nummer dat niet eens de goede vorm heeft, geeft geen rauwe fout.
+  await page.goto('/nl/herinnering-uit?sleutel=geen-nummer')
   await expect(
     page.getByRole('heading', { name: 'Deze link werkt niet meer' }),
   ).toBeVisible()
