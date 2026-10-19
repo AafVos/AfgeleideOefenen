@@ -42,6 +42,10 @@ export default async function AdminVideoAanvragenPage() {
       .eq('afgehandeld', false),
   ])
 
+  if (perVraag.error) {
+    console.error('Video-aanvragen per vraag ophalen mislukt', perVraag.error)
+  }
+
   const regels = (perVraag.data ?? []) as Regel[]
 
   return (
@@ -50,7 +54,8 @@ export default async function AdminVideoAanvragenPage() {
 
       {perVraag.error && (
         <p className="mb-4 rounded-lg border border-amber-700/40 bg-amber-50 px-4 py-3 text-sm text-text">
-          Het overzicht kon niet geladen worden: {perVraag.error.message}
+          Het overzicht kon nu niet geladen worden. Ververs de pagina om het
+          opnieuw te proberen.
         </p>
       )}
 
