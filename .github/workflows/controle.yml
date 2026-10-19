@@ -111,10 +111,37 @@ jobs:
   # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:
   # een wegwerp-Supabase in Docker en een neppe AI-controle, zodat deze
   # controle nooit aan de productiedatabase of aan Gemini komt.
-  e2e:
-    name: Weg van een leerling
+  #
+  # De tests zijn over drie machines verdeeld (AFG-491). Achter elkaar op één
+  # machine duurden ze 9 minuten en 56 seconden, met een grens van tien: één
+  # test die een tweede poging nodig had, liet de hele stap omvallen terwijl
+  # er niets stuk was.
+  #
+  # Waarom drie machines en niet drie browsers naast elkaar op één machine:
+  # dat laatste is geprobeerd en het hielp nauwelijks. Een runner heeft vier
+  # kernen, en die zitten al vol met de ontwikkelserver van Next plus één
+  # browser. Vier browsers tegelijk maakte elke losse test drie keer zo
+  # langzaam en leverde onder de twintig procent tijdwinst op. Meer kernen is
+  # hier het enige dat helpt, en die komen van een extra machine.
+  #
+  # Playwright verdeelt met `--shard` per testbestand, niet per test: tests
+  # uit hetzelfde bestand blijven bij elkaar zolang `fullyParallel` uit staat.
+  # Dat is nodig, want ze delen de testleerling uit de seed. Elk deel heeft
+  # bovendien zijn eigen wegwerp-Supabase, dus twee delen kunnen elkaar
+  # sowieso niet in de weg zitten.
+  #
+  # De naam van deze job heeft een nummer en is dus NIET de verplichte check.
+  # Dat is de job `e2e` hieronder, die op deze wacht.
+  e2e-deel:
+    name: Weg van een leerling (deel ${{ matrix.deel }})
     runs-on: ubuntu-latest
-    # Normaal duurt deze job vier à vijf minuten. Hangt er een stap (dat
+    strategy:
+      # Valt deel 2 om, dan wil je deel 1 en 3 nog steeds zien: anders weet je
+      # niet of het aan je wijziging ligt of aan die ene test.
+      fail-fast: false
+      matrix:
+        deel: [1, 2, 3]
+    # Normaal duurt deze job een minuut of zes. Hangt er een stap (dat
     # gebeurde: het installeren van de browser bleef 17 minuten staan), dan
     # stopt GitHub er hier mee in plaats van na zes uur. Ruim genoeg dat ook
     # een tweede poging bij "Browser installeren" nog af kan maken: wordt die
@@ -278,21 +305,51 @@ jobs:
           fi
           exit "$code"
 
-      # Sinds AFG-108 loopt hier ook de weg van een nieuwe leerling doorheen:
-      # registreren, de mail ophalen, bevestigen, wachtwoord vergeten. De
-      # rondleiding over de oefenpagina (AFG-369) komt daar nog bij, op
-      # computer én telefoon. Vandaar tien minuten.
+      # Een derde van de tests. Welke derde bepaalt Playwright zelf; de
+      # verdeling gaat op aantal tests, dus niet elk deel duurt even lang.
+      #
+      # Draai je aan deze grens: kijk eerst hoe lang de stap de laatste keren
+      # echt duurde. Hij hoort ruim boven die tijd te liggen, zodat een tweede
+      # poging er nog bij kan, en ruim eronder te blijven, zodat een suite die
+      # stilletjes verdubbelt opvalt in plaats van stilletjes door te groeien.
       - name: Weg van een leerling nalopen
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
-        timeout-minutes: 10
-        run: npm run test:e2e
+        timeout-minutes: 8
+        run: npm run test:e2e -- --shard=${{ matrix.deel }}/3
 
       - name: Uitslag bewaren
         if: ${{ !cancelled() && steps.nodig.outputs.draaien == 'ja' }}
         uses: actions/upload-artifact@v4
         with:
-          name: uitslag-e2e
+          # Een naam per deel: twee delen kunnen niet hetzelfde pakketje
+          # neerzetten.
+          name: uitslag-e2e-${{ matrix.deel }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  # De verplichte check. Deze naam niet veranderen: de ruleset "main
+  # beschermen" eist een geslaagde check met precies deze naam. De tests zelf
+  # draaien in `e2e-deel` hierboven, en die heet per deel anders — vandaar
+  # deze job, die alleen kijkt of ze alle drie geslaagd zijn.
+  e2e:
+    name: Weg van een leerling
+    needs: e2e-deel
+    # Ook draaien als een deel omvalt: anders blijft deze check op "in
+    # afwachting" staan en kan er niets meer gemergd worden.
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Kijken of alle delen geslaagd zijn
+        env:
+          UITSLAG: ${{ needs.e2e-deel.result }}
+        run: |
+          set -euo pipefail
+          if [ "$UITSLAG" = "success" ] || [ "$UITSLAG" = "skipped" ]; then
+            echo "Alle delen van de weg van een leerling zijn geslaagd."
+            exit 0
+          fi
+          echo "::error::Een deel van de weg van een leerling is niet geslaagd ($UITSLAG). Kijk bij 'Weg van een leerling (deel 1)', '(deel 2)' en '(deel 3)' welk deel het is."
+          exit 1

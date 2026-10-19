@@ -328,6 +328,32 @@ E2E_PORT=3178 npm run test:e2e           # als poort 3177 bezet is
 De tests draaien op computerformaat (1280×800); de belangrijkste weg draait
 daarnaast nog een keer op telefoonformaat (390×844).
 
+### In de controle: drie machines, elk een derde van de tests
+
+Op je eigen computer draait de hele suite achter elkaar. In GitHub Actions
+staat hij sinds AFG-491 over drie machines verdeeld
+(`npm run test:e2e -- --shard=<n>/3`). Achter elkaar op één machine duurde hij
+9 minuten en 56 seconden, met een grens van tien: één test die een tweede
+poging nodig had, liet de hele stap al omvallen terwijl er niets stuk was.
+
+Waarom drie machines en niet drie browsers naast elkaar op één machine: dat
+laatste is geprobeerd en het hielp nauwelijks. Een runner heeft vier kernen,
+en die zitten al vol met de ontwikkelserver van Next plus één browser. Vier
+browsers tegelijk maakte elke losse test drie keer zo langzaam en leverde
+onder de twintig procent tijdwinst op.
+
+Wat dat betekent als je een test schrijft:
+
+* Playwright verdeelt per **testbestand**, niet per test — tests uit hetzelfde
+  bestand blijven bij elkaar zolang `fullyParallel` uit staat. Hoort je test
+  bij een bestaande test (dezelfde voortgang, dezelfde opgave), zet hem dan in
+  hetzelfde bestand;
+* elk deel heeft zijn eigen wegwerp-Supabase, dus twee delen kunnen elkaar
+  niet in de weg zitten;
+* de verplichte check heet `Weg van een leerling` en draait zelf geen tests:
+  hij kijkt alleen of `Weg van een leerling (deel 1/2/3)` alle drie geslaagd
+  zijn. Zoek bij rood dus eerst op welk deel.
+
 ### Regels bij het uitbreiden
 
 * Nieuwe testopgaven horen in het testhoofdstuk in `supabase/seed.sql`, niet
