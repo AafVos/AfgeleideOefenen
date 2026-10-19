@@ -1,66 +1,26 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { test as basis, expect, type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 
-import { AANTAL_TESTLEERLINGEN } from './werkers'
-
-/** Een vast testaccount uit `supabase/seed.sql`. */
-export type Leerling = { id: string; email: string; wachtwoord: string }
-
-function reeks(uuidBegin: string, adresBegin: string): Leerling[] {
-  return Array.from({ length: AANTAL_TESTLEERLINGEN }, (_, i) => ({
-    id: `e2e00000-0000-4000-8000-${uuidBegin}${i + 1}`,
-    email: `${adresBegin}${i + 1}@test.local`,
-    // Lokaal account, dus dit wachtwoord is geen geheim.
-    wachtwoord: 'oefenen123',
-  }))
+/**
+ * De vaste testleerling uit `supabase/seed.sql`. Dit account bestaat alleen
+ * op een lokale Supabase, dus het wachtwoord is hier geen geheim.
+ */
+export const TESTLEERLING = {
+  id: 'e2e00000-0000-4000-8000-000000000001',
+  email: 'leerling@test.local',
+  wachtwoord: 'oefenen123',
 }
 
 /**
- * De oefenleerlingen uit `supabase/seed.sql`. Ze hebben de rondleiding al
- * gezien, zodat die geen knoppen afdekt.
- */
-export const TESTLEERLINGEN = reeks('00000001000', 'leerling')
-
-/**
- * De kersverse leerlingen uit `supabase/seed.sql`: net aangemeld, hebben de
- * rondleiding nog nooit gezien. Aparte accounts, zodat de rondleiding niet
+ * De tweede testleerling uit `supabase/seed.sql`: net aangemeld, heeft de
+ * rondleiding nog nooit gezien. Apart account, zodat de rondleiding niet
  * over de knoppen van de andere tests heen valt.
  */
-export const NIEUWE_LEERLINGEN = reeks('00000003000', 'nieuw')
-
-type PerWerker = {
-  /** De oefenleerling van deze werker. */
-  leerling: Leerling
-  /** De kersverse leerling van deze werker. */
-  nieuweLeerling: Leerling
+export const NIEUWE_LEERLING = {
+  id: 'e2e00000-0000-4000-8000-000000000003',
+  email: 'nieuw@test.local',
+  wachtwoord: 'oefenen123',
 }
-
-/**
- * `test` met twee extra gegevens erbij: de accounts van déze werker.
- *
- * Gebruik deze in plaats van de `test` van Playwright zelf, zodat twee
- * werkers nooit in dezelfde voortgang zitten te schrijven:
- *
- *     test('...', async ({ page, leerling }) => { await logIn(page, leerling) })
- *
- * `parallelIndex` is het nummer van de werkplek (0, 1, 2, …), niet van de
- * werker: valt een werker om, dan neemt de nieuwe dezelfde plek — en dus
- * dezelfde leerling — over.
- */
-export const test = basis.extend<object, PerWerker>({
-  leerling: [
-    async ({}, gebruik, werker) => {
-      await gebruik(TESTLEERLINGEN[werker.parallelIndex % AANTAL_TESTLEERLINGEN])
-    },
-    { scope: 'worker' },
-  ],
-  nieuweLeerling: [
-    async ({}, gebruik, werker) => {
-      await gebruik(NIEUWE_LEERLINGEN[werker.parallelIndex % AANTAL_TESTLEERLINGEN])
-    },
-    { scope: 'worker' },
-  ],
-})
 
 /**
  * Het begin van elk adres dat een test zelf aanmaakt. `e2e/schone-start.ts`
@@ -127,16 +87,10 @@ async function klikTot(knop: Locator, verwacht: Locator) {
   }).toPass({ timeout: 60_000, intervals: [500, 1_000, 2_000] })
 }
 
-/**
- * Inloggen zoals een leerling dat doet: formulier invullen en versturen.
- *
- * Welke leerling komt uit de fixture `leerling` of `nieuweLeerling`, zodat
- * twee werkers nooit hetzelfde account pakken. Een vaste keuze staat hier
- * met opzet niet.
- */
+/** Inloggen zoals een leerling dat doet: formulier invullen en versturen. */
 export async function logIn(
   page: Page,
-  leerling: { email: string; wachtwoord: string },
+  leerling: { email: string; wachtwoord: string } = TESTLEERLING,
 ) {
   await page.goto('/nl/inloggen')
   await page.locator('input[name="email"]').fill(leerling.email)

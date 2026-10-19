@@ -262,10 +262,8 @@ Ze draaien **nooit** tegen de echte site of de echte database. Alles is
 lokaal:
 
 * een **lokale Supabase** met de migraties en `supabase/seed.sql`;
-* **vaste testleerlingen** uit die seed, één per werker:
-  `leerling1@test.local` t/m `leerling4@test.local`, en daarnaast
-  `nieuw1@test.local` t/m `nieuw4@test.local` voor wie de rondleiding nog
-  nooit gezien heeft. Wachtwoord `oefenen123` (lokaal, dus geen geheim);
+* een **vaste testleerling** uit die seed: `leerling@test.local` /
+  `oefenen123` (lokaal, dus geen geheim);
 * **vaste testopgaven** in een eigen testhoofdstuk uit die seed, zodat de
   tests niet omvallen als de echte oefenstof verandert;
 * **wegwerpaccounts** die de tests zelf aanmaken (`nieuw-<tijd>@test.local`);
@@ -325,33 +323,36 @@ npm run test:e2e -- --project=computer   # alleen computerformaat
 npm run test:e2e -- --headed             # meekijken in de browser
 npm run test:e2e -- --ui                 # klikken door de testuitslag
 E2E_PORT=3178 npm run test:e2e           # als poort 3177 bezet is
-E2E_WORKERS=1 npm run test:e2e           # één browser tegelijk, rustiger kijken
 ```
 
 De tests draaien op computerformaat (1280×800); de belangrijkste weg draait
 daarnaast nog een keer op telefoonformaat (390×844).
 
-### Vier browsers tegelijk, vier testleerlingen
+### In de controle: drie machines, elk een derde van de tests
 
-De tests draaien met vier werkers naast elkaar. Elke werker krijgt zijn eigen
-paar accounts uit de seed via de fixtures `leerling` en `nieuweLeerling`
-(`e2e/leerling.ts`), zodat twee tests nooit in dezelfde voortgang zitten te
-schrijven. Binnen één bestand blijven de tests wél op volgorde
-(`fullyParallel: false`): in `leerling-pad.spec.ts` bouwt de ene test de reeks
-op waar de volgende op rekent.
+Op je eigen computer draait de hele suite achter elkaar. In GitHub Actions
+staat hij sinds AFG-491 over drie machines verdeeld
+(`npm run test:e2e -- --shard=<n>/3`). Achter elkaar op één machine duurde hij
+9 minuten en 56 seconden, met een grens van tien: één test die een tweede
+poging nodig had, liet de hele stap al omvallen terwijl er niets stuk was.
+
+Waarom drie machines en niet drie browsers naast elkaar op één machine: dat
+laatste is geprobeerd en het hielp nauwelijks. Een runner heeft vier kernen,
+en die zitten al vol met de ontwikkelserver van Next plus één browser. Vier
+browsers tegelijk maakte elke losse test drie keer zo langzaam en leverde
+onder de twintig procent tijdwinst op.
 
 Wat dat betekent als je een test schrijft:
 
-* pak de leerling uit de fixture, nooit een vast adres:
-  `test('…', async ({ page, leerling }) => { await logIn(page, leerling) })`;
-* gebruik `leerling.id` in een database-controle, zodat je de rijen van je
-  eigen werker leest;
-* hoort je test bij een andere al bestaande test (dezelfde voortgang, dezelfde
-  opgave), zet hem dan in hetzelfde bestand. Twee bestanden kunnen tegelijk
-  draaien.
-
-Het aantal staat in `e2e/werkers.ts` en in de lus bovenaan
-`supabase/seed.sql`. Die twee horen gelijk te zijn.
+* Playwright verdeelt per **testbestand**, niet per test — tests uit hetzelfde
+  bestand blijven bij elkaar zolang `fullyParallel` uit staat. Hoort je test
+  bij een bestaande test (dezelfde voortgang, dezelfde opgave), zet hem dan in
+  hetzelfde bestand;
+* elk deel heeft zijn eigen wegwerp-Supabase, dus twee delen kunnen elkaar
+  niet in de weg zitten;
+* de verplichte check heet `Weg van een leerling` en draait zelf geen tests:
+  hij kijkt alleen of `Weg van een leerling (deel 1/2/3)` alle drie geslaagd
+  zijn. Zoek bij rood dus eerst op welk deel.
 
 ### Regels bij het uitbreiden
 

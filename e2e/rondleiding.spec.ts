@@ -1,6 +1,6 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
-import { WEGWERP_WACHTWOORD, logIn, test, testDatabase, uniekAdres } from './leerling'
+import { NIEUWE_LEERLING, WEGWERP_WACHTWOORD, logIn, testDatabase, uniekAdres } from './leerling'
 
 /**
  * Wat een kersverse leerling bij binnenkomst krijgt.
@@ -13,16 +13,16 @@ import { WEGWERP_WACHTWOORD, logIn, test, testDatabase, uniekAdres } from './lee
 const WELKOM = 'Hoi! Ik ben Aaf.'
 
 test.describe('wie al een naam heeft', () => {
-test.beforeEach(async ({ page, nieuweLeerling }) => {
+test.beforeEach(async ({ page }) => {
   // Deze leerling heeft de rondleiding nog nooit gezien. De tests hieronder
   // klikken hem uit, en dat wordt opgeslagen — dus elke test zet hem terug.
   const { error } = await testDatabase()
     .from('profiles')
     .update({ tour_seen_at: null })
-    .eq('id', nieuweLeerling.id)
+    .eq('id', NIEUWE_LEERLING.id)
   expect(error).toBeNull()
 
-  await logIn(page, nieuweLeerling)
+  await logIn(page, NIEUWE_LEERLING)
 })
 
 test('op de telefoon start de rondleiding en blijft de ballon in beeld @telefoon', async ({

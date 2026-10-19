@@ -1,13 +1,13 @@
-import { expect, type Locator } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 
-import { logIn, test } from './leerling'
+import { logIn } from './leerling'
 
 /**
  * De oefenpagina toont de blokken onder elkaar. Een adres met ?blok=
  * scrolt daarheen, en een leeg blok staat alleen in de zijbalk.
  */
-test.beforeEach(async ({ page, leerling }) => {
-  await logIn(page, leerling)
+test.beforeEach(async ({ page }) => {
+  await logIn(page)
 })
 
 test('de blokken staan onder elkaar, ook met een hoofdstuk in het adres @telefoon', async ({
