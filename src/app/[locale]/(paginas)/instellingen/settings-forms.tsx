@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -119,9 +119,19 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
 export function PasswordForm() {
   const [state, formAction] = useActionState(updatePasswordAction, initialState)
   const t = useTranslations('Settings')
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // Na een geslaagde wijziging blijven ongecontroleerde velden anders gevuld
+  // staan, wat tot een verwarrende "moet anders zijn" foutmelding leidt bij
+  // een tweede klik op opslaan.
+  useEffect(() => {
+    if (state.success) {
+      formRef.current?.reset()
+    }
+  }, [state.success])
 
   return (
-    <form action={formAction} className="space-y-3">
+    <form ref={formRef} action={formAction} className="space-y-3">
       <label className="block">
         <span className="mb-1 block text-sm font-medium text-text">
           {t('newPasswordLabel')}
