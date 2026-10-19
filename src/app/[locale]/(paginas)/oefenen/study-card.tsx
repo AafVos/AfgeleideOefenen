@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Button, ErrorBanner, NakijkMelding } from '@/components/ui'
 import {
@@ -17,7 +18,7 @@ import {
 } from '@/lib/practice/chapter-actions'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
 import { MASTERY_THRESHOLD } from '@/lib/practice/engine'
-import { nogEenGoedZin } from '@/lib/practice/nog-een-goed'
+import { netBeheerst, nogEenGoedZin } from '@/lib/practice/nog-een-goed'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import { useTimeSpent } from '@/lib/practice/use-time-spent'
 import type { UitlegVideo } from '@/lib/videos'
@@ -416,41 +417,57 @@ export function StudyCard({
         </div>
       )}
 
-      {state.phase === 'correct' && (
-        <div className="rounded-xl border border-accent/30 bg-accent-light p-4">
-          <p className="font-serif text-xl text-accent">
-            {state.mastered ? t('correctMastered') : t('correct')}
-          </p>
-          <p className="mt-1 text-sm text-accent/80">
-            {state.mastered
-              ? t('masteredBody')
-              : (nogEenGoedZin(state.streak, state.clusterName || clusterName || '') ??
-                t('streakBody', {
-                  streak: state.streak,
-                  remaining: MASTERY_THRESHOLD - state.streak,
-                }))}
-          </p>
-          <div className="mt-4 flex items-center gap-2">
-            <Button
-              onClick={next}
-              disabled={pending}
-              data-meet="oefenen-volgende"
-              className="min-h-11 px-5"
+      {state.phase === 'correct' && (() => {
+        const justMastered = netBeheerst(state.streak, state.mastered)
+        return (
+          <div
+            className={`rounded-xl border border-accent/30 bg-accent-light p-4 ${
+              justMastered ? 'animate-mastered-flash' : ''
+            }`}
+          >
+            <p
+              className={`font-serif text-accent ${
+                justMastered ? 'text-2xl font-semibold' : 'text-xl'
+              }`}
             >
-              {pending ? t('navigating') : t('nextQuestion')}
-            </Button>
-            <button
-              type="button"
-              onClick={retry}
-              disabled={pending}
-              data-meet="oefenen-opnieuw"
-              className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
-            >
-              {t('retryButton')}
-            </button>
+              {state.mastered ? t('correctMastered') : t('correct')}
+            </p>
+            <p className="mt-1 text-sm text-accent/80">
+              {state.mastered
+                ? t('masteredBody')
+                : (nogEenGoedZin(state.streak, state.clusterName || clusterName || '') ??
+                  t('streakBody', {
+                    streak: state.streak,
+                    remaining: MASTERY_THRESHOLD - state.streak,
+                  }))}
+            </p>
+            <div className="mt-4 flex items-center gap-2">
+              <Button
+                onClick={next}
+                disabled={pending}
+                data-meet="oefenen-volgende"
+                className="min-h-11 px-5"
+              >
+                {pending ? t('navigating') : t('nextQuestion')}
+              </Button>
+              <button
+                type="button"
+                onClick={retry}
+                disabled={pending}
+                data-meet="oefenen-opnieuw"
+                className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
+              >
+                {t('retryButton')}
+              </button>
+            </div>
+            {justMastered && (
+              <div className="mt-3">
+                <DeelKnop compact />
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {state.phase === 'wrong' && (
         <div ref={feedbackRef}>
