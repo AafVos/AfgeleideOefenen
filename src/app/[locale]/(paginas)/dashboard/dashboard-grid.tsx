@@ -25,6 +25,17 @@ export type StartData = {
   topicTitle: string
 }
 
+/**
+ * De eerstvolgende soort som die nog niet beheerst is, voor een leerling die
+ * al eerder geoefend heeft (zie AFG-484).
+ */
+export type VerderData = {
+  href: string
+  clusterTitle: string
+  chapterTitle: string
+  topicTitle: string
+}
+
 export function DashboardGrid({
   chapterData,
   streakDays = 0,
@@ -32,6 +43,7 @@ export function DashboardGrid({
   totalAnswered = 0,
   totalCorrect = 0,
   start = null,
+  verder = null,
   blokIndeling = null,
 }: {
   chapterData: ChapterData[]
@@ -40,6 +52,7 @@ export function DashboardGrid({
   totalAnswered?: number
   totalCorrect?: number
   start?: StartData | null
+  verder?: VerderData | null
   /** Boekindeling. Ontbreekt hij, dan blijft de lijst per onderwerp. */
   blokIndeling?: DashboardIndeling | null
 }) {
@@ -62,6 +75,13 @@ export function DashboardGrid({
 
   return (
     <>
+      {!start && verder && <VerderCard verder={verder} />}
+      {!start && !verder && total > 0 && mastered === total && (
+        <div className="mb-5 rounded-xl border border-accent/30 bg-accent-light px-4 py-3">
+          <p className="text-sm text-text">{t('verderKlaar')}</p>
+        </div>
+      )}
+
       {start ? (
         <StartCard start={start} />
       ) : (
@@ -153,6 +173,37 @@ function StartCard({ start }: { start: StartData }) {
         {t('startWhere', {
           chapter: start.chapterTitle,
           topic: start.topicTitle,
+        })}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * De kaart bovenaan voor een leerling die al eerder geoefend heeft: één knop
+ * naar de eerstvolgende soort som die hij nog niet beheerst. Zonder deze kaart
+ * moest hij bij elke terugkomst zelf de hele boom van /oefenen doorzoeken om
+ * te zien waar hij gebleven was (zie AFG-484).
+ */
+function VerderCard({ verder }: { verder: VerderData }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="mb-5 rounded-xl border border-accent/30 bg-accent-light p-5">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-text-muted">
+        {t('verderLabel')}
+      </p>
+      <p className="mt-1 font-serif text-xl text-text sm:text-2xl">{verder.clusterTitle}</p>
+      <KlikLink
+        href={verder.href}
+        bezigTekst="Opgave openen"
+        className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-lg bg-accent px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-accent/90"
+      >
+        {t('verderButton')}
+      </KlikLink>
+      <p className="mt-3 text-xs text-text-muted">
+        {t('verderWhere', {
+          chapter: verder.chapterTitle,
+          topic: verder.topicTitle,
         })}
       </p>
     </div>

@@ -1,6 +1,10 @@
 import { getTranslations } from 'next-intl/server'
 
-import { bouwDashboardIndeling, bouwOnderwerpVoortgang } from '@/lib/dashboard/indeling'
+import {
+  bouwDashboardIndeling,
+  bouwOnderwerpVoortgang,
+  clusterVolgorde,
+} from '@/lib/dashboard/indeling'
 import { blokkenVanParagrafen } from '@/lib/practice/chapter-overview'
 import { oefenIndeling } from '@/lib/practice/oefenen-indeling'
 import { canoniek, nietIndexeren } from '@/lib/seo'
@@ -10,7 +14,13 @@ import { createClient } from '@/lib/supabase/server'
 
 import { berekenReeks, dagSleutel, laatsteDagen, telOefendagen } from './activiteit'
 import { DashboardGrid } from './dashboard-grid'
-import { eersteOnderdeel, eersteOpgaveId, opgaveLink } from './start'
+import {
+  eersteOnderdeel,
+  eersteOpgaveId,
+  opgaveLink,
+  volgendeOnderdeel,
+  volgendeOpgaveId,
+} from './start'
 import type { ChapterData } from './topic-block'
 
 export async function generateMetadata({
@@ -166,6 +176,25 @@ export default async function DashboardPage() {
         }
       : null
 
+  // Wie al begonnen is, krijgt één knop naar de eerstvolgende soort som die
+  // hij nog niet beheerst (zie AFG-484). Zonder die knop moest hij bij elke
+  // terugkomst zelf de hele boom van /oefenen doorzoeken.
+  const verderOnderdeel = nogNietsGedaan
+    ? null
+    : volgendeOnderdeel(chapterData, blokIndeling ? clusterVolgorde(blokIndeling) : [])
+  const verderVraagId = verderOnderdeel
+    ? await volgendeOpgaveId(supabase, user.id, verderOnderdeel.clusterId)
+    : null
+  const verder =
+    verderOnderdeel && verderVraagId
+      ? {
+          href: opgaveLink(verderOnderdeel, verderVraagId),
+          clusterTitle: verderOnderdeel.clusterTitle,
+          chapterTitle: verderOnderdeel.chapterTitle,
+          topicTitle: verderOnderdeel.topicTitle,
+        }
+      : null
+
   return (
     <div className="mx-auto max-w-[1400px] px-3 py-6">
       <div className="mb-2">
@@ -183,6 +212,7 @@ export default async function DashboardPage() {
         totalAnswered={totalAnswered}
         totalCorrect={totalCorrect}
         start={start}
+        verder={verder}
         blokIndeling={blokIndeling}
       />
     </div>
