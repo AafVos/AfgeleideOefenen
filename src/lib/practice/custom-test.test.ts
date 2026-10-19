@@ -177,22 +177,37 @@ beforeEach(() => {
 // De uitslag: hoeveel heeft de leerling er goed, en per cluster?
 // ---------------------------------------------------------------------
 
+const AFGEROND = '2026-10-17T10:00:00Z'
+
+/** Een toets die de leerling helemaal gemaakt heeft en die is afgesloten. */
+function afgerondeSessie(id: string, extra: Rij = {}) {
+  sessie(id, { ended_at: AFGEROND, ...extra })
+}
+
+/** De uitslag van een afgeronde toets. Faalt als er geen uitslag is. */
+async function uitslagVan(sessionId: string) {
+  const antwoord = await loadTestResults(maakClient(), leerling, sessionId)
+  if (antwoord.status !== 'ready') {
+    throw new Error(`Verwachtte een uitslag, maar kreeg "${antwoord.status}".`)
+  }
+  return antwoord.results
+}
+
 describe('loadTestResults', () => {
   it('telt per cluster hoeveel vragen er goed zijn', async () => {
     boekje()
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q1', 'q2', 'q3', 'q4'])
     antwoord('s1', 'q1', true, '6(2x+1)^2')
     antwoord('s1', 'q2', false, '3(2x+1)^2')
     antwoord('s1', 'q3', true, '(x+1)e^x')
     antwoord('s1', 'q4', false, '2x\\cos x')
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
-    expect(uitslag).not.toBeNull()
-    expect(uitslag!.totalCount).toBe(4)
-    expect(uitslag!.correctCount).toBe(2)
-    expect(uitslag!.perCluster.map((c) => [c.clusterId, c.total, c.correct])).toEqual([
+    expect(uitslag.totalCount).toBe(4)
+    expect(uitslag.correctCount).toBe(2)
+    expect(uitslag.perCluster.map((c) => [c.clusterId, c.total, c.correct])).toEqual([
       ['c1', 2, 1],
       ['c2', 2, 1],
     ])
@@ -200,16 +215,16 @@ describe('loadTestResults', () => {
 
   it('rekent een niet beantwoorde vraag fout en laat het antwoord leeg', async () => {
     boekje()
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q1', 'q2'])
     antwoord('s1', 'q1', true, '6(2x+1)^2')
     // q2 is nooit ingeleverd: de leerling stopte halverwege.
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
-    expect(uitslag!.totalCount).toBe(2)
-    expect(uitslag!.correctCount).toBe(1)
-    const q2 = uitslag!.perCluster[0]!.items[1]!
+    expect(uitslag.totalCount).toBe(2)
+    expect(uitslag.correctCount).toBe(1)
+    const q2 = uitslag.perCluster[0]!.items[1]!
     expect(q2.questionId).toBe('q2')
     expect(q2.isCorrect).toBe(false)
     expect(q2.userAnswer).toBeNull()
@@ -217,29 +232,29 @@ describe('loadTestResults', () => {
 
   it('rekent een opgevraagde uitwerking (is_correct leeg) fout', async () => {
     boekje()
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q1'])
     antwoord('s1', 'q1', null)
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
-    expect(uitslag!.totalCount).toBe(1)
-    expect(uitslag!.correctCount).toBe(0)
-    expect(uitslag!.perCluster[0]!.items[0]!.isCorrect).toBe(false)
+    expect(uitslag.totalCount).toBe(1)
+    expect(uitslag.correctCount).toBe(0)
+    expect(uitslag.perCluster[0]!.items[0]!.isCorrect).toBe(false)
   })
 
   it('houdt een cluster waar niets van beantwoord is gewoon in de uitslag', async () => {
     boekje()
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q1', 'q3', 'q4'])
     antwoord('s1', 'q1', true, '6(2x+1)^2')
     // Van c2 (q3 en q4) is niets beantwoord.
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
-    expect(uitslag!.totalCount).toBe(3)
-    expect(uitslag!.correctCount).toBe(1)
-    const c2 = uitslag!.perCluster.find((c) => c.clusterId === 'c2')!
+    expect(uitslag.totalCount).toBe(3)
+    expect(uitslag.correctCount).toBe(1)
+    const c2 = uitslag.perCluster.find((c) => c.clusterId === 'c2')!
     expect(c2.total).toBe(2)
     expect(c2.correct).toBe(0)
     expect(c2.items.every((i) => !i.isCorrect)).toBe(true)
@@ -247,14 +262,14 @@ describe('loadTestResults', () => {
 
   it('zet de opgaven in de volgorde van de toets en vult de namen in', async () => {
     boekje()
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q3', 'q1', 'q4'])
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
     // Volgorde van de clusters: die van de eerste vraag erover.
-    expect(uitslag!.perCluster.map((c) => c.clusterId)).toEqual(['c2', 'c1'])
-    const c2 = uitslag!.perCluster[0]!
+    expect(uitslag.perCluster.map((c) => c.clusterId)).toEqual(['c2', 'c1'])
+    const c2 = uitslag.perCluster[0]!
     expect(c2.items.map((i) => i.questionId)).toEqual(['q3', 'q4'])
     expect(c2.clusterTitle).toBe('Productregel')
     expect(c2.topicTitle).toBe('Regels')
@@ -262,48 +277,93 @@ describe('loadTestResults', () => {
     expect(c2.clusterSlug).toBe('productregel')
     // c2 heeft zelf geen theorieblok: dat van het onderwerp wordt gebruikt.
     expect(c2.blockSlug).toBe('blok-b')
-    expect(uitslag!.perCluster[1]!.blockSlug).toBe('blok-a')
+    expect(uitslag.perCluster[1]!.blockSlug).toBe('blok-a')
     expect(c2.items[0]!.correctAnswer).toBe('(x+1)e^x')
     expect(c2.items[1]!.latexAnswer).toBeNull()
   })
 
   it('slaat een vraag over die niet meer bestaat', async () => {
     boekje()
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q1', 'weg'])
     antwoord('s1', 'q1', true, '6(2x+1)^2')
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
-    expect(uitslag!.totalCount).toBe(1)
-    expect(uitslag!.correctCount).toBe(1)
-    expect(uitslag!.perCluster[0]!.items).toHaveLength(1)
+    expect(uitslag.totalCount).toBe(1)
+    expect(uitslag.correctCount).toBe(1)
+    expect(uitslag.perCluster[0]!.items).toHaveLength(1)
   })
 
   it('geeft een lege uitslag als de toets geen vragen heeft', async () => {
     boekje()
     sessie('s1')
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
     expect(uitslag).toEqual({ totalCount: 0, correctCount: 0, perCluster: [] })
   })
 
+  // De resultaat-URL is te raden: /zelf-toets/resultaat/<id> naast
+  // /zelf-toets/loop/<id>. Typt een leerling hem halverwege in, dan mag hij
+  // de juiste antwoorden van zijn volgende vragen niet te zien krijgen.
+  it('geeft geen uitslag zolang de leerling nog bezig is', async () => {
+    boekje()
+    sessie('s1', { show_answers: 'end' })
+    toetsvragen('s1', ['q1', 'q2', 'q3'])
+    antwoord('s1', 'q1', true, '6(2x+1)^2')
+
+    const antwoordVanDeServer = await loadTestResults(maakClient(), leerling, 's1')
+
+    expect(antwoordVanDeServer).toEqual({
+      status: 'running',
+      answeredCount: 1,
+      totalCount: 3,
+    })
+  })
+
+  it('geeft geen uitslag van een toets waar nog niets van gemaakt is', async () => {
+    boekje()
+    sessie('s1')
+    toetsvragen('s1', ['q1'])
+
+    const antwoordVanDeServer = await loadTestResults(maakClient(), leerling, 's1')
+
+    expect(antwoordVanDeServer.status).toBe('running')
+  })
+
+  it('geeft de uitslag wel als alles beantwoord is maar het afsluiten misging', async () => {
+    boekje()
+    sessie('s1')
+    toetsvragen('s1', ['q1', 'q2'])
+    antwoord('s1', 'q1', true, '6(2x+1)^2')
+    antwoord('s1', 'q2', false, '3(2x+1)^2')
+
+    const uitslag = await uitslagVan('s1')
+
+    expect(uitslag.totalCount).toBe(2)
+    expect(uitslag.correctCount).toBe(1)
+  })
+
   it('geeft niets terug voor een toets van iemand anders', async () => {
     boekje()
-    sessie('s1', { user_id: andereLeerling })
+    afgerondeSessie('s1', { user_id: andereLeerling })
     toetsvragen('s1', ['q1'])
     antwoord('s1', 'q1', true, '6(2x+1)^2')
 
-    expect(await loadTestResults(maakClient(), leerling, 's1')).toBeNull()
+    expect(await loadTestResults(maakClient(), leerling, 's1')).toEqual({
+      status: 'not-found',
+    })
   })
 
   it('geeft niets terug voor een gewone oefensessie of een onbekende sessie', async () => {
     boekje()
     sessie('s1', { session_type: 'practice' })
 
-    expect(await loadTestResults(maakClient(), leerling, 's1')).toBeNull()
-    expect(await loadTestResults(maakClient(), leerling, 'bestaat-niet')).toBeNull()
+    expect((await loadTestResults(maakClient(), leerling, 's1')).status).toBe('not-found')
+    expect((await loadTestResults(maakClient(), leerling, 'bestaat-niet')).status).toBe(
+      'not-found',
+    )
   })
 
   it('vult streepjes in als het cluster niet meer bestaat', async () => {
@@ -315,12 +375,12 @@ describe('loadTestResults', () => {
       answer: '2x',
       latex_answer: null,
     })
-    sessie('s1')
+    afgerondeSessie('s1')
     toetsvragen('s1', ['q9'])
 
-    const uitslag = await loadTestResults(maakClient(), leerling, 's1')
+    const uitslag = await uitslagVan('s1')
 
-    const groep = uitslag!.perCluster[0]!
+    const groep = uitslag.perCluster[0]!
     expect(groep.clusterTitle).toBe('—')
     expect(groep.topicTitle).toBe('—')
     expect(groep.chapterSlug).toBe('')
