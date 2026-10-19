@@ -27,7 +27,7 @@ function html(videosUrl: string): string {
         <tr>
           <td align="center" style="padding: 0 0 20px;">
             <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #1a1a18;">
-              ${SITE_CONFIG.brand}<span style="color: #2d6a4f;">.nl</span>
+              ${SITE_CONFIG.brandVoor}<span style="color: #2d6a4f;">${SITE_CONFIG.brandAccent}</span>
             </span>
           </td>
         </tr>
@@ -274,9 +274,9 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
       const videosUrl = `${SITE_URL}/nl/uitleg-videos`
       const { error: mailError } = await resend.emails.send({
         // Merknaam als afzender, geen persoonsnaam: dit is een no-reply-bericht.
-        from: `${SITE_CONFIG.brand} <${EMAIL_FROM}>`,
+        from: `${SITE_CONFIG.brandNaam} <${EMAIL_FROM}>`,
         to: user.email,
-        subject: `Welkom bij ${SITE_CONFIG.brand}!`,
+        subject: `Welkom bij ${SITE_CONFIG.brandNaam}!`,
         html: html(videosUrl),
         text: tekst(videosUrl),
       })

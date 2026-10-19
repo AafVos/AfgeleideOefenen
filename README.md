@@ -341,6 +341,55 @@ preview de productie-stand. Zet de site niet zelf live met `wrangler` of
 
 ---
 
+## Twee sites uit deze repo
+
+Sinds AFG-489 staan er twee sites in deze repo. Dezelfde code, dezelfde
+database en dezelfde accounts; alleen de naam, de startpagina en een paar
+teksten verschillen.
+
+| | `afgeleide` | `wiskundemetaaf` |
+| --- | --- | --- |
+| Adres | www.afgeleideoefenen.nl | www.wiskundemetaaf.nl |
+| Naam in de kop | AfgeleideOefenen**.nl** | Wiskunde met **Aaf** |
+| Startpagina | differentiëren per onderwerp | het centraal examen |
+| Worker | `afgeleide-oefenen` | `wiskundemetaaf` |
+| Wrangler-config | `wrangler.jsonc` | `wrangler.wiskundemetaaf.jsonc` |
+
+Welke van de twee er gebouwd wordt, zegt `NEXT_PUBLIC_SITE_VARIANT` bij de
+bouw. Staat die variabele er niet, dan is het `afgeleide` — een bestaande bouw
+blijft dus precies doen wat hij deed. De instellingen per site staan in
+[`src/config/site.ts`](src/config/site.ts).
+
+Lokaal naar de andere site kijken:
+
+```bash
+npm run dev:wiskundemetaaf           # gewone ontwikkelserver
+npm run cf:preview:wiskundemetaaf    # dezelfde code in de Workers-omgeving
+```
+
+De tweede worker wordt uit dezelfde repo gebouwd, met een eigen
+wrangler-config en één extra bouwvariabele. In Workers Builds staat bij de
+worker `wiskundemetaaf`:
+
+* **Build command:** `npx opennextjs-cloudflare build -c wrangler.wiskundemetaaf.jsonc`
+* **Deploy command:** `npx wrangler deploy -c wrangler.wiskundemetaaf.jsonc`
+* **Build variables:** dezelfde `NEXT_PUBLIC_*` als bij `afgeleide-oefenen`,
+  maar met `NEXT_PUBLIC_SITE_URL=https://www.wiskundemetaaf.nl` en
+  `NEXT_PUBLIC_SITE_VARIANT=wiskundemetaaf`.
+* **Secrets:** dezelfde lijst als bij `afgeleide-oefenen`, zie
+  [`docs/omgeving.md`](docs/omgeving.md).
+
+In `supabase/config.toml` staan de adressen van wiskundemetaaf.nl al bij
+`additional_redirect_urls`. Die komen pas op het echte project zodra iemand
+met de hand `supabase config push` draait — zie "De instellingen van de echte
+site" hierboven.
+
+De klikmeting houdt de twee uit elkaar met de kolom `site` in
+`site_gebeurtenissen` (migratie 0081). De server zet die waarde, niet de
+browser.
+
+---
+
 ## Wat al staat
 
 De site is live. Sectie 11 in `idea.md` (vier fasen met lege vinkjes) is het

@@ -97,6 +97,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    {
+      url: `${SITE_URL}/${TAAL}/video-aanvragen`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
     ...getUitlegVideos().map((video) => ({
       url: `${SITE_URL}/${TAAL}${uitlegVideoPad(video.slug)}`,
       changeFrequency: 'monthly' as const,

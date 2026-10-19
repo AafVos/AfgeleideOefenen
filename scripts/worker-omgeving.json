@@ -21,6 +21,13 @@
     "verplicht": true
   },
   {
+    "naam": "NEXT_PUBLIC_SITE_VARIANT",
+    "doel": "Welke van de twee sites deze bouw is: afgeleide of wiskundemetaaf. Leeg of onbekend betekent afgeleide.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": false
+  },
+  {
     "naam": "NEXT_PUBLIC_GOOGLE_LOGIN",
     "doel": "Zet op 1 om de knop Doorgaan met Google te tonen. Alleen als die aanmelding in Supabase al aan staat.",
     "wanneer": "bouw",
