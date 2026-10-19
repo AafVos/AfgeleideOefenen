@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   kiesDrieProefopgaven,
   leesProefSelectie,
+  oefenenVanProberen,
   proberenVanOefenen,
   uitspraakProef,
 } from './proberen'
@@ -44,6 +45,20 @@ describe('proberenVanOefenen', () => {
         '/oefenen?chapter=h6&topic=h6_machten&cluster=wortelvorm&van=voorbeeld',
       ),
     ).toBe('/proberen?chapter=h6&topic=h6_machten&cluster=wortelvorm')
+  })
+})
+
+describe('oefenenVanProberen', () => {
+  it('bouwt de oefenlink met hoofdstuk, onderwerp en soort', () => {
+    expect(
+      oefenenVanProberen({ chapter: 'h2', topic: 'h2_termsgewijs', cluster: 'rij' }),
+    ).toBe('/oefenen?chapter=h2&topic=h2_termsgewijs&cluster=rij')
+  })
+
+  it('laat een ontbrekend onderwerp of soort weg', () => {
+    expect(oefenenVanProberen({ chapter: 'h2', topic: null, cluster: null })).toBe(
+      '/oefenen?chapter=h2',
+    )
   })
 })
 
