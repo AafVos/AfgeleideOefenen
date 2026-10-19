@@ -37,7 +37,7 @@ export type CurrentProfile = {
   username: string | null
   role: string | null
   tour_seen_at: string | null
-  /** Staat de herinneringsmail aan? (migratie 0080, zie AFG-487) */
+  /** Staat de herinneringsmail aan? (migratie 0082, zie AFG-487) */
   herinnering_mail: boolean | null
 }
 

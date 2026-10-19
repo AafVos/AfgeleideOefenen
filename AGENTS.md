@@ -264,7 +264,7 @@ met het geheim `WEBHOOK_SECRET` in de kop. Er komt dus geen nieuw geheim bij.
   niets om naartoe te wijzen en gaat er niets uit.
 * **De tellers zijn van de server.** `herinnering_laatst_op`,
   `herinnering_aantal` en `herinnering_sleutel` kan een leerling niet zelf
-  zetten; een trigger in migratie 0080 zet ze terug. Anders kon hij zichzelf
+  zetten; een trigger in migratie 0082 zet ze terug. Anders kon hij zichzelf
   eindeloos mail laten sturen.
 * **Afmelden kan zonder in te loggen**, via `/nl/herinnering-uit` met het
   willekeurige nummer uit `herinnering_sleutel` — nooit het gebruikersnummer.

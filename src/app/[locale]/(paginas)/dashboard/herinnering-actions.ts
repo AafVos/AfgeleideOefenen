@@ -7,7 +7,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
  *
  * Opt-in: hij staat standaard uit en alleen de leerling zelf zet hem aan.
  * De tellers (`herinnering_aantal`, `herinnering_laatst_op`) zijn van de
- * server — een trigger in migratie 0080 houdt de leerling daarvan af, anders
+ * server — een trigger in migratie 0082 houdt de leerling daarvan af, anders
  * kon hij zichzelf eindeloos mail laten sturen. Daarom zetten we ze hier met
  * de service-rol, en alleen nadat vaststaat wie er is ingelogd.
  */
