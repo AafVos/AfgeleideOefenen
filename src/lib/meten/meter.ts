@@ -26,9 +26,9 @@ import {
   type MeetSoort,
 } from './gebeurtenis'
 import {
+  doelVanBewaard,
   EIGEN_MELDING,
   haalKlaargezetteRegistratie,
-  type EigenMelding,
 } from './melden'
 
 const SLEUTEL = 'meet-sessie'
@@ -266,17 +266,17 @@ export function startMeten(): Meter | null {
     zet('fout', 'belofte')
   }
 
-  function registratie(doel: string | null) {
-    zet('registratie', doel)
+  /**
+   * Staat er een aanmelding klaar, dan telt die hier. `melden.ts` geeft hem
+   * maar één keer af — of hij nu uit de adresregel kwam of uit het
+   * registratieformulier — dus dit kan niet dubbel tellen.
+   */
+  function registratie() {
+    const bewaard = haalKlaargezetteRegistratie()
+    if (bewaard === null) return
+    zet('registratie', doelVanBewaard(bewaard))
     // Niet wachten op de klok: hierna gaat de leerling vaak meteen weg.
     verstuur()
-  }
-
-  /** Een melding uit de site zelf, bijvoorbeeld een geslaagde aanmelding. */
-  function eigenMelding(gebeurtenis: Event) {
-    const inhoud = (gebeurtenis as CustomEvent<Partial<EigenMelding>>).detail
-    if (inhoud?.soort !== 'registratie') return
-    registratie(inhoud.doel ?? null)
   }
 
   function zichtbaarheid() {
@@ -291,17 +291,19 @@ export function startMeten(): Meter | null {
   window.addEventListener('unhandledrejection', beloftenKijken)
   document.addEventListener('visibilitychange', zichtbaarheid)
   window.addEventListener('pagehide', verstuur)
-  window.addEventListener(EIGEN_MELDING, eigenMelding)
+  // Een melding uit de site zelf: het registratieformulier zegt dat de
+  // aanmelding gelukt is. Wat erbij hoort staat al klaar; `registratie` haalt
+  // het op.
+  window.addEventListener(EIGEN_MELDING, registratie)
 
   const klok = window.setInterval(verstuur, WACHTTIJD)
 
   pagina()
 
   // Kwam dit tabblad net terug van "Doorgaan met Google" met een gloednieuw
-  // account? Dan heeft de server dat in een koekje gezet; het formulier dat
-  // het anders meldt is hier niet langsgekomen.
-  const klaargezet = haalKlaargezetteRegistratie()
-  if (klaargezet) registratie(klaargezet)
+  // account, of meldde het registratieformulier er net een terwijl dit
+  // scriptje nog aan het laden was? Dan staat die aanmelding klaar.
+  registratie()
 
   return {
     pagina,
@@ -314,7 +316,7 @@ export function startMeten(): Meter | null {
       window.removeEventListener('unhandledrejection', beloftenKijken)
       document.removeEventListener('visibilitychange', zichtbaarheid)
       window.removeEventListener('pagehide', verstuur)
-      window.removeEventListener(EIGEN_MELDING, eigenMelding)
+      window.removeEventListener(EIGEN_MELDING, registratie)
       verstuur()
     },
   }

@@ -2,10 +2,30 @@ import { describe, expect, it } from 'vitest'
 
 import { BEWAARDE_PARAMETERS, schoonPad } from './gebeurtenis'
 import {
+  bewaarRegistratie,
+  doelVanBewaard,
+  pakRegistratie,
+  REGISTRATIE_GETELD,
   REGISTRATIE_PARAMETER,
+  REGISTRATIE_PLEK,
   registratieDoel,
   registratieUitZoekreeks,
+  ZONDER_DOEL,
+  type Bewaarplek,
 } from './melden'
+
+/** Een `sessionStorage` van niks, zodat dit zonder browser te testen is. */
+function nepOpslag(begin: Record<string, string> = {}): Bewaarplek & {
+  inhoud: Map<string, string>
+} {
+  const inhoud = new Map(Object.entries(begin))
+  return {
+    inhoud,
+    getItem: (sleutel) => inhoud.get(sleutel) ?? null,
+    setItem: (sleutel, waarde) => void inhoud.set(sleutel, waarde),
+    removeItem: (sleutel) => void inhoud.delete(sleutel),
+  }
+}
 
 describe('registratieDoel', () => {
   it('vertaalt een bekende manier van aanmelden', () => {
@@ -53,6 +73,62 @@ describe('registratieUitZoekreeks', () => {
       zoek: '?chapter=h2',
     })
     expect(registratieUitZoekreeks('')).toEqual({ gevonden: false, doel: null, zoek: '' })
+  })
+})
+
+describe('een aanmelding opzij zetten en ophalen', () => {
+  it('bewaart de aanmelding tot het meetscriptje erom vraagt', () => {
+    const opslag = nepOpslag()
+    bewaarRegistratie(opslag, 'registratie-via-google')
+
+    expect(opslag.getItem(REGISTRATIE_PLEK)).toBe('registratie-via-google')
+    expect(doelVanBewaard(pakRegistratie(opslag))).toBe('registratie-via-google')
+  })
+
+  it('geeft hem maar één keer af', () => {
+    const opslag = nepOpslag()
+    bewaarRegistratie(opslag, 'registratie-via-google')
+
+    expect(pakRegistratie(opslag)).toBe('registratie-via-google')
+    expect(pakRegistratie(opslag)).toBe(null)
+    expect(pakRegistratie(opslag)).toBe(null)
+  })
+
+  it('telt na een herlaadactie geen tweede aanmelding', () => {
+    const opslag = nepOpslag()
+    bewaarRegistratie(opslag, 'registratie-via-google')
+    pakRegistratie(opslag)
+
+    // De leerling laadt dezelfde pagina opnieuw en de parameter komt weer
+    // langs. Dit tabblad heeft er al een geteld, dus er gebeurt niets.
+    bewaarRegistratie(opslag, 'registratie-via-google')
+    expect(opslag.getItem(REGISTRATIE_PLEK)).toBe(null)
+    expect(pakRegistratie(opslag)).toBe(null)
+  })
+
+  it('kan ook een aanmelding zonder herkomst aan', () => {
+    const opslag = nepOpslag()
+    bewaarRegistratie(opslag, null)
+
+    expect(opslag.getItem(REGISTRATIE_PLEK)).toBe(ZONDER_DOEL)
+    const bewaard = pakRegistratie(opslag)
+    // Er staat wél een aanmelding klaar, maar zonder doel voor in de tabel.
+    expect(bewaard).not.toBe(null)
+    expect(doelVanBewaard(bewaard)).toBe(null)
+  })
+
+  it('zegt niets als er niets klaarstaat', () => {
+    expect(pakRegistratie(nepOpslag())).toBe(null)
+    expect(doelVanBewaard(null)).toBe(null)
+  })
+
+  it('zet het merkteken neer zodra er geteld is', () => {
+    const opslag = nepOpslag()
+    bewaarRegistratie(opslag, 'registratie-via-google')
+    expect(opslag.getItem(REGISTRATIE_GETELD)).toBe(null)
+
+    pakRegistratie(opslag)
+    expect(opslag.getItem(REGISTRATIE_GETELD)).toBe('1')
   })
 })
 

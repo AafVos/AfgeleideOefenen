@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
+import { pikRegistratieUitAdres } from '@/lib/meten/melden'
 import type { Meter } from '@/lib/meten/meter'
 
 /**
@@ -20,6 +21,14 @@ export function Meten() {
 
   useEffect(() => {
     let gestopt = false
+
+    // Dit moet wél meteen, en niet pas als het meetscriptje er is: kwam dit
+    // tabblad net terug van "Doorgaan met Google" met een nieuw account, dan
+    // staat dat in de adresregel. Klikt de leerling in die paar seconden
+    // alweer door, dan is die adresregel weg. Dit zet hem opzij; het
+    // meetscriptje telt hem zodra het er is. Het is een paar regels en raakt
+    // het netwerk niet.
+    pikRegistratieUitAdres()
 
     const laden = () => {
       void import('@/lib/meten/meter').then(({ startMeten }) => {
