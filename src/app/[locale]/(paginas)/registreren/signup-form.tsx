@@ -114,6 +114,13 @@ export function SignupForm({
           )}
         </div>
 
+        {googleAan ? (
+          <div className="space-y-2">
+            <p className="text-sm text-text-muted">{t('googlePrompt')}</p>
+            <GoogleKnop oefenpad={oefenpad} dataMeet="google-aanmelden-na-mail" />
+          </div>
+        ) : null}
+
         <Link
           href={hrefMetOefenpad('/inloggen', oefenpad)}
           data-meet="registreren-na-mail-inloggen"
