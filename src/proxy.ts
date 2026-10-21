@@ -32,11 +32,16 @@ const ZONDER_TAALCODE = [
 // leerling wel, via `/nl/theorie/.../persoonlijk`. De worker haalt
 // `/persoonlijk` eraf voordat Next de pagina opbouwt, maar beide vormen
 // vallen hieronder.
+//
+// `/voorbeeld` staat er sinds AFG-527 ook in: de antwoordpagina's waar
+// leerlingen op zoeken (AFG-304) hebben `generateStaticParams` en voor
+// iedereen dezelfde inhoud, maar kregen nog `no-store` mee.
 const TERUGKNOP_PADEN = [
   '/hoe-het-werkt',
   '/privacy',
   '/theorie',
   '/uitleg-videos',
+  '/voorbeeld',
 ]
 const TERUGKNOP_CACHE = 'private, no-cache, max-age=0, must-revalidate'
 
