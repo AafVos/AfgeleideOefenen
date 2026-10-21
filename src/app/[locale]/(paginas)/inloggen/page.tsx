@@ -18,6 +18,14 @@ function leesMail(waarde: string | undefined): Mail | null {
     : null
 }
 
+/**
+ * Dezelfde proef als de demo op de startpagina (zie `home-demo.tsx`): een
+ * kale `/proberen` zonder soort geeft een lege kies-pagina, dus we wijzen
+ * naar een vaste, altijd beschikbare proefsom.
+ */
+const DRIE_SOMMEN =
+  '/proberen?chapter=h2&topic=h2_termsgewijs&cluster=polynoom_differentieren'
+
 export async function generateMetadata({
   params,
 }: {
@@ -68,6 +76,14 @@ export default async function LoginPage({
     <div className="mx-auto max-w-md px-4 py-16">
       <h1 className="font-serif text-3xl text-text">{t('h1')}</h1>
       <p className="mt-2 text-sm text-text-muted">{t('subtitle')}</p>
+
+      <Link
+        href={DRIE_SOMMEN}
+        data-meet="inloggen-drie-sommen"
+        className="mt-4 flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-surface px-4 py-2.5 text-center text-sm font-medium text-accent hover:bg-surface-2"
+      >
+        {t('tryWithoutAccount')}
+      </Link>
 
       {bevestigingsmail && <MailMelding mail={bevestigingsmail} />}
       {bevestigingsmail === 'verlopen' && (
