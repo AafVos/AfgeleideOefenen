@@ -107,6 +107,23 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </p>
         </section>
 
+        <section className="mt-12">
+          <h2 className="font-serif text-2xl text-text">Gerelateerde afgeleiden</h2>
+          <p className="mt-4 text-text-muted">Bekijk ook deze afgeleiden uit dezelfde familie.</p>
+          <ul className="mt-4 list-none space-y-2">
+            {verwant.map((ander) => (
+              <li key={ander.slug}>
+                <Link
+                  href={voorbeeldPad(ander.slug) as '/voorbeeld'}
+                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                >
+                  {ander.kop}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <div className="mt-12 flex flex-col gap-3">
           <DeelKnop />
           <Link
@@ -115,23 +132,12 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           >
             Oefen dit soort sommen
           </Link>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            {verwant.map((ander) => (
-              <Link
-                key={ander.slug}
-                href={voorbeeldPad(ander.slug) as '/voorbeeld'}
-                className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-              >
-                {ander.kop}
-              </Link>
-            ))}
-            <Link
-              href={voorbeeld.theoriePad as '/theorie'}
-              className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-            >
-              {voorbeeld.theorieNaam}
-            </Link>
-          </div>
+          <Link
+            href={voorbeeld.theoriePad as '/theorie'}
+            className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+          >
+            {voorbeeld.theorieNaam}
+          </Link>
         </div>
       </div>
     </>
