@@ -73,7 +73,7 @@ describe('antwoordpagina-s', () => {
     }
   })
 
-  it('wijst naar de soort som, twee verwante pagina-s en de theorie', () => {
+  it('wijst naar de soort som, drie tot vijf verwante pagina-s en de theorie', () => {
     for (const voorbeeld of voorbeelden) {
       expect(voorbeeld.oefenen).toContain('van=voorbeeld')
       expect(voorbeeld.oefenen).toContain('topic=')
@@ -81,7 +81,9 @@ describe('antwoordpagina-s', () => {
       expect(voorbeeld.oefenen.startsWith('/oefenen?')).toBe(true)
       expect(voorbeeld.theoriePad.startsWith('/theorie')).toBe(true)
       expect(voorbeeld.theorieNaam.length).toBeGreaterThan(3)
-      expect(voorbeeld.verwant).toHaveLength(2)
+      expect(voorbeeld.verwant.length).toBeGreaterThanOrEqual(3)
+      expect(voorbeeld.verwant.length).toBeLessThanOrEqual(5)
+      expect(new Set(voorbeeld.verwant).size).toBe(voorbeeld.verwant.length)
       expect(voorbeeld.verwant).not.toContain(voorbeeld.slug)
       for (const slug of voorbeeld.verwant) {
         expect(getVoorbeeld(slug)?.slug).toBe(slug)
