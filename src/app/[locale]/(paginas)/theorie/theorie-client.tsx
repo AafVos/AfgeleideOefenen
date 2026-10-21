@@ -309,7 +309,9 @@ export function TheorieClient({
             onClick={() => setSidebarChoice(!sidebarOpen)}
             data-meet="theorie-zijbalk"
             aria-expanded={sidebarOpen}
-            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            aria-label={
+              sidebarOpen ? labels.collapseSidebar : `${labels.chapterLabel} — ${labels.expandSidebar}`
+            }
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             className={
               sidebarOpen

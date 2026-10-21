@@ -482,7 +482,9 @@ function OnderwerpWeergave({
             onClick={() => setSidebarChoice(!sidebarOpen)}
             data-meet="oefenen-zijbalk"
             aria-expanded={sidebarOpen}
-            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            aria-label={
+              sidebarOpen ? labels.collapseSidebar : `${labels.chapterLabel} — ${labels.expandSidebar}`
+            }
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             className={
               sidebarOpen
@@ -1646,7 +1648,9 @@ function BlokWeergave({
             onClick={() => setSidebarOpen((v) => !v)}
             data-meet="oefenen-zijbalk"
             aria-expanded={sidebarOpen}
-            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            aria-label={
+              sidebarOpen ? labels.collapseSidebar : `${labels.chapterLabel} — ${labels.expandSidebar}`
+            }
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
           >
