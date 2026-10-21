@@ -300,9 +300,12 @@ export default async function HomePage() {
   )
 }
 
+// Geen kaart-opmaak (border/bg-surface/rounded): die opmaak gebruiken we
+// elders alleen voor echte links, en leerlingen klikten hierop alsof het
+// een tegel was (AFG-512).
 function Feature({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-5">
+    <div className="text-center sm:text-left">
       <h2 className="font-serif text-xl text-text">{title}</h2>
       <p className="mt-2 text-sm leading-relaxed text-text-muted">{body}</p>
     </div>
