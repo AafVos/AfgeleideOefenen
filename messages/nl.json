@@ -257,6 +257,7 @@
     "resendSuccess": "Mail verstuurd. Check je inbox (en je spammap).",
     "resendError": "Dat lukte niet. Probeer het over een minuut nog eens.",
     "resendCooldown": "Wacht {seconds} seconden voor je het opnieuw probeert.",
+    "googlePrompt": "Liever meteen door? Ga verder met Google — dan hoef je geen mail te bevestigen.",
     "privacyNote": "Wat we met je gegevens doen, lees je in de <link>privacyverklaring</link>."
   },
   "ForgotPassword": {
