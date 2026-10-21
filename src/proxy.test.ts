@@ -49,6 +49,7 @@ describe('terugknop van de browser', () => {
     '/nl/uitleg-videos/quotientregel',
     '/nl/theorie',
     '/nl/theorie/machtsregel',
+    '/nl/voorbeeld/wortel-x',
   ])('laat %s zonder no-store door', async (pad) => {
     const antwoord = await proxy(verzoek(pad))
     expect(antwoord.status).toBe(200)
