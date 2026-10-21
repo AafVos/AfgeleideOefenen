@@ -39,6 +39,9 @@ const WACHTTIJD = 3000
 const KLIKBAAR =
   'a[href], button, [role="button"], [role="link"], [role="tab"], input, select, textarea, summary, label, [data-meet], [onclick], [tabindex]:not([tabindex="-1"])'
 
+/** Tekstvelden: hier is twee- of driemaal snel klikken tekst selecteren, geen woedeklik. */
+const TEKSTVELD = 'input, textarea, [contenteditable="true"]'
+
 export type Meter = {
   /** Een nieuw paginabezoek, ook bij navigatie binnen de app. */
   pagina: () => void
@@ -103,7 +106,7 @@ function tekstVan(element: Element): string | null {
   const naam = element.tagName.toLowerCase()
   if (naam === 'input' || naam === 'textarea' || naam === 'select') return null
   if (element.getAttribute('contenteditable') === 'true') return null
-  if (element.closest('input, textarea, [contenteditable="true"]')) return null
+  if (element.closest(TEKSTVELD)) return null
   return element.textContent
 }
 
@@ -196,6 +199,7 @@ export function startMeten(): Meter | null {
       x: gebeurtenis.clientX,
       y: gebeurtenis.clientY,
       t: Date.now(),
+      opTekstveld: !!doelElement.closest(TEKSTVELD),
     }
     kliks = [...kliks.filter((klik) => nu.t - klik.t <= 1000), nu]
 
