@@ -854,7 +854,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
                     setFotos(fotos.filter((_, j) => j !== i))
                   }}
                   aria-label={`${labels.askPhotoRemove}: ${foto.name}`}
-                  className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full border border-border bg-surface text-sm leading-none text-text-muted shadow-sm transition hover:text-accent-2"
+                  className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full border border-border bg-surface text-sm leading-none text-text-muted shadow-sm transition before:absolute before:-inset-3 before:content-[''] hover:text-accent-2"
                 >
                   ×
                 </button>
