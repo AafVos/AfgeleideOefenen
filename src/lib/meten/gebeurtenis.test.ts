@@ -110,6 +110,12 @@ describe('doelNaam', () => {
 
 describe('isWoedeklik', () => {
   const plek = (t: number, x = 100, y = 100): Klikplek => ({ x, y, t })
+  const veldplek = (t: number, x = 100, y = 100): Klikplek => ({
+    x,
+    y,
+    t,
+    opTekstveld: true,
+  })
 
   it('telt drie kliks binnen een seconde op dezelfde plek', () => {
     expect(isWoedeklik([plek(0), plek(300), plek(600)])).toBe(true)
@@ -121,6 +127,17 @@ describe('isWoedeklik', () => {
 
   it('telt niet als er meer dan een seconde tussen zit', () => {
     expect(isWoedeklik([plek(0), plek(300), plek(1500)])).toBe(false)
+  })
+
+  it('telt niet als het dubbel- of trippelklikken op een tekstveld is', () => {
+    // Een leerling die een woord selecteert om een typefout te verbeteren,
+    // klikt ook drie keer snel op dezelfde plek — maar dat is geen woedeklik.
+    expect(isWoedeklik([veldplek(0), veldplek(300), veldplek(600)])).toBe(false)
+  })
+
+  it('telt wel als een losse klik op een tekstveld toevallig in de reeks valt', () => {
+    expect(isWoedeklik([plek(0), plek(300), veldplek(600)])).toBe(false)
+    expect(isWoedeklik([plek(0), plek(300), plek(600), plek(900)])).toBe(true)
   })
 })
 

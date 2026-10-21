@@ -143,14 +143,27 @@ export function doelNaam(
   return kort ? `${soort}:${kort}`.slice(0, 80) : soort.slice(0, 80)
 }
 
-export type Klikplek = { x: number; y: number; t: number }
+export type Klikplek = {
+  x: number
+  y: number
+  t: number
+  /**
+   * Stond deze klik op een tekstveld? Twee of drie snelle kliks daar zijn
+   * meestal een leerling die een woord of regel selecteert om een typefout
+   * te verbeteren, geen teken van frustratie zoals bij een knop die niet
+   * reageert. Zulke kliks tellen niet mee voor een woedeklik.
+   */
+  opTekstveld?: boolean
+}
 
 /** Drie of meer kliks binnen één seconde, op ongeveer dezelfde plek. */
 export function isWoedeklik(kliks: readonly Klikplek[]): boolean {
   if (kliks.length < 3) return false
   const laatste = kliks[kliks.length - 1]
+  if (laatste.opTekstveld) return false
   const dichtbij = kliks.filter(
     (klik) =>
+      !klik.opTekstveld &&
       laatste.t - klik.t <= 1000 &&
       Math.abs(klik.x - laatste.x) <= 30 &&
       Math.abs(klik.y - laatste.y) <= 30,
