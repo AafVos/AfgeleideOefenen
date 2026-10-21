@@ -12,10 +12,10 @@
 
 export const EXAMENTRAINING_PAD = '/theorie/examentraining'
 
-export const EXAMENTRAINING_TITEL = 'Examentraining oefenen'
+export const EXAMENTRAINING_TITEL = 'Examentraining wiskunde B vwo gratis oefenen'
 
 export const EXAMENTRAINING_OMSCHRIJVING =
-  'Oefen differentiëren voor het centraal examen wiskunde B vwo. Je ziet wat erin zit en wanneer het examen is. De opgaven zelf maak je na het inloggen.'
+  'Oefen gratis differentiëren voor het centraal examen wiskunde B vwo. Eigen oefenopgaven, geen officiële examenvragen. Je ziet wanneer het examen is.'
 
 /** Vakpagina op Examenblad, examenjaar 2027. */
 export const EXAMENTRAINING_EXAMENBLAD =
