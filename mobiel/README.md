@@ -57,20 +57,10 @@ Een korte uitleg per map, voor wie (nog) geen React Native kent:
   zodra de app klaar is.
 - **`src/components/`** — herbruikbare stukjes scherm. `poppetje.tsx` is het
   mascotte-poppetje van de site, hertekend met `react-native-svg` (React
-  Native kan geen gewone `<svg>`-tags lezen zoals een browser). `math.tsx`
-  (met een web-variant `math.web.tsx`) toont een KaTeX-formule; `rich-math.tsx`
-  erboven toont tekst met `$...$`-formules erin. `math-keyboard.tsx` zijn de
-  wiskundeknoppen (macht, wortel, breuk, pi) bij het antwoordveld.
+  Native kan geen gewone `<svg>`-tags lezen zoals een browser).
 - **`src/constants/`** — vaste waarden die overal gebruikt worden, hier de
   kleuren en lettertypen uit de huisstijl van de site
-  (`src/app/globals.css` in de hoofdmap) en `API_BASE_URL`.
-- **`src/lib/api/app-api.ts`** — alle aanroepen naar `/api/app/*` op de site
-  (indeling ophalen, een opgave ophalen, een antwoord nakijken). Geen eigen
-  backend: dezelfde Supabase-sessie van de leerling gaat als bearer-token mee.
-- **`src/lib/practice/`** — pure logica, 1-op-1 gekopieerd uit de hoofdmap
-  (zie de uitleg bovenin `input.ts`): het invoegen van tekst op de
-  cursorpositie, de live LaTeX-preview, en het uit elkaar halen van tekst met
-  `$...$`-formules erin.
+  (`src/app/globals.css` in de hoofdmap).
 - **`assets/images/`** — het app-icoon, het Android-icoon (los voorgrond-
   en achtergrondlaag, zo wil Android dat) en de afbeelding voor het
   opstartscherm. Allemaal afgeleid van hetzelfde poppetje.
@@ -80,8 +70,6 @@ Een korte uitleg per map, voor wie (nog) geen React Native kent:
 
 ## Wat er nog niet is
 
-Inloggen (AFG-557) en oefenen/nakijken (AFG-558) staan er. Nog niet: "ik weet
-het niet" (de uitwerking rechtstreeks opvragen zonder eerst een antwoord te
-typen), de voortgangspagina, en een tegeloverzicht per soort som (de app
-toont nu steeds één opgave tegelijk, zoals een setje flashcards — zie de
-pull request van AFG-558 voor waarom).
+Dit is nog een leeg project met één startscherm (naam van de site + een
+knop "Inloggen" die nog nergens heen gaat). Inloggen, oefenen en nakijken
+volgen in latere taken.
