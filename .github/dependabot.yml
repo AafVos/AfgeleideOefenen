@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # mobiel/ (de Expo-app, AFG-556): Expo- en React Native-pakketten horen
+  # allemaal bij dezelfde Expo-SDK en gaan daarom alleen samen omhoog, nooit
+  # los. open-pull-requests-limit: 0 zet geen geplande versie-updates aan —
+  # alleen beveiligingsupdates, zoals de rest van de repo al doet.
+  - package-ecosystem: "npm"
+    directory: "/mobiel"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      expo-en-react-native:
+        applies-to: security-updates
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+          - "react-native"
+          - "react-native-*"
