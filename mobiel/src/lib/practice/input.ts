@@ -69,41 +69,41 @@ export function toLatexPreview(raw: string): string {
 
 /**
  * Zoekt `name(...)` en vervangt door replacement(inhoud-tussen-haakjes).
- * Ondersteunt 1 niveau genest haakje-paren.
+ * Ondersteunt geneste haakjes, ook een geneste aanroep van dezelfde functie
+ * (bv. `sqrt(sqrt(x))`) — de inhoud wordt eerst zelf verwerkt voordat hij in
+ * de replacement gaat.
  */
 function replaceFunctionCall(
   input: string,
   name: string,
   replacement: (inner: string) => string,
 ): string {
-  const marker = `\u0000${name}(`
-  // Escape regex special chars in name (we weten dat het alfabetisch is, dus ok).
-  const re = new RegExp(`\\b${name}\\(`, 'g')
-  const pre = input.replace(re, marker)
+  const re = new RegExp(`\\b${name}\\(`)
 
   let out = ''
   let i = 0
-  while (i < pre.length) {
-    const idx = pre.indexOf(marker, i)
-    if (idx === -1) {
-      out += pre.slice(i)
+  while (i < input.length) {
+    const match = re.exec(input.slice(i))
+    if (!match) {
+      out += input.slice(i)
       break
     }
-    out += pre.slice(i, idx)
-    let j = idx + marker.length
+    const idx = i + match.index
+    out += input.slice(i, idx)
+    let j = idx + match[0].length
+    const start = j
     let depth = 1
-    let inner = ''
-    while (j < pre.length && depth > 0) {
-      const ch = pre[j]
+    while (j < input.length && depth > 0) {
+      const ch = input[j]
       if (ch === '(') depth++
       else if (ch === ')') {
         depth--
         if (depth === 0) break
       }
-      inner += ch
       j++
     }
-    out += replacement(inner)
+    const inner = input.slice(start, j)
+    out += replacement(replaceFunctionCall(inner, name, replacement))
     i = j + 1
   }
   return out
