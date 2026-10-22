@@ -2,9 +2,7 @@
 
 import { laadNakijkRij, type ProefStap } from '@/lib/practice/proberen-laden'
 import { leesProefSelectie, uitspraakProef } from '@/lib/practice/proberen'
-
-const UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { isGeldigeUuid } from '@/lib/uuid'
 
 /** Lang genoeg voor een formule, kort genoeg om geen lap tekst na te kijken. */
 const MAX_ANTWOORD = 2000
@@ -36,7 +34,7 @@ export async function nakijkProefopgave(input: {
     cluster: input.cluster,
   })
   const questionId = input.questionId?.trim() ?? ''
-  if (!selectie || !UUID.test(questionId)) {
+  if (!selectie || !isGeldigeUuid(questionId)) {
     return { kind: 'melding', tekst: 'Deze som hoort niet bij deze proef.' }
   }
 
