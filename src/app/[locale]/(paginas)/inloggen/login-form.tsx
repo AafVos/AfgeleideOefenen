@@ -42,7 +42,14 @@ export function LoginForm({
       {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
       <form action={formAction} className="space-y-4">
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
-      <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
+      <Field
+        label={t('emailLabel')}
+        name="email"
+        type="email"
+        autoComplete="email"
+        required
+        defaultValue={state.values?.email}
+      />
       <PasswordField
         label={t('passwordLabel')}
         name="password"
@@ -93,12 +100,14 @@ function Field({
   type,
   autoComplete,
   required,
+  defaultValue,
 }: {
   label: string
   name: string
   type: string
   autoComplete?: string
   required?: boolean
+  defaultValue?: string
 }) {
   return (
     <label className="block">
@@ -108,6 +117,7 @@ function Field({
         type={type}
         autoComplete={autoComplete}
         required={required}
+        defaultValue={defaultValue}
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
     </label>
