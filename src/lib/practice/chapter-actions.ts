@@ -104,6 +104,25 @@ export async function submitStudyAnswerAction(
   } = await supabase.auth.getUser()
   if (!user) return { kind: 'error', message: 'Niet ingelogd.' }
 
+  return nakijkenVoorGebruiker(supabase, user.id, questionId, userAnswer, timeSpentSec)
+}
+
+/**
+ * Kern van het nakijken, los van hóe de leerling is ingelogd.
+ *
+ * `submitStudyAnswerAction` (cookiesessie, de site zelf) en de app-route
+ * `src/app/api/app/nakijken/route.ts` (bearer-token, de mobiele app) geven
+ * allebei hun eigen, al-geauthenticeerde `supabase`-client plus `userId` door
+ * aan deze ene functie — zodat nakijken en voortgang overal precies hetzelfde
+ * werken, zonder twee keer dezelfde logica te onderhouden.
+ */
+export async function nakijkenVoorGebruiker(
+  supabase: DB,
+  userId: string,
+  questionId: string,
+  userAnswer: string,
+  timeSpentSec?: number,
+): Promise<StudyResult> {
   const { data: question } = await supabase
     .from('questions_new')
     .select('id, topic_id, cluster_id, answer, latex_answer, answer_alternatives')
@@ -114,7 +133,7 @@ export async function submitStudyAnswerAction(
   try {
     const sessionId = await getOrCreateSession(
       supabase,
-      user.id,
+      userId,
       question.topic_id,
       question.cluster_id,
     )
@@ -130,7 +149,7 @@ export async function submitStudyAnswerAction(
     if (alGeteld) {
       return await uitslagVanEerdereInzending(
         supabase,
-        user.id,
+        userId,
         question,
         alGeteld,
       )
@@ -163,7 +182,7 @@ export async function submitStudyAnswerAction(
       const [progress, clusterTitle] = await Promise.all([
         bumpProgressOnCorrect(
           supabase,
-          user.id,
+          userId,
           question.topic_id,
           question.cluster_id,
         ),
@@ -178,7 +197,7 @@ export async function submitStudyAnswerAction(
     }
 
     // Echt fout: nu pas de opgave meetellen en de reeks terugzetten.
-    await bumpProgressOnIncorrect(supabase, user.id, question.topic_id, question.cluster_id)
+    await bumpProgressOnIncorrect(supabase, userId, question.topic_id, question.cluster_id)
 
     return {
       kind: 'incorrect',

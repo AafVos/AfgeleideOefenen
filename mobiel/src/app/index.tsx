@@ -52,11 +52,19 @@ function IngelogdScherm({ email }: { email: string }) {
       </View>
 
       <Pressable
+        onPress={() => router.push('/oefenen')}
+        style={({ pressed }) => [styles.knop, pressed && styles.knopIngedrukt]}
+      >
+        <Text style={styles.knopTekst}>Oefenen</Text>
+      </Pressable>
+
+      <Pressable
         onPress={uitloggen}
         disabled={bezig}
         style={({ pressed }) => [
           styles.knop,
           styles.knopSecundair,
+          styles.knopMetRuimte,
           (pressed || bezig) && styles.knopIngedrukt,
         ]}
       >
@@ -116,6 +124,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  knopMetRuimte: {
+    marginTop: 10,
   },
   knopTekstSecundair: {
     color: Colors.text,
