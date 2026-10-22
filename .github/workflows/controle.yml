@@ -104,8 +104,37 @@ jobs:
       - name: Pakketten installeren
         run: npm ci
 
+      # NEXT_PUBLIC_*-waarden worden tijdens de bouw ingebakken; de echte
+      # staan bij Workers Builds. Hier zijn het nepwaarden, want deze stap
+      # praat niet echt met Supabase — zie de rooktest hieronder.
       - name: Bouw voor Cloudflare Workers
         run: npm run cf:build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://rooktest.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: rooktest
+          NEXT_PUBLIC_SITE_URL: http://localhost:3177
+
+      # AFG-564: de Workers-bouw kan slagen terwijl de site op Cloudflare
+      # zelf 500 geeft op elke pagina die niet statisch is — dat zag deze
+      # controle hiervoor niet, want hij start de bouw nooit op. Dit haalt
+      # een echte server-pagina op uit de net gebouwde worker.
+      - name: Rooktest van de Workers-bouw
+        run: |
+          npx opennextjs-cloudflare preview --port 3177 &
+          preview_pid=$!
+          trap "kill $preview_pid" EXIT
+
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3177/nl/inloggen || true)
+            if [ "$code" = "200" ]; then break; fi
+            sleep 1
+          done
+
+          echo "GET /nl/inloggen -> $code"
+          if [ "$code" != "200" ]; then
+            echo "Verwachtte 200, kreeg $code. Zie de foutmelding van wrangler hierboven."
+            exit 1
+          fi
 
   # Loopt de weg van een leerling na in een echte browser: inloggen →
   # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:
