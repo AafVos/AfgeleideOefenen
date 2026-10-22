@@ -11,6 +11,8 @@ export const Colors = {
   textMuted: '#716c68',
   accent: '#2d6a4f',
   accentLight: '#e8f5ee',
+  accent2: '#be444a',
+  accent2Light: '#fbeeed',
 } as const
 
 export const Fonts = {
