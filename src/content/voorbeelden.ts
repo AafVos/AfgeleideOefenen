@@ -551,7 +551,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "ln-x",
-    kop: "De afgeleide van ln(x)",
+    kop: "De afgeleide van ln x",
     omschrijving:
       "De afgeleide van ln(x) is 1 gedeeld door x. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van ln(x) is 1 gedeeld door x.",
@@ -574,7 +574,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "ln-2x",
-    kop: "De afgeleide van ln(2x)",
+    kop: "De afgeleide van ln 2x",
     omschrijving:
       "De afgeleide van ln(2x) is 1 gedeeld door x. De 2 valt weg. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van ln(2x) is 1 gedeeld door x.",
@@ -597,7 +597,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "ln-x-kwadraat-plus-1",
-    kop: "De afgeleide van ln(x^2+1)",
+    kop: "De afgeleide van ln van x kwadraat plus 1",
     omschrijving:
       "De afgeleide van ln van (x kwadraat + 1) is 2x gedeeld door (x kwadraat + 1). Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
     antwoordTekst:
@@ -621,7 +621,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "ln-x-kwadraat",
-    kop: "De afgeleide van ln(x^2)",
+    kop: "De afgeleide van ln van x kwadraat",
     omschrijving:
       "De afgeleide van ln van x kwadraat is 2 gedeeld door x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van ln van x kwadraat is 2 gedeeld door x.",
@@ -644,7 +644,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "x-keer-ln-x",
-    kop: "De afgeleide van x keer ln(x)",
+    kop: "De afgeleide van x keer ln x",
     omschrijving:
       "De afgeleide van x keer ln(x) is ln(x) plus 1. Je ziet de productregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van x keer ln(x) is ln(x) plus 1.",
@@ -667,7 +667,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "sin-x",
-    kop: "De afgeleide van sin(x)",
+    kop: "De afgeleide van sin x",
     omschrijving:
       "De afgeleide van sin(x) is cos(x). Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van sin(x) is cos(x).",
@@ -690,7 +690,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "cos-x",
-    kop: "De afgeleide van cos(x)",
+    kop: "De afgeleide van cos x",
     omschrijving:
       "De afgeleide van cos(x) is min sin(x). Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van cos(x) is min sin(x).",
@@ -713,7 +713,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "sin-3x",
-    kop: "De afgeleide van sin(3x)",
+    kop: "De afgeleide van sin 3x",
     omschrijving:
       "De afgeleide van sin(3x) is 3 cos(3x). Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van sin(3x) is 3 cos(3x).",
@@ -736,7 +736,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "cos-2x",
-    kop: "De afgeleide van cos(2x)",
+    kop: "De afgeleide van cos 2x",
     omschrijving:
       "De afgeleide van cos(2x) is min 2 sin(2x). Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
     antwoordTekst: "De afgeleide van cos(2x) is min 2 sin(2x).",
@@ -783,7 +783,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "sin-x-kwadraat",
-    kop: "De afgeleide van sin(x^2)",
+    kop: "De afgeleide van sin van x kwadraat",
     omschrijving:
       "De afgeleide van sin van x kwadraat is 2x keer cos van x kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
     antwoordTekst:
@@ -807,7 +807,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   },
   {
     slug: "x-keer-sin-x",
-    kop: "De afgeleide van x keer sin(x)",
+    kop: "De afgeleide van x keer sin x",
     omschrijving:
       "De afgeleide van x keer sin(x) is sin(x) plus x keer cos(x). Je ziet de productregel in vier stappen. Oefen gratis drie sommen zonder account.",
     antwoordTekst:
