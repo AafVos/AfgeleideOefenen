@@ -1,6 +1,23 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { repairLatexBackslashes } from './gemini'
+import { generateJson, repairLatexBackslashes } from './gemini'
+
+/** Minimale geldige Gemini-response, met `text` overschrijfbaar per test. */
+function geminiResponse(text: string) {
+  return {
+    candidates: [{ content: { parts: [{ text }] } }],
+  }
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: 'status',
+    json: async () => body,
+    text: async () => JSON.stringify(body),
+  } as Response
+}
 
 describe('repairLatexBackslashes', () => {
   it('verdubbelt een losse LaTeX-backslash zodat JSON.parse slaagt', () => {
@@ -56,5 +73,87 @@ describe('repairLatexBackslashes', () => {
     const kapot = '{"x": "$\\sqrt{x}$"}'
     const eenKeer = repairLatexBackslashes(kapot)
     expect(repairLatexBackslashes(eenKeer)).toBe(eenKeer)
+  })
+})
+
+describe('generateJson', () => {
+  const oudeKey = process.env.GEMINI_API_KEY
+
+  beforeEach(() => {
+    process.env.GEMINI_API_KEY = 'test-key'
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    process.env.GEMINI_API_KEY = oudeKey
+    vi.unstubAllGlobals()
+  })
+
+  it('geeft een foutmelding als GEMINI_API_KEY ontbreekt, zonder fetch aan te roepen', async () => {
+    delete process.env.GEMINI_API_KEY
+    const result = await generateJson('vraag')
+    expect(result).toEqual({
+      ok: false,
+      error: 'GEMINI_API_KEY is niet geconfigureerd.',
+    })
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('geeft een foutmelding als fetch een netwerkfout gooit', async () => {
+    vi.mocked(fetch).mockRejectedValue(new Error('kapotte verbinding'))
+    const result = await generateJson('vraag')
+    expect(result).toEqual({ ok: false, error: 'kapotte verbinding' })
+  })
+
+  it('geeft een foutmelding bij een niet-ok HTTP-status', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ message: 'quota op' }, 429),
+    )
+    const result = await generateJson('vraag')
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toContain('Gemini 429')
+    }
+  })
+
+  it('geeft een foutmelding als de prompt geblokkeerd is', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ promptFeedback: { blockReason: 'SAFETY' } }),
+    )
+    const result = await generateJson('vraag')
+    expect(result).toEqual({
+      ok: false,
+      error: 'Gemini blokkeerde de prompt (SAFETY).',
+    })
+  })
+
+  it('geeft een foutmelding bij een lege response', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ candidates: [] }))
+    const result = await generateJson('vraag')
+    expect(result).toEqual({ ok: false, error: 'Lege response van Gemini.' })
+  })
+
+  it('geeft een foutmelding als de tekst geen geldige JSON is, ook na het herstellen van LaTeX', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse(geminiResponse('dit is geen json {')),
+    )
+    const result = await generateJson('vraag')
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toBe('Gemini gaf geen geldige JSON terug.')
+      expect(result.raw).toBe('dit is geen json {')
+    }
+  })
+
+  it('geeft de geparste data terug bij een geldige JSON-response', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse(geminiResponse('{"correct": true}')),
+    )
+    const result = await generateJson<{ correct: boolean }>('vraag')
+    expect(result).toEqual({
+      ok: true,
+      data: { correct: true },
+      raw: '{"correct": true}',
+    })
   })
 })
