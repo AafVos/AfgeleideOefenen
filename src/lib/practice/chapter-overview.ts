@@ -250,6 +250,18 @@ export function naarTegels(
   }))
 }
 
+/** Opgaven van één soort som, in boekvolgorde. Voor de app: daar kiest de leerling een soort som, geen losse tegel. */
+export async function loadVragenVoorCluster(db: DB, clusterId: string): Promise<VraagVoorTegel[]> {
+  const { data, error } = await db
+    .from('questions_new')
+    .select('id, cluster_id, difficulty, order_index, latex_body, answer_prefix, source_label, source_url')
+    .eq('cluster_id', clusterId)
+    .order('difficulty')
+    .order('order_index')
+  gooiAlsFout(error)
+  return (data ?? []) as VraagVoorTegel[]
+}
+
 export async function loadQuestionNew(
   db: DB,
   questionId: string,
