@@ -58,6 +58,8 @@ let voortgangBijwerkfout: DbFout | null
 let alsnogGoedFout: DbFout | null
 /** Engelse tekst die een mislukte melding moet teruggeven. */
 let vlagFout: string | null
+/** De allereerste opzoeking van de vraag zelf gooit een fout (netwerk). */
+let vraagOphalenValtOm: boolean
 
 function freshProgress(correctStreak: number, totalAnswered: number): ProgressRow {
   return {
@@ -91,7 +93,10 @@ function from(table: string) {
   }
 
   function run(): QueryResult {
-    if (table === 'questions_new') return { data: QUESTION, error: null }
+    if (table === 'questions_new') {
+      if (vraagOphalenValtOm) throw new Error('fetch failed')
+      return { data: QUESTION, error: null }
+    }
 
     if (table === 'user_sessions_new') {
       // Geen open sessie: de actie maakt er een aan.
@@ -216,6 +221,7 @@ function verseBoekhouding() {
   voortgangBijwerkfout = null
   alsnogGoedFout = null
   vlagFout = null
+  vraagOphalenValtOm = false
 }
 
 describe('submitStudyAnswerAction', () => {
@@ -563,5 +569,30 @@ describe('fouttekst van de database', () => {
       error: 'Versturen is niet gelukt. Probeer het later nog eens.',
     })
     expect(JSON.stringify(result)).not.toContain('permission denied')
+  })
+
+  it('geeft een nette melding als de allereerste opzoeking van de vraag omvalt (nakijken)', async () => {
+    vraagOphalenValtOm = true
+
+    const result = await submitStudyAnswerAction('q1', '6x')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('fetch failed')
+    expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain('fetch failed')
+  })
+
+  it('geeft een nette melding als de allereerste opzoeking van de vraag omvalt (overslaan)', async () => {
+    vraagOphalenValtOm = true
+
+    const result = await skipStudyQuestionAction('q1')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('fetch failed')
   })
 })

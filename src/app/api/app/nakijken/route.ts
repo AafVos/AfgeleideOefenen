@@ -1,5 +1,6 @@
 import { appCorsJson, appCorsPreflight } from '@/lib/api/app-cors'
 import { nakijkenVoorGebruiker } from '@/lib/practice/chapter-actions'
+import { OPSLAAN_MISLUKT } from '@/lib/practice/nakijken'
 import { authenticateBearer } from '@/lib/supabase/bearer'
 
 /**
@@ -30,15 +31,20 @@ export async function POST(req: Request) {
   }
 
   const { supabase, userId } = auth
-  const result = await nakijkenVoorGebruiker(
-    supabase,
-    userId,
-    questionId,
-    userAnswer,
-    typeof timeSpentSec === 'number' ? timeSpentSec : undefined,
-  )
+  try {
+    const result = await nakijkenVoorGebruiker(
+      supabase,
+      userId,
+      questionId,
+      userAnswer,
+      typeof timeSpentSec === 'number' ? timeSpentSec : undefined,
+    )
 
-  return appCorsJson(result)
+    return appCorsJson(result)
+  } catch (e) {
+    console.error('[app/nakijken] nakijken mislukt:', e)
+    return appCorsJson({ kind: 'error', message: OPSLAAN_MISLUKT }, { status: 500 })
+  }
 }
 
 export function OPTIONS() {

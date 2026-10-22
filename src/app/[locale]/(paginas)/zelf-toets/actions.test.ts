@@ -53,6 +53,8 @@ const db = vi.hoisted(() => ({
   /** Wat de nep-AI zegt over een fout antwoord, of een fout. */
   aiZegtGoed: false,
   aiValtOm: false,
+  /** De allereerste opzoeking (de sessie) gooit een fout (netwerk). */
+  sessieOphalenValtOm: false,
 }))
 
 function reset() {
@@ -71,6 +73,7 @@ function reset() {
   db.antwoorden = []
   db.aiZegtGoed = false
   db.aiValtOm = false
+  db.sessieOphalenValtOm = false
 }
 
 function invoegFout(): DbFout {
@@ -136,6 +139,7 @@ function makeClient() {
       }
 
       if (db.nakijken && table === 'user_sessions_new' && op === 'select') {
+        if (db.sessieOphalenValtOm) throw new Error('fetch failed')
         return {
           data: {
             id: filterWaarde,
@@ -494,5 +498,18 @@ describe('submitCustomTestAnswerAction', () => {
     const result = await submitCustomTestAnswerAction('s1', 'q1', '3x')
 
     expect(result).toMatchObject({ kind: 'incorrect', melding: null })
+  })
+
+  it('geeft een nette melding als de allereerste opzoeking (de sessie) omvalt', async () => {
+    db.nakijken = true
+    db.sessieOphalenValtOm = true
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '6x')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('fetch failed')
   })
 })

@@ -180,50 +180,52 @@ export async function submitCustomTestAnswerAction(
   } = await supabase.auth.getUser()
   if (!user) return { kind: 'error', message: 'Niet ingelogd.' }
 
-  // Verify the session belongs to the user and is a custom test
-  const { data: session } = await supabase
-    .from('user_sessions_new')
-    .select('id, user_id, session_type, ended_at')
-    .eq('id', sessionId)
-    .maybeSingle()
-  if (!session || session.user_id !== user.id || session.session_type !== 'custom_test') {
-    return { kind: 'error', message: 'Sessie niet gevonden.' }
-  }
-  if (session.ended_at) {
-    return { kind: 'error', message: 'Toets is al afgerond.' }
-  }
-
-  // Verify the question is part of this test
-  const { data: testRow } = await supabase
-    .from('custom_test_questions')
-    .select('question_id')
-    .eq('session_id', sessionId)
-    .eq('question_id', questionId)
-    .maybeSingle()
-  if (!testRow) {
-    return { kind: 'error', message: 'Vraag hoort niet bij deze toets.' }
-  }
-
-  // Prevent double-answering
-  const { data: existing } = await supabase
-    .from('session_answers_new')
-    .select('id')
-    .eq('session_id', sessionId)
-    .eq('question_id', questionId)
-    .maybeSingle()
-  if (existing) {
-    return { kind: 'error', message: 'Deze vraag is al beantwoord.' }
-  }
-
-  const { data: question } = await supabase
-    .from('questions_new')
-    .select('id, answer, latex_answer, answer_alternatives')
-    .eq('id', questionId)
-    .maybeSingle()
-  if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
-
+  let question: { id: string; answer: string; latex_answer: string | null; answer_alternatives: string[] | null }
   let uitslag: Nakijkuitslag
   try {
+    // Verify the session belongs to the user and is a custom test
+    const { data: session } = await supabase
+      .from('user_sessions_new')
+      .select('id, user_id, session_type, ended_at')
+      .eq('id', sessionId)
+      .maybeSingle()
+    if (!session || session.user_id !== user.id || session.session_type !== 'custom_test') {
+      return { kind: 'error', message: 'Sessie niet gevonden.' }
+    }
+    if (session.ended_at) {
+      return { kind: 'error', message: 'Toets is al afgerond.' }
+    }
+
+    // Verify the question is part of this test
+    const { data: testRow } = await supabase
+      .from('custom_test_questions')
+      .select('question_id')
+      .eq('session_id', sessionId)
+      .eq('question_id', questionId)
+      .maybeSingle()
+    if (!testRow) {
+      return { kind: 'error', message: 'Vraag hoort niet bij deze toets.' }
+    }
+
+    // Prevent double-answering
+    const { data: existing } = await supabase
+      .from('session_answers_new')
+      .select('id')
+      .eq('session_id', sessionId)
+      .eq('question_id', questionId)
+      .maybeSingle()
+    if (existing) {
+      return { kind: 'error', message: 'Deze vraag is al beantwoord.' }
+    }
+
+    const { data: gevondenVraag } = await supabase
+      .from('questions_new')
+      .select('id, answer, latex_answer, answer_alternatives')
+      .eq('id', questionId)
+      .maybeSingle()
+    if (!gevondenVraag) return { kind: 'error', message: 'Vraag niet gevonden.' }
+    question = gevondenVraag
+
     let answerId = ''
     uitslag = await kijkAntwoordNa({
       questionId: question.id,
