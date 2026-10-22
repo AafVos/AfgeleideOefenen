@@ -22,6 +22,10 @@ export type LoginErrorKey =
 export type LoginState = {
   errorKey: LoginErrorKey | null
   unconfirmedEmail?: string | null
+  /** Het ingevulde e-mailadres teruggeven na een foutmelding, zodat de
+   * leerling dat niet opnieuw hoeft te typen. Het wachtwoord gaat hier
+   * nooit in mee. */
+  values?: { email: string }
 }
 
 export async function loginAction(
@@ -32,7 +36,7 @@ export async function loginAction(
   const password = (formData.get('password') ?? '').toString()
 
   if (!email || !password) {
-    return { errorKey: 'errorMissingFields' }
+    return { errorKey: 'errorMissingFields', values: { email } }
   }
 
   const supabase = await createClient()
@@ -43,6 +47,7 @@ export async function loginAction(
     return {
       errorKey: authErrorKey(error.message),
       unconfirmedEmail: isUnconfirmed ? email : null,
+      values: { email },
     }
   }
 
