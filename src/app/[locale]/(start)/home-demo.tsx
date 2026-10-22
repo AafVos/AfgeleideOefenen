@@ -235,12 +235,23 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
 export function HomeDemo() {
   const t = useTranslations('HomeDemo')
   const [active, setActive] = useState<Difficulty>('easy')
+  /**
+   * Telt elke klik op een niveau mee, ook op het al actieve niveau. Zo
+   * begint de proefsom altijd opnieuw bij een klik, in plaats van dat een
+   * klik op het actieve tabblad niets zichtbaars doet.
+   */
+  const [klikTeller, setKlikTeller] = useState(0)
 
   const tabs: { id: Difficulty; label: string }[] = [
     { id: 'easy', label: t('tabEasy') },
     { id: 'medium', label: t('tabMedium') },
     { id: 'hard', label: t('tabHard') },
   ]
+
+  function kiesNiveau(id: Difficulty) {
+    setActive(id)
+    setKlikTeller((n) => n + 1)
+  }
 
   return (
     <section id="proefsom" className="mt-3 scroll-mt-6 sm:mt-8">
@@ -257,7 +268,7 @@ export function HomeDemo() {
           <button
             key={tab.id}
             type="button"
-            onClick={() => setActive(tab.id)}
+            onClick={() => kiesNiveau(tab.id)}
             data-meet="home-proefsom-niveau"
             className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
               active === tab.id
@@ -270,7 +281,7 @@ export function HomeDemo() {
         ))}
       </div>
 
-      <DemoCard key={active} difficulty={active} />
+      <DemoCard key={`${active}-${klikTeller}`} difficulty={active} />
     </section>
   )
 }
