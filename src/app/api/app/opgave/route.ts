@@ -25,28 +25,33 @@ export async function GET(req: Request) {
   if (!clusterId) return appCorsJson({ error: 'clusterId ontbreekt.' }, { status: 400 })
 
   const { supabase } = auth
-  const [vragen, cluster, laatsteGoed] = await Promise.all([
-    loadVragenVoorCluster(supabase, clusterId),
-    supabase.from('topic_clusters_new').select('title').eq('id', clusterId).maybeSingle(),
-    loadLaatsteAntwoorden(supabase),
-  ])
+  try {
+    const [vragen, cluster, laatsteGoed] = await Promise.all([
+      loadVragenVoorCluster(supabase, clusterId),
+      supabase.from('topic_clusters_new').select('title').eq('id', clusterId).maybeSingle(),
+      loadLaatsteAntwoorden(supabase),
+    ])
 
-  if (vragen.length === 0) {
-    return appCorsJson({ error: 'Geen opgaven in deze soort som.' }, { status: 404 })
+    if (vragen.length === 0) {
+      return appCorsJson({ error: 'Geen opgaven in deze soort som.' }, { status: 404 })
+    }
+
+    const volgende = vragen.find((v) => laatsteGoed.get(v.id) !== true) ?? vragen[0]
+    const opgave = await loadQuestionNew(supabase, volgende.id)
+    if (!opgave) return appCorsJson({ error: 'Opgave niet gevonden.' }, { status: 404 })
+
+    return appCorsJson({
+      clusterTitle: cluster.data?.title?.trim() ?? '',
+      aantalOpgaven: vragen.length,
+      opgave: {
+        ...opgave,
+        answerPrefix: answerPrefix(opgave.latex_body, opgave.answer_prefix),
+      },
+    })
+  } catch (e) {
+    console.error('[app opgave] ophalen mislukt:', e)
+    return appCorsJson({ error: 'Er ging iets mis. Probeer het nog eens.' }, { status: 500 })
   }
-
-  const volgende = vragen.find((v) => laatsteGoed.get(v.id) !== true) ?? vragen[0]
-  const opgave = await loadQuestionNew(supabase, volgende.id)
-  if (!opgave) return appCorsJson({ error: 'Opgave niet gevonden.' }, { status: 404 })
-
-  return appCorsJson({
-    clusterTitle: cluster.data?.title?.trim() ?? '',
-    aantalOpgaven: vragen.length,
-    opgave: {
-      ...opgave,
-      answerPrefix: answerPrefix(opgave.latex_body, opgave.answer_prefix),
-    },
-  })
 }
 
 export function OPTIONS() {
