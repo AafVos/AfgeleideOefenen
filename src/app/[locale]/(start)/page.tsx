@@ -210,11 +210,12 @@ export default async function HomePage() {
           <ul className="mt-4 space-y-1">
             {(
               [
+                ['zoek5', '/voorbeeld/ln-x'],
+                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
+                ['zoek3', '/voorbeeld/sin-x'],
                 ['zoek1', '/voorbeeld/x-kwadraat'],
                 ['zoek2', '/voorbeeld/wortel-x'],
-                ['zoek3', '/voorbeeld/sin-x'],
                 ['zoek4', '/voorbeeld/e-tot-de-x'],
-                ['zoek5', '/voorbeeld/ln-x'],
                 ['zoek6', '/theorie/raaklijn'],
                 ['zoek7', '/theorie/extreme-waarden'],
               ] as const
