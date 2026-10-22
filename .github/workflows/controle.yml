@@ -107,6 +107,13 @@ jobs:
       - name: Bouw voor Cloudflare Workers
         run: npm run cf:build
 
+      # AFG-563: een geslaagde bouw zegt niets over een geslaagd verzoek. Next
+      # 16.4.2 samen met @opennextjs/cloudflare 1.20.10 bouwde prima, maar elke
+      # server-gerenderde pagina gooide een onafgevangen fout ("Unexpected
+      # loadManifest(...) call!") zodra de worker een verzoek kreeg.
+      - name: Rooktest van de Workers-worker
+        run: node scripts/controleer-workers-rooktest.mjs
+
   # Loopt de weg van een leerling na in een echte browser: inloggen →
   # oefenen → antwoord nakijken → voortgang op het dashboard. Alles lokaal:
   # een wegwerp-Supabase in Docker en een neppe AI-controle, zodat deze
