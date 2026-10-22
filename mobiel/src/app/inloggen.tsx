@@ -9,6 +9,7 @@ import { Colors, Fonts } from '@/constants/theme'
 import { SITE_URL } from '@/constants/site'
 import { inlogFoutmelding, inlogFoutSleutel, type InlogFoutSleutel } from '@/lib/auth/inlog-fout'
 import { supabase } from '@/lib/supabase'
+import { raakvlak } from '@/lib/ui/raakvlak'
 
 export default function InlogScherm() {
   const [email, setEmail] = useState('')
@@ -109,13 +110,21 @@ export default function InlogScherm() {
           )}
         </Pressable>
 
-        <Pressable onPress={() => Linking.openURL(`${SITE_URL}/nl/wachtwoord-vergeten`)}>
+        <Pressable
+          onPress={() => Linking.openURL(`${SITE_URL}/nl/wachtwoord-vergeten`)}
+          style={raakvlak()}
+          hitSlop={8}
+        >
           <Text style={styles.link}>Wachtwoord vergeten?</Text>
         </Pressable>
 
         <View style={styles.registrerenRij}>
           <Text style={styles.ondertitel}>Nog geen account? </Text>
-          <Pressable onPress={() => Linking.openURL(`${SITE_URL}/nl/registreren`)}>
+          <Pressable
+            onPress={() => Linking.openURL(`${SITE_URL}/nl/registreren`)}
+            style={raakvlak()}
+            hitSlop={8}
+          >
             <Text style={styles.link}>Registreer op de site</Text>
           </Pressable>
         </View>
@@ -240,7 +249,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sansMedium,
     fontSize: 14,
     color: Colors.accent,
-    marginTop: 4,
   },
   registrerenRij: {
     flexDirection: 'row',
