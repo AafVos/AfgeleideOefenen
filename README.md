@@ -18,6 +18,7 @@ plan van april 2026 en is geen bouwopdracht meer.
 | AI          | Google Gemini (`gemini-2.5-flash`)            |
 | Wiskunde    | KaTeX                                         |
 | Hosting     | Cloudflare Workers (OpenNext), worker `afgeleide-oefenen` |
+| Mobiel      | Expo (Expo Router + TypeScript), zie [`mobiel/README.md`](./mobiel/README.md) |
 
 ---
 
@@ -318,6 +319,7 @@ Settings**.
 │   └── seed.sql                    # Alleen de vaste testopgaven
 ├── e2e/                            # Weg van een leerling in de browser
 ├── scripts/                        # Hulpjes voor controles
+├── mobiel/                         # De Expo-app, eigen package.json en AGENTS.md
 └── .env.local.example
 ```
 
@@ -345,11 +347,14 @@ antwoorden in `src/lib/practice/engine.ts`.
 ### Automatische controle
 
 Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`,
-`npm run typecheck`, `npm test` en `npm run cf:build`. Dat is nodig omdat
-`next build` sinds Next.js 16 zelf geen lint meer draait. De bouw voor
-Cloudflare Workers draait in deze controle, zodat een pull request die die
-bouw breekt meteen rood wordt. Cloudflare bouwt daarnaast zelf elke pull
-request (Workers Builds) en zet `main` live.
+`npm run typecheck`, `npm test`, `npm run cf:build` en de e2e-tests
+(`npm run test:e2e`, de verplichte check "Weg van een leerling", verdeeld
+over drie machines — zie "De e2e-tests" in [`AGENTS.md`](./AGENTS.md)). Dat is
+nodig omdat `next build` sinds Next.js 16 zelf geen lint meer draait. De bouw
+voor Cloudflare Workers draait in deze controle, zodat een pull request die
+die bouw breekt meteen rood wordt. De e2e-controle wordt overgeslagen als een
+pull request alleen tekst verandert. Cloudflare bouwt daarnaast zelf elke
+pull request (Workers Builds) en zet `main` live.
 
 ### Lokaal op Workers
 
@@ -426,23 +431,19 @@ een pull request, zoals hieronder.
 
 ## Hoe iets live komt
 
-1. Eigen tak vanaf de nieuwste `volgende`, pull request met
-   `gh pr create --base volgende`.
+1. Eigen tak vanaf de nieuwste `main`, pull request met `gh pr create`.
 2. De controles in GitHub moeten groen zijn.
-3. Merge naar `volgende`.
-4. Eén keer per dag maakt een workflow de pull request `volgende` → `main`.
-   Die merget Aaf zelf, met **Create a merge commit**. Workers Builds zet die
-   versie live op afgeleideoefenen.nl (worker `afgeleide-oefenen`).
+3. Merge (squash) naar `main`. Gaat het om iets kritieks (de site of het
+   inloggen doet het niet, het nakijken rekent verkeerd, een lek, of de bouw
+   op `main` is stuk), zet dan `[Kritiek]` vooraan de titel.
+4. Cloudflare Workers Builds bouwt `main` en zet die versie meteen live op
+   afgeleideoefenen.nl (worker `afgeleide-oefenen`).
 
-Er is **geen voorbeeldversie** van een tak of van `volgende` op een
-`*.workers.dev`-adres: Workers Builds bouwt wel elke tak, maar die bouw faalt,
-dus er komt geen versie te staan. Bekijk je werk lokaal met `npm run dev` of
+Er is **geen voorbeeldversie** van een tak op een `*.workers.dev`-adres:
+Workers Builds bouwt wel elke tak, maar die bouw faalt, dus er komt geen
+versie te staan. Bekijk je werk lokaal met `npm run dev` of
 `npm run cf:preview`. Wat er moet gebeuren om het terug te krijgen staat onder
-"Er is geen voorbeeldversie van `volgende`" in `AGENTS.md`.
-
-Alleen iets kritieks (de site of het inloggen doet het niet, het nakijken
-rekent verkeerd, een lek, of `main` is stuk) gaat rechtstreeks naar `main`.
-Zie "Dagelijkse release: van `volgende` naar `main`" in `AGENTS.md`.
+"Er is geen voorbeeldversie van een tak" in `AGENTS.md`.
 
 Deployen met `wrangler` of `opennextjs-cloudflare deploy` doe je niet.
 

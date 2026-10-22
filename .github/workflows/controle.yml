@@ -11,11 +11,9 @@
 # workflow botst-met-doeltak.yml draait op de tak zelf en wordt in dat geval
 # rood.
 #
-# Deze controle draait ook bij een push op `volgende`. Dat is geen dubbel
-# werk: een squash-merge maakt een nieuwe commit die nog niemand getest
-# heeft, en de dagelijkse release-pull-request (volgende → main) heeft juist
-# op die commit groene controles nodig. Een pull request die met GITHUB_TOKEN
-# gemaakt is start zelf geen workflows, dus die checks moeten er al staan.
+# Deze controle draait ook bij een push op `main`. Dat is geen dubbel werk:
+# een squash-merge maakt een nieuwe commit die nog niemand getest heeft, en
+# de verplichte checks horen op die commit te staan.
 #
 # De live site is de Cloudflare Worker `afgeleide-oefenen`. Workers Builds
 # bouwt elke pull request en zet `main` live. De Workers-bouw hier is dezelfde
@@ -27,10 +25,9 @@ name: Controle
 on:
   pull_request:
   push:
-    branches: [main, volgende]
-  # Met de hand, als de checks op een commit ontbreken. Dat gebeurt nadat een
-  # bot `main` in `volgende` heeft samengevoegd: een bot start geen workflows.
-  #   gh workflow run controle.yml --ref volgende
+    branches: [main]
+  # Met de hand, als de checks op een commit ontbreken:
+  #   gh workflow run controle.yml --ref main
   workflow_dispatch:
 
 # Eén tak hoeft maar één keer tegelijk gecontroleerd te worden: duw je snel
