@@ -11,7 +11,6 @@ import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 
 import { Colors } from '@/constants/theme'
-import { SessieProvider, useSessie } from '@/lib/auth/sessie-context'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -23,27 +22,13 @@ export default function RootLayout() {
     DMSerifDisplay_400Regular,
   })
 
-  return (
-    <SessieProvider>
-      <AppInhoud fontsGeladen={fontsGeladen} />
-    </SessieProvider>
-  )
-}
-
-// Wacht met het verbergen van het opstartscherm tot zowel de lettertypen als
-// de bewaarde sessie geladen zijn — anders flitst even het inlogscherm op
-// voordat de bewaarde sessie bekend is.
-function AppInhoud({ fontsGeladen }: { fontsGeladen: boolean }) {
-  const { laden: sessieLaden } = useSessie()
-  const klaar = fontsGeladen && !sessieLaden
-
   useEffect(() => {
-    if (klaar) {
+    if (fontsGeladen) {
       SplashScreen.hideAsync()
     }
-  }, [klaar])
+  }, [fontsGeladen])
 
-  if (!klaar) {
+  if (!fontsGeladen) {
     return null
   }
 

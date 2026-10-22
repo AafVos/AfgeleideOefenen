@@ -1,20 +1,10 @@
-import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
 
 import { Poppetje } from '@/components/poppetje'
 import { Colors, Fonts } from '@/constants/theme'
-import { useSessie } from '@/lib/auth/sessie-context'
-import { supabase } from '@/lib/supabase'
 
 export default function StartScherm() {
-  const { sessie } = useSessie()
-
-  if (sessie) {
-    return <IngelogdScherm email={sessie.user.email ?? ''} />
-  }
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.midden}>
@@ -24,47 +14,11 @@ export default function StartScherm() {
       </View>
 
       <Pressable
-        onPress={() => router.push('/inloggen')}
+        // Gaat pas naar het inlogscherm zodra dat gebouwd is (App 2/5).
+        onPress={() => {}}
         style={({ pressed }) => [styles.knop, pressed && styles.knopIngedrukt]}
       >
         <Text style={styles.knopTekst}>Inloggen</Text>
-      </Pressable>
-    </SafeAreaView>
-  )
-}
-
-function IngelogdScherm({ email }: { email: string }) {
-  const [bezig, setBezig] = useState(false)
-
-  async function uitloggen() {
-    setBezig(true)
-    await supabase.auth.signOut()
-    // Geen setBezig(false) nodig: na het uitloggen verdwijnt dit scherm
-    // vanzelf (sessie wordt null) en toont StartScherm het inlogscherm weer.
-  }
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.midden}>
-        <Poppetje size={96} />
-        <Text style={styles.titel}>Welkom terug</Text>
-        <Text style={styles.ondertitel}>Je bent ingelogd als {email}</Text>
-      </View>
-
-      <Pressable
-        onPress={uitloggen}
-        disabled={bezig}
-        style={({ pressed }) => [
-          styles.knop,
-          styles.knopSecundair,
-          (pressed || bezig) && styles.knopIngedrukt,
-        ]}
-      >
-        {bezig ? (
-          <ActivityIndicator color={Colors.text} />
-        ) : (
-          <Text style={[styles.knopTekst, styles.knopTekstSecundair]}>Uitloggen</Text>
-        )}
       </Pressable>
     </SafeAreaView>
   )
@@ -111,13 +65,5 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sansMedium,
     fontSize: 16,
     color: Colors.surface,
-  },
-  knopSecundair: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  knopTekstSecundair: {
-    color: Colors.text,
   },
 })
