@@ -138,6 +138,22 @@ export async function loadAllClusters(db: DB): Promise<ClusterInfo[]> {
   return (data ?? []) as ClusterInfo[]
 }
 
+export type VoortgangRij = {
+  cluster_id: string
+  status: string | null
+  correct_streak: number | null
+}
+
+/** Per soort som: beheerst of niet, en goed op rij. Zelfde rijen als het dashboard. */
+export async function loadVoortgang(db: DB, userId: string): Promise<VoortgangRij[]> {
+  const { data, error } = await db
+    .from('user_progress_new')
+    .select('cluster_id, status, correct_streak')
+    .eq('user_id', userId)
+  gooiAlsFout(error)
+  return (data ?? []) as VoortgangRij[]
+}
+
 export type VraagVoorTegel = {
   id: string
   cluster_id: string
