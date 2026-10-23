@@ -123,14 +123,14 @@ export async function nakijkenVoorGebruiker(
   userAnswer: string,
   timeSpentSec?: number,
 ): Promise<StudyResult> {
-  const { data: question } = await supabase
-    .from('questions_new')
-    .select('id, topic_id, cluster_id, answer, latex_answer, answer_alternatives')
-    .eq('id', questionId)
-    .maybeSingle()
-  if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
-
   try {
+    const { data: question } = await supabase
+      .from('questions_new')
+      .select('id, topic_id, cluster_id, answer, latex_answer, answer_alternatives')
+      .eq('id', questionId)
+      .maybeSingle()
+    if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
+
     const sessionId = await getOrCreateSession(
       supabase,
       userId,
@@ -331,14 +331,14 @@ export async function skipStudyQuestionAction(
   } = await supabase.auth.getUser()
   if (!user) return { kind: 'error', message: 'Niet ingelogd.' }
 
-  const { data: question } = await supabase
-    .from('questions_new')
-    .select('id, topic_id, cluster_id, answer, latex_answer')
-    .eq('id', questionId)
-    .maybeSingle()
-  if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
-
   try {
+    const { data: question } = await supabase
+      .from('questions_new')
+      .select('id, topic_id, cluster_id, answer, latex_answer')
+      .eq('id', questionId)
+      .maybeSingle()
+    if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
+
     const sessionId = await getOrCreateSession(
       supabase,
       user.id,

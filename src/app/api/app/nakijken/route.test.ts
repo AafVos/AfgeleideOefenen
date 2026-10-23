@@ -91,6 +91,25 @@ describe('POST /api/app/nakijken', () => {
     expect(nakijkenVoorGebruiker).not.toHaveBeenCalled()
   })
 
+  it('vangt een gegooide fout op in plaats van om te vallen', async () => {
+    authenticateBearer.mockResolvedValue({ supabase: NEP_SUPABASE, userId: 'u1' })
+    nakijkenVoorGebruiker.mockRejectedValue(new Error('fetch failed'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const res = await POST(verzoek({ questionId: 'q1', userAnswer: '6x' }))
+    const json = await res.json()
+
+    expect(res.status).toBe(500)
+    expect(json).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(res.headers.get('access-control-allow-origin')).toBeTruthy()
+    expect(JSON.stringify(json)).not.toContain('fetch failed')
+
+    vi.restoreAllMocks()
+  })
+
   it('geeft 400 bij ongeldige JSON in plaats van om te vallen', async () => {
     authenticateBearer.mockResolvedValue({ supabase: NEP_SUPABASE, userId: 'u1' })
     const res = await POST(
