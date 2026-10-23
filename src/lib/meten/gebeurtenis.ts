@@ -7,6 +7,8 @@
  * e-mailadres of gebruikers-id, en nooit tekst die een leerling zelf typt.
  */
 
+import { isGeldigeUuid } from '@/lib/uuid'
+
 export const MEET_SOORTEN = [
   'pagina',
   'klik',
@@ -53,8 +55,6 @@ export type Gebeurtenis = {
   verwijzer: string | null
   ingelogd: boolean
 }
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /**
  * Het pad zonder queryparameters, op `van` en `utm_source` na. Die twee
@@ -180,7 +180,7 @@ export function geldigeGebeurtenis(ruw: unknown): Gebeurtenis | null {
   const rij = ruw as Record<string, unknown>
 
   const sessie = typeof rij.sessie_id === 'string' ? rij.sessie_id : ''
-  if (!UUID.test(sessie)) return null
+  if (!isGeldigeUuid(sessie)) return null
 
   const soort = rij.soort
   if (typeof soort !== 'string' || !(BROWSER_SOORTEN as readonly string[]).includes(soort)) {
