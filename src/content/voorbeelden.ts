@@ -839,6 +839,18 @@ export function voorbeeldPad(slug: string): string {
   return `/voorbeeld/${slug}`;
 }
 
+/**
+ * Titel voor `<title>` en `og:title`: de kop zonder "De" ervoor, met
+ * "oefenen" erachter. Leerlingen zoeken op "afgeleide ln x", niet op "de
+ * afgeleide van", en een naslagkaart-titel wint geen klik naast "oefenen".
+ * De kop zelf (de `h1` op de pagina) blijft ongemoeid.
+ */
+export function voorbeeldTitel(voorbeeld: Voorbeeld): string {
+  const zonderDe = voorbeeld.kop.replace(/^De /, "");
+  const metHoofdletter = zonderDe.charAt(0).toUpperCase() + zonderDe.slice(1);
+  return `${metHoofdletter} oefenen`;
+}
+
 export function getVoorbeelden(): readonly Voorbeeld[] {
   return VOORBEELDEN;
 }
