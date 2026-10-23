@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kijkt of HEAD botst met de doeltak (standaard origin/volgende).
+# Kijkt of HEAD botst met de doeltak, bijvoorbeeld origin/main.
 #
 # Afsluitcode 0: geen conflict. De tak mag best achterlopen; de controle in
 # controle.yml draait dan op de samengevoegde versie.
@@ -7,7 +7,12 @@
 # Elke andere code: het nakijken zelf mislukte.
 set -euo pipefail
 
-basis="${1:-origin/volgende}"
+if [ $# -lt 1 ]; then
+  echo "Gebruik: $0 <doeltak>, bijvoorbeeld origin/main" >&2
+  exit 2
+fi
+
+basis="$1"
 
 set +e
 uitvoer=$(git merge-tree --write-tree --name-only HEAD "$basis" 2>&1)
