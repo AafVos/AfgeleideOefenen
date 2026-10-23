@@ -28,6 +28,13 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "AfgeleideOefenen wil je camera gebruiken zodat je een foto van je uitwerking kunt maken. De foto blijft op je telefoon staan.",
+          "photosPermission": "AfgeleideOefenen wil bij je foto's kunnen zodat je een foto van je uitwerking kunt kiezen. De foto blijft op je telefoon staan."
+        }
       ]
     ],
     "experiments": {

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
 
+import { FotoUitwerking } from '@/components/foto-uitwerking'
 import { Math as Formule } from '@/components/math'
 import { MathKeyboard } from '@/components/math-keyboard'
 import { RichMath } from '@/components/rich-math'
@@ -52,6 +53,7 @@ export default function SomScherm() {
   const [opgave, setOpgave] = useState<Opgave | null>(null)
   const [poging, setPoging] = useState(0)
   const [antwoord, setAntwoord] = useState('')
+  const [fotoUri, setFotoUri] = useState<string | null>(null)
   const [toestand, setToestand] = useState<Toestand>({ fase: 'invoer', fout: null })
   const selectieRef = useRef({ start: 0, eind: 0 })
   const gestartOp = useRef<number | null>(null)
@@ -65,6 +67,7 @@ export default function SomScherm() {
         setOpgave(res.opgave)
         gestartOp.current = Date.now()
         setAntwoord('')
+        setFotoUri(null)
         setToestand({ fase: 'invoer', fout: null })
         setLaadStatus({ type: 'klaar' })
       })
@@ -130,6 +133,7 @@ export default function SomScherm() {
 
   function opnieuw() {
     setAntwoord('')
+    setFotoUri(null)
     setToestand({ fase: 'invoer', fout: null })
     gestartOp.current = Date.now()
   }
@@ -228,6 +232,8 @@ export default function SomScherm() {
               editable={toestand.fase === 'invoer'}
             />
             <MathKeyboard onInsert={voegIn} />
+
+            <FotoUitwerking uri={fotoUri} onChange={setFotoUri} />
 
             {toestand.fout && (
               <View style={styles.foutBanner} accessibilityRole="alert">
