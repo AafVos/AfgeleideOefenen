@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
-import { getVoorbeeld, getVoorbeelden, voorbeeldPad } from '@/content/voorbeelden'
+import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
 
@@ -24,12 +24,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!voorbeeld) notFound()
 
   const pad = voorbeeldPad(voorbeeld.slug)
+  const titel = voorbeeldTitel(voorbeeld)
   return {
-    title: voorbeeld.kop,
+    title: titel,
     description: voorbeeld.omschrijving,
     alternates: canoniek(locale, pad),
     openGraph: deelkaart(locale, pad, {
-      title: voorbeeld.kop,
+      title: titel,
       description: voorbeeld.omschrijving,
     }),
   }

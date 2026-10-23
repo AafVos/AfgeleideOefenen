@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import sitemap from '@/app/sitemap'
 
-import { getVoorbeeld, getVoorbeelden, voorbeeldPad } from './voorbeelden'
+import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from './voorbeelden'
 
 describe('antwoordpagina-s', () => {
   const voorbeelden = getVoorbeelden()
@@ -107,6 +107,19 @@ describe('antwoordpagina-s', () => {
         expect(Math.abs(numeriek - verwacht) / schaal).toBeLessThan(1e-4)
       }
     }
+  })
+
+  it('zet "oefenen" in de titel voor de zoekmachine, los van de kop op de pagina', () => {
+    for (const voorbeeld of voorbeelden) {
+      const titel = voorbeeldTitel(voorbeeld)
+      expect(titel).not.toMatch(/^De /)
+      expect(titel.endsWith(' oefenen')).toBe(true)
+      expect(titel.length).toBeLessThanOrEqual(60)
+    }
+    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
+      'Afgeleide van e tot de macht 2x oefenen',
+    )
   })
 
   it('zet elke pagina in de sitemap', () => {
