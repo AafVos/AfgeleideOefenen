@@ -43,7 +43,7 @@ function TileGrid({
         const tileHref = `${baseHref}&q=${encodeURIComponent(tile.questionId)}`
         const active = activeQuestionId === tile.questionId
         const kaart = cn(
-          'overflow-hidden rounded-xl border transition',
+          'flex flex-col overflow-hidden rounded-xl border transition',
           active && 'ring-2 ring-accent ring-offset-2 ring-offset-[var(--color-bg)]',
           tile.lastCorrect === true && 'border-emerald-300/70 bg-emerald-50',
           tile.lastCorrect === false && 'border-rose-300/70 bg-rose-50/90',
@@ -96,7 +96,7 @@ function TileGrid({
                   : undefined
               }
               className={cn(
-                'block min-h-[6.75rem] px-3 py-3',
+                'block min-h-[6.75rem] flex-1 px-3 py-3',
                 tile.lastCorrect === true && 'hover:bg-emerald-100/60',
                 tile.lastCorrect === false && 'hover:bg-rose-100/70',
                 tile.lastCorrect == null && 'hover:bg-surface-2',
