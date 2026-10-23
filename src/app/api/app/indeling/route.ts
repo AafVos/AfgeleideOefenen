@@ -22,22 +22,27 @@ export async function GET(req: Request) {
   if (!auth) return appCorsJson({ error: 'Niet ingelogd.' }, { status: 401 })
 
   const { supabase } = auth
-  const [chapters, paragraphs, blocks, topics, clusters, vragen] = await Promise.all([
-    loadChapters(supabase),
-    loadParagraphs(supabase),
-    loadTheoryBlocks(supabase),
-    loadAllTopics(supabase),
-    loadAllClusters(supabase),
-    loadAlleVragen(supabase),
-  ])
+  try {
+    const [chapters, paragraphs, blocks, topics, clusters, vragen] = await Promise.all([
+      loadChapters(supabase),
+      loadParagraphs(supabase),
+      loadTheoryBlocks(supabase),
+      loadAllTopics(supabase),
+      loadAllClusters(supabase),
+      loadAlleVragen(supabase),
+    ])
 
-  const tiles = vragen.map((v) => ({
-    clusterId: v.cluster_id,
-    verhaal: vraagIsToepassing(v.latex_body, v.answer_prefix),
-  }))
+    const tiles = vragen.map((v) => ({
+      clusterId: v.cluster_id,
+      verhaal: vraagIsToepassing(v.latex_body, v.answer_prefix),
+    }))
 
-  const hoofdstukken = bouwOefenOverzicht({ chapters, paragraphs, blocks, topics, clusters, tiles })
-  return appCorsJson({ hoofdstukken })
+    const hoofdstukken = bouwOefenOverzicht({ chapters, paragraphs, blocks, topics, clusters, tiles })
+    return appCorsJson({ hoofdstukken })
+  } catch (e) {
+    console.error('[app indeling] ophalen mislukt:', e)
+    return appCorsJson({ error: 'Er ging iets mis. Probeer het nog eens.' }, { status: 500 })
+  }
 }
 
 export function OPTIONS() {
