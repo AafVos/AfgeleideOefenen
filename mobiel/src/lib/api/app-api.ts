@@ -139,3 +139,29 @@ export async function stuurAntwoordIn(
     body: JSON.stringify({ questionId, userAnswer, timeSpentSec }),
   })
 }
+
+// =====================================================================
+// Voortgang: per hoofdstuk en soort som, zelfde cijfers als het dashboard
+// =====================================================================
+
+export type VoortgangSoort = {
+  id: string
+  title: string
+  isKnown: boolean
+  correctStreak: number
+}
+
+export type VoortgangHoofdstuk = {
+  id: string
+  slug: string
+  title: string
+  mastered: number
+  total: number
+  pct: number
+  soorten: VoortgangSoort[]
+}
+
+export async function haalVoortgang(): Promise<VoortgangHoofdstuk[]> {
+  const data = await appFetch<{ hoofdstukken: VoortgangHoofdstuk[] }>('/api/app/voortgang')
+  return data.hoofdstukken
+}

@@ -41,7 +41,13 @@ const QUESTIONS: Record<Difficulty, QuestionConfig> = {
   },
 }
 
-function DemoCard({ difficulty }: { difficulty: Difficulty }) {
+function DemoCard({
+  difficulty,
+  onSubmit,
+}: {
+  difficulty: Difficulty
+  onSubmit: () => void
+}) {
   const t = useTranslations('HomeDemo')
   const q = QUESTIONS[difficulty]
   const [answer, setAnswer] = useState('')
@@ -51,6 +57,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
   function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!answer.trim() || state.phase !== 'input') return
+    onSubmit()
     if (proefsomKlopt(difficulty, answer)) {
       setState({ phase: 'correct' })
     } else {
@@ -241,6 +248,13 @@ export function HomeDemo() {
    * klik op het actieve tabblad niets zichtbaars doet.
    */
   const [klikTeller, setKlikTeller] = useState(0)
+  /**
+   * De niveaukeuze verschijnt pas na de eerste nagekeken poging (AFG-588):
+   * bezoekers bleven klikken op de keuze zelf in plaats van meteen een som
+   * na te kijken. Zo is de makkelijke som meteen te zien, zonder keuze
+   * vooraf.
+   */
+  const [heeftGeprobeerd, setHeeftGeprobeerd] = useState(false)
 
   const tabs: { id: Difficulty; label: string }[] = [
     { id: 'easy', label: t('tabEasy') },
@@ -263,25 +277,34 @@ export function HomeDemo() {
         <span className="text-xs text-text-muted">{t('subEyebrow')}</span>
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-xl border border-border bg-surface p-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => kiesNiveau(tab.id)}
-            data-meet="home-proefsom-niveau"
-            className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
-              active === tab.id
-                ? 'bg-accent text-white shadow-sm'
-                : 'text-text-muted hover:text-text'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {heeftGeprobeerd && (
+        <div className="mb-3">
+          <p className="mb-1 text-center text-xs text-text-muted">{t('anderNiveau')}</p>
+          <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => kiesNiveau(tab.id)}
+                data-meet="home-proefsom-niveau"
+                className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
+                  active === tab.id
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-muted hover:text-text'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
-      <DemoCard key={`${active}-${klikTeller}`} difficulty={active} />
+      <DemoCard
+        key={`${active}-${klikTeller}`}
+        difficulty={active}
+        onSubmit={() => setHeeftGeprobeerd(true)}
+      />
     </section>
   )
 }
