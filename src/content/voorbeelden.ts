@@ -51,7 +51,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "wortel-x",
     kop: "De afgeleide van wortel x",
     omschrijving:
-      "De afgeleide van wortel x is 1 gedeeld door 2 wortel x. Je ziet de machtsregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van wortel x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van wortel x is 1 gedeeld door 2 wortel x.",
     functie: "\\sqrt{x}",
     antwoord: "\\dfrac{1}{2\\sqrt{x}}",
@@ -79,7 +79,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-kwadraat",
     kop: "De afgeleide van x kwadraat",
     omschrijving:
-      "De afgeleide van x kwadraat is 2x. Je ziet de machtsregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van x kwadraat: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van x kwadraat is 2x.",
     functie: "x^2",
     antwoord: "2x",
@@ -107,7 +107,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-tot-de-derde",
     kop: "De afgeleide van x tot de derde",
     omschrijving:
-      "De afgeleide van x tot de derde is 3x kwadraat. Je ziet de machtsregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van x tot de derde: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van x tot de derde is 3x kwadraat.",
     functie: "x^3",
     antwoord: "3x^2",
@@ -135,7 +135,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-kwadraat-plus-3x",
     kop: "De afgeleide van x kwadraat plus 3x",
     omschrijving:
-      "De afgeleide van x kwadraat plus 3x is 2x plus 3. Je ziet de somregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van x kwadraat plus 3x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van x kwadraat plus 3x is 2x plus 3.",
     functie: "x^2 + 3x",
     antwoord: "2x + 3",
@@ -158,7 +158,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "twee-tot-de-x",
     kop: "De afgeleide van 2 tot de macht x",
     omschrijving:
-      "Afgeleide van 2 tot de macht x: de uitkomst is 2^x keer ln(2). Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van 2 tot de macht x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van 2 tot de macht x is 2 tot de macht x keer de natuurlijke log van 2.",
     functie: "2^x",
@@ -187,7 +187,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "een-gedeeld-door-x",
     kop: "De afgeleide van 1 gedeeld door x",
     omschrijving:
-      "Afgeleide van 1 gedeeld door x: de uitkomst is min 1 gedeeld door x kwadraat. Je ziet de machtsregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van 1 gedeeld door x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van 1 gedeeld door x is min 1 gedeeld door x kwadraat.",
     functie: "\\dfrac{1}{x}",
@@ -216,7 +216,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "een-gedeeld-door-x-kwadraat",
     kop: "De afgeleide van 1 gedeeld door x kwadraat",
     omschrijving:
-      "Afgeleide van 1 gedeeld door x kwadraat: de uitkomst is min 2 gedeeld door x tot de derde. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van 1 gedeeld door x kwadraat: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van 1 gedeeld door x kwadraat is min 2 gedeeld door x tot de derde.",
     functie: "\\dfrac{1}{x^2}",
@@ -245,7 +245,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "een-gedeeld-door-x-plus-1",
     kop: "De afgeleide van 1 gedeeld door x plus 1",
     omschrijving:
-      "Afgeleide van 1 gedeeld door (x + 1): de uitkomst is min 1 gedeeld door (x + 1) kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van 1 gedeeld door (x + 1): drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van 1 gedeeld door (x + 1) is min 1 gedeeld door (x + 1) kwadraat.",
     functie: "\\dfrac{1}{x+1}",
@@ -274,7 +274,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "wortel-2x-plus-1",
     kop: "De afgeleide van wortel(2x+1)",
     omschrijving:
-      "De afgeleide van de wortel van (2x + 1) is 1 gedeeld door de wortel van (2x + 1). Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van de wortel van (2x + 1): drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van de wortel van (2x + 1) is 1 gedeeld door de wortel van (2x + 1).",
     functie: "\\sqrt{2x+1}",
@@ -303,7 +303,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "wortel-x-kwadraat-plus-1",
     kop: "De afgeleide van wortel(x^2+1)",
     omschrijving:
-      "De afgeleide van de wortel van (x kwadraat + 1) is x gedeeld door die wortel. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van de wortel van (x kwadraat + 1): drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van de wortel van (x kwadraat + 1) is x gedeeld door die wortel.",
     functie: "\\sqrt{x^2+1}",
@@ -332,7 +332,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "een-gedeeld-door-wortel-x",
     kop: "De afgeleide van 1 gedeeld door wortel x",
     omschrijving:
-      "Afgeleide van 1 gedeeld door wortel x: de uitkomst is min 1 gedeeld door 2x wortel x. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van 1 gedeeld door wortel x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van 1 gedeeld door wortel x is min 1 gedeeld door 2x wortel x.",
     functie: "\\dfrac{1}{\\sqrt{x}}",
@@ -361,7 +361,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "twee-x-min-1-tot-de-derde",
     kop: "De afgeleide van (2x-1)^3",
     omschrijving:
-      "De afgeleide van (2x min 1) tot de derde is 6 keer (2x min 1) kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van (2x min 1) tot de derde: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van (2x min 1) tot de derde is 6 keer (2x min 1) kwadraat.",
     functie: "(2x-1)^3",
@@ -390,7 +390,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-kwadraat-plus-1-tot-de-vierde",
     kop: "De afgeleide van (x^2+1)^4",
     omschrijving:
-      "De afgeleide van (x kwadraat + 1) tot de vierde is 8x keer (x kwadraat + 1) tot de derde. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van (x kwadraat + 1) tot de vierde: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van (x kwadraat + 1) tot de vierde is 8x keer (x kwadraat + 1) tot de derde.",
     functie: "(x^2+1)^4",
@@ -419,7 +419,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "e-tot-de-x",
     kop: "De afgeleide van e tot de macht x",
     omschrijving:
-      "Afgeleide van e tot de macht x: de uitkomst is e tot de macht x zelf. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van e tot de macht x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van e tot de macht x is e tot de macht x.",
     functie: "e^x",
     antwoord: "e^x",
@@ -447,7 +447,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "e-tot-de-2x",
     kop: "De afgeleide van e tot de macht 2x",
     omschrijving:
-      "Afgeleide van e tot de macht 2x: de uitkomst is 2 keer e tot de macht 2x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van e tot de macht 2x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van e tot de macht 2x is 2 keer e tot de macht 2x.",
     functie: "e^{2x}",
@@ -476,7 +476,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "e-tot-de-x-kwadraat",
     kop: "De afgeleide van e tot de macht x kwadraat",
     omschrijving:
-      "Afgeleide van e tot de macht x kwadraat: de uitkomst is 2x keer e tot de macht x kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van e tot de macht x kwadraat: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van e tot de macht x kwadraat is 2x keer e tot de macht x kwadraat.",
     functie: "e^{x^2}",
@@ -500,7 +500,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "e-tot-de-min-x",
     kop: "De afgeleide van e tot de macht min x",
     omschrijving:
-      "Afgeleide van e tot de macht min x: de uitkomst is min e tot de macht min x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van e tot de macht min x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van e tot de macht min x is min e tot de macht min x.",
     functie: "e^{-x}",
@@ -529,7 +529,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-keer-e-tot-de-x",
     kop: "De afgeleide van x keer e^x",
     omschrijving:
-      "De afgeleide van x keer e tot de macht x is e tot de macht x keer (x + 1). Je ziet de productregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van x keer e tot de macht x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van x keer e tot de macht x is e tot de macht x keer (x + 1).",
     functie: "x \\cdot e^x",
@@ -553,7 +553,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "ln-x",
     kop: "De afgeleide van ln x",
     omschrijving:
-      "De afgeleide van ln(x) is 1 gedeeld door x. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van ln x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van ln(x) is 1 gedeeld door x.",
     functie: "\\ln(x)",
     antwoord: "\\dfrac{1}{x}",
@@ -576,7 +576,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "ln-2x",
     kop: "De afgeleide van ln 2x",
     omschrijving:
-      "De afgeleide van ln(2x) is 1 gedeeld door x. De 2 valt weg. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van ln 2x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van ln(2x) is 1 gedeeld door x.",
     functie: "\\ln(2x)",
     antwoord: "\\dfrac{1}{x}",
@@ -599,7 +599,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "ln-x-kwadraat-plus-1",
     kop: "De afgeleide van ln van x kwadraat plus 1",
     omschrijving:
-      "De afgeleide van ln van (x kwadraat + 1) is 2x gedeeld door (x kwadraat + 1). Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van ln van (x kwadraat + 1): drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van ln van (x kwadraat + 1) is 2x gedeeld door (x kwadraat + 1).",
     functie: "\\ln(x^2+1)",
@@ -623,7 +623,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "ln-x-kwadraat",
     kop: "De afgeleide van ln van x kwadraat",
     omschrijving:
-      "De afgeleide van ln van x kwadraat is 2 gedeeld door x. Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van ln van x kwadraat: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van ln van x kwadraat is 2 gedeeld door x.",
     functie: "\\ln(x^2)",
     antwoord: "\\dfrac{2}{x}",
@@ -646,7 +646,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-keer-ln-x",
     kop: "De afgeleide van x keer ln x",
     omschrijving:
-      "De afgeleide van x keer ln(x) is ln(x) plus 1. Je ziet de productregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van x keer ln x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van x keer ln(x) is ln(x) plus 1.",
     functie: "x \\cdot \\ln(x)",
     antwoord: "\\ln(x) + 1",
@@ -669,7 +669,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "sin-x",
     kop: "De afgeleide van sin x",
     omschrijving:
-      "De afgeleide van sin(x) is cos(x). Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van sin x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van sin(x) is cos(x).",
     functie: "\\sin(x)",
     antwoord: "\\cos(x)",
@@ -692,7 +692,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "cos-x",
     kop: "De afgeleide van cos x",
     omschrijving:
-      "De afgeleide van cos(x) is min sin(x). Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van cos x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van cos(x) is min sin(x).",
     functie: "\\cos(x)",
     antwoord: "-\\sin(x)",
@@ -715,7 +715,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "sin-3x",
     kop: "De afgeleide van sin 3x",
     omschrijving:
-      "De afgeleide van sin(3x) is 3 cos(3x). Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van sin 3x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van sin(3x) is 3 cos(3x).",
     functie: "\\sin(3x)",
     antwoord: "3\\cos(3x)",
@@ -738,7 +738,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "cos-2x",
     kop: "De afgeleide van cos 2x",
     omschrijving:
-      "De afgeleide van cos(2x) is min 2 sin(2x). Je ziet de kettingregel in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van cos 2x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst: "De afgeleide van cos(2x) is min 2 sin(2x).",
     functie: "\\cos(2x)",
     antwoord: "-2\\sin(2x)",
@@ -761,7 +761,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "tan-x",
     kop: "De afgeleide van tan(x)",
     omschrijving:
-      "De afgeleide van tan(x) is 1 gedeeld door cos kwadraat x. Je ziet de uitwerking in vier stappen en één veelgemaakte fout. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van tan x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van tan(x) is 1 gedeeld door cosinus kwadraat x.",
     functie: "\\tan(x)",
@@ -785,7 +785,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "sin-x-kwadraat",
     kop: "De afgeleide van sin van x kwadraat",
     omschrijving:
-      "De afgeleide van sin van x kwadraat is 2x keer cos van x kwadraat. Je ziet de kettingregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van sin van x kwadraat: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van sin van x kwadraat is 2x keer cos van x kwadraat.",
     functie: "\\sin(x^2)",
@@ -809,7 +809,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     slug: "x-keer-sin-x",
     kop: "De afgeleide van x keer sin x",
     omschrijving:
-      "De afgeleide van x keer sin(x) is sin(x) plus x keer cos(x). Je ziet de productregel in vier stappen. Oefen gratis drie sommen zonder account.",
+      "Oefen gratis de afgeleide van x keer sin x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
     antwoordTekst:
       "De afgeleide van x keer sin(x) is sin(x) plus x keer cos(x).",
     functie: "x \\cdot \\sin(x)",
