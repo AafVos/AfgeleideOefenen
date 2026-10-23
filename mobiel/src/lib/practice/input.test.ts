@@ -23,6 +23,10 @@ describe('toLatexPreview', () => {
   it('zet sqrt(x) om naar \\sqrt{x}', () => {
     expect(toLatexPreview('sqrt(x)')).toBe('\\sqrt{x}')
   })
+
+  it('ondersteunt een sqrt(...) genest in een andere sqrt(...)', () => {
+    expect(toLatexPreview('sqrt(sqrt(x))')).toBe('\\sqrt{\\sqrt{x}}')
+  })
 })
 
 describe('insertAtCursor', () => {
