@@ -78,6 +78,10 @@ export function NavDropdown({
     window.dispatchEvent(new CustomEvent(NAV_DROPDOWN_OPEN_EVENT, { detail: menuId }))
   }
 
+  function onRootBlur(e: React.FocusEvent<HTMLDivElement>) {
+    if (!rootRef.current?.contains(e.relatedTarget as Node)) scheduleClose()
+  }
+
   return (
     <div
       ref={rootRef}
@@ -85,13 +89,16 @@ export function NavDropdown({
       data-tour={dataTour}
       onMouseEnter={openMenu}
       onMouseLeave={scheduleClose}
+      onFocus={openMenu}
+      onBlur={onRootBlur}
     >
-      <Link
-        href={overviewHref}
+      <button
+        type="button"
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-controls={menuId}
         data-meet={dataMeet}
-        onClick={() => setOpen(false)}
+        onClick={openMenu}
         className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 ${
           open ? 'bg-surface-2 text-text' : 'text-text-muted'
         } hover:bg-surface-2 hover:text-text`}
@@ -110,10 +117,13 @@ export function NavDropdown({
         >
           <path d="m6 9 6 6 6-6" />
         </svg>
-      </Link>
+      </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-40 mt-1 w-64 rounded-xl border border-border bg-surface p-1.5 shadow-lg">
+        <div
+          id={menuId}
+          className="absolute left-0 top-full z-40 mt-1 w-64 rounded-xl border border-border bg-surface p-1.5 shadow-lg"
+        >
           <Link
             href={overviewHref}
             onClick={() => setOpen(false)}
