@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation'
 import { AFMELD_SLEUTEL } from '@/lib/herinnering/links'
 import { nietIndexeren } from '@/lib/seo'
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import { isGeldigeUuid } from '@/lib/uuid'
 
 /**
  * Afmelden voor de herinneringsmail (zie AFG-487).
@@ -51,7 +52,7 @@ export default async function HerinneringUitPagina({
 async function zetUit(sleutel: string): Promise<boolean> {
   // Een nummer dat geen UUID is, hoeft de database niet te zien: PostgREST
   // geeft daar een fout op in plaats van "niets gevonden".
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sleutel)) {
+  if (!isGeldigeUuid(sleutel)) {
     return false
   }
 
