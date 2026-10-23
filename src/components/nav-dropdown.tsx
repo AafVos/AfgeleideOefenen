@@ -78,15 +78,6 @@ export function NavDropdown({
     window.dispatchEvent(new CustomEvent(NAV_DROPDOWN_OPEN_EVENT, { detail: menuId }))
   }
 
-  function toggleMenu() {
-    if (open) {
-      cancelClose()
-      setOpen(false)
-    } else {
-      openMenu()
-    }
-  }
-
   function onRootBlur(e: React.FocusEvent<HTMLDivElement>) {
     if (!rootRef.current?.contains(e.relatedTarget as Node)) scheduleClose()
   }
@@ -107,7 +98,7 @@ export function NavDropdown({
         aria-haspopup="menu"
         aria-controls={menuId}
         data-meet={dataMeet}
-        onClick={toggleMenu}
+        onClick={openMenu}
         className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 ${
           open ? 'bg-surface-2 text-text' : 'text-text-muted'
         } hover:bg-surface-2 hover:text-text`}

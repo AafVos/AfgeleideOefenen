@@ -21,8 +21,8 @@ test('een klik op "Theorie" opent het dropdown-menu in plaats van te navigeren',
   await expect(page.getByRole('link', { name: 'Overzicht' })).toBeVisible()
   await expect(page).toHaveURL(/\/nl\/dashboard/)
 
-  // Nog een klik sluit het menu weer dicht, zonder te navigeren.
-  await knop.click()
+  // Buiten het menu klikken sluit het weer, zonder te navigeren.
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
   await expect(page.getByRole('link', { name: 'Overzicht' })).toBeHidden()
   await expect(page).toHaveURL(/\/nl\/dashboard/)
 })
