@@ -1,7 +1,8 @@
 // Na de OpenNext-bouw:
 // 1. de cache bij de statische bestanden leggen (de live bouw doet dat niet
 //    altijd zelf);
-// 2. de startpagina en de theoriepagina's als los HTML-bestand klaarzetten;
+// 2. de startpagina, de theoriepagina's, het overzicht van de uitlegvideo's
+//    en de voorbeeldpagina's als los HTML-bestand klaarzetten;
 // 3. de worker klein houden voor een bezoeker zonder sessie. De zware
 //    Next-bundel start pas als die echt nodig is.
 import { spawn, spawnSync } from 'node:child_process'
@@ -19,11 +20,17 @@ const workerNext = path.join(wortel, 'worker-next.js')
 const merkteken = 'STARTPAGINA_SNEL'
 
 const ingang = `// ${merkteken}
-// Bezoekers zonder sessie krijgen de startpagina en de theoriepagina's uit
-// een bestand. De zware Next-bundel (worker-next.js) wordt pas geladen als
-// die echt nodig is. Iemand die is ingelogd gaat wel door die bundel, zodat
-// de kop klopt.
-import { anoniemeStartpagina, anoniemeTheorieBestand, theorieZonderPersoonlijk } from "../src/lib/startpagina-snel.ts";
+// Bezoekers zonder sessie krijgen de startpagina, de theoriepagina's, het
+// overzicht van de uitlegvideo's en de voorbeeldpagina's uit een bestand. De
+// zware Next-bundel (worker-next.js) wordt pas geladen als die echt nodig
+// is. Iemand die is ingelogd gaat wel door die bundel, zodat de kop klopt.
+import {
+  anoniemeStartpagina,
+  anoniemeTheorieBestand,
+  anoniemeUitlegVideosPagina,
+  anoniemeVoorbeeldBestand,
+  statischZonderPersoonlijk,
+} from "../src/lib/startpagina-snel.ts";
 
 export { DOQueueHandler } from "./.build/durable-objects/queue.js";
 export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
@@ -70,8 +77,35 @@ export default {
       await bestand.body?.cancel();
     }
 
+    if (env.ASSETS && anoniemeUitlegVideosPagina(request)) {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/uitleg-videos/index.html",
+      );
+      if (bestand.ok) {
+        const antwoord = uitBestand(bestand);
+        antwoord.headers.set("cache-control", "private, no-store");
+        antwoord.headers.set("x-uitleg-videos", "bestand");
+        return antwoord;
+      }
+      await bestand.body?.cancel();
+    }
+
+    const voorbeeld = anoniemeVoorbeeldBestand(request);
+    if (env.ASSETS && voorbeeld) {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/voorbeeld/" + voorbeeld,
+      );
+      if (bestand.ok) {
+        const antwoord = uitBestand(bestand);
+        antwoord.headers.set("cache-control", "private, no-store");
+        antwoord.headers.set("x-voorbeeld", "bestand");
+        return antwoord;
+      }
+      await bestand.body?.cancel();
+    }
+
     const url = new URL(request.url);
-    const zonder = theorieZonderPersoonlijk(url.pathname);
+    const zonder = statischZonderPersoonlijk(url.pathname);
     if (zonder) {
       url.pathname = zonder;
       request = new Request(url, request);
@@ -142,10 +176,12 @@ function schrijfStartpagina() {
 }
 
 const THEORIE_WORTEL = 'src/app/[locale]/(paginas)/theorie'
+const MESSAGES_BESTAND = 'messages/nl.json'
+const VOORBEELDEN_BESTAND = 'src/content/voorbeelden.ts'
 // Een ingelogde leerling mag het losse bestand niet houden: dat heeft de
 // kop van een bezoeker. Het script stuurt hem naar het adres waarop de
 // gewone server de pagina opbouwt.
-const sessieScript = `<script>/*theorie-sessie*/(function(){var delen=document.cookie.split(";");for(var i=0;i<delen.length;i++){var naam=delen[i].split("=")[0].trim();if(/^sb-.+-auth-token(?:\\.\\d+)?$/.test(naam)){var pad=location.pathname;if(pad.length>1&&pad.slice(-1)==="/")pad=pad.slice(0,-1);location.replace(pad+"/persoonlijk"+location.search+location.hash);return}}})()</script>`
+const sessieScript = `<script>/*statisch-sessie*/(function(){var delen=document.cookie.split(";");for(var i=0;i<delen.length;i++){var naam=delen[i].split("=")[0].trim();if(/^sb-.+-auth-token(?:\\.\\d+)?$/.test(naam)){var pad=location.pathname;if(pad.length>1&&pad.slice(-1)==="/")pad=pad.slice(0,-1);location.replace(pad+"/persoonlijk"+location.search+location.hash);return}}})()</script>`
 const THEORIE_TITEL = {
   index: 'Differentiëren: alle regels op één pagina',
 }
@@ -176,6 +212,33 @@ function theoriePaginas() {
   return paginas
 }
 
+function uitlegVideosPaginas() {
+  const tekst = fs.readFileSync(MESSAGES_BESTAND, 'utf8')
+  const titel = tekst.match(/"UitlegVideos":\s*{\s*"title":\s*"([^"]+)"/)
+  if (!titel) {
+    throw new Error('Geen titel gevonden voor het overzicht van de uitlegvideo’s.')
+  }
+  return [{ pad: '/nl/uitleg-videos', bestand: 'index.html', titel: titel[1] }]
+}
+
+function voorbeeldPaginas() {
+  const tekst = fs.readFileSync(VOORBEELDEN_BESTAND, 'utf8')
+  const paginas = []
+  const regex = /slug:\s*"([a-z0-9-]+)"[\s\S]*?kop:\s*"([^"]+)"/g
+  let gevonden
+  while ((gevonden = regex.exec(tekst))) {
+    paginas.push({
+      pad: `/nl/voorbeeld/${gevonden[1]}`,
+      bestand: `${gevonden[1]}.html`,
+      titel: gevonden[2],
+    })
+  }
+  if (paginas.length === 0) {
+    throw new Error('Geen voorbeeldpagina’s gevonden.')
+  }
+  return paginas
+}
+
 function vrijePoort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer()
@@ -195,13 +258,48 @@ function leegStroom(stroom) {
   stroom?.on('data', () => {})
 }
 
-async function schrijfTheoriepaginas() {
-  const paginas = theoriePaginas()
+/**
+ * Haalt `paginas` op bij de draaiende `next start`-server en zet ze klaar
+ * als los bestand: verborgen onder `cdn-cgi/<mapNaam>` voor de worker zelf,
+ * en openbaar op hun eigen adres zodat Cloudflare ze rechtstreeks als
+ * statisch bestand serveert, zonder de worker aan te roepen.
+ */
+async function schrijfStatischeMap(poort, mapNaam, paginas) {
+  const map = path.join(bestanden, 'cdn-cgi', mapNaam)
+  fs.mkdirSync(map, { recursive: true })
+  for (const pagina of paginas) {
+    const antwoord = await fetch(`http://127.0.0.1:${poort}${pagina.pad}`)
+    if (!antwoord.ok) {
+      throw new Error(`${pagina.pad} gaf status ${antwoord.status}.`)
+    }
+    const html = await antwoord.text()
+    if (!html.startsWith('<!DOCTYPE')) {
+      throw new Error(`${pagina.pad} heeft geen HTML.`)
+    }
+    if (!html.includes(pagina.titel)) {
+      throw new Error(`${pagina.pad} mist de titel.`)
+    }
+    if (!html.includes('href="/nl/inloggen"')) {
+      throw new Error(`${pagina.pad} is niet de versie zonder sessie.`)
+    }
+    const metScript = html.includes('statisch-sessie')
+      ? html
+      : html.replace('<head>', `<head>${sessieScript}`)
+    fs.writeFileSync(path.join(map, pagina.bestand), metScript)
+    // Zonder dit bestand start de worker. Met het bestand geeft Cloudflare
+    // de pagina zelf, net als de startpagina.
+    const openbaar = path.join(bestanden, pagina.pad.replace(/^\//, ''), 'index.html')
+    fs.mkdirSync(path.dirname(openbaar), { recursive: true })
+    fs.writeFileSync(openbaar, metScript)
+  }
+}
+
+async function schrijfStatischePaginas() {
   const poort = await vrijePoort()
   if (!poort || poort <= 3100) {
-    throw new Error('Geen vrije poort voor de theoriepagina’s.')
+    throw new Error('Geen vrije poort voor de statische pagina’s.')
   }
-  console.log(`Theoriepagina's ophalen op poort ${poort}.`)
+  console.log(`Statische pagina's ophalen op poort ${poort}.`)
 
   const server = spawn(
     process.execPath,
@@ -259,45 +357,13 @@ async function schrijfTheoriepaginas() {
     }
     if (!klaar) {
       throw new Error(
-        `De theoriepagina's konden niet worden opgebouwd (${laatste}).`,
+        `De statische pagina's konden niet worden opgebouwd (${laatste}).`,
       )
     }
 
-    const map = path.join(bestanden, 'cdn-cgi/theorie')
-    fs.mkdirSync(map, { recursive: true })
-    for (const pagina of paginas) {
-      const antwoord = await fetch(`http://127.0.0.1:${poort}${pagina.pad}`)
-      if (!antwoord.ok) {
-        throw new Error(`${pagina.pad} gaf status ${antwoord.status}.`)
-      }
-      const html = await antwoord.text()
-      if (!html.startsWith('<!DOCTYPE')) {
-        throw new Error(`${pagina.pad} heeft geen HTML.`)
-      }
-      if (!html.includes(pagina.titel)) {
-        throw new Error(`${pagina.pad} mist de titel.`)
-      }
-      if (!html.includes('href="/nl/inloggen"')) {
-        throw new Error(`${pagina.pad} is niet de versie zonder sessie.`)
-      }
-      const metScript = html.includes('theorie-sessie')
-        ? html
-        : html.replace('<head>', `<head>${sessieScript}`)
-      fs.writeFileSync(path.join(map, pagina.bestand), metScript)
-      // Zonder dit bestand start de worker. Met het bestand geeft Cloudflare
-      // de pagina zelf, net als de startpagina.
-      const openbaar =
-        pagina.bestand === 'index.html'
-          ? path.join(bestanden, 'nl/theorie/index.html')
-          : path.join(
-              bestanden,
-              'nl/theorie',
-              pagina.bestand.replace(/\.html$/, ''),
-              'index.html',
-            )
-      fs.mkdirSync(path.dirname(openbaar), { recursive: true })
-      fs.writeFileSync(openbaar, metScript)
-    }
+    await schrijfStatischeMap(poort, 'theorie', theoriePaginas())
+    await schrijfStatischeMap(poort, 'uitleg-videos', uitlegVideosPaginas())
+    await schrijfStatischeMap(poort, 'voorbeeld', voorbeeldPaginas())
   } finally {
     stop()
   }
@@ -372,6 +438,8 @@ if (!fs.existsSync(cache)) {
 
 fs.cpSync(cache, cacheBijBestanden, { recursive: true })
 schrijfStartpagina()
-await schrijfTheoriepaginas()
+await schrijfStatischePaginas()
 maakKleineIngang()
-console.log('Startpagina en theoriepagina’s staan klaar als los bestand.')
+console.log(
+  'Startpagina, theoriepagina’s, uitlegvideo’s-overzicht en voorbeeldpagina’s staan klaar als los bestand.',
+)

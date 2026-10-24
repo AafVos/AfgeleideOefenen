@@ -68,17 +68,54 @@ export function anoniemeTheorieBestand(request: Request): string | null {
   return gevonden[1] ? `${gevonden[1]}.html` : 'index.html'
 }
 
+// /nl/uitleg-videos. Geen diepere paden: de losse video's per slug horen
+// niet bij deze snelpad-aanpak.
+const UITLEG_VIDEOS_PAD = /^\/nl\/uitleg-videos\/?$/
+
 /**
- * /nl/theorie/kettingregel/persoonlijk → /nl/theorie/kettingregel.
- * Alleen voor de theoriepagina's, zodat een ingelogde leerling de gewone
- * pagina krijgt en niet een los bestand.
+ * Geldt voor het overzicht van de uitlegvideo's zonder sessie. Die inhoud is
+ * voor iedereen gelijk (geen `?video=`, zie anoniemePagina hierboven): een
+ * ingelogde leerling krijgt alleen een andere kop en oefenvragen onder de
+ * video, geen ander overzicht.
  */
-export function theorieZonderPersoonlijk(pathname: string): string | null {
+export function anoniemeUitlegVideosPagina(request: Request): boolean {
+  return anoniemePagina(request, (pathname) => UITLEG_VIDEOS_PAD.test(pathname))
+}
+
+// /nl/voorbeeld/wortel-x. Elk voorbeeld staat al vast via
+// generateStaticParams, dus elk bestaand adres heeft een klaargezet bestand.
+const VOORBEELD_PAD = /^\/nl\/voorbeeld\/([a-z0-9-]+)\/?$/
+
+/**
+ * Bestandsnaam van het klaargezette voorbeeld, of null als dit verzoek de
+ * zware server nodig heeft.
+ */
+export function anoniemeVoorbeeldBestand(request: Request): string | null {
+  if (!anoniemePagina(request, (pathname) => VOORBEELD_PAD.test(pathname))) {
+    return null
+  }
+
+  const pathname = new URL(request.url).pathname
+  const gevonden = VOORBEELD_PAD.exec(pathname)
+  if (!gevonden) return null
+  // /persoonlijk is het adres waarop een ingelogde leerling de gewone
+  // pagina krijgt. Daar hoort geen klaargezet bestand bij.
+  if (gevonden[1] === 'persoonlijk') return null
+  return `${gevonden[1]}.html`
+}
+
+/**
+ * /nl/theorie/kettingregel/persoonlijk → /nl/theorie/kettingregel, en
+ * hetzelfde voor /nl/uitleg-videos en /nl/voorbeeld/<slug>. Alleen voor de
+ * statische snelpad-pagina's, zodat een ingelogde leerling de gewone,
+ * persoonlijke pagina krijgt en niet een los bestand.
+ */
+export function statischZonderPersoonlijk(pathname: string): string | null {
   if (!pathname.endsWith('/persoonlijk')) return null
   const basis = pathname.slice(0, -'/persoonlijk'.length)
   if (basis === '/nl/theorie') return basis
-  if (/^\/nl\/theorie\/[a-z0-9-]+$/.test(basis) && !basis.endsWith('/persoonlijk')) {
-    return basis
-  }
+  if (/^\/nl\/theorie\/[a-z0-9-]+$/.test(basis)) return basis
+  if (basis === '/nl/uitleg-videos') return basis
+  if (/^\/nl\/voorbeeld\/[a-z0-9-]+$/.test(basis)) return basis
   return null
 }
