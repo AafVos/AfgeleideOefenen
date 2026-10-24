@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   anoniemeStartpagina,
   anoniemeTheorieBestand,
-  theorieZonderPersoonlijk,
+  anoniemeUitlegVideosPagina,
+  anoniemeVoorbeeldBestand,
+  statischZonderPersoonlijk,
 } from './startpagina-snel'
 
 function verzoek(
@@ -131,17 +133,82 @@ describe('anoniemeTheorieBestand', () => {
   })
 })
 
-describe('theorieZonderPersoonlijk', () => {
+describe('anoniemeUitlegVideosPagina', () => {
+  it('geldt voor een gewoon bezoek aan het overzicht', () => {
+    expect(anoniemeUitlegVideosPagina(verzoek('/nl/uitleg-videos'))).toBe(true)
+    expect(anoniemeUitlegVideosPagina(verzoek('/nl/uitleg-videos/'))).toBe(true)
+  })
+
+  it('geldt niet voor een losse video, een zoekopdracht of een sessiekoekje', () => {
+    expect(anoniemeUitlegVideosPagina(verzoek('/nl/uitleg-videos/kettingregel'))).toBe(
+      false,
+    )
+    expect(anoniemeUitlegVideosPagina(verzoek('/nl/uitleg-videos?video=1'))).toBe(false)
+    expect(
+      anoniemeUitlegVideosPagina(
+        verzoek('/nl/uitleg-videos', {
+          headers: { cookie: 'sb-project-auth-token=geheim' },
+        }),
+      ),
+    ).toBe(false)
+  })
+
+  it('geldt niet voor het adres van een ingelogde leerling', () => {
+    expect(anoniemeUitlegVideosPagina(verzoek('/nl/uitleg-videos/persoonlijk'))).toBe(
+      false,
+    )
+  })
+})
+
+describe('anoniemeVoorbeeldBestand', () => {
+  it('wijst een gewoon bezoek naar het klaargezette bestand', () => {
+    expect(anoniemeVoorbeeldBestand(verzoek('/nl/voorbeeld/wortel-x'))).toBe(
+      'wortel-x.html',
+    )
+    expect(anoniemeVoorbeeldBestand(verzoek('/nl/voorbeeld/wortel-x/'))).toBe(
+      'wortel-x.html',
+    )
+  })
+
+  it('geldt niet voor een dieper pad, een zoekopdracht of een sessiekoekje', () => {
+    expect(anoniemeVoorbeeldBestand(verzoek('/nl/voorbeeld'))).toBeNull()
+    expect(anoniemeVoorbeeldBestand(verzoek('/nl/voorbeeld/wortel-x/extra'))).toBeNull()
+    expect(anoniemeVoorbeeldBestand(verzoek('/nl/voorbeeld/wortel-x?uitleg=1'))).toBeNull()
+    expect(
+      anoniemeVoorbeeldBestand(
+        verzoek('/nl/voorbeeld/wortel-x', {
+          headers: { cookie: 'sb-project-auth-token=geheim' },
+        }),
+      ),
+    ).toBeNull()
+  })
+
+  it('geldt niet voor het adres van een ingelogde leerling', () => {
+    expect(anoniemeVoorbeeldBestand(verzoek('/nl/voorbeeld/persoonlijk'))).toBeNull()
+  })
+})
+
+describe('statischZonderPersoonlijk', () => {
   it('haalt het extra stuk van een theorie-adres af', () => {
-    expect(theorieZonderPersoonlijk('/nl/theorie/persoonlijk')).toBe('/nl/theorie')
-    expect(theorieZonderPersoonlijk('/nl/theorie/kettingregel/persoonlijk')).toBe(
+    expect(statischZonderPersoonlijk('/nl/theorie/persoonlijk')).toBe('/nl/theorie')
+    expect(statischZonderPersoonlijk('/nl/theorie/kettingregel/persoonlijk')).toBe(
       '/nl/theorie/kettingregel',
     )
   })
 
+  it('haalt het extra stuk van de uitlegvideo’s en een voorbeeld af', () => {
+    expect(statischZonderPersoonlijk('/nl/uitleg-videos/persoonlijk')).toBe(
+      '/nl/uitleg-videos',
+    )
+    expect(statischZonderPersoonlijk('/nl/voorbeeld/wortel-x/persoonlijk')).toBe(
+      '/nl/voorbeeld/wortel-x',
+    )
+  })
+
   it('laat andere adressen met rust', () => {
-    expect(theorieZonderPersoonlijk('/nl/theorie/kettingregel')).toBeNull()
-    expect(theorieZonderPersoonlijk('/nl/oefenen/persoonlijk')).toBeNull()
-    expect(theorieZonderPersoonlijk('/nl/theorie/kettingregel/extra/persoonlijk')).toBeNull()
+    expect(statischZonderPersoonlijk('/nl/theorie/kettingregel')).toBeNull()
+    expect(statischZonderPersoonlijk('/nl/oefenen/persoonlijk')).toBeNull()
+    expect(statischZonderPersoonlijk('/nl/theorie/kettingregel/extra/persoonlijk')).toBeNull()
+    expect(statischZonderPersoonlijk('/nl/voorbeeld/persoonlijk')).toBeNull()
   })
 })
