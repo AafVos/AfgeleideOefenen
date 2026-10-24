@@ -38,13 +38,13 @@ export function leesProefSelectie(input: {
 }
 
 /**
- * Van een oefenlink naar de proefroute. `van=` gaat eraf: dat is geen
- * volgcookie en hoort niet in dit adres.
+ * Van een oefenlink naar de proefroute. `van=` blijft staan: dat is geen
+ * volgcookie maar de bronmeting (bijvoorbeeld een voorbeeldpagina), en
+ * `src/lib/meten/gebeurtenis.ts` leest die juist uit de adresbalk.
  */
 export function proberenVanOefenen(oefenen: string): string {
   const vraag = oefenen.includes('?') ? oefenen.slice(oefenen.indexOf('?') + 1) : ''
   const params = new URLSearchParams(vraag)
-  params.delete('van')
   const tekst = params.toString()
   return tekst ? `/proberen?${tekst}` : '/proberen'
 }
