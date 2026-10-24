@@ -49,7 +49,7 @@ import {
 import { volgendeTegel } from '@/lib/practice/volgende-tegel'
 import { getVideoForCluster } from '@/lib/videos'
 
-import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
+import { ExerciseTileGrid, modifierVrijeKlik, type TileSection } from './exercise-tile-grid'
 import { laadOpgave } from './laad-opgave'
 import { SoortFilter } from './soort-filter'
 import { StudyCard } from './study-card'
@@ -910,15 +910,59 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                   id={`paragraaf-${p.slug}`}
                   className={paragraafZichtbaar ? 'scroll-mt-14 lg:scroll-mt-4' : undefined}
                 >
-                  {paragraafZichtbaar && (
-                    <h3 className="mt-8 font-serif text-xl text-text">
-                      <span className="font-mono font-semibold">{p.label}</span> {p.title}
-                    </h3>
-                  )}
+                  {paragraafZichtbaar &&
+                    (() => {
+                      const paragraafTekst = (
+                        <>
+                          <span className="font-mono font-semibold">{p.label}</span> {p.title}
+                        </>
+                      )
+                      const eersteBlokMetInhoud = blokken.find((b) => b.inhoud.length > 0)
+                      const eersteTegel = eersteBlokMetInhoud?.inhoud
+                        .flatMap((s) => s.subSections.flatMap((sub) => sub.tiles))
+                        .at(0)
+                      if (!eersteBlokMetInhoud || !eersteTegel) {
+                        return (
+                          <h3 className="mt-8 font-serif text-xl text-text">{paragraafTekst}</h3>
+                        )
+                      }
+                      const basis = hrefMetSoort(
+                        `/oefenen?blok=${encodeURIComponent(eersteBlokMetInhoud.blok.slug)}`,
+                        soort,
+                      )
+                      return (
+                        <h3 className="mt-8">
+                          <KlikLink
+                            href={
+                              `${basis}&q=${encodeURIComponent(eersteTegel.questionId)}` as '/oefenen'
+                            }
+                            prefetch={false}
+                            data-meet="oefenen-kopje"
+                            bezigTekst="Opgave openen"
+                            onClick={modifierVrijeKlik(() => onKies(eersteTegel.questionId, basis))}
+                            className="font-serif text-xl text-text hover:text-accent"
+                          >
+                            {paragraafTekst}
+                          </KlikLink>
+                        </h3>
+                      )
+                    })()}
                   {blokken.map(({ blok, inhoud }) => {
                     const basis = hrefMetSoort(
                       `/oefenen?blok=${encodeURIComponent(blok.slug)}`,
                       soort,
+                    )
+                    const eersteTegel = inhoud
+                      .flatMap((s) => s.subSections.flatMap((sub) => sub.tiles))
+                      .at(0)
+                    const blokTekst = (
+                      <>
+                        <span className="font-mono font-semibold">
+                          {p.label} {blok.letter}
+                        </span>
+                        {' – '}
+                        {blok.title}
+                      </>
                     )
                     return (
                       <div
@@ -930,13 +974,26 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                       >
                         {inhoud.length > 0 && (
                           <>
-                            <h3 className="mt-6 font-serif text-lg text-text">
-                              <span className="font-mono font-semibold">
-                                {p.label} {blok.letter}
-                              </span>
-                              {' – '}
-                              {blok.title}
-                            </h3>
+                            {eersteTegel ? (
+                              <h3 className="mt-6">
+                                <KlikLink
+                                  href={
+                                    `${basis}&q=${encodeURIComponent(eersteTegel.questionId)}` as '/oefenen'
+                                  }
+                                  prefetch={false}
+                                  data-meet="oefenen-kopje"
+                                  bezigTekst="Opgave openen"
+                                  onClick={modifierVrijeKlik(() =>
+                                    onKies(eersteTegel.questionId, basis),
+                                  )}
+                                  className="font-serif text-lg text-text hover:text-accent"
+                                >
+                                  {blokTekst}
+                                </KlikLink>
+                              </h3>
+                            ) : (
+                              <h3 className="mt-6 font-serif text-lg text-text">{blokTekst}</h3>
+                            )}
                             <ExerciseTileGrid
                               baseHref={basis}
                               sections={inhoud}

@@ -171,6 +171,29 @@ test('filter bovenaan geldt voor heel hoofdstuk 2 @telefoon', async ({ page }) =
   await geenLegeKoppen(hoofdstuk)
 })
 
+test('paragraaf- en bloktitels zijn klikbaar en openen de eerste opgave eronder (AFG-607) @telefoon', async ({
+  page,
+}) => {
+  await page.goto('/nl/oefenen?chapter=h2')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+
+  // Vóór AFG-607 was dit platte tekst in een h3: een dode klik, geen link.
+  const paragraafKop = page.locator('#paragraaf-h2-1 > h3').getByRole('link')
+  await expect(paragraafKop).toHaveAttribute('href', /\/oefenen\?.*q=/)
+
+  const blokKop = page.locator('#blok-h2-1d > h3').getByRole('link')
+  await expect(blokKop).toHaveAttribute('href', /\/oefenen\?.*q=/)
+
+  // De eerste klik kan aankomen voordat de pagina klaarstaat; die doet dan
+  // niets. Dat overkomt een leerling met een trage verbinding ook.
+  await expect(async () => {
+    await blokKop.click()
+    await expect(page.getByRole('button', { name: 'Nakijken', exact: true })).toBeVisible({
+      timeout: 3_000,
+    })
+  }).toPass({ timeout: 60_000, intervals: [500, 1_000, 2_000] })
+})
+
 async function geenLegeKoppen(hoofdstuk: Locator) {
   const blokken = hoofdstuk.locator('[id^="blok-"]')
   const aantalBlokken = await blokken.count()
