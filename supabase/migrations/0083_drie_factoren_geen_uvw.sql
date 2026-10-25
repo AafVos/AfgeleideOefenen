@@ -1,8 +1,16 @@
 -- Opgeslagen uitleg bij h2_productregel / drie_factoren noemde de drie
 -- factoren nog u, v en w. Met drie factoren is er geen derde toegestane
--- letter naast f, g en h over (0067/0068 verving alleen paren), dus deze
--- stappen beschrijven de factoren voortaan zonder ze een naam te geven.
--- Het eindantwoord (stap 4) verandert niet.
+-- letter naast f, g en h over, dus deze stappen beschrijven de factoren
+-- voortaan zonder ze een naam te geven. Het eindantwoord (stap 4)
+-- verandert niet.
+--
+-- 0067's blanket zoek-vervang (losse u naar g, losse v naar h) liep al
+-- over deze teksten heen vóór dit ticket er was: een losse $u(x)$ werd
+-- toen al $g(x)$ en een losse $v(x)$ al $h(x)$, maar $w(x)$ bleef staan,
+-- en de samengeplakte formule $u'vw + uv'w + uvw'$ werd maar voor één
+-- letter aangepast omdat de losse-lettergrens daar niet overal klopte.
+-- De "oud"-teksten hieronder zijn dus de huidige (deels al gewijzigde)
+-- tekst, niet de allereerste tekst uit migratie 0014.
 --
 -- Herhaalbaar: twee keer draaien laat dezelfde tekst staan.
 
@@ -43,47 +51,47 @@ BEGIN
   VALUES
     (
       1, 1,
-      $o$Herken het product van drie factoren: $f(x) = u(x) \cdot v(x) \cdot w(x)$ met $u(x) = x$, $v(x) = x-1$, $w(x) = x+2$.$o$,
+      $o$Herken het product van drie factoren: $f(x) = g(x) \cdot h(x) \cdot w(x)$ met $g(x) = x$, $h(x) = x-1$, $w(x) = x+2$.$o$,
       $n$Herken het product van drie factoren: $f(x) = x \cdot (x-1) \cdot (x+2)$.$n$
     ),
     (
       1, 2,
-      $o$Bepaal de afgeleiden: $u'(x) = 1$, $v'(x) = 1$, $w'(x) = 1$.$o$,
+      $o$Bepaal de afgeleiden: $g'(x) = 1$, $h'(x) = 1$, $w'(x) = 1$.$o$,
       $n$Bepaal de afgeleiden van de losse factoren: $x$ heeft afgeleide $1$, $x-1$ heeft afgeleide $1$ en $x+2$ heeft afgeleide $1$.$n$
     ),
     (
       1, 3,
-      $o$Pas de uitgebreide productregel toe: $f'(x) = u'vw + uv'w + uvw'$.$o$,
+      $o$Pas de uitgebreide productregel toe: $f'(x) = g'vw + uv'w + uvw'$.$o$,
       $n$Pas de uitgebreide productregel toe: vermenigvuldig steeds de afgeleide van één factor met de andere twee, en tel de drie uitkomsten op.$n$
     ),
     (
       2, 1,
-      $o$De variabele is $t$. Herken drie factoren: $u(t) = t$, $v(t) = t-1$, $w(t) = t+2$.$o$,
+      $o$De variabele is $t$. Herken drie factoren: $g(t) = t$, $h(t) = t-1$, $w(t) = t+2$.$o$,
       $n$De variabele is $t$. Herken het product van drie factoren: $F(t) = t \cdot (t-1) \cdot (t+2)$.$n$
     ),
     (
       2, 2,
-      $o$Bepaal de afgeleiden: $u'(t) = v'(t) = w'(t) = 1$.$o$,
+      $o$Bepaal de afgeleiden: $g'(t) = h'(t) = w'(t) = 1$.$o$,
       $n$Bepaal de afgeleiden van de losse factoren: $t$, $t-1$ en $t+2$ hebben alle drie afgeleide $1$.$n$
     ),
     (
       2, 3,
-      $o$Pas de uitgebreide productregel toe: $F'(t) = u'vw + uv'w + uvw'$.$o$,
+      $o$Pas de uitgebreide productregel toe: $F'(t) = g'vw + uv'w + uvw'$.$o$,
       $n$Pas de uitgebreide productregel toe: vermenigvuldig steeds de afgeleide van één factor met de andere twee, en tel de drie uitkomsten op.$n$
     ),
     (
       3, 1,
-      $o$Drie factoren: $u(x) = x+1$, $v(x) = x-2$, $w(x) = 2x+3$.$o$,
+      $o$Drie factoren: $g(x) = x+1$, $h(x) = x-2$, $w(x) = 2x+3$.$o$,
       $n$Herken het product van drie factoren: $f(x) = (x+1) \cdot (x-2) \cdot (2x+3)$.$n$
     ),
     (
       3, 2,
-      $o$Bepaal de afgeleiden: $u'(x) = 1$, $v'(x) = 1$, $w'(x) = 2$.$o$,
+      $o$Bepaal de afgeleiden: $g'(x) = 1$, $h'(x) = 1$, $w'(x) = 2$.$o$,
       $n$Bepaal de afgeleiden van de losse factoren: $x+1$ heeft afgeleide $1$, $x-2$ heeft afgeleide $1$ en $2x+3$ heeft afgeleide $2$.$n$
     ),
     (
       3, 3,
-      $o$Pas de uitgebreide productregel toe: $f'(x) = u'vw + uv'w + uvw'$.$o$,
+      $o$Pas de uitgebreide productregel toe: $f'(x) = g'vw + uv'w + uvw'$.$o$,
       $n$Pas de uitgebreide productregel toe: vermenigvuldig steeds de afgeleide van één factor met de andere twee, en tel de drie uitkomsten op.$n$
     );
 
