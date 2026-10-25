@@ -64,6 +64,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      # Gebruikt alleen node:fs, dus dit kan al vóór `npm ci`. Vangt af dat
+      # twee pull requests die los van elkaar vertakt zijn, allebei dezelfde
+      # migratie-nummer kiezen: geen git-conflict (verschillende
+      # bestandsnamen), dus "Botst met de doeltak" ziet dit niet, en pas het
+      # registreren op de echte database zou botsen (AFG-644).
+      - name: Migratienummers controleren
+        run: node scripts/controleer-migratienummers.mjs
+
       - name: Pakketten installeren
         run: npm ci
 
