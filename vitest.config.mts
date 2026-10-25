@@ -8,8 +8,9 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    // Alleen pure rekenregels: geen browser, geen database, geen Gemini.
+    // Alleen pure rekenregels en losse bouwscript-logica: geen browser, geen
+    // database, geen Gemini.
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'],
   },
 })
