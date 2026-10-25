@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
+import { StickyProbeerBalk } from '@/components/sticky-probeer-balk'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
@@ -77,10 +78,12 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         <p className="text-sm font-medium uppercase tracking-wider text-accent">Voorbeeld</p>
         <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{voorbeeld.kop}</h1>
 
-        <div className="mt-6 flex flex-col items-start gap-2">
+        <div id="probeer-knop-primair" className="mt-6 flex flex-col items-start gap-2">
           <p className="text-sm text-text-muted">Drie sommen over dit onderwerp, zonder account.</p>
           <ProbeerKnop oefenen={voorbeeld.oefenen} />
         </div>
+
+        <StickyProbeerBalk oefenen={voorbeeld.oefenen} primaryId="probeer-knop-primair" />
 
         {voorbeeld.examenbrug && (
           <p className="mt-4 text-sm text-text-muted">

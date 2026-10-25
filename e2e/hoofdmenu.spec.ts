@@ -36,3 +36,22 @@ test('Tab naar "Oefenen" toont het menu in plaats van weg te navigeren', async (
   await expect(page.getByRole('link', { name: 'Overzicht' })).toBeVisible()
   await expect(page).toHaveURL(/\/nl\/dashboard/)
 })
+
+/**
+ * Het hamburgermenu op de telefoon (AFG-622): tikken ernaast moet het sluiten,
+ * net als bij de dropdown op de computer hierboven.
+ */
+test('op de telefoon sluit het hoofdmenu bij een tik ernaast (AFG-622) @telefoon', async ({
+  page,
+}) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 700, 'Dit gaat over telefoonformaat.')
+
+  const hamburger = page.getByLabel('Menu openen')
+  await hamburger.tap()
+
+  const link = page.getByRole('link', { name: 'Voortgang' })
+  await expect(link).toBeVisible()
+
+  await page.locator('body').tap({ position: { x: 5, y: 5 } })
+  await expect(link).toBeHidden()
+})
