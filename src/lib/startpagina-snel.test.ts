@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  anoniemeInloggenPagina,
   anoniemeStartpagina,
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
@@ -157,6 +158,28 @@ describe('anoniemeUitlegVideosPagina', () => {
     expect(anoniemeUitlegVideosPagina(verzoek('/nl/uitleg-videos/persoonlijk'))).toBe(
       false,
     )
+  })
+})
+
+describe('anoniemeInloggenPagina', () => {
+  it('geldt voor een kaal bezoek aan de inlogpagina', () => {
+    expect(anoniemeInloggenPagina(verzoek('/nl/inloggen'))).toBe(true)
+    expect(anoniemeInloggenPagina(verzoek('/nl/inloggen/'))).toBe(true)
+  })
+
+  it('geldt niet met een terugkeerpad, een foutmelding of een sessiekoekje', () => {
+    expect(anoniemeInloggenPagina(verzoek('/nl/inloggen?naar=%2Foefenen'))).toBe(false)
+    expect(anoniemeInloggenPagina(verzoek('/nl/inloggen?error=google_afgebroken'))).toBe(
+      false,
+    )
+    expect(anoniemeInloggenPagina(verzoek('/nl/inloggen?mail=bevestigd'))).toBe(false)
+    expect(
+      anoniemeInloggenPagina(
+        verzoek('/nl/inloggen', {
+          headers: { cookie: 'sb-project-auth-token=geheim' },
+        }),
+      ),
+    ).toBe(false)
   })
 })
 
