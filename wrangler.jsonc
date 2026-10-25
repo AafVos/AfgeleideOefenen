@@ -8,7 +8,26 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
     // /nl geeft het klaargezette bestand, zonder eerst door te sturen naar /nl/.
-    "html_handling": "drop-trailing-slash"
+    "html_handling": "drop-trailing-slash",
+    // Cloudflare geeft een bestand dat op het pad past altijd rechtstreeks
+    // terug, los van een zoekopdracht of koekje (AFG-632). Voor /nl (het
+    // `?van=youtube`-bannertje leest de zoekopdracht clientside, na het
+    // laden van het klaargezette bestand), /theorie en /voorbeeld/* kan dat:
+    // die hebben geen zoekopdracht die de server anders moet laten zien.
+    // /inloggen (`?naar=`, `?error=`, `?mail=`, of een sessiekoekje) en
+    // /uitleg-videos (`?video=` stuurt een oude gedeelde link via de server
+    // door naar de losse video, zie stuurOudeVideolinkDoor) wel: die moeten
+    // naar de gewone server in plaats van altijd het klaargezette, anonieme
+    // bestand te krijgen (AFG-635: die server-redirect viel anders stil).
+    // Dit stuurt alleen die paden eerst naar de worker, die zelf beslist
+    // (zie src/lib/startpagina-snel.ts, anoniemeInloggenPagina en
+    // anoniemeUitlegVideosPagina).
+    "run_worker_first": [
+      "/nl/inloggen",
+      "/nl/inloggen/",
+      "/nl/uitleg-videos",
+      "/nl/uitleg-videos/"
+    ]
   },
   // De startpagina-ingang blijft klein. worker-next.js is de al gebundelde
   // Next-server en laadt pas als een pagina hem echt nodig heeft.
@@ -22,6 +41,13 @@
   ],
   "observability": {
     "enabled": true
+  },
+  // Elke dag om 16:00 UTC (18:00 Nederlandse zomertijd, 17:00 wintertijd):
+  // de herinneringsmail voor wie een tijdje niet geoefend heeft (AFG-487).
+  // Dit is de eerste geplande taak van de site. De scheduled-ingang staat in
+  // scripts/statische-cache.mjs en roept /api/cron/herinneringen aan.
+  "triggers": {
+    "crons": ["0 16 * * *"]
   }
   // Geheimen staan als Worker-secrets in Cloudflare, nooit in dit bestand.
   // De volledige lijst (naam, bouw of runtime, geheim of niet) staat in

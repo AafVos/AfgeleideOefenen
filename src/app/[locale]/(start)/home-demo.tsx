@@ -22,6 +22,10 @@ type QuestionConfig = {
   correctLatex: string
 }
 
+/** Drie sommen van dezelfde soort als de makkelijke proefsom: een polynoom. */
+const DRIE_SOMMEN =
+  '/proberen?chapter=h2&topic=h2_termsgewijs&cluster=polynoom_differentieren'
+
 const QUESTIONS: Record<Difficulty, QuestionConfig> = {
   easy: {
     difficulty: 1,
@@ -37,7 +41,13 @@ const QUESTIONS: Record<Difficulty, QuestionConfig> = {
   },
 }
 
-function DemoCard({ difficulty }: { difficulty: Difficulty }) {
+function DemoCard({
+  difficulty,
+  onSubmit,
+}: {
+  difficulty: Difficulty
+  onSubmit: () => void
+}) {
   const t = useTranslations('HomeDemo')
   const q = QUESTIONS[difficulty]
   const [answer, setAnswer] = useState('')
@@ -47,6 +57,7 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
   function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!answer.trim() || state.phase !== 'input') return
+    onSubmit()
     if (proefsomKlopt(difficulty, answer)) {
       setState({ phase: 'correct' })
     } else {
@@ -118,7 +129,12 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           </label>
 
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={!answer.trim()} className="min-h-11 px-5">
+            <Button
+              type="submit"
+              disabled={!answer.trim()}
+              data-meet="home-proefsom-nakijken"
+              className="min-h-11 px-5"
+            >
               {t('submit')}
             </Button>
             <span className="text-xs text-text-muted">{t('hint')}</span>
@@ -132,17 +148,23 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
           <p className="mt-1 text-sm text-accent">{t('correctBody')}</p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
-              href="/proberen"
+              href={DRIE_SOMMEN}
+              data-meet="home-proefsom-drie-sommen"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
             >
               {t('correctCta')}
             </Link>
-            <Link href="/registreren" className="text-sm text-accent underline-offset-2 hover:underline">
+            <Link
+              href="/registreren"
+              data-meet="home-proefsom-registreren"
+              className="text-sm text-accent underline-offset-2 hover:underline"
+            >
               {t('orAccount')}
             </Link>
             <button
               type="button"
               onClick={retry}
+              data-meet="home-proefsom-opnieuw"
               className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white"
             >
               {t('tryAnother')}
@@ -189,17 +211,23 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
-              href="/proberen"
+              href={DRIE_SOMMEN}
+              data-meet="home-proefsom-drie-sommen"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
             >
               {t('wrongCta')}
             </Link>
-            <Link href="/registreren" className="text-sm text-accent-2 underline-offset-2 hover:underline">
+            <Link
+              href="/registreren"
+              data-meet="home-proefsom-registreren"
+              className="text-sm text-accent-2 underline-offset-2 hover:underline"
+            >
               {t('orAccount')}
             </Link>
             <button
               type="button"
               onClick={retry}
+              data-meet="home-proefsom-opnieuw"
               className="inline-flex min-h-11 items-center rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white"
             >
               {t('tryAgain')}
@@ -214,6 +242,19 @@ function DemoCard({ difficulty }: { difficulty: Difficulty }) {
 export function HomeDemo() {
   const t = useTranslations('HomeDemo')
   const [active, setActive] = useState<Difficulty>('easy')
+  /**
+   * Telt elke klik op een niveau mee, ook op het al actieve niveau. Zo
+   * begint de proefsom altijd opnieuw bij een klik, in plaats van dat een
+   * klik op het actieve tabblad niets zichtbaars doet.
+   */
+  const [klikTeller, setKlikTeller] = useState(0)
+  /**
+   * De niveaukeuze verschijnt pas na de eerste nagekeken poging (AFG-588):
+   * bezoekers bleven klikken op de keuze zelf in plaats van meteen een som
+   * na te kijken. Zo is de makkelijke som meteen te zien, zonder keuze
+   * vooraf.
+   */
+  const [heeftGeprobeerd, setHeeftGeprobeerd] = useState(false)
 
   const tabs: { id: Difficulty; label: string }[] = [
     { id: 'easy', label: t('tabEasy') },
@@ -221,8 +262,13 @@ export function HomeDemo() {
     { id: 'hard', label: t('tabHard') },
   ]
 
+  function kiesNiveau(id: Difficulty) {
+    setActive(id)
+    setKlikTeller((n) => n + 1)
+  }
+
   return (
-    <section className="mt-14">
+    <section id="proefsom" className="mt-3 scroll-mt-6 sm:mt-8">
       <div className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
         <span className="text-xs font-medium uppercase tracking-wider text-accent">
           {t('eyebrow')}
@@ -231,24 +277,34 @@ export function HomeDemo() {
         <span className="text-xs text-text-muted">{t('subEyebrow')}</span>
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-xl border border-border bg-surface p-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActive(tab.id)}
-            className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
-              active === tab.id
-                ? 'bg-accent text-white shadow-sm'
-                : 'text-text-muted hover:text-text'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {heeftGeprobeerd && (
+        <div className="mb-3">
+          <p className="mb-1 text-center text-xs text-text-muted">{t('anderNiveau')}</p>
+          <div className="flex gap-1 rounded-xl border border-border bg-surface p-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => kiesNiveau(tab.id)}
+                data-meet="home-proefsom-niveau"
+                className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition ${
+                  active === tab.id
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-muted hover:text-text'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
-      <DemoCard key={active} difficulty={active} />
+      <DemoCard
+        key={`${active}-${klikTeller}`}
+        difficulty={active}
+        onSubmit={() => setHeeftGeprobeerd(true)}
+      />
     </section>
   )
 }

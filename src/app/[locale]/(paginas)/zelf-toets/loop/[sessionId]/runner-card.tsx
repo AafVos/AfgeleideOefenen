@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { Math as TeX, RichMath } from '@/components/math'
-import { Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner, NakijkMelding } from '@/components/ui'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import { useTimeSpent } from '@/lib/practice/use-time-spent'
 
@@ -33,6 +33,7 @@ type State =
       done: boolean
       correctAnswer: string
       latexCorrectAnswer: string | null
+      melding: string | null
     }
   | { phase: 'saved'; done: boolean }
 
@@ -111,6 +112,7 @@ export function TestRunnerCard({
         done: result.done,
         correctAnswer: result.correctAnswer,
         latexCorrectAnswer: result.latexCorrectAnswer,
+        melding: result.melding,
       })
     })
   }
@@ -259,6 +261,12 @@ export function TestRunnerCard({
               })()}
             </span>
           </div>
+
+          {state.melding && (
+            <div className="mt-3">
+              <NakijkMelding text={state.melding} />
+            </div>
+          )}
 
           {orderedSteps.length > 0 ? (
             <div className="mt-4 rounded-lg border border-border bg-white/90 shadow-sm">

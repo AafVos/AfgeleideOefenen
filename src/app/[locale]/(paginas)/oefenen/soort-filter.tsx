@@ -5,7 +5,7 @@ const KNOPPEN: Array<{
   id: SoortKeuze
   label: (aantal: { gewoon: number; verhaal: number }) => string
 }> = [
-  { id: 'alles', label: () => 'Alles' },
+  { id: 'alles', label: (aantal) => `Alles (${aantal.gewoon + aantal.verhaal})` },
   { id: 'gewoon', label: (aantal) => `Gewone sommen (${aantal.gewoon})` },
   { id: 'verhaal', label: (aantal) => `Verhaaltjes (${aantal.verhaal})` },
 ]
@@ -40,6 +40,7 @@ export function SoortFilter({
             type="button"
             role="radio"
             aria-checked={aan}
+            data-meet={`oefenen-filter-${knop.id}`}
             onClick={() => onKies(knop.id)}
             className={cn(
               'inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium',

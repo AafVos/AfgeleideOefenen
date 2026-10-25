@@ -386,6 +386,29 @@ test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   expect(data.users.map((u) => u.email)).not.toContain(email)
 })
 
+test('niet-overeenkomende wachtwoorden wissen niet het e-mailadres en de gebruikersnaam (AFG-553)', async ({
+  page,
+}) => {
+  const email = uniekAdres()
+  const naam = uniekeNaam()
+
+  await page.goto('/nl/registreren')
+  await page.locator('input[name="username"]').fill(naam)
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('input[name="password"]').fill(WEGWERP_WACHTWOORD)
+  await page.locator('input[name="passwordConfirm"]').fill('iets-anders-12')
+  await page.getByRole('button', { name: 'Account aanmaken' }).click()
+
+  await expect(melding(page)).toContainText('De wachtwoorden komen niet overeen.')
+
+  // De leerling hoeft zijn e-mailadres en gebruikersnaam niet opnieuw te
+  // typen; alleen de wachtwoordvelden mogen om veiligheidsredenen leeg zijn.
+  await expect(page.locator('input[name="email"]')).toHaveValue(email)
+  await expect(page.locator('input[name="username"]')).toHaveValue(naam)
+  await expect(page.locator('input[name="password"]')).toHaveValue('')
+  await expect(page.locator('input[name="passwordConfirm"]')).toHaveValue('')
+})
+
 test('registreren met een adres dat al bestaat maakt geen tweede account', async ({
   page,
 }) => {
@@ -441,6 +464,24 @@ test('inloggen vóór het bevestigen geeft een duidelijke melding', async ({
   await page.goto(linkUitMail(opnieuw, VERIFY_PAD))
   await expect(page.getByText('Je account is bevestigd!')).toBeVisible()
   await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+})
+
+test('een verkeerd wachtwoord wist het e-mailadres niet (AFG-553)', async ({
+  page,
+}) => {
+  await page.goto('/nl/inloggen')
+  await page.locator('input[name="email"]').fill(TESTLEERLING.email)
+  await page.locator('input[name="password"]').fill('dit-is-fout-123')
+  await page.getByRole('button', { name: 'Inloggen' }).click()
+
+  await expect(foutmelding(page)).toContainText(
+    'Onjuiste combinatie van e-mail en wachtwoord.',
+  )
+
+  // Het e-mailadres hoeft niet opnieuw getypt te worden; het wachtwoord mag
+  // om veiligheidsredenen leeg zijn.
+  await expect(page.locator('input[name="email"]')).toHaveValue(TESTLEERLING.email)
+  await expect(page.locator('input[name="password"]')).toHaveValue('')
 })
 
 test('wachtwoord vergeten: mail, link, nieuw wachtwoord, inloggen', async ({

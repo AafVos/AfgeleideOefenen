@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
@@ -6,7 +7,9 @@ import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 
+import { ExamenStart } from './examen-start'
 import { HomeDemo } from './home-demo'
+import { YoutubeWelkom } from './youtube-welkom'
 
 // Voor iedereen hetzelfde. Een ingelogde leerling komt hier niet: de
 // middleware stuurt hem meteen naar het dashboard. Zo hoeft deze pagina
@@ -29,6 +32,10 @@ export async function generateMetadata({
 }
 
 export default async function HomePage() {
+  // wiskundemetaaf.nl heeft een eigen startpagina: die gaat over het examen,
+  // niet over differentiëren per onderwerp.
+  if (SITE_CONFIG.variant === 'wiskundemetaaf') return <ExamenStart />
+
   const t = await getTranslations('Home')
 
   const domain = SITE_CONFIG.domain
@@ -83,19 +90,24 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="mx-auto max-w-3xl px-4 py-16">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:py-16">
         <section className="text-center">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wider text-accent">
+          <p className="mb-1 text-sm font-medium uppercase tracking-wider text-accent sm:mb-3">
             {t('eyebrow')}
           </p>
-          <h1 className="font-serif text-4xl leading-tight text-text sm:text-5xl">
+          <h1 className="font-serif text-3xl leading-tight text-text sm:text-5xl">
             {t('h1Start')}{' '}
             <span className="whitespace-nowrap text-accent">{t('h1Accent')}</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-text-muted">
+          <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-6">
             {t('lead')}
           </p>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-text-muted">
+
+          <Suspense fallback={null}>
+            <YoutubeWelkom />
+          </Suspense>
+
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-text-muted sm:mt-4">
             {t.rich('subLead', {
               oefenen: (chunks) => (
                 <span className="text-text">{chunks}</span>
@@ -106,6 +118,7 @@ export default async function HomePage() {
               howItWorks: () => (
                 <Link
                   href="/hoe-het-werkt"
+                  data-meet="start-hoe-het-werkt"
                   className="font-medium text-accent underline-offset-2 hover:underline"
                 >
                   {t('subLeadLink')}
@@ -113,31 +126,49 @@ export default async function HomePage() {
               ),
             })}
           </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <p className="mt-2 sm:mt-4">
             <a
-              href="#regels"
+              href="#proefsom"
+              data-meet="start-herfstvakantie"
+              className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
+            >
+              {t('herfstvakantie')}
+            </a>
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
+            <a
+              href="#proefsom"
+              data-meet="start-regels"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
               {t('ctaRegel')}
             </a>
             <Link
               href="/registreren"
+              data-meet="start-registreren"
               className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
               {t('ctaRegister')}
             </Link>
             <Link
               href="/inloggen"
+              data-meet="start-inloggen"
               className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
             >
               {t('ctaLogin')}
             </Link>
           </div>
-          <p className="mt-3 text-sm text-text-muted">{t('tagline')}</p>
+        </section>
+
+        <HomeDemo />
+
+        <section className="mt-10 text-center">
+          <p className="text-sm text-text-muted">{t('tagline')}</p>
           <p className="mt-4">
             <IntegraalVerwijzing
               tekst={t('integraal')}
+              dataMeet="start-integraal"
               className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
             />
           </p>
@@ -161,10 +192,11 @@ export default async function HomePage() {
                 ['topic7Title', 'topic7Body', '/theorie#hoofdstuk-h9'],
               ] as const
             ).map(([titleKey, bodyKey, href]) => (
-              <li key={titleKey}>
+              <li key={titleKey} className="flex">
                 <Link
                   href={href}
-                  className="block min-h-11 rounded-xl border border-border bg-surface p-4 hover:bg-surface-2"
+                  data-meet="start-onderwerp"
+                  className="block min-h-11 w-full rounded-xl border border-border bg-surface p-4 hover:bg-surface-2"
                 >
                   <p className="font-medium text-text underline decoration-border underline-offset-4">
                     {t(titleKey)}
@@ -178,11 +210,12 @@ export default async function HomePage() {
           <ul className="mt-4 space-y-1">
             {(
               [
+                ['zoek5', '/voorbeeld/ln-x'],
+                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
+                ['zoek3', '/voorbeeld/sin-x'],
                 ['zoek1', '/voorbeeld/x-kwadraat'],
                 ['zoek2', '/voorbeeld/wortel-x'],
-                ['zoek3', '/voorbeeld/sin-x'],
                 ['zoek4', '/voorbeeld/e-tot-de-x'],
-                ['zoek5', '/voorbeeld/ln-x'],
                 ['zoek6', '/theorie/raaklijn'],
                 ['zoek7', '/theorie/extreme-waarden'],
               ] as const
@@ -190,6 +223,7 @@ export default async function HomePage() {
               <li key={href}>
                 <Link
                   href={href}
+                  data-meet="start-veelgezocht"
                   className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
                 >
                   {t(labelKey)}
@@ -202,6 +236,7 @@ export default async function HomePage() {
               link: (chunks) => (
                 <Link
                   href={EXAMENTRAINING_PAD}
+                  data-meet="start-examentraining"
                   className="font-medium text-accent underline-offset-2 hover:underline"
                 >
                   {chunks}
@@ -210,8 +245,6 @@ export default async function HomePage() {
             })}
           </p>
         </section>
-
-        <HomeDemo />
 
         <section className="mt-20 grid gap-6 sm:grid-cols-3">
           <Feature title={t('feature1Title')} body={t('feature1Body')} />
@@ -241,7 +274,7 @@ export default async function HomePage() {
                 key={item.question}
                 className="group rounded-xl border border-border bg-surface p-4 open:bg-surface-2"
               >
-                <summary className="cursor-pointer font-medium text-text">
+                <summary data-meet="start-faq" className="cursor-pointer font-medium text-text">
                   {item.question}
                 </summary>
                 <p className="mt-2 text-sm text-text-muted">{item.answer}</p>
@@ -256,6 +289,7 @@ export default async function HomePage() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/registreren"
+              data-meet="start-cta-registreren"
               className="rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
               {t('ctaRegister')}
@@ -267,9 +301,12 @@ export default async function HomePage() {
   )
 }
 
+// Geen kaart-opmaak (border/bg-surface/rounded): die opmaak gebruiken we
+// elders alleen voor echte links, en leerlingen klikten hierop alsof het
+// een tegel was (AFG-512).
 function Feature({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-5">
+    <div className="text-center sm:text-left">
       <h2 className="font-serif text-xl text-text">{title}</h2>
       <p className="mt-2 text-sm leading-relaxed text-text-muted">{body}</p>
     </div>

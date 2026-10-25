@@ -5,6 +5,13 @@
  * vóór de overstap) zijn weg sinds migratie 0033.
  */
 
+import type { SiteVariant } from '@/config/site'
+import type {
+  Gebeurtenis as MeetGebeurtenisRij,
+  MeetApparaat,
+  MeetSoort,
+} from '@/lib/meten/gebeurtenis'
+
 /** `locked` is weg sinds migratie 0034 (het oude leerpad). */
 export type ProgressStatus = 'in_progress' | 'mastered'
 export type ProfileRole = 'student' | 'admin'
@@ -24,6 +31,13 @@ export type Database = {
           tour_seen_at: string | null
           /** Alleen docent, youtube, klas, forum of proberen. Migratie 0057 en 0060. */
           herkomst: string | null
+          /** Opt-in e-mailherinnering bij stilte. Migratie 0082. */
+          herinnering_mail: boolean
+          herinnering_aan_sinds: string | null
+          /** Alleen de server schrijft deze drie; een trigger bewaakt dat. */
+          herinnering_laatst_op: string | null
+          herinnering_aantal: number
+          herinnering_sleutel: string
           created_at: string
         }
         Insert: {
@@ -34,6 +48,11 @@ export type Database = {
           display_name?: string | null
           tour_seen_at?: string | null
           herkomst?: string | null
+          herinnering_mail?: boolean
+          herinnering_aan_sinds?: string | null
+          herinnering_laatst_op?: string | null
+          herinnering_aantal?: number
+          herinnering_sleutel?: string
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
@@ -356,8 +375,105 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['known_wrong_answers_new']['Insert']>
         Relationships: []
       }
+      /** Klikmeting zonder koekjes. Migratie 0072. Alleen de service-role schrijft hier. */
+      site_gebeurtenissen: {
+        Row: {
+          id: number
+          tijdstip: string
+          sessie_id: string
+          soort: MeetSoort
+          pad: string
+          doel: string | null
+          waarde: number | null
+          apparaat: MeetApparaat
+          verwijzer: string | null
+          ingelogd: boolean
+          /** Plek binnen het tabblad, vanaf 1. Migratie 0073. */
+          volgnummer: number | null
+          /** Alleen bij een ingelogde leerling. Migratie 0073. */
+          schuilnaam: string | null
+          /** Welke site het bezoek binnenkreeg. Migratie 0081. */
+          site: SiteVariant
+        }
+        Insert: {
+          id?: never
+          tijdstip?: string
+          sessie_id: string
+          soort: MeetSoort
+          pad: string
+          doel?: string | null
+          waarde?: number | null
+          apparaat: MeetApparaat
+          verwijzer?: string | null
+          ingelogd?: boolean
+          volgnummer?: number | null
+          schuilnaam?: string | null
+          site?: SiteVariant
+        }
+        Update: Partial<Database['public']['Tables']['site_gebeurtenissen']['Insert']>
+        Relationships: []
+      }
+      site_dagtotalen: {
+        Row: {
+          dag: string
+          /** Welke site. Migratie 0081. */
+          site: SiteVariant
+          soort: MeetSoort
+          apparaat: MeetApparaat
+          pad: string
+          doel: string
+          aantal: number
+          sessies: number
+        }
+        Insert: Database['public']['Tables']['site_dagtotalen']['Row']
+        Update: Partial<Database['public']['Tables']['site_dagtotalen']['Row']>
+        Relationships: []
+      }
+      /** Video-verzoeken bij een examenvraag. Migratie 0080. */
+      video_aanvragen: {
+        Row: {
+          id: number
+          aangevraagd_op: string
+          site: SiteVariant
+          jaar: number
+          tijdvak: number
+          vraagnummer: string
+          toelichting: string | null
+          /** Alleen als de leerling zelf bericht wil. */
+          email: string | null
+          mag_mailen: boolean
+          afgehandeld: boolean
+        }
+        Insert: {
+          id?: never
+          aangevraagd_op?: string
+          site?: SiteVariant
+          jaar: number
+          tijdvak: number
+          vraagnummer: string
+          toelichting?: string | null
+          email?: string | null
+          mag_mailen?: boolean
+          afgehandeld?: boolean
+        }
+        Update: Partial<Database['public']['Tables']['video_aanvragen']['Insert']>
+        Relationships: []
+      }
     }
-    Views: Record<string, never>
+    Views: {
+      /** Migratie 0080: hoe vaak elke examenvraag gevraagd is. */
+      video_aanvragen_per_vraag: {
+        Row: {
+          jaar: number
+          tijdvak: number
+          vraagnummer: string
+          aantal: number
+          laatste: string
+          afgehandeld: boolean
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       laatste_antwoord_per_vraag: {
         Args: Record<string, never>
@@ -365,6 +481,30 @@ export type Database = {
           question_id: string
           is_correct: boolean
         }>
+      }
+      /**
+       * Migratie 0072, uitgebreid in 0073: gebeurtenissen wegschrijven, met
+       * de grens per tabblad, het volgnummer binnen de sessie en de
+       * schuilnaam van een ingelogde leerling.
+       */
+      meet_opslaan: {
+        Args: {
+          gebeurtenissen: MeetGebeurtenisRij[]
+          schuilnaam?: string | null
+          /** Welke site. Migratie 0081. */
+          site?: SiteVariant
+        }
+        Returns: number
+      }
+      /** Migratie 0073: de schuilnaam van één leerling, voor de overzichten. */
+      meet_schuilnaam: {
+        Args: { gebruiker: string | null }
+        Returns: string | null
+      }
+      /** Migratie 0072: dagtotalen bijwerken en alles ouder dan 90 dagen weg. */
+      site_meting_onderhoud: {
+        Args: Record<string, never>
+        Returns: number
       }
     }
     Enums: Record<string, never>

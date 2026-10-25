@@ -42,6 +42,7 @@ export default async function PrivacyPage() {
           <li>{t('accountConfirmed')}</li>
           <li>{t('accountLastLogin')}</li>
           <li>{t('accountTour')}</li>
+          <li>{t('accountHerinnering')}</li>
         </ul>
         <p className="mt-3">{t('accountNot')}</p>
 
@@ -61,12 +62,21 @@ export default async function PrivacyPage() {
         <p className="mt-3">{t('mailBody')}</p>
         <p className="mt-3">{t('mailPhoto')}</p>
         <p className="mt-3">{t('mailNewUser')}</p>
+        <p className="mt-3">{t('mailHerinnering')}</p>
+
+        <h3 className="mt-8 font-serif text-xl text-text">{t('videoH3')}</h3>
+        <p className="mt-3">{t('videoBody')}</p>
+        <p className="mt-3">{t('videoEmail')}</p>
 
         <h3 className="mt-8 font-serif text-xl text-text">{t('cacheH3')}</h3>
         <p className="mt-3">{t('cacheBody')}</p>
 
         <h3 className="mt-8 font-serif text-xl text-text">{t('flagH3')}</h3>
         <p className="mt-3">{t('flagBody')}</p>
+
+        <h3 className="mt-8 font-serif text-xl text-text">{t('metenH3')}</h3>
+        <p className="mt-3">{t('metenBody')}</p>
+        <p className="mt-3">{t('metenSchuilnaam')}</p>
       </Sectie>
 
       <Sectie titel={t('whereH2')}>
@@ -82,13 +92,16 @@ export default async function PrivacyPage() {
       <Sectie titel={t('howLongH2')}>
         <p>{t('howLongAccount')}</p>
         <p className="mt-3">{t('howLongCache')}</p>
+        <p className="mt-3">{t('howLongVideo')}</p>
         <p className="mt-3">{t('howLongMail')}</p>
+        <p className="mt-3">{t('howLongMeting')}</p>
       </Sectie>
 
       <Sectie titel={t('cookiesH2')}>
         <p>{t('cookiesLead')}</p>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li>{t('cookiesLogin')}</li>
+          <li>{t('cookiesVideo')}</li>
         </ul>
         <p className="mt-3">{t('cookiesNone')}</p>
       </Sectie>

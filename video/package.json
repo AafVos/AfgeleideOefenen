@@ -13,7 +13,8 @@
     "presenter": "vite --open",
     "render:quotient": "remotion render Quotientregel out/quotientregel.mp4",
     "render:herschrijven": "remotion render Herschrijven out/machten-herschrijven.mp4",
-    "render:shorts": "bash scripts/render-shorts.sh"
+    "render:shorts": "bash scripts/render-shorts.sh",
+    "render:shorts-integraal": "bash scripts/render-integraal-shorts.sh"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
@@ -26,6 +27,6 @@
   "devDependencies": {
     "@types/react": "^19.0.0",
     "typescript": "^5.0.0",
-    "vite": "^8.2.2"
+    "vite": "^8.2.4"
   }
 }

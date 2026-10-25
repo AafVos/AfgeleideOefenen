@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 
+import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { EXTREME_WAARDEN_PAD } from '@/content/theory/extreme-waarden'
 import { KETTINGREGEL_PAD } from '@/content/theory/kettingregel'
@@ -47,6 +48,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${SITE_URL}/${TAAL}${DIFFERENTIEERREGELS_PAD}`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${SITE_URL}/${TAAL}${KETTINGREGEL_PAD}`,
       changeFrequency: 'monthly',
       priority: 0.7,
@@ -90,6 +96,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${SITE_URL}/${TAAL}/uitleg-videos`,
       changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/${TAAL}/video-aanvragen`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
     ...getUitlegVideos().map((video) => ({
       url: `${SITE_URL}/${TAAL}${uitlegVideoPad(video.slug)}`,

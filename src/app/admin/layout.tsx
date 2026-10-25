@@ -20,6 +20,7 @@ const NAV = [
   { href: '/admin/questions', label: 'Vragen' },
   { href: '/admin/flags', label: 'Flags' },
   { href: '/admin/users', label: 'Gebruikers' },
+  { href: '/admin/video-aanvragen', label: 'Video-aanvragen' },
 ]
 
 export default async function AdminLayout({

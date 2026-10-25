@@ -26,8 +26,12 @@ describe('examentraining-pagina', () => {
   it('staat op een openbaar theorie-adres, niet op het oefenadres', () => {
     expect(EXAMENTRAINING_PAD).toBe('/theorie/examentraining')
     expect(EXAMENTRAINING_PAD).not.toBe('/examentraining')
-    expect(EXAMENTRAINING_TITEL).toBe('Examentraining oefenen')
+    expect(EXAMENTRAINING_TITEL).toBe('Examentraining wiskunde B vwo gratis oefenen')
+    expect(EXAMENTRAINING_TITEL).toMatch(/wiskunde B vwo/)
     expect(EXAMENTRAINING_OMSCHRIJVING.length).toBeGreaterThan(40)
+    expect(EXAMENTRAINING_OMSCHRIJVING).toMatch(/gratis/i)
+    expect(EXAMENTRAINING_OMSCHRIJVING).toMatch(/differentiëren/i)
+    expect(EXAMENTRAINING_OMSCHRIJVING).toMatch(/centraal examen/i)
     expect(EXAMENTRAINING_OMSCHRIJVING).not.toMatch(/\b(exam training|derivative)\b/i)
   })
 

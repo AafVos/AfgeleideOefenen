@@ -4,6 +4,8 @@ import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
+import { ErrorBanner } from '@/components/ui'
+
 import { forgotPasswordAction, type ForgotState } from './actions'
 
 const initial: ForgotState = { sent: false, errorKey: null }
@@ -23,11 +25,7 @@ export function ForgotForm({ oefenpad = null }: { oefenpad?: string | null }) {
   return (
     <form action={action} className="space-y-5">
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
-      {state.errorKey && (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-          {t(state.errorKey)}
-        </p>
-      )}
+      {state.errorKey && <ErrorBanner>{t(state.errorKey)}</ErrorBanner>}
       <label className="block">
         <span className="mb-1 block text-sm font-medium text-text">{t('emailLabel')}</span>
         <input

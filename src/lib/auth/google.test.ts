@@ -5,6 +5,7 @@ import {
   googleCallbackAdres,
   googleFoutSleutel,
   googleLoginAan,
+  isNieuweAanmelding,
   moetNaamVragen,
   padZonderNaamvraag,
 } from './google'
@@ -87,6 +88,29 @@ describe('padZonderNaamvraag', () => {
     expect(padZonderNaamvraag('/nl/gebruikersnaam')).toBe(true)
     expect(padZonderNaamvraag('/nl/dashboard')).toBe(false)
     expect(padZonderNaamvraag('/nl/inloggen')).toBe(false)
+  })
+})
+
+describe('isNieuweAanmelding', () => {
+  const nu = Date.parse('2026-10-18T12:00:00.000Z')
+
+  it('telt een account dat net is aangemaakt', () => {
+    expect(isNieuweAanmelding({ created_at: '2026-10-18T11:59:59.400Z' }, nu)).toBe(true)
+  })
+
+  it('telt een bestaande leerling die opnieuw inlogt niet', () => {
+    expect(isNieuweAanmelding({ created_at: '2026-09-01T08:15:00.000Z' }, nu)).toBe(false)
+    expect(isNieuweAanmelding({ created_at: '2026-10-18T11:58:00.000Z' }, nu)).toBe(false)
+  })
+
+  it('laat een klok die een paar seconden voorloopt toe', () => {
+    expect(isNieuweAanmelding({ created_at: '2026-10-18T12:00:03.000Z' }, nu)).toBe(true)
+  })
+
+  it('telt niets bij een ontbrekende of onleesbare datum', () => {
+    expect(isNieuweAanmelding({}, nu)).toBe(false)
+    expect(isNieuweAanmelding({ created_at: null }, nu)).toBe(false)
+    expect(isNieuweAanmelding({ created_at: 'gisteren' }, nu)).toBe(false)
   })
 })
 

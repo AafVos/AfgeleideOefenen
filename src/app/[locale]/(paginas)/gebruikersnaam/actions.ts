@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 
 import { bestemmingNaBevestigen } from '@/lib/auth/bestemming'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
+import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
 
 export type NaamFout = 'errorTeLang' | 'errorBezet' | 'errorGeneric'
@@ -22,10 +23,7 @@ export async function kiesNaamAction(_prev: NaamState, formData: FormData): Prom
   }
 
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/nl/inloggen')
+  const user = await requireUser()
 
   if (username) {
     const { error } = await supabase.from('profiles').update({ username }).eq('id', user.id)

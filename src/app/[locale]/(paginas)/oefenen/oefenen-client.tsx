@@ -46,9 +46,10 @@ import {
   toonSoortFilter,
   type SoortKeuze,
 } from '@/lib/practice/soort-filter'
+import { volgendeTegel } from '@/lib/practice/volgende-tegel'
 import { getVideoForCluster } from '@/lib/videos'
 
-import { ExerciseTileGrid, type TileSection } from './exercise-tile-grid'
+import { ExerciseTileGrid, modifierVrijeKlik, type TileSection } from './exercise-tile-grid'
 import { laadOpgave } from './laad-opgave'
 import { SoortFilter } from './soort-filter'
 import { StudyCard } from './study-card'
@@ -201,17 +202,29 @@ function sectiesVan(kopjes: Kopje[], tegels: NewExerciseTile[]): TileSection[] {
   }))
 }
 
-function inhoudVanKopjes(kopjes: Kopje[], alle: NewExerciseTile[], soort: SoortKeuze) {
-  const bron = tegelsVanKopjes(kopjes, alle)
-  const aantal = teltSoorten(bron)
-  const gekozen = bron.filter((tegel) => pastBijSoort(tegel.verhaal, soort))
-  const secties = sectiesVan(kopjes, gekozen)
+function gefilterdeSecties(
+  kopjes: Kopje[],
+  alle: NewExerciseTile[],
+  soort: SoortKeuze,
+): TileSection[] {
+  const gekozen = tegelsVanKopjes(kopjes, alle).filter((tegel) =>
+    pastBijSoort(tegel.verhaal, soort),
+  )
+  return sectiesVan(kopjes, gekozen)
     .map((sectie) => ({
       ...sectie,
       subSections: sectie.subSections.filter((sub) => sub.tiles.length > 0),
     }))
     .filter((sectie) => sectie.subSections.length > 0)
-  return { aantal, toonFilter: toonSoortFilter(aantal), secties }
+}
+
+/** Alle sommen die op de oefenpagina staan, niet alleen van één onderdeel. */
+function totaalOpPagina(overzicht: OverzichtHoofdstuk[], alle: NewExerciseTile[]) {
+  const kopjes = overzicht.flatMap((h) => [
+    ...h.kopjes,
+    ...h.paragrafen.flatMap((p) => p.blokken.flatMap((blok) => blok.kopjes)),
+  ])
+  return teltSoorten(tegelsVanKopjes(kopjes, alle))
 }
 
 function hrefMetSoort(basis: string, soort: SoortKeuze): string {
@@ -362,8 +375,9 @@ function OnderwerpWeergave({
       .filter((g) => g.tiles.length > 0)
   }, [chapters, allTopics, allClusters, allTilesState, clustersByTopic])
 
-  const currentIdx = question ? tiles.findIndex((t) => t.questionId === question.id) : -1
-  const nextTile = tiles[(currentIdx + 1) % tiles.length] ?? tiles[0] ?? null
+  // In deze weergave staat geen soort-filter: de zichtbare tegels zijn ook de
+  // volgorde van het boek.
+  const nextTile = volgendeTegel(tiles, tiles, question?.id ?? null)
   const nextHref = nextTile
     ? `${baseHref}&q=${encodeURIComponent(nextTile.questionId)}`
     : baseHref
@@ -466,8 +480,11 @@ function OnderwerpWeergave({
           <button
             type="button"
             onClick={() => setSidebarChoice(!sidebarOpen)}
+            data-meet="oefenen-zijbalk"
             aria-expanded={sidebarOpen}
-            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            aria-label={
+              sidebarOpen ? labels.collapseSidebar : `${labels.chapterLabel} — ${labels.expandSidebar}`
+            }
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             className={
               sidebarOpen
@@ -503,10 +520,11 @@ function OnderwerpWeergave({
                 <button
                   type="button"
                   onClick={() => handleChapterClick(ch)}
+                  data-meet="oefenen-hoofdstuk"
                   className={
                     chActive
-                      ? 'flex w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
-                      : 'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
+                      ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
+                      : 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
                   }
                 >
                   {chTopics.length > 0 ? (
@@ -547,10 +565,11 @@ function OnderwerpWeergave({
                             <button
                               type="button"
                               onClick={() => handleClusterClick(onlyCluster, tp)}
+                              data-meet="oefenen-soort-som"
                               className={
                                 isActive
-                                  ? 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
-                                  : 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
+                                  ? 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
+                                  : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
                               }
                             >
                               <span
@@ -567,10 +586,11 @@ function OnderwerpWeergave({
                           <button
                             type="button"
                             onClick={() => handleTopicClick(tp)}
+                            data-meet="oefenen-onderwerp"
                             className={
                               tpActive
-                                ? 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
-                                : 'flex w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
+                                ? 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs font-semibold text-accent'
+                                : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
                             }
                           >
                             {tpClusters.length > 0 ? (
@@ -597,10 +617,11 @@ function OnderwerpWeergave({
                                     <button
                                       type="button"
                                       onClick={() => handleClusterClick(cl, tp)}
+                                      data-meet="oefenen-soort-som"
                                       className={
                                         clActive
-                                          ? 'flex w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs font-medium text-accent'
-                                          : 'flex w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs text-text-muted hover:text-text'
+                                          ? 'flex min-h-11 w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs font-medium text-accent'
+                                          : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1 pl-8 pr-3 text-xs text-text-muted hover:text-text'
                                       }
                                     >
                                       <span
@@ -681,6 +702,7 @@ function OnderwerpWeergave({
                   <div className="mb-5">
                     <Link
                       href={baseHref as '/oefenen'}
+                      data-meet="oefenen-terug"
                       aria-label={labels.backToAll}
                       title={labels.backToAll}
                       className="inline-flex text-text-muted transition hover:-translate-x-0.5 hover:text-text"
@@ -713,7 +735,7 @@ function OnderwerpWeergave({
                       chapterGroups
                         .flatMap((g) => g.tiles)
                         .find((t) => t.questionId === question.id)?.ordinal ??
-                      (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
+                      tiles.find((t) => t.questionId === question.id)?.ordinal
                     }
                     onAnswered={(questionId, isCorrect) => {
                       setTiles((prev) =>
@@ -763,11 +785,12 @@ function OnderwerpWeergave({
                               key={q.questionId}
                               href={href as '/oefenen'}
                               prefetch={false}
+                              data-meet="oefenen-opgavenummer"
                               bezigTekst="Opgave openen"
                               aria-current={active ? 'page' : undefined}
                               aria-label={`${g.chapter.title} ${labels.tileExercise} ${q.ordinal}${q.lastCorrect === true ? ` ${labels.tileLastCorrect}` : ''}${q.lastCorrect === false ? ` ${labels.tileLastWrong}` : ''}`}
                               className={cn(
-                                'flex size-9 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
+                                'flex size-11 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition',
                                 active &&
                                   'ring-2 ring-offset-1 ring-offset-[var(--color-bg)]',
                                 active &&
@@ -834,14 +857,12 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
   overzicht,
   allTiles,
   soort,
-  onKiesSoort,
   labels,
   onKies,
 }: {
   overzicht: OverzichtHoofdstuk[]
   allTiles: NewExerciseTile[]
   soort: SoortKeuze
-  onKiesSoort: (soort: SoortKeuze) => void
   labels: {
     heading: string
     lastCorrect: string
@@ -855,21 +876,21 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
     <>
       {overzicht.map((h) => {
         const hoofdstukInhoud =
-          h.kopjes.length > 0 ? inhoudVanKopjes(h.kopjes, allTiles, soort) : null
+          h.kopjes.length > 0 ? gefilterdeSecties(h.kopjes, allTiles, soort) : []
         const paragrafen = h.paragrafen.map((p) => ({
           p,
           blokken: p.blokken.map((blok) => ({
             blok,
-            inhoud: inhoudVanKopjes(blok.kopjes, allTiles, soort),
+            inhoud: gefilterdeSecties(blok.kopjes, allTiles, soort),
           })),
         }))
         const heeftZichtbaar =
-          (hoofdstukInhoud?.secties.length ?? 0) > 0 ||
-          paragrafen.some((p) => p.blokken.some((b) => b.inhoud.secties.length > 0))
+          hoofdstukInhoud.length > 0 ||
+          paragrafen.some((p) => p.blokken.some((b) => b.inhoud.length > 0))
         const voorbeeld = h.chapter.slug === 'h2'
         const eersteBlokId = paragrafen
           .flatMap((p) => p.blokken)
-          .find((b) => b.inhoud.secties.length > 0)?.blok.id
+          .find((b) => b.inhoud.length > 0)?.blok.id
         return (
           <section
             key={h.chapter.id}
@@ -882,52 +903,100 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
               </h2>
             )}
             {paragrafen.map(({ p, blokken }) => {
-              const paragraafZichtbaar = blokken.some((b) => b.inhoud.secties.length > 0)
+              const paragraafZichtbaar = blokken.some((b) => b.inhoud.length > 0)
               return (
                 <div
                   key={p.id}
                   id={`paragraaf-${p.slug}`}
                   className={paragraafZichtbaar ? 'scroll-mt-14 lg:scroll-mt-4' : undefined}
                 >
-                  {paragraafZichtbaar && (
-                    <h3 className="mt-8 font-serif text-xl text-text">
-                      <span className="font-mono font-semibold">{p.label}</span> {p.title}
-                    </h3>
-                  )}
+                  {paragraafZichtbaar &&
+                    (() => {
+                      const paragraafTekst = (
+                        <>
+                          <span className="font-mono font-semibold">{p.label}</span> {p.title}
+                        </>
+                      )
+                      const eersteBlokMetInhoud = blokken.find((b) => b.inhoud.length > 0)
+                      const eersteTegel = eersteBlokMetInhoud?.inhoud
+                        .flatMap((s) => s.subSections.flatMap((sub) => sub.tiles))
+                        .at(0)
+                      if (!eersteBlokMetInhoud || !eersteTegel) {
+                        return (
+                          <h3 className="mt-8 font-serif text-xl text-text">{paragraafTekst}</h3>
+                        )
+                      }
+                      const basis = hrefMetSoort(
+                        `/oefenen?blok=${encodeURIComponent(eersteBlokMetInhoud.blok.slug)}`,
+                        soort,
+                      )
+                      return (
+                        <h3 className="mt-8">
+                          <KlikLink
+                            href={
+                              `${basis}&q=${encodeURIComponent(eersteTegel.questionId)}` as '/oefenen'
+                            }
+                            prefetch={false}
+                            data-meet="oefenen-kopje"
+                            bezigTekst="Opgave openen"
+                            onClick={modifierVrijeKlik(() => onKies(eersteTegel.questionId, basis))}
+                            className="font-serif text-xl text-text hover:text-accent"
+                          >
+                            {paragraafTekst}
+                          </KlikLink>
+                        </h3>
+                      )
+                    })()}
                   {blokken.map(({ blok, inhoud }) => {
                     const basis = hrefMetSoort(
                       `/oefenen?blok=${encodeURIComponent(blok.slug)}`,
                       soort,
+                    )
+                    const eersteTegel = inhoud
+                      .flatMap((s) => s.subSections.flatMap((sub) => sub.tiles))
+                      .at(0)
+                    const blokTekst = (
+                      <>
+                        <span className="font-mono font-semibold">
+                          {p.label} {blok.letter}
+                        </span>
+                        {' – '}
+                        {blok.title}
+                      </>
                     )
                     return (
                       <div
                         key={blok.id}
                         id={`blok-${blok.slug}`}
                         className={
-                          inhoud.secties.length > 0 ? 'scroll-mt-14 lg:scroll-mt-4' : undefined
+                          inhoud.length > 0 ? 'scroll-mt-14 lg:scroll-mt-4' : undefined
                         }
                       >
-                        {inhoud.secties.length > 0 && (
+                        {inhoud.length > 0 && (
                           <>
-                            <h3 className="mt-6 font-serif text-lg text-text">
-                              <span className="font-mono font-semibold">
-                                {p.label} {blok.letter}
-                              </span>
-                              {' – '}
-                              {blok.title}
-                            </h3>
-                            {inhoud.toonFilter && (
-                              <SoortFilter
-                                gewoon={inhoud.aantal.gewoon}
-                                verhaal={inhoud.aantal.verhaal}
-                                waarde={soort}
-                                onKies={onKiesSoort}
-                                rondleiding={voorbeeld}
-                              />
+                            {eersteTegel ? (
+                              <h3 className="mt-6">
+                                <KlikLink
+                                  href={
+                                    `${basis}&q=${encodeURIComponent(eersteTegel.questionId)}` as '/oefenen'
+                                  }
+                                  prefetch={false}
+                                  data-meet="oefenen-kopje"
+                                  bezigTekst="Opgave openen"
+                                  onClick={modifierVrijeKlik(() =>
+                                    onKies(eersteTegel.questionId, basis),
+                                  )}
+                                  className="font-serif text-lg text-text hover:text-accent"
+                                >
+                                  {blokTekst}
+                                </KlikLink>
+                              </h3>
+                            ) : (
+                              <h3 className="mt-6 font-serif text-lg text-text">{blokTekst}</h3>
                             )}
                             <ExerciseTileGrid
                               baseHref={basis}
-                              sections={inhoud.secties}
+                              sections={inhoud}
                               activeQuestionId={null}
                               onKies={(id) => onKies(id, basis)}
                               labels={labels}
@@ -941,23 +1010,14 @@ const OverzichtBlokken = memo(function OverzichtBlokken({
                 </div>
               )
             })}
-            {hoofdstukInhoud && hoofdstukInhoud.secties.length > 0 && (
+            {hoofdstukInhoud.length > 0 && (
               <>
-                {hoofdstukInhoud.toonFilter && (
-                  <SoortFilter
-                    gewoon={hoofdstukInhoud.aantal.gewoon}
-                    verhaal={hoofdstukInhoud.aantal.verhaal}
-                    waarde={soort}
-                    onKies={onKiesSoort}
-                    rondleiding={voorbeeld && !eersteBlokId}
-                  />
-                )}
                 <ExerciseTileGrid
                   baseHref={hrefMetSoort(
                     `/oefenen?chapter=${encodeURIComponent(h.chapter.slug)}`,
                     soort,
                   )}
-                  sections={hoofdstukInhoud.secties}
+                  sections={hoofdstukInhoud}
                   activeQuestionId={null}
                   onKies={(id) =>
                     onKies(
@@ -1102,20 +1162,22 @@ function BlokWeergave({
     () => (selectie ? kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState) : []),
     [selectie, allTopics, allClusters, allTilesState],
   )
+  // Alle tegels van dit onderdeel in boekvolgorde; `tiles` is daarvan het deel
+  // dat het soort-filter doorlaat.
+  const alleTegelsVanOnderdeel = useMemo(
+    () => tegelsVanKopjes(vraagKopjes, allTilesState),
+    [vraagKopjes, allTilesState],
+  )
   const tiles = useMemo(
-    () =>
-      tegelsVanKopjes(vraagKopjes, allTilesState).filter((tegel) =>
-        pastBijSoort(tegel.verhaal, soort),
-      ),
-    [vraagKopjes, allTilesState, soort],
+    () => alleTegelsVanOnderdeel.filter((tegel) => pastBijSoort(tegel.verhaal, soort)),
+    [alleTegelsVanOnderdeel, soort],
   )
 
   const baseHref = selectie
     ? hrefMetSoort(`/oefenen?${queryVoorSelectie(selectie)}`, soort)
     : hrefMetSoort('/oefenen', soort)
   const huidigeVraag = bezigId && vraag?.id !== bezigId ? null : vraag
-  const currentIdx = huidigeVraag ? tiles.findIndex((t) => t.questionId === huidigeVraag.id) : -1
-  const nextTile = tiles.length ? (tiles[(currentIdx + 1) % tiles.length] ?? null) : null
+  const nextTile = volgendeTegel(tiles, alleTegelsVanOnderdeel, huidigeVraag?.id ?? null)
   const vraagOpen = vraag !== null || bezigId !== null || laadFout !== null
 
   function openVoorAnker(id: string) {
@@ -1383,6 +1445,7 @@ function BlokWeergave({
                 <li key={h.chapter.id}>
                   <button
                     type="button"
+                    data-meet="oefenen-hoofdstuk"
                     onClick={() =>
                       scrollNaar(`hoofdstuk-${h.chapter.slug}`, {
                         blok: null,
@@ -1410,6 +1473,7 @@ function BlokWeergave({
               <li key={h.chapter.id}>
                 <button
                   type="button"
+                  data-meet="oefenen-hoofdstuk"
                   onClick={() => {
                     // Dichtklappen mag niet meteen weer open door scrollNaar.
                     if (open) {
@@ -1443,6 +1507,7 @@ function BlokWeergave({
                         <li key={p.id}>
                           <button
                             type="button"
+                            data-meet="oefenen-paragraaf"
                             onClick={() => {
                               if (pOpen) {
                                 setOpenParagrafen((prev) => {
@@ -1481,6 +1546,7 @@ function BlokWeergave({
                                 <li key={blok.id}>
                                   <button
                                     type="button"
+                                    data-meet="oefenen-theorieblok"
                                     onClick={() =>
                                       scrollNaar(`blok-${blok.slug}`, {
                                         blok: blok.slug,
@@ -1524,6 +1590,7 @@ function BlokWeergave({
             <button
               type="button"
               onClick={() => setOudeOpen((v) => !v)}
+              data-meet="oefenen-oude-opgaven"
               className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-text hover:bg-surface-2"
               aria-expanded={oudeOpen}
             >
@@ -1538,6 +1605,7 @@ function BlokWeergave({
                     <li key={ch.id}>
                       <button
                         type="button"
+                        data-meet="oefenen-hoofdstuk"
                         onClick={() =>
                           scrollNaar(`hoofdstuk-${ch.slug}`, {
                             blok: null,
@@ -1610,6 +1678,10 @@ function BlokWeergave({
     }),
     [labels],
   )
+  const paginaAantal = useMemo(
+    () => totaalOpPagina(overzicht, allTilesState),
+    [overzicht, allTilesState],
+  )
 
   return (
     <div
@@ -1631,8 +1703,11 @@ function BlokWeergave({
           <button
             type="button"
             onClick={() => setSidebarOpen((v) => !v)}
+            data-meet="oefenen-zijbalk"
             aria-expanded={sidebarOpen}
-            aria-label={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
+            aria-label={
+              sidebarOpen ? labels.collapseSidebar : `${labels.chapterLabel} — ${labels.expandSidebar}`
+            }
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
           >
@@ -1663,6 +1738,7 @@ function BlokWeergave({
           type="button"
           onClick={() => setBoomOpen(true)}
           data-tour="hoofdstukken"
+          data-meet="oefenen-kies-onderdeel"
           className="sticky top-0 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium [overflow-anchor:none] lg:hidden"
         >
           <span className="min-w-0 truncate">{kop}</span>
@@ -1681,6 +1757,16 @@ function BlokWeergave({
             </div>
           )}
 
+          {!vraagOpen && toonSoortFilter(paginaAantal) && (
+            <SoortFilter
+              gewoon={paginaAantal.gewoon}
+              verhaal={paginaAantal.verhaal}
+              waarde={soort}
+              onKies={kiesSoort}
+              rondleiding={overzicht.some((h) => h.chapter.slug === 'h2')}
+            />
+          )}
+
           {!vraagOpen && overzicht.length > 0 && (
             <p className="mt-2 max-w-2xl text-sm text-text-muted">{labels.difficultyHint}</p>
           )}
@@ -1691,7 +1777,6 @@ function BlokWeergave({
                 overzicht={overzicht}
                 allTiles={allTilesState}
                 soort={soort}
-                onKiesSoort={kiesSoort}
                 labels={tegelLabels}
                 onKies={kiesOpgave}
               />
@@ -1706,6 +1791,7 @@ function BlokWeergave({
                     <Link
                       id="terug-naar-overzicht"
                       href={baseHref as '/oefenen'}
+                      data-meet="oefenen-terug"
                       aria-label={labels.backToAll}
                       title={labels.backToAll}
                       onClick={(event) => {
@@ -1750,8 +1836,7 @@ function BlokWeergave({
                     }
                     video={getVideoForCluster(huidigeVraag.cluster_id)}
                     questionNumber={
-                      tiles.find((t) => t.questionId === huidigeVraag.id)?.ordinal ??
-                      (currentIdx >= 0 ? (tiles[currentIdx]?.ordinal ?? undefined) : undefined)
+                      alleTegelsVanOnderdeel.find((t) => t.questionId === huidigeVraag.id)?.ordinal
                     }
                     onAnswered={(questionId, isCorrect) => {
                       setAllTilesState((prev) =>
@@ -1784,6 +1869,7 @@ function BlokWeergave({
                         key={q.questionId}
                         href={`${baseHref}&q=${encodeURIComponent(q.questionId)}` as '/oefenen'}
                         prefetch={false}
+                        data-meet="oefenen-opgavenummer"
                         bezigTekst="Opgave openen"
                         onClick={(event) => {
                           if (
@@ -1844,6 +1930,7 @@ function BlokWeergave({
             <button
               type="button"
               onClick={() => setBoomOpen(false)}
+              data-meet="oefenen-kies-onderdeel-sluiten"
               className="min-h-11 px-3 text-sm font-medium text-text"
             >
               {labels.sluiten}

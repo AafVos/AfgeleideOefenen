@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 
+import { getCurrentUser } from '@/lib/supabase/request-cache'
 import { createClient } from '@/lib/supabase/server'
 import { getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
 
@@ -49,13 +50,11 @@ export async function UitlegVideosInhoud({
   const videos = getUitlegVideos()
   const activeVideo = videos.find((v) => v.slug === slug) ?? videos[0] ?? null
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   let vragen: OefenVraag[] = []
   if (user && activeVideo && activeVideo.clusterIds.length > 0) {
+    const supabase = await createClient()
     const { data } = await supabase
       .from('questions_new')
       .select('id, cluster_id, difficulty, latex_body')
@@ -85,6 +84,7 @@ export async function UitlegVideosInhoud({
       loginHref={`/${locale}/inloggen`}
       registerHref={`/${locale}/registreren`}
       oefenHref={`/${locale}/oefenen`}
+      videoAanvraagHref={`/${locale}/video-aanvragen`}
       videoAlsKop={slug !== null}
       labels={{
         h1: t('h1'),
@@ -113,6 +113,7 @@ export async function UitlegVideosInhoud({
         askPhoto: t('askPhoto'),
         askPhotoHint: t('askPhotoHint'),
         askPhotoRemove: t('askPhotoRemove'),
+        askPhotoAlt: t('askPhotoAlt'),
         askPhotoBusy: t('askPhotoBusy'),
         askPhotoTooBig: t('askPhotoTooBig'),
         groupGeneral: t('groupGeneral'),
@@ -125,6 +126,7 @@ export async function UitlegVideosInhoud({
         askNoAccount: t('askNoAccount'),
         askLogin: t('askLogin'),
         askRegister: t('askRegister'),
+        videoAanvraagLink: t('videoAanvraagLink'),
       }}
     />
   )

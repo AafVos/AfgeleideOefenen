@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation'
 import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
-import { getVoorbeeld, getVoorbeelden, voorbeeldPad } from '@/content/voorbeelden'
+import { StickyProbeerBalk } from '@/components/sticky-probeer-balk'
+import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
+import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
 
@@ -24,12 +26,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!voorbeeld) notFound()
 
   const pad = voorbeeldPad(voorbeeld.slug)
+  const titel = voorbeeldTitel(voorbeeld)
   return {
-    title: voorbeeld.kop,
+    title: titel,
     description: voorbeeld.omschrijving,
     alternates: canoniek(locale, pad),
     openGraph: deelkaart(locale, pad, {
-      title: voorbeeld.kop,
+      title: titel,
       description: voorbeeld.omschrijving,
     }),
   }
@@ -75,62 +78,91 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         <p className="text-sm font-medium uppercase tracking-wider text-accent">Voorbeeld</p>
         <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{voorbeeld.kop}</h1>
 
-        <section className="mt-8 rounded-xl bg-accent-light/60 px-4 py-5">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-accent">Antwoord</h2>
-          <div className="mt-3 flex flex-col gap-2 overflow-x-auto text-[0.95em] leading-loose">
-            <TeX tex={`f(x) = ${voorbeeld.functie}`} wrap />
-            <TeX tex={`f'(x) = ${voorbeeld.antwoord}`} wrap />
-          </div>
-          <p className="mt-3 text-text-muted">{voorbeeld.antwoordTekst}</p>
-        </section>
+        <div id="probeer-knop-primair" className="mt-6 flex flex-col items-start gap-2">
+          <p className="text-sm text-text-muted">Drie sommen over dit onderwerp, zonder account.</p>
+          <ProbeerKnop oefenen={voorbeeld.oefenen} />
+        </div>
+
+        <StickyProbeerBalk oefenen={voorbeeld.oefenen} primaryId="probeer-knop-primair" />
+
+        {voorbeeld.examenbrug && (
+          <p className="mt-4 text-sm text-text-muted">
+            Dit soort som komt op het examen voor —{' '}
+            <Link
+              href={`${EXAMENTRAINING_PAD}?van=voorbeeld-examen` as '/theorie/examentraining'}
+              data-meet="voorbeeld-examentraining"
+              className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+            >
+              oefen verder in de examentraining
+            </Link>
+            .
+          </p>
+        )}
+
+        <details className="mt-10">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center font-medium text-accent underline-offset-2 hover:underline">
+            Toon uitwerking
+          </summary>
+
+          <section className="mt-6 rounded-xl bg-accent-light/60 px-4 py-5">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-accent">Antwoord</h2>
+            <div className="mt-3 flex flex-col gap-2 overflow-x-auto text-[0.95em] leading-loose">
+              <TeX tex={`f(x) = ${voorbeeld.functie}`} wrap />
+              <TeX tex={`f'(x) = ${voorbeeld.antwoord}`} wrap />
+            </div>
+            <p className="mt-3 text-text-muted">{voorbeeld.antwoordTekst}</p>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="font-serif text-2xl text-text">Stap voor stap</h2>
+            <ol className="mt-4 list-none space-y-3 text-text-muted">
+              {voorbeeld.stappen.map((stap) => (
+                <li key={stap}>
+                  <RichMath source={stap} />
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="font-serif text-2xl text-text">Een veelgemaakte fout</h2>
+            <p className="mt-4 text-text-muted">
+              <RichMath source={voorbeeld.fout} />
+            </p>
+          </section>
+        </details>
 
         <section className="mt-12">
-          <h2 className="font-serif text-2xl text-text">Uitwerking</h2>
-          <ol className="mt-4 list-none space-y-3 text-text-muted">
-            {voorbeeld.stappen.map((stap) => (
-              <li key={stap}>
-                <RichMath source={stap} />
+          <h2 className="font-serif text-2xl text-text">Gerelateerde afgeleiden</h2>
+          <p className="mt-4 text-text-muted">Bekijk ook deze afgeleiden uit dezelfde familie.</p>
+          <ul className="mt-4 list-none space-y-2">
+            {verwant.map((ander) => (
+              <li key={ander.slug}>
+                <Link
+                  href={voorbeeldPad(ander.slug) as '/voorbeeld'}
+                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                >
+                  {ander.kop}
+                </Link>
               </li>
             ))}
-          </ol>
-        </section>
-
-        <section className="mt-12">
-          <h2 className="font-serif text-2xl text-text">Een veelgemaakte fout</h2>
-          <p className="mt-4 text-text-muted">
-            <RichMath source={voorbeeld.fout} />
-          </p>
+          </ul>
         </section>
 
         <div className="mt-12 flex flex-col gap-3">
           <DeelKnop />
-          <ProbeerKnop
-            oefenen={voorbeeld.oefenen}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90"
-          />
           <Link
             href={voorbeeld.oefenen as '/oefenen'}
             className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
           >
             Oefen dit soort sommen
           </Link>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            {verwant.map((ander) => (
-              <Link
-                key={ander.slug}
-                href={voorbeeldPad(ander.slug) as '/voorbeeld'}
-                className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-              >
-                {ander.kop}
-              </Link>
-            ))}
-            <Link
-              href={voorbeeld.theoriePad as '/theorie'}
-              className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-            >
-              {voorbeeld.theorieNaam}
-            </Link>
-          </div>
+          <Link
+            href={voorbeeld.theoriePad as '/theorie'}
+            className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+          >
+            {voorbeeld.theorieNaam}
+          </Link>
         </div>
       </div>
     </>

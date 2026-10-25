@@ -51,14 +51,6 @@ function nederlandseTijd(moment: Date): Klok {
   }
 }
 
-/** Hoeveel Nederland op dat moment voorloopt op UTC, in milliseconden. */
-function voorsprongOpUtc(moment: Date): number {
-  const k = nederlandseTijd(moment)
-  const wandklok = Date.UTC(k.jaar, k.maand - 1, k.dag, k.uur, k.minuut, k.seconde)
-  // Milliseconden doen hier niet mee: de wandklok telt alleen hele seconden.
-  return wandklok - Math.floor(moment.getTime() / 1000) * 1000
-}
-
 function alsSleutel(jaar: number, maand: number, dag: number): string {
   const tweeCijfers = (n: number) => String(n).padStart(2, '0')
   return `${jaar}-${tweeCijfers(maand)}-${tweeCijfers(dag)}`
@@ -79,17 +71,6 @@ export function vorigeDag(sleutel: string): string {
     eerder.getUTCMonth() + 1,
     eerder.getUTCDate(),
   )
-}
-
-/** Middernacht in Nederland aan het begin van die dag. */
-export function beginVanDag(sleutel: string): Date {
-  const [jaar, maand, dag] = sleutel.split('-').map(Number)
-  const middernachtInUtc = Date.UTC(jaar, maand - 1, dag)
-  const gok = new Date(middernachtInUtc - voorsprongOpUtc(new Date(middernachtInUtc)))
-  // Rond de overgang van zomer- naar wintertijd kan de voorsprong van de
-  // gok net anders zijn dan die van het antwoord; dan nog één keer rekenen.
-  const beter = middernachtInUtc - voorsprongOpUtc(gok)
-  return beter === gok.getTime() ? gok : new Date(beter)
 }
 
 /** De laatste `aantal` dagen tot en met `vandaag`, oudste eerst. */
@@ -117,6 +98,17 @@ export function berekenReeks(
     dag = vorigeDag(dag)
   }
   return reeks
+}
+
+/**
+ * Loopt de reeks gevaar? Er is een reeks (minstens één dag), maar vandaag is
+ * er nog niet geoefend. Blijft dat zo tot middernacht, dan breekt hij.
+ */
+export function reeksLooptAf(
+  dagenMetAntwoord: ReadonlySet<string>,
+  vandaag: string,
+): boolean {
+  return !dagenMetAntwoord.has(vandaag) && berekenReeks(dagenMetAntwoord, vandaag) > 0
 }
 
 /**

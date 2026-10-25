@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   bouwDashboardIndeling,
   bouwOnderwerpVoortgang,
+  clusterVolgorde,
   hrefVoorBlok,
-  weegClusters,
+  telBeheerst,
   type VoortgangRij,
 } from '@/lib/dashboard/indeling'
 
@@ -106,27 +107,17 @@ const clusters = [
   cluster('snelheid', snelheid.id, 1),
 ]
 
-function rij(
-  clusterId: string,
-  status: string | null,
-  answered: number,
-  correct: number,
-): VoortgangRij {
-  return {
-    cluster_id: clusterId,
-    status,
-    total_answered: answered,
-    total_correct: correct,
-  }
+function rij(clusterId: string, status: string | null): VoortgangRij {
+  return { cluster_id: clusterId, status }
 }
 
-// Raaklijn A: beheerst (gewicht 1). Raaklijn B: 1 van 2 goed (gewicht 0,5).
-// Helling: nog niets (gewicht 0). Samen in blok A: 1,5 / 3 = 50%.
+// Raaklijn A: beheerst. Raaklijn B: wel mee bezig, nog niet beheerst.
+// Helling: nog niets. Samen in blok A: 1 van de 3 beheerst = 33%.
 const voortgang: VoortgangRij[] = [
-  rij('c-raaklijn-a', 'mastered', 3, 3),
-  rij('c-raaklijn-b', 'in_progress', 2, 1),
-  rij('c-extremen', 'mastered', 3, 3),
-  rij('c-snelheid', 'in_progress', 4, 2),
+  rij('c-raaklijn-a', 'mastered'),
+  rij('c-raaklijn-b', 'in_progress'),
+  rij('c-extremen', 'mastered'),
+  rij('c-snelheid', 'in_progress'),
 ]
 
 function indeling(soorten: typeof clusters = clusters) {
@@ -164,11 +155,15 @@ describe('dashboard per theorieblok', () => {
       'c-raaklijn-b',
       'c-helling',
     ])
-    expect(weegClusters(blok.clusters).pct).toBe(50)
-    // De paragraaf telt blok A (1,5) en blok B (1 beheerst) op: 2,5 / 4 = 63%.
-    expect(weegClusters(paragraaf.blokken.flatMap((b) => b.clusters)).pct).toBe(63)
-    // Het hoofdstuk telt het losse onderwerp erbij: 2,5 / 5 = 50%.
-    expect(weegClusters(boek.clusters).pct).toBe(50)
+    expect(telBeheerst(blok.clusters)).toMatchObject({ mastered: 1, total: 3, pct: 33 })
+    // De paragraaf telt blok A (1 beheerst) en blok B (1 beheerst) op: 2 / 4 = 50%.
+    expect(telBeheerst(paragraaf.blokken.flatMap((b) => b.clusters))).toMatchObject({
+      mastered: 2,
+      total: 4,
+      pct: 50,
+    })
+    // Het hoofdstuk telt het losse onderwerp erbij: 2 / 5 = 40%.
+    expect(telBeheerst(boek.clusters)).toMatchObject({ mastered: 2, total: 5, pct: 40 })
     expect(hrefVoorBlok(blok.slug)).toBe('/oefenen?blok=h2-4a')
   })
 
@@ -218,6 +213,66 @@ describe('oude dashboardindeling', () => {
       'Extreme waarden',
       'Nog zonder blok',
     ])
-    expect(weegClusters(oud[0]!.topics[0]!.clusters).pct).toBe(75)
+    expect(telBeheerst(oud[0]!.topics[0]!.clusters)).toMatchObject({
+      mastered: 1,
+      total: 2,
+      pct: 50,
+    })
+  })
+})
+
+describe('percentage en "x/y beheerst" spreken elkaar niet tegen', () => {
+  /** Tien soorten sommen, allemaal twee keer goed op rij: nog net niet beheerst. */
+  const netOnderBeheerst = Array.from({ length: 10 }, () => ({ isKnown: false }))
+
+  it('laat 0% zien als er nog niets beheerst is, ook bij veel goede antwoorden', () => {
+    expect(telBeheerst(netOnderBeheerst)).toEqual({ mastered: 0, total: 10, pct: 0 })
+  })
+
+  it('houdt het percentage gelijk aan het aandeel beheerst', () => {
+    for (const aantal of [0, 1, 3, 7, 10]) {
+      const clusters = netOnderBeheerst.map((_, i) => ({ isKnown: i < aantal }))
+      const { mastered, total, pct } = telBeheerst(clusters)
+      expect(mastered).toBe(aantal)
+      expect(pct).toBe(Math.round((mastered / total) * 100))
+    }
+  })
+
+  it('kleurt pas vol bij alles beheerst, en pas leeg bij niets beheerst', () => {
+    // 199 van 200 rondt af op 100%, maar er staat "199/200": niet vol tonen.
+    const bijnaAlles = Array.from({ length: 200 }, (_, i) => ({ isKnown: i < 199 }))
+    expect(telBeheerst(bijnaAlles)).toEqual({ mastered: 199, total: 200, pct: 99 })
+
+    const bijnaNiets = Array.from({ length: 200 }, (_, i) => ({ isKnown: i < 1 }))
+    expect(telBeheerst(bijnaNiets)).toEqual({ mastered: 1, total: 200, pct: 1 })
+
+    const alles = Array.from({ length: 200 }, () => ({ isKnown: true }))
+    expect(telBeheerst(alles).pct).toBe(100)
+  })
+
+  it('geeft 0% bij een lijst zonder soorten sommen', () => {
+    expect(telBeheerst([])).toEqual({ mastered: 0, total: 0, pct: 0 })
+  })
+})
+
+// =====================================================================
+// De boekvolgorde van alle soorten sommen (zie AFG-484).
+// =====================================================================
+
+describe('clusterVolgorde', () => {
+  it('loopt hoofdstuk, paragraaf, blok en dan de losse onderwerpen af', () => {
+    expect(clusterVolgorde(indeling())).toEqual([
+      'c-raaklijn-a',
+      'c-raaklijn-b',
+      'c-helling',
+      'c-extremen',
+      'c-los',
+      'c-snelheid',
+    ])
+  })
+
+  it('noemt een soort som die aan twee plekken hangt maar één keer', () => {
+    const volgorde = clusterVolgorde(indeling())
+    expect(new Set(volgorde).size).toBe(volgorde.length)
   })
 })

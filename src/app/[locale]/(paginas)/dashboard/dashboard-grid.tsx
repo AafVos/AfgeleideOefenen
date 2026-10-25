@@ -7,8 +7,9 @@ import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
 import { KlikLink } from '@/components/klik-link'
 import { cn } from '@/components/ui'
 
-import { weegClusters, type DashboardIndeling } from '@/lib/dashboard/indeling'
+import { telBeheerst, type DashboardIndeling } from '@/lib/dashboard/indeling'
 
+import { HerinneringKaart } from './herinnering-kaart'
 import { ChapterBlock, NieuwHoofdstukBlock, type ChapterData } from './topic-block'
 
 export type ActivityDay = { date: string; count: number }
@@ -25,21 +26,53 @@ export type StartData = {
   topicTitle: string
 }
 
+/**
+ * De eerstvolgende soort som die nog niet beheerst is, voor een leerling die
+ * al eerder geoefend heeft (zie AFG-484).
+ */
+export type VerderData = {
+  href: string
+  clusterTitle: string
+  chapterTitle: string
+  topicTitle: string
+}
+
+/**
+ * Een soort som die al weken beheerst is en sindsdien niet meer langskwam
+ * (zie AFG-488). Vrijblijvend: negeren mag, en de status verandert er niet
+ * van.
+ */
+export type OpfrisData = {
+  href: string
+  clusterTitle: string
+}
+
 export function DashboardGrid({
   chapterData,
   streakDays = 0,
+  streakAtRisk = false,
   activity = [],
   totalAnswered = 0,
   totalCorrect = 0,
   start = null,
+  verder = null,
+  opfrissen = null,
   blokIndeling = null,
+  herinneringAan = false,
 }: {
   chapterData: ChapterData[]
   streakDays?: number
+  /** Reeks loopt af als er vandaag niet geoefend wordt (zie AFG-486). */
+  streakAtRisk?: boolean
   activity?: ActivityDay[]
   totalAnswered?: number
   totalCorrect?: number
   start?: StartData | null
+  verder?: VerderData | null
+  /** Iets wat al lang beheerst is en wel weer eens langs mag (AFG-488). */
+  opfrissen?: OpfrisData | null
+  /** Staat de herinneringsmail aan? (zie AFG-487) */
+  herinneringAan?: boolean
   /** Boekindeling. Ontbreekt hij, dan blijft de lijst per onderwerp. */
   blokIndeling?: DashboardIndeling | null
 }) {
@@ -48,18 +81,11 @@ export function DashboardGrid({
     () => chapterData.flatMap((ch) => ch.topics.flatMap((t) => t.clusters)),
     [chapterData],
   )
-  const mastered = allClusters.filter((c) => c.isKnown).length
-  const total = allClusters.length
-  const weightedProgress = allClusters.reduce((sum, c) => {
-    if (c.isKnown) return sum + 1
-    if (c.totalAnswered > 0) return sum + c.totalCorrect / c.totalAnswered
-    return sum
-  }, 0)
-  const pctOverall = total > 0 ? Math.round((weightedProgress / total) * 100) : 0
+  const { mastered, total, pct: pctOverall } = telBeheerst(allClusters)
   const pctAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
   const hoofdstukBeheerst = blokIndeling
     ? blokIndeling.hoofdstukken.some((chapter) => {
-        const { mastered, total } = weegClusters(chapter.clusters)
+        const { mastered, total } = telBeheerst(chapter.clusters)
         return total > 0 && mastered === total
       })
     : chapterData.some((chapter) => {
@@ -69,6 +95,14 @@ export function DashboardGrid({
 
   return (
     <>
+      {!start && verder && <VerderCard verder={verder} />}
+      {!start && !verder && total > 0 && mastered === total && (
+        <div className="mb-5 rounded-xl border border-accent/30 bg-accent-light px-4 py-3">
+          <p className="text-sm text-text">{t('verderKlaar')}</p>
+        </div>
+      )}
+      {!start && opfrissen && <OpfrisRegel opfrissen={opfrissen} />}
+
       {start ? (
         <StartCard start={start} />
       ) : (
@@ -81,7 +115,7 @@ export function DashboardGrid({
             label={t('statMastered')}
             sub={t('statMasteredSub')}
           />
-          <KpiCard label={t('statStreak')} value={String(streakDays)} tone="warn" />
+          <StreakCard days={streakDays} atRisk={streakAtRisk} />
           <KpiCard label={t('statCorrect')} value={`${pctAccuracy}%`} tone="accent" />
           <KpiCard
             label={t('statAnswered')}
@@ -131,6 +165,7 @@ export function DashboardGrid({
         {!start && (
           <div className="space-y-3">
             <ActivityCard activity={activity} />
+            <HerinneringKaart aan={herinneringAan} />
           </div>
         )}
       </div>
@@ -162,6 +197,63 @@ function StartCard({ start }: { start: StartData }) {
           topic: start.topicTitle,
         })}
       </p>
+    </div>
+  )
+}
+
+/**
+ * De kaart bovenaan voor een leerling die al eerder geoefend heeft: één knop
+ * naar de eerstvolgende soort som die hij nog niet beheerst. Zonder deze kaart
+ * moest hij bij elke terugkomst zelf de hele boom van /oefenen doorzoeken om
+ * te zien waar hij gebleven was (zie AFG-484).
+ */
+function VerderCard({ verder }: { verder: VerderData }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="mb-5 rounded-xl border border-accent/30 bg-accent-light p-5">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-text-muted">
+        {t('verderLabel')}
+      </p>
+      <p className="mt-1 font-serif text-xl text-text sm:text-2xl">{verder.clusterTitle}</p>
+      <KlikLink
+        href={verder.href}
+        bezigTekst="Opgave openen"
+        className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-lg bg-accent px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-accent/90"
+      >
+        {t('verderButton')}
+      </KlikLink>
+      <p className="mt-3 text-xs text-text-muted">
+        {t('verderWhere', {
+          chapter: verder.chapterTitle,
+          topic: verder.topicTitle,
+        })}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * "Even opfrissen?" — één rustige regel over een soort som die al weken
+ * beheerst is en sindsdien niet meer langskwam (zie AFG-488). Bewust zonder
+ * knop in de accentkleur en zonder wegklikken: wie hem negeert, is hem na de
+ * volgende oefenbeurt vanzelf kwijt, en zijn beheersing blijft hoe dan ook
+ * staan.
+ */
+function OpfrisRegel({ opfrissen }: { opfrissen: OpfrisData }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="mb-5 rounded-xl border border-border bg-surface px-4 py-3">
+      <p className="text-sm text-text">
+        {t('opfrissenTekst', { cluster: opfrissen.clusterTitle })}
+      </p>
+      <p className="mt-1 text-xs text-text-muted">{t('opfrissenUitleg')}</p>
+      <KlikLink
+        href={opfrissen.href}
+        bezigTekst="Opgave openen"
+        className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+      >
+        {t('opfrissenLink')}
+      </KlikLink>
     </div>
   )
 }
@@ -204,15 +296,33 @@ function KpiCard({
   label: string
   value: string
   sub?: string
-  tone: 'accent' | 'warn' | 'neutral'
+  tone: 'accent' | 'neutral'
 }) {
-  const valueColor =
-    tone === 'accent' ? 'text-accent' : tone === 'warn' ? 'text-accent-2' : 'text-text'
+  const valueColor = tone === 'accent' ? 'text-accent' : 'text-text'
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">{label}</div>
       <div className={cn('font-serif text-2xl', valueColor)}>{value}</div>
       {sub && <div className="text-xs text-text-muted">{sub}</div>}
+    </div>
+  )
+}
+
+/**
+ * De "dagen op rij"-tegel: net iets opvallender dan de andere drie KPI's,
+ * want dit is het "kom terug"-signaal en geen zomaar een getal (zie
+ * AFG-486). Loopt de reeks gevaar (nog niet geoefend vandaag), dan komt
+ * daar een rustige regel bij — geen paniekmakerij, gewoon een tekstregel.
+ */
+function StreakCard({ days, atRisk }: { days: number; atRisk: boolean }) {
+  const t = useTranslations('Dashboard')
+  return (
+    <div className="rounded-xl border border-accent-2/30 bg-accent-2-light p-4">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-text-muted">
+        {t('statStreak')}
+      </div>
+      <div className="font-serif text-3xl text-accent-2">{days}</div>
+      {atRisk && <p className="mt-1 text-xs text-text-muted">{t('streakAtRisk')}</p>}
     </div>
   )
 }

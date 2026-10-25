@@ -1,8 +1,25 @@
+import type { MouseEvent } from 'react'
+
 import { KlikLink } from '@/components/klik-link'
 import { cn } from '@/components/ui'
 import type { NewExerciseTile } from '@/lib/practice/chapter-overview'
 
 import { ExerciseTileMathPreview } from './exercise-tile-preview'
+
+/**
+ * Negeert een klik met modifier-toets of niet-linkermuisknop (nieuw
+ * tabblad e.d.), zodat die een gewone link blijft in plaats van de
+ * opgave meteen te openen.
+ */
+export function modifierVrijeKlik(actie: () => void) {
+  return (event: MouseEvent) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+      return
+    }
+    event.preventDefault()
+    actie()
+  }
+}
 
 export type TileSubSection = {
   id?: string
@@ -43,7 +60,7 @@ function TileGrid({
         const tileHref = `${baseHref}&q=${encodeURIComponent(tile.questionId)}`
         const active = activeQuestionId === tile.questionId
         const kaart = cn(
-          'overflow-hidden rounded-xl border transition',
+          'flex flex-col overflow-hidden rounded-xl border transition',
           active && 'ring-2 ring-accent ring-offset-2 ring-offset-[var(--color-bg)]',
           tile.lastCorrect === true && 'border-emerald-300/70 bg-emerald-50',
           tile.lastCorrect === false && 'border-rose-300/70 bg-rose-50/90',
@@ -54,6 +71,7 @@ function TileGrid({
           <li
             key={tile.questionId}
             className={kaart}
+            data-verhaal={tile.verhaal ? 'ja' : 'nee'}
             data-tour={rondleiding && index === 0 ? 'tegels' : undefined}
           >
             {bron ? (
@@ -75,26 +93,11 @@ function TileGrid({
             <KlikLink
               href={tileHref as '/oefenen'}
               prefetch={false}
+              data-meet="oefenen-tegel"
               bezigTekst="Opgave openen"
-              onClick={
-                onKies
-                  ? (event) => {
-                      if (
-                        event.metaKey ||
-                        event.ctrlKey ||
-                        event.shiftKey ||
-                        event.altKey ||
-                        event.button !== 0
-                      ) {
-                        return
-                      }
-                      event.preventDefault()
-                      onKies(tile.questionId)
-                    }
-                  : undefined
-              }
+              onClick={onKies ? modifierVrijeKlik(() => onKies(tile.questionId)) : undefined}
               className={cn(
-                'block min-h-[6.75rem] px-3 py-3',
+                'block min-h-[6.75rem] flex-1 px-3 py-3',
                 tile.lastCorrect === true && 'hover:bg-emerald-100/60',
                 tile.lastCorrect === false && 'hover:bg-rose-100/70',
                 tile.lastCorrect == null && 'hover:bg-surface-2',
@@ -157,11 +160,31 @@ export function ExerciseTileGrid({
     <section className="mt-6" aria-label={labels.heading}>
       {sections.map((section, si) => (
         <div key={si} id={section.id} className={cn('scroll-mt-4', si > 0 && 'mt-10')}>
-          {section.label && (
-            <h3 className="mt-6 font-serif text-lg text-text">
-              {section.label}
-            </h3>
-          )}
+          {section.label &&
+            (() => {
+              const eersteTegel = section.subSections.flatMap((sub) => sub.tiles)[0]
+              if (!eersteTegel) {
+                return (
+                  <h3 className="mt-6 font-serif text-lg text-text">{section.label}</h3>
+                )
+              }
+              return (
+                <h3 className="mt-6">
+                  <KlikLink
+                    href={
+                      `${baseHref}&q=${encodeURIComponent(eersteTegel.questionId)}` as '/oefenen'
+                    }
+                    prefetch={false}
+                    data-meet="oefenen-kopje"
+                    bezigTekst="Opgave openen"
+                    onClick={onKies ? modifierVrijeKlik(() => onKies(eersteTegel.questionId)) : undefined}
+                    className="font-serif text-lg text-text hover:text-accent"
+                  >
+                    {section.label}
+                  </KlikLink>
+                </h3>
+              )
+            })()}
           {section.subSections.map((sub, ci) => (
             <div
               key={ci}

@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "AfgeleideOefenen",
+    "slug": "afgeleideoefenen",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "afgeleideoefenen",
+    "userInterfaceStyle": "light",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#f7f6f3",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#f7f6f3",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "AfgeleideOefenen wil je camera gebruiken zodat je een foto van je uitwerking kunt maken. De foto blijft op je telefoon staan.",
+          "photosPermission": "AfgeleideOefenen wil bij je foto's kunnen zodat je een foto van je uitwerking kunt kiezen. De foto blijft op je telefoon staan."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

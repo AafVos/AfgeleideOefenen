@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import { createClient } from '@/lib/supabase/server'
 
 function parseDifficulty(v: FormDataEntryValue | null): 1 | 2 | 3 {
@@ -41,7 +42,7 @@ export async function createQuestion(formData: FormData) {
     .insert({ ...fields, is_ai_generated: false })
     .select('id')
     .single()
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath('/admin/questions')
   revalidatePath('/admin')
@@ -56,7 +57,7 @@ export async function updateQuestion(id: string, formData: FormData) {
     .from('questions_new')
     .update(fields)
     .eq('id', id)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath('/admin/questions')
   revalidatePath(`/admin/questions/${id}`)
@@ -65,7 +66,7 @@ export async function updateQuestion(id: string, formData: FormData) {
 export async function deleteQuestion(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('questions_new').delete().eq('id', id)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath('/admin/questions')
   revalidatePath('/admin')
@@ -89,7 +90,7 @@ export async function addStep(questionId: string, formData: FormData) {
     step_order,
     step_description,
   })
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath(`/admin/questions/${questionId}`)
 }
@@ -111,7 +112,7 @@ export async function updateStep(
     .from('question_steps_new')
     .update({ step_description, step_order })
     .eq('id', stepId)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath(`/admin/questions/${questionId}`)
 }
@@ -122,7 +123,7 @@ export async function deleteStep(stepId: string, questionId: string) {
     .from('question_steps_new')
     .delete()
     .eq('id', stepId)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath(`/admin/questions/${questionId}`)
 }

@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
 import { GoogleKnop } from '@/components/google-knop'
+import { ErrorBanner } from '@/components/ui'
 
 import { loginAction, resendConfirmationAction, type LoginState } from './actions'
 
@@ -41,7 +42,14 @@ export function LoginForm({
       {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
       <form action={formAction} className="space-y-4">
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
-      <Field label={t('emailLabel')} name="email" type="email" autoComplete="email" required />
+      <Field
+        label={t('emailLabel')}
+        name="email"
+        type="email"
+        autoComplete="email"
+        required
+        defaultValue={state.values?.email}
+      />
       <PasswordField
         label={t('passwordLabel')}
         name="password"
@@ -53,12 +61,7 @@ export function LoginForm({
       />
 
       {(callbackError || state.errorKey) && (
-        <p
-          role="alert"
-          className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
-        >
-          {callbackError ?? t(state.errorKey!)}
-        </p>
+        <ErrorBanner>{callbackError ?? t(state.errorKey!)}</ErrorBanner>
       )}
 
       {state.unconfirmedEmail && (
@@ -97,12 +100,14 @@ function Field({
   type,
   autoComplete,
   required,
+  defaultValue,
 }: {
   label: string
   name: string
   type: string
   autoComplete?: string
   required?: boolean
+  defaultValue?: string
 }) {
   return (
     <label className="block">
@@ -112,6 +117,7 @@ function Field({
         type={type}
         autoComplete={autoComplete}
         required={required}
+        defaultValue={defaultValue}
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
     </label>

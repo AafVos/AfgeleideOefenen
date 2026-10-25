@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // De tweede site uit deze repo: wiskundemetaaf.nl. Zelfde code, zelfde
+  // database en zelfde accounts als afgeleideoefenen.nl; alleen de naam, de
+  // startpagina en de teksten zijn anders.
+  //
+  // Welke van de twee er gebouwd wordt, zegt NEXT_PUBLIC_SITE_VARIANT bij de
+  // bouw (zie src/config/site.ts). Die waarde staat bij de bouwvariabelen van
+  // Workers Builds, niet hier: NEXT_PUBLIC_* wordt tijdens de bouw ingebakken.
+  //
+  // Lokaal bekijken: npm run cf:preview:wiskundemetaaf
+  "name": "wiskundemetaaf",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    // /nl geeft het klaargezette bestand, zonder eerst door te sturen naar /nl/.
+    "html_handling": "drop-trailing-slash",
+    // Zie wrangler.jsonc voor de uitleg: /inloggen en /uitleg-videos moeten,
+    // anders dan de andere klaargezette pagina's, eerst naar de worker voor
+    // een zoekopdracht (`?naar=` resp. `?video=`) of een sessiekoekje
+    // (AFG-632, AFG-635).
+    "run_worker_first": [
+      "/nl/inloggen",
+      "/nl/inloggen/",
+      "/nl/uitleg-videos",
+      "/nl/uitleg-videos/"
+    ]
+  },
+  // De startpagina-ingang blijft klein. worker-next.js is de al gebundelde
+  // Next-server en laadt pas als een pagina hem echt nodig heeft.
+  "find_additional_modules": true,
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": ["**/worker-next.js"],
+      "fallthrough": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+  // Geheimen staan als Worker-secrets in Cloudflare, nooit in dit bestand.
+  // Deze worker heeft dezelfde lijst nodig als afgeleide-oefenen; die staat in
+  // scripts/worker-omgeving.json en docs/omgeving.md.
+}

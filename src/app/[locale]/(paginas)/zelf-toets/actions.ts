@@ -1,12 +1,15 @@
 'use server'
 
-import { redirect } from 'next/navigation'
-import { getLocale } from 'next-intl/server'
-
-import { checkWrongAnswerNew } from '@/lib/ai/check-answer-new'
-import { answersMatch, cleanTimeSpentSec } from '@/lib/practice/engine'
 import { pickQuestionsForTest, type QuestionSource } from '@/lib/practice/custom-test'
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import {
+  bewaarAntwoord,
+  kijkAntwoordNa,
+  type Nakijkuitslag,
+  rekenAlsnogGoed,
+  vangOpslag,
+} from '@/lib/practice/nakijken'
+import { requireUser } from '@/lib/supabase/require-user'
+import { createClient } from '@/lib/supabase/server'
 
 const MAX_QUESTIONS = 50
 const VALID_SOURCES: QuestionSource[] = ['new', 'all', 'wrong']
@@ -112,14 +115,10 @@ export async function createCustomTestAction(
   payload: CreateTestPayload,
 ): Promise<{ error: string } | { sessionId: string }> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  const locale = await getLocale()
-  if (!user) redirect(`/${locale}/inloggen`)
+  const user = await requireUser()
 
   if (!Array.isArray(payload.clusterIds) || payload.clusterIds.length === 0) {
-    return { error: 'Kies minstens één onderwerp.' }
+    return { error: 'Kies minstens één theorieblok.' }
   }
 
   if (!VALID_SOURCES.includes(payload.source)) {
@@ -164,6 +163,8 @@ export type CustomTestAnswerResult =
       done: boolean
       correctAnswer: string
       latexCorrectAnswer: string | null
+      /** Korte zin als er iets niet lukte, bijvoorbeeld de extra controle. */
+      melding: string | null
     }
   | { kind: 'error'; message: string }
 
@@ -179,86 +180,72 @@ export async function submitCustomTestAnswerAction(
   } = await supabase.auth.getUser()
   if (!user) return { kind: 'error', message: 'Niet ingelogd.' }
 
-  // Verify the session belongs to the user and is a custom test
-  const { data: session } = await supabase
-    .from('user_sessions_new')
-    .select('id, user_id, session_type, ended_at')
-    .eq('id', sessionId)
-    .maybeSingle()
-  if (!session || session.user_id !== user.id || session.session_type !== 'custom_test') {
-    return { kind: 'error', message: 'Sessie niet gevonden.' }
-  }
-  if (session.ended_at) {
-    return { kind: 'error', message: 'Toets is al afgerond.' }
-  }
-
-  // Verify the question is part of this test
-  const { data: testRow } = await supabase
-    .from('custom_test_questions')
-    .select('question_id')
-    .eq('session_id', sessionId)
-    .eq('question_id', questionId)
-    .maybeSingle()
-  if (!testRow) {
-    return { kind: 'error', message: 'Vraag hoort niet bij deze toets.' }
-  }
-
-  // Prevent double-answering
-  const { data: existing } = await supabase
-    .from('session_answers_new')
-    .select('id')
-    .eq('session_id', sessionId)
-    .eq('question_id', questionId)
-    .maybeSingle()
-  if (existing) {
-    return { kind: 'error', message: 'Deze vraag is al beantwoord.' }
-  }
-
-  const { data: question } = await supabase
-    .from('questions_new')
-    .select('id, answer, latex_answer, answer_alternatives')
-    .eq('id', questionId)
-    .maybeSingle()
-  if (!question) return { kind: 'error', message: 'Vraag niet gevonden.' }
-
-  const alts: string[] = question.answer_alternatives ?? []
-  let isCorrect = answersMatch(userAnswer, question.answer, alts)
-
-  const { data: answerRow, error: answerErr } = await supabase
-    .from('session_answers_new')
-    .insert({
-      session_id: sessionId,
-      question_id: question.id,
-      user_answer: userAnswer,
-      is_correct: isCorrect,
-      time_spent_sec: cleanTimeSpentSec(timeSpentSec),
-    })
-    .select('id')
-    .single()
-  if (answerErr || !answerRow) {
-    console.error(
-      '[zelf-toets] antwoord opslaan mislukt:',
-      answerErr?.code ?? '',
-      answerErr?.message ?? '',
-    )
-    return { kind: 'error', message: 'Opslaan is niet gelukt. Probeer het nog eens.' }
-  }
-
-  // For wrong answers, ask the AI if it's actually a valid alternative
-  if (!isCorrect) {
-    try {
-      const service = createServiceRoleClient()
-      const aiResult = await checkWrongAnswerNew(service, question.id, userAnswer)
-      if (!('error' in aiResult) && aiResult.isMathematicallyCorrect) {
-        await supabase
-          .from('session_answers_new')
-          .update({ is_correct: true })
-          .eq('id', answerRow.id)
-        isCorrect = true
-      }
-    } catch (e) {
-      console.error('[zelf-toets check]', e)
+  let question: { id: string; answer: string; latex_answer: string | null; answer_alternatives: string[] | null }
+  let uitslag: Nakijkuitslag
+  try {
+    // Verify the session belongs to the user and is a custom test
+    const { data: session } = await supabase
+      .from('user_sessions_new')
+      .select('id, user_id, session_type, ended_at')
+      .eq('id', sessionId)
+      .maybeSingle()
+    if (!session || session.user_id !== user.id || session.session_type !== 'custom_test') {
+      return { kind: 'error', message: 'Sessie niet gevonden.' }
     }
+    if (session.ended_at) {
+      return { kind: 'error', message: 'Toets is al afgerond.' }
+    }
+
+    // Verify the question is part of this test
+    const { data: testRow } = await supabase
+      .from('custom_test_questions')
+      .select('question_id')
+      .eq('session_id', sessionId)
+      .eq('question_id', questionId)
+      .maybeSingle()
+    if (!testRow) {
+      return { kind: 'error', message: 'Vraag hoort niet bij deze toets.' }
+    }
+
+    // Prevent double-answering
+    const { data: existing } = await supabase
+      .from('session_answers_new')
+      .select('id')
+      .eq('session_id', sessionId)
+      .eq('question_id', questionId)
+      .maybeSingle()
+    if (existing) {
+      return { kind: 'error', message: 'Deze vraag is al beantwoord.' }
+    }
+
+    const { data: gevondenVraag } = await supabase
+      .from('questions_new')
+      .select('id, answer, latex_answer, answer_alternatives')
+      .eq('id', questionId)
+      .maybeSingle()
+    if (!gevondenVraag) return { kind: 'error', message: 'Vraag niet gevonden.' }
+    question = gevondenVraag
+
+    let answerId = ''
+    uitslag = await kijkAntwoordNa({
+      questionId: question.id,
+      userAnswer,
+      correctAnswer: question.answer,
+      alternatives: question.answer_alternatives,
+      bewaar: async (goed) => {
+        answerId = await bewaarAntwoord(supabase, '[zelf-toets] antwoord opslaan mislukt:', {
+          sessionId,
+          questionId: question.id,
+          userAnswer,
+          isCorrect: goed,
+          timeSpentSec,
+        })
+      },
+    })
+    if (uitslag.viaExtraControle)
+      await rekenAlsnogGoed(supabase, '[zelf-toets] alsnog goed rekenen mislukt:', answerId)
+  } catch (e) {
+    return vangOpslag('[zelf-toets] nakijken mislukt:', e)
   }
 
   // Determine if this was the last question
@@ -281,7 +268,7 @@ export async function submitCustomTestAnswerAction(
       .eq('id', sessionId)
   }
 
-  if (isCorrect) {
+  if (uitslag.goed) {
     return { kind: 'correct', done }
   }
   return {
@@ -289,5 +276,6 @@ export async function submitCustomTestAnswerAction(
     done,
     correctAnswer: question.answer,
     latexCorrectAnswer: question.latex_answer ?? null,
+    melding: uitslag.melding,
   }
 }

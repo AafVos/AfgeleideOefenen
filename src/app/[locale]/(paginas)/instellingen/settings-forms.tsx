@@ -1,8 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
+
+import { ErrorBanner } from '@/components/ui'
 
 import {
   updatePasswordAction,
@@ -14,14 +16,7 @@ const initialState: SettingsState = { error: null, success: null }
 
 function StateBanner({ state }: { state: SettingsState }) {
   if (state.error) {
-    return (
-      <p
-        role="alert"
-        className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
-      >
-        {state.error}
-      </p>
-    )
+    return <ErrorBanner>{state.error}</ErrorBanner>
   }
   if (state.success) {
     return (
@@ -42,7 +37,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -78,7 +73,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
           <button
             type="button"
             onClick={() => setOpenedAt(state)}
-            className="ml-3 font-medium text-accent hover:underline"
+            className="ml-3 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
           >
             {t('change')}
           </button>
@@ -111,7 +106,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
           <button
             type="button"
             onClick={() => setOpenedAt(null)}
-            className="text-sm font-medium text-text-muted hover:text-text"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-text-muted hover:text-text"
           >
             {t('cancel')}
           </button>
@@ -124,9 +119,19 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
 export function PasswordForm() {
   const [state, formAction] = useActionState(updatePasswordAction, initialState)
   const t = useTranslations('Settings')
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // Na een geslaagde wijziging blijven ongecontroleerde velden anders gevuld
+  // staan, wat tot een verwarrende "moet anders zijn" foutmelding leidt bij
+  // een tweede klik op opslaan.
+  useEffect(() => {
+    if (state.success) {
+      formRef.current?.reset()
+    }
+  }, [state.success])
 
   return (
-    <form action={formAction} className="space-y-3">
+    <form ref={formRef} action={formAction} className="space-y-3">
       <label className="block">
         <span className="mb-1 block text-sm font-medium text-text">
           {t('newPasswordLabel')}

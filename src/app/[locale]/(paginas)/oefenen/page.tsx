@@ -21,7 +21,7 @@ import {
   oefenIndeling,
 } from '@/lib/practice/oefenen-indeling'
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
-import { canoniek, deelkaart } from '@/lib/seo'
+import { canoniek, deelkaart, nietIndexeren } from '@/lib/seo'
 import { getChapters } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
@@ -48,6 +48,7 @@ export async function generateMetadata({
     description,
     alternates: canoniek(locale, '/oefenen'),
     openGraph: deelkaart(locale, '/oefenen', { title, description }),
+    robots: nietIndexeren(),
   }
 }
 

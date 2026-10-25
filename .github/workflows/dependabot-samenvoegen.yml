@@ -1,0 +1,48 @@
+# Beveiligingsupdates van Dependabot automatisch mergen zodra alle verplichte
+# controles groen zijn. Niet automatisch (die krijgen een ticket bij de
+# Ontwikkelaar (Pro), regelboek 4b):
+# - grote versiesprongen (semver-major), en bij 0.x-pakketten ook een minor;
+# - de bouwketen: next, react, react-dom, @opennextjs/*, wrangler. Op 22 oktober
+#   brak een automatische next-update (16.3 -> 16.4) urenlang de live site;
+# - katex (tekent alle formules), expo en react-native (alleen samen met een
+#   nieuwe Expo-SDK).
+name: Dependabot automatisch mergen
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  samenvoegen:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Soort update bepalen
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+      - name: Mag dit automatisch?
+        id: keuze
+        env:
+          TYPE: ${{ steps.meta.outputs.update-type }}
+          NAMEN: ${{ steps.meta.outputs.dependency-names }}
+          VORIGE: ${{ steps.meta.outputs.previous-version }}
+        run: |
+          mag=ja
+          [ "$TYPE" = "version-update:semver-major" ] && mag=nee
+          case "$VORIGE" in 0.*) [ "$TYPE" = "version-update:semver-minor" ] && mag=nee ;; esac
+          for n in $(echo "$NAMEN" | tr ',' ' '); do
+            case "$n" in
+              next|react|react-dom|@opennextjs/*|wrangler|katex|expo|expo-*|@expo/*|react-native|react-native-*) mag=nee ;;
+            esac
+          done
+          echo "Pakketten: $NAMEN ($TYPE, was $VORIGE) -> automatisch mergen: $mag"
+          echo "mag=$mag" >> "$GITHUB_OUTPUT"
+      - name: Automatisch mergen na groene controles
+        if: steps.keuze.outputs.mag == 'ja'
+        run: gh pr merge --auto --squash "$PR"
+        env:
+          PR: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

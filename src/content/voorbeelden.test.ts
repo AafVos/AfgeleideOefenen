@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import sitemap from '@/app/sitemap'
 
-import { getVoorbeeld, getVoorbeelden, voorbeeldPad } from './voorbeelden'
+import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from './voorbeelden'
 
 describe('antwoordpagina-s', () => {
   const voorbeelden = getVoorbeelden()
@@ -32,7 +32,16 @@ describe('antwoordpagina-s', () => {
     }
   })
 
-  it('werkt elk voorbeeld uit in stap 0 tot en met 3, met f, g en h', () => {
+  it('werkt elk voorbeeld uit in stap 0 tot en met 3, met f', () => {
+    // Een zuivere macht van x volgt de machtsregel. Geen binnenfunctie die gewoon x is.
+    const machtsregelOpX = new Set([
+      'wortel-x',
+      'x-kwadraat',
+      'x-tot-de-derde',
+      'een-gedeeld-door-x',
+    ])
+    // Een standaardafgeleide ken je uit je hoofd. Ook hier geen binnenfunctie die gewoon x is.
+    const standaardafgeleide = new Set(['e-tot-de-x', 'ln-x', 'sin-x', 'cos-x', 'tan-x'])
     for (const voorbeeld of voorbeelden) {
       expect(voorbeeld.stappen).toHaveLength(4)
       expect(voorbeeld.stappen[0]).toMatch(/^Stap 0\./)
@@ -41,8 +50,20 @@ describe('antwoordpagina-s', () => {
       expect(voorbeeld.stappen[3]).toMatch(/^Stap 3\./)
       const tekst = [...voorbeeld.stappen, voorbeeld.fout].join(' ')
       expect(tekst).toMatch(/\$f/)
-      expect(tekst).toMatch(/\$g/)
-      expect(tekst).toMatch(/\$h/)
+      if (machtsregelOpX.has(voorbeeld.slug)) {
+        expect(tekst).toMatch(/machtsregel/)
+        expect(tekst).toMatch(/\$a =/)
+        expect(tekst).toMatch(/\$n =/)
+        expect(tekst).not.toMatch(/\$h\(/)
+        expect(tekst).not.toMatch(/\$g/)
+      } else if (standaardafgeleide.has(voorbeeld.slug)) {
+        expect(tekst).toMatch(/standaardafgeleide/)
+        expect(tekst).not.toMatch(/\$h\(/)
+        expect(tekst).not.toMatch(/\$g/)
+      } else {
+        expect(tekst).toMatch(/\$g/)
+        expect(tekst).toMatch(/\$h/)
+      }
       expect(tekst).not.toMatch(/\$[uv]\(/)
       expect(tekst).not.toMatch(/\b[uv]\(/)
       expect(voorbeeld.fout.length).toBeGreaterThan(20)
@@ -52,7 +73,7 @@ describe('antwoordpagina-s', () => {
     }
   })
 
-  it('wijst naar de soort som, twee verwante pagina-s en de theorie', () => {
+  it('wijst naar de soort som, drie tot vijf verwante pagina-s en de theorie', () => {
     for (const voorbeeld of voorbeelden) {
       expect(voorbeeld.oefenen).toContain('van=voorbeeld')
       expect(voorbeeld.oefenen).toContain('topic=')
@@ -60,7 +81,9 @@ describe('antwoordpagina-s', () => {
       expect(voorbeeld.oefenen.startsWith('/oefenen?')).toBe(true)
       expect(voorbeeld.theoriePad.startsWith('/theorie')).toBe(true)
       expect(voorbeeld.theorieNaam.length).toBeGreaterThan(3)
-      expect(voorbeeld.verwant).toHaveLength(2)
+      expect(voorbeeld.verwant.length).toBeGreaterThanOrEqual(3)
+      expect(voorbeeld.verwant.length).toBeLessThanOrEqual(5)
+      expect(new Set(voorbeeld.verwant).size).toBe(voorbeeld.verwant.length)
       expect(voorbeeld.verwant).not.toContain(voorbeeld.slug)
       for (const slug of voorbeeld.verwant) {
         expect(getVoorbeeld(slug)?.slug).toBe(slug)
@@ -83,6 +106,37 @@ describe('antwoordpagina-s', () => {
         const schaal = Math.max(1, Math.abs(verwacht))
         expect(Math.abs(numeriek - verwacht) / schaal).toBeLessThan(1e-4)
       }
+    }
+  })
+
+  it('zet "oefenen" in de titel voor de zoekmachine, los van de kop op de pagina', () => {
+    for (const voorbeeld of voorbeelden) {
+      const titel = voorbeeldTitel(voorbeeld)
+      expect(titel).not.toMatch(/^De /)
+      expect(titel.endsWith(' oefenen')).toBe(true)
+      expect(titel.length).toBeLessThanOrEqual(60)
+    }
+    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
+      'Afgeleide van e tot de macht 2x oefenen',
+    )
+  })
+
+  it('toont de brug naar de examentraining op de drukste pagina-s (AFG-623)', () => {
+    const metBrug = [
+      'wortel-x',
+      'een-gedeeld-door-x',
+      'e-tot-de-x',
+      'ln-x',
+      'sin-x',
+      'cos-x',
+    ]
+    for (const slug of metBrug) {
+      expect(getVoorbeeld(slug)?.examenbrug).toBe(true)
+    }
+    const zonderBrug = voorbeelden.filter((v) => !metBrug.includes(v.slug))
+    for (const voorbeeld of zonderBrug) {
+      expect(voorbeeld.examenbrug).toBeFalsy()
     }
   })
 

@@ -85,16 +85,29 @@ async function binnenBeeld(page: Page) {
   expect(doos!.x + doos!.width).toBeLessThanOrEqual((formaat?.width ?? 0) + 1)
   expect(doos!.y + doos!.height).toBeLessThanOrEqual((formaat?.height ?? 0) + 1)
 
-  const ring = page.locator('.tour-ring')
-  if ((await ring.count()) === 0) return
-  const doel = await ring.first().boundingBox()
-  if (!doel || !doos) return
-  const overlapt =
-    doel.x < doos.x + doos.width &&
-    doel.x + doel.width > doos.x &&
-    doel.y < doos.y + doos.height &&
-    doel.y + doel.height > doos.y
-  expect(overlapt).toBe(false)
+  // Er kan meer dan één uitgelicht element zijn: de stap zelf, en op de
+  // oefenpagina ook het menu-item "Oefenen". Elk moet uit de weg van de
+  // ballon blijven, én boven de dimmende overlay uit steken — anders lijkt
+  // de knop te verdwijnen (zie AFG-394).
+  const ringen = await page.locator('.tour-ring').all()
+  for (const el of ringen) {
+    const doel = await el.boundingBox()
+    if (!doel || !doos) continue
+    const overlapt =
+      doel.x < doos.x + doos.width &&
+      doel.x + doel.width > doos.x &&
+      doel.y < doos.y + doos.height &&
+      doel.y + doel.height > doos.y
+    expect(overlapt).toBe(false)
+
+    const middenX = doel.x + doel.width / 2
+    const middenY = doel.y + doel.height / 2
+    const bovenOp = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest('.tour-ring') != null,
+      [middenX, middenY],
+    )
+    expect(bovenOp).toBe(true)
+  }
 }
 
 test('de rondleiding start pas na de gebruikersnaam en loopt tot op de oefenpagina @telefoon', async ({

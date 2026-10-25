@@ -21,6 +21,13 @@
     "verplicht": true
   },
   {
+    "naam": "NEXT_PUBLIC_SITE_VARIANT",
+    "doel": "Welke van de twee sites deze bouw is: afgeleide of wiskundemetaaf. Leeg of onbekend betekent afgeleide.",
+    "wanneer": "bouw",
+    "geheim": false,
+    "verplicht": false
+  },
+  {
     "naam": "NEXT_PUBLIC_GOOGLE_LOGIN",
     "doel": "Zet op 1 om de knop Doorgaan met Google te tonen. Alleen als die aanmelding in Supabase al aan staat.",
     "wanneer": "bouw",
@@ -75,5 +82,12 @@
     "wanneer": "runtime",
     "geheim": true,
     "verplicht": true
+  },
+  {
+    "naam": "MEET_SCHUILNAAM_GEHEIM",
+    "doel": "Geheim waarmee de klikmeting de schuilnaam van een ingelogde leerling uitrekent. Dezelfde waarde hoort in de Vault als meet_schuilnaam_geheim. Zonder deze regel blijft de schuilnaam leeg en meet de site alleen per tabblad.",
+    "wanneer": "runtime",
+    "geheim": true,
+    "verplicht": false
   }
 ]

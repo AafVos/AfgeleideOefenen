@@ -5,9 +5,11 @@ import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
 import { GoogleKnop } from '@/components/google-knop'
+import { ErrorBanner } from '@/components/ui'
 import { Link } from '@/i18n/navigation'
 import { hrefMetOefenpad } from '@/lib/auth/oefenpad'
 import type { Herkomst } from '@/lib/herkomst'
+import { meldMeting } from '@/lib/meten/melden'
 
 import { signupAction, type SignupState } from './actions'
 import { resendConfirmationAction } from '../inloggen/actions'
@@ -56,6 +58,15 @@ export function SignupForm({
     }
   }, [])
 
+  // De aanmelding is gelukt zodra het formulier plaatsmaakt voor "kijk in je
+  // mail". Dat kan de klikmeting zelf niet zien, dus melden we het hier.
+  const gemeld = useRef(false)
+  useEffect(() => {
+    if (!state.noticeKey || gemeld.current) return
+    gemeld.current = true
+    meldMeting('registratie', herkomst ? `registratie-via-${herkomst}` : undefined)
+  }, [state.noticeKey, herkomst])
+
   function handleResend() {
     if (!state.email) return
     startResend(async () => {
@@ -103,8 +114,16 @@ export function SignupForm({
           )}
         </div>
 
+        {googleAan ? (
+          <div className="space-y-2">
+            <p className="text-sm text-text-muted">{t('googlePrompt')}</p>
+            <GoogleKnop oefenpad={oefenpad} dataMeet="google-aanmelden-na-mail" />
+          </div>
+        ) : null}
+
         <Link
           href={hrefMetOefenpad('/inloggen', oefenpad)}
+          data-meet="registreren-na-mail-inloggen"
           className="block w-full rounded-md bg-accent px-4 py-2.5 text-center font-medium text-white shadow-sm transition hover:bg-accent/90"
         >
           {t('toLoginLabel')}
@@ -154,20 +173,17 @@ export function SignupForm({
         toggleLabel={showPassword ? t('hidePassword') : t('showPassword')}
       />
 
-      {state.errorKey && (
-        <p
-          role="alert"
-          className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2"
-        >
-          {t(state.errorKey)}
-        </p>
-      )}
+      {state.errorKey && <ErrorBanner>{t(state.errorKey)}</ErrorBanner>}
 
       <SubmitButton />
 
       <p className="pt-1 text-center text-sm text-text-muted">
         {t('hasAccount')}{' '}
-        <Link href={hrefMetOefenpad('/inloggen', oefenpad)} className="font-medium text-accent hover:underline">
+        <Link
+          href={hrefMetOefenpad('/inloggen', oefenpad)}
+          data-meet="registreren-naar-inloggen"
+          className="font-medium text-accent hover:underline"
+        >
           {t('loginLink')}
         </Link>
       </p>
@@ -261,6 +277,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
+      data-meet="registreren-versturen"
       className="w-full rounded-md bg-accent px-4 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? t('submitPending') : t('submitLabel')}

@@ -1,4 +1,5 @@
 import { DeelKnop } from '@/components/deel-knop'
+import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 
@@ -95,7 +96,7 @@ export default function ExamentrainingPage() {
           Account aanmaken
         </Link>
         <Link
-          href="/theorie"
+          href={DIFFERENTIEERREGELS_PAD}
           className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
         >
           Alle differentieerregels

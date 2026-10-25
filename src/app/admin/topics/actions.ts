@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import { createClient } from '@/lib/supabase/server'
 
 // ---------------------------------------------------------------------
@@ -24,7 +25,7 @@ export async function createTopic(formData: FormData) {
     chapter_id,
     order_index,
   })
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath('/admin/topics')
   revalidatePath('/admin')
@@ -44,7 +45,7 @@ export async function updateTopic(id: string, formData: FormData) {
     .from('topics_new')
     .update({ slug, title, chapter_id, order_index })
     .eq('id', id)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath('/admin/topics')
   revalidatePath(`/admin/topics/${id}`)
@@ -53,7 +54,7 @@ export async function updateTopic(id: string, formData: FormData) {
 export async function deleteTopic(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('topics_new').delete().eq('id', id)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath('/admin/topics')
   redirect('/admin/topics')
@@ -76,7 +77,7 @@ export async function createCluster(topicId: string, formData: FormData) {
     title,
     order_index,
   })
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath(`/admin/topics/${topicId}`)
 }
@@ -97,7 +98,7 @@ export async function updateCluster(
     .from('topic_clusters_new')
     .update({ slug, title, order_index })
     .eq('id', clusterId)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath(`/admin/topics/${topicId}`)
 }
@@ -108,7 +109,7 @@ export async function deleteCluster(clusterId: string, topicId: string) {
     .from('topic_clusters_new')
     .delete()
     .eq('id', clusterId)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
 
   revalidatePath(`/admin/topics/${topicId}`)
 }

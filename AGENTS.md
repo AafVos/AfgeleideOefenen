@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -24,6 +24,47 @@ bij elke pull request (`.github/workflows/controle.yml`). Daar start Supabase be
 overgeslagen als een pull request alleen tekst verandert. Lokaal start
 `npx supabase start` gewoon alles, inclusief Studio.
 
+## Releaseproces: rechtstreeks naar `main`
+
+Er is één beschermde tak: `main`, de live site. Tak vanaf `origin/main`,
+pull request naar `main` (`gh pr create`). Controles groen → mergen
+(squash), rechtstreeks op `main`. Gaat het om iets kritieks (de site, het
+inloggen of het registreren doet het niet; het nakijken rekent een goed
+antwoord fout of een fout antwoord goed; een beveiligings- of privacylek of
+gegevens die verloren gaan; de bouw of de controles op `main` zijn stuk), zet
+dan `[Kritiek]` vooraan de titel.
+
+Elke merge op `main` is meteen live: Cloudflare Workers Builds bouwt `main`
+en zet de nieuwe versie direct op afgeleideoefenen.nl (worker
+`afgeleide-oefenen`). Er is geen tussentak en geen aparte
+release-pull-request.
+
+### Er is geen voorbeeldversie van een tak
+
+Workers Builds bouwt elke pull request-tak, maar die bouw **faalt** (zie het
+bot-bericht "Deploying Preview to Cloudflare" bij een pull request, en de
+check `Workers Builds: afgeleide-oefenen`). Zolang die faalt wordt er geen
+versie geüpload en is er dus geen voorbeeldversie. De adressen zelf zijn
+goed: de worker heeft preview-URL's aanstaan — een onbekend adres antwoordt
+met `x-preview-user-error: true`, niet met "worker bestaat niet".
+
+Bekijk je werk dus lokaal: `npm run dev`, of `npm run cf:preview` voor de
+Workers-versie.
+
+**Wat er moet gebeuren om het terug te krijgen** (alleen Aaf kan dit; het kan
+niet vanuit deze repo, want de instellingen van Workers Builds staan in het
+Cloudflare-dashboard en er staat geen `CLOUDFLARE_API_TOKEN` in GitHub):
+
+1. In het dashboard bij de worker `afgeleide-oefenen` → Settings → Builds: de
+   bouwlog van een gefaalde tak-bouw lezen en de oorzaak wegnemen. Waarschijnlijk
+   ontbreken de bouwvariabelen (`NEXT_PUBLIC_*`, zie `scripts/worker-omgeving.json`)
+   voor niet-productietakken, of het commando voor niet-productietakken klopt
+   niet — dat hoort `npx wrangler versions upload` te zijn, niet `deploy`.
+2. Controleren dat bouwen voor niet-productietakken aan staat.
+3. Werkt het, zet de link dan weer terug in dit bestand en in `README.md`. De
+   inlog-adressen staan al goed: in `supabase/config.toml` dekt
+   `https://*-afgeleide-oefenen.alhvos.workers.dev/**` elke tak.
+
 ## Lokaal op Workers
 
 De live site draait op Cloudflare Workers (worker `afgeleide-oefenen`), via
@@ -39,16 +80,16 @@ npm run cf:preview
 met `wrangler` of `opennextjs-cloudflare deploy`. Na een merge doet Workers
 Builds dat.
 
-Botst een pull request met `main`, dan maakt GitHub de samengevoegde versie
-niet aan en start die controle helemaal niet. Niet rood en niet "in
-afwachting": in `gh pr checks` blijven dan alleen de controles over die op
-de tak zelf draaien, zoals Workers Builds. De check
-"Botst met main" (`.github/workflows/botst-met-main.yml`) draait op de tak
-zelf en wordt dan rood, met de bestanden die botsen. Voeg `main` samen of
-rebase, en duw opnieuw — daarna start de controle vanzelf.
+Botst een pull request met zijn doeltak (`main`), dan maakt GitHub de
+samengevoegde versie niet aan en start die controle helemaal niet.
+Niet rood en niet "in afwachting": in `gh pr checks` blijven dan alleen de
+controles over die op de tak zelf draaien, zoals Workers Builds. De check
+"Botst met de doeltak" (`.github/workflows/botst-met-doeltak.yml`) draait op
+de tak zelf en wordt dan rood, met de bestanden die botsen. Voeg de doeltak
+samen of rebase erop, en duw opnieuw — daarna start de controle vanzelf.
 
-Ontbreekt de controle-run (omdat `main` na je laatste push is verschoven, of
-omdat de rode check hierboven er ook niet is), kijk dan eerst of de pull
+Ontbreekt de controle-run (omdat de doeltak na je laatste push is verschoven,
+of omdat de rode check hierboven er ook niet is), kijk dan eerst of de pull
 request botst:
 
 ```bash
@@ -56,9 +97,9 @@ gh pr view <nummer> --json mergeable,mergeStateStatus
 ```
 
 Staat `mergeable` op `false`, of `mergeStateStatus` op `dirty`, dan is dat de
-reden. Zelfde stap: `main` erbij halen en opnieuw duwen. Achterlopen zonder
-conflict is geen probleem: de controle draait dan gewoon op de samengevoegde
-versie.
+reden. Zelfde stap: de doeltak erbij halen en opnieuw duwen. Achterlopen
+zonder conflict is geen probleem: de controle draait dan gewoon op de
+samengevoegde versie.
 
 ## Indeling van de oefenpagina
 
@@ -80,6 +121,40 @@ gedraaid zijn, staat in `supabase_migrations.schema_migrations` (versie en
 naam). Migratie `0029_schema_migrations.sql` maakt die tabel aan en vult hem
 met 0001 t/m 0028, de bestanden waarvan het resultaat al aanwezig was.
 
+Mergen is niet hetzelfde als draaien: zie "Elke ochtend: is elke migratie ook
+echt gedraaid?" hieronder.
+
+## Elke ochtend: is elke migratie ook echt gedraaid?
+
+`.github/workflows/migraties-vergelijken.yml` vergelijkt de bestanden in
+`supabase/migrations/` op `main` met de rijen in
+`supabase_migrations.schema_migrations` op de echte database. Staat er een
+bestand in de repo dat daar niet in voorkomt, dan komt er een issue met alleen
+die bestandsnamen erin. Is alles alsnog gedraaid, dan sluit de controle de
+melding zelf.
+
+Dit is nodig omdat "Weg van een leerling" alle migraties op een verse lokale
+database draait: daar klopt het altijd. Een migratie die gemerged is maar nooit
+op productie gezet, viel zo nergens op — bij `0071_eindexamenvragen_aanvulling`
+stonden zestien eindexamenvragen maandenlang wel in de repo en niet op de site,
+en bij `0061` ging het daarvoor net zo.
+
+* **Alleen lezen.** De controle draait zelf nooit een migratie; dat blijft
+  mensenwerk, met een reservekopie erbij als er iets weggehaald of veranderd
+  wordt (zie `scripts/controleer-migraties.mjs`).
+* Hij kijkt naar `main`, dus naar wat live staat. Een migratie die nog in een
+  pull request zit, hoort nog niet gedraaid te zijn.
+* Hij heeft het geheim `SUPABASE_DB_URL` nodig (GitHub → Settings → Secrets):
+  de verbindingsgegevens van de echte database, de variant die over IPv4 werkt
+  (de "session pooler"), want een GitHub-runner heeft geen IPv6. Staat dat
+  geheim er niet, dan slaat de controle zichzelf over met uitleg.
+* Deze repo is openbaar, en het logboek van de run dus ook. In de uitvoer staan
+  alleen bestandsnamen van migraties; de verbindingsgegevens worden eruit
+  gehaald en er wordt nooit iets uit de tabellen zelf gelezen.
+
+Zelf nakijken kan ook:
+`SUPABASE_DB_URL="$AFG_DB_URL" node scripts/controleer-migraties.mjs`.
+
 ## Een keer per nacht: wijkt het dashboard af?
 
 `.github/workflows/dashboard-vergelijken.yml` draait elke ochtend (en met de
@@ -89,6 +164,7 @@ Zo valt het op als iemand iets in het Supabase-dashboard heeft veranderd zonder
 
 * **Alleen lezen.** Deze controle doet nooit `supabase config push`; dat project
   draagt de echte accounts en voortgang van leerlingen.
+* Hij kijkt naar `main`, dus naar wat live staat.
 * **Bij verschil komt er een issue in de repo**, geen rode controle. Een
   waarschuwing in een logboek leest niemand, en een pull request van iemand
   anders hoort niet te blijven hangen door iets wat die persoon niet
@@ -110,15 +186,50 @@ over als het geheim `CLOUDFLARE_API_TOKEN` niet in GitHub staat.
 
 ## Elke ochtend: wat is er samen live gegaan?
 
-`.github/workflows/dagelijkse-release.yml` maakt elke ochtend (en met de hand
-vanaf het tabblad Actions) een GitHub Release met de datum als tag, bijvoorbeeld
-`v2026-10-13`. In de tekst staan de titels van wat er sinds de vorige release
-op `main` is gemerged.
+`.github/workflows/dagelijkse-release.yml` maakt een GitHub Release met de
+datum als tag, bijvoorbeeld `v2026-10-13`. In de tekst staan de titels van de
+pull requests die sinds de vorige release op `main` terecht zijn gekomen.
+
+Hij draait zodra er iets op `main` gemerged wordt, en daarnaast elke ochtend
+als vangnet, plus met de hand vanaf het tabblad Actions. Bestaat de tag van
+vandaag al, dan doet een tweede run niets.
 
 Elke merge op `main` blijft meteen live. Er komt geen versienummer in
 `package.json`. Is er niets nieuws, dan komt er geen release. De eerste keer,
 als er nog geen datum-release is, staan alleen de pull requests van de
 afgelopen 24 uur erin, en de tag op de huidige `main` is daarna het beginpunt.
+
+## Elke dag om 16:00 UTC: de herinneringsmail
+
+De eerste geplande taak die niet op GitHub draait maar op de Worker zelf
+(AFG-487). `triggers.crons` in `wrangler.jsonc` laat Cloudflare elke dag de
+`scheduled`-ingang aanroepen; die staat in de ingang-sjabloon bovenin
+`scripts/statische-cache.mjs` en geeft het door aan `/api/cron/herinneringen`,
+met het geheim `WEBHOOK_SECRET` in de kop. Er komt dus geen nieuw geheim bij.
+
+* **Opt-in.** `profiles.herinnering_mail` staat standaard uit. De leerling zet
+  hem zelf aan op het dashboard, en krijgt daarbij eerst de vraag of hij 16 of
+  ouder is. Onder de 16 hoort toestemming van een ouder; zolang daar niets
+  voor is, blijft hij uit.
+* **De regels staan los van de database** in `src/lib/herinnering/kiezen.ts`:
+  zeven dagen stil, hoogstens één mail per veertien dagen, nooit meer dan drie
+  in totaal, en hoogstens vijftig per ronde. Is alles beheerst, dan is er
+  niets om naartoe te wijzen en gaat er niets uit.
+* **De tellers zijn van de server.** `herinnering_laatst_op`,
+  `herinnering_aantal` en `herinnering_sleutel` kan een leerling niet zelf
+  zetten; een trigger in migratie 0082 zet ze terug. Anders kon hij zichzelf
+  eindeloos mail laten sturen.
+* **Afmelden kan zonder in te loggen**, via `/nl/herinnering-uit` met het
+  willekeurige nummer uit `herinnering_sleutel` — nooit het gebruikersnummer.
+* **Lokaal nalopen** hoeft niet op een cron te wachten:
+
+  ```bash
+  curl -X POST -H "x-webhook-secret: $WEBHOOK_SECRET" \
+    http://localhost:3000/api/cron/herinneringen
+  ```
+
+  In het antwoord staan alleen aantallen, nooit adressen. `e2e/herinnering.spec.ts`
+  doet precies dit, met de neppe Resend ervoor.
 
 ## De e2e-tests: een echte browser door de site
 
@@ -201,6 +312,32 @@ E2E_PORT=3178 npm run test:e2e           # als poort 3177 bezet is
 
 De tests draaien op computerformaat (1280×800); de belangrijkste weg draait
 daarnaast nog een keer op telefoonformaat (390×844).
+
+### In de controle: drie machines, elk een derde van de tests
+
+Op je eigen computer draait de hele suite achter elkaar. In GitHub Actions
+staat hij sinds AFG-491 over drie machines verdeeld
+(`npm run test:e2e -- --shard=<n>/3`). Achter elkaar op één machine duurde hij
+9 minuten en 56 seconden, met een grens van tien: één test die een tweede
+poging nodig had, liet de hele stap al omvallen terwijl er niets stuk was.
+
+Waarom drie machines en niet drie browsers naast elkaar op één machine: dat
+laatste is geprobeerd en het hielp nauwelijks. Een runner heeft vier kernen,
+en die zitten al vol met de ontwikkelserver van Next plus één browser. Vier
+browsers tegelijk maakte elke losse test drie keer zo langzaam en leverde
+onder de twintig procent tijdwinst op.
+
+Wat dat betekent als je een test schrijft:
+
+* Playwright verdeelt per **testbestand**, niet per test — tests uit hetzelfde
+  bestand blijven bij elkaar zolang `fullyParallel` uit staat. Hoort je test
+  bij een bestaande test (dezelfde voortgang, dezelfde opgave), zet hem dan in
+  hetzelfde bestand;
+* elk deel heeft zijn eigen wegwerp-Supabase, dus twee delen kunnen elkaar
+  niet in de weg zitten;
+* de verplichte check heet `Weg van een leerling` en draait zelf geen tests:
+  hij kijkt alleen of `Weg van een leerling (deel 1/2/3)` alle drie geslaagd
+  zijn. Zoek bij rood dus eerst op welk deel.
 
 ### Regels bij het uitbreiden
 

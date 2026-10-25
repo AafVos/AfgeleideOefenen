@@ -1,0 +1,68 @@
+# Zichtbaar maken dat een pull request botst met de tak waar hij heen gaat.
+#
+# controle.yml draait op de samengevoegde versie (refs/pull/<nummer>/merge).
+# Bij een conflict kan GitHub die versie niet maken, en dan start die
+# workflow helemaal niet: geen rode check, gewoon niets. Workers Builds kan
+# wel groen worden, want die bouwt de tak zelf. In `gh pr checks` lijkt het
+# dan alsof de controle nog moet beginnen.
+#
+# Deze workflow draait op de tak zelf, bij een gewone push. Een conflict
+# maakt hem rood en noemt de bestanden. Achterlopen zonder conflict blijft
+# groen: de controle test de samengevoegde versie dan alsnog.
+#
+# De doeltak is de basis van de open pull request. Staat die er nog niet,
+# dan `main`, want daar gaat gewoon werk heen.
+name: Botst met de doeltak
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+# Snel achter elkaar duwen: alleen de laatste stand telt.
+concurrency:
+  group: botst-met-doeltak-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  botst:
+    name: Botst met de doeltak
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Volledige geschiedenis, anders vindt merge-tree de gemeenschappelijke
+          # ouder niet en meldt hij ten onrechte een conflict.
+          fetch-depth: 0
+
+      - name: Doeltak opzoeken
+        id: doel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAK: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          doel=$(gh pr list --head "$TAK" --state open --json baseRefName \
+            --jq '.[0].baseRefName // empty')
+          if [ -z "$doel" ]; then
+            doel=main
+            echo "Nog geen open pull request voor $TAK; we gaan uit van $doel."
+          else
+            echo "De pull request van $TAK gaat naar $doel."
+          fi
+          echo "tak=$doel" >> "$GITHUB_OUTPUT"
+
+      - name: Doeltak ophalen
+        env:
+          DOEL: ${{ steps.doel.outputs.tak }}
+        run: git fetch --no-tags origin "$DOEL"
+
+      - name: Kijken of de tak botst
+        env:
+          DOEL: ${{ steps.doel.outputs.tak }}
+        run: bash scripts/botst-met-doeltak.sh "origin/$DOEL"

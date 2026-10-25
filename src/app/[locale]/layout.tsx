@@ -6,7 +6,12 @@ import { notFound } from 'next/navigation'
 import { SiteFooter } from '@/components/site-footer'
 import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
-import { DEEL_TEKST_START, DEEL_TITEL_START, SITE_URL } from '@/lib/seo'
+import {
+  DEEL_TEKST_START,
+  DEEL_TITEL_START,
+  SITE_URL,
+  TITEL_STANDAARD,
+} from '@/lib/seo'
 
 export async function generateMetadata(): Promise<Metadata> {
   const domain = SITE_CONFIG.domain
@@ -14,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `Differentiëren oefenen — afgeleide wiskunde B VWO | ${domain}`,
+      default: `${TITEL_STANDAARD} | ${domain}`,
       template: `%s · ${domain}`,
     },
     description: DEEL_TEKST_START,

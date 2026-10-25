@@ -70,11 +70,25 @@ test('de oefenpagina blijft achter de inlog', async ({ page }) => {
   await expect(page).toHaveURL(/\/nl\/inloggen/)
 })
 
-test('de voorbeeldpagina heeft dezelfde knop', async ({ page }) => {
+test('de voorbeeldpagina heeft dezelfde knop, met van=voorbeeld voor de bronmeting', async ({
+  page,
+}) => {
   await page.goto('/nl/voorbeeld/wortel-x')
   await page.getByRole('link', { name: 'Probeer 3 sommen' }).click()
   await expect(page).toHaveURL(
-    /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=wortelvorm$/,
+    /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=wortelvorm&van=voorbeeld$/,
+  )
+  await expect(page).not.toHaveURL(/inloggen/)
+  await expect(page.getByText(/Som 1 van /)).toBeVisible()
+})
+
+test('een uitlegvideo-pagina heeft een knop "Oefen dit nu", met van=uitlegvideo voor de bronmeting', async ({
+  page,
+}) => {
+  await page.goto('/nl/uitleg-videos/machten-herschrijven')
+  await page.getByRole('link', { name: 'Oefen dit nu' }).click()
+  await expect(page).toHaveURL(
+    /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=negatieve_macht&van=uitlegvideo$/,
   )
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()

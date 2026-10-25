@@ -18,6 +18,7 @@ plan van april 2026 en is geen bouwopdracht meer.
 | AI          | Google Gemini (`gemini-2.5-flash`)            |
 | Wiskunde    | KaTeX                                         |
 | Hosting     | Cloudflare Workers (OpenNext), worker `afgeleide-oefenen` |
+| Mobiel      | Expo (Expo Router + TypeScript), zie [`mobiel/README.md`](./mobiel/README.md) |
 
 ---
 
@@ -116,7 +117,7 @@ Wie een mail niet ziet aankomen, moet dus eerst weten wélke mail het is.
 
 | Soort mail | Wie verstuurt | Waar instellen |
 |------------|---------------|----------------|
-| Welkomstmail, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY`, `EMAIL_FROM` en `NOTIFY_EMAIL` in de omgevingsvariabelen |
+| Welkomstmail, herinnering bij stilte, seintje "nieuwe gebruiker", feedbackformulier, video-verzoek | De site zelf, via Resend | `RESEND_API_KEY`, `EMAIL_FROM` en `NOTIFY_EMAIL` in de omgevingsvariabelen |
 | Bevestig je e-mailadres, wachtwoord vergeten | **Supabase**, niet de site | `supabase/config.toml` (zie [De instellingen van de echte site](#de-instellingen-van-de-echte-site)); de SMTP-gegevens in Supabase → **Authentication → Emails → SMTP Settings** |
 
 De mail van het inloggen loopt via `supabase.auth.signUp()`, `supabase.auth.resend()`
@@ -141,6 +142,89 @@ De sjablonen van die mails staan in [`supabase/email-templates/`](./supabase/ema
 Zolang ze nog niet één keer naar het echte project zijn geschreven, staan ze
 daar met de hand in geplakt onder **Authentication → Emails** — zie de volgende
 paragraaf.
+
+### De herinnering bij stilte
+
+Een leerling kan op zijn voortgangspagina aanzetten dat hij een mailtje krijgt
+als hij een week niet geoefend heeft. Dat is **opt-in**: hij staat standaard
+uit, en de leerling krijgt eerst de vraag of hij 16 of ouder is. Onder de 16
+hoort er toestemming van een ouder bij, en zolang daar niets voor is, blijft
+de herinnering uit.
+
+De regels staan in `src/lib/herinnering/kiezen.ts`: zeven dagen stil, daarna
+hoogstens één mail per veertien dagen en nooit meer dan drie in totaal. Is
+alles al beheerst, dan is er niets om naartoe te wijzen en gaat er niets uit.
+Onderaan de mail staat een afmeldlink (`/nl/herinnering-uit`) die werkt zonder
+in te loggen.
+
+Dit is de eerste geplande taak van de site. Cloudflare roept de Worker elke
+dag om 16:00 UTC aan (`triggers.crons` in `wrangler.jsonc`); de
+`scheduled`-ingang in `scripts/statische-cache.mjs` geeft dat door aan
+`/api/cron/herinneringen`. Die route wordt bewaakt met `WEBHOOK_SECRET`,
+hetzelfde geheim als de webhooks van Supabase — er hoeft dus geen nieuw geheim
+bij. Met de hand draaien kan ook:
+
+```bash
+curl -X POST -H "x-webhook-secret: $WEBHOOK_SECRET" \
+  http://localhost:3000/api/cron/herinneringen
+```
+
+---
+
+## Klikmeting zonder koekjes
+
+De site meet zelf wat bezoekers doen, ook zonder account. Dat gaat buiten
+Cloudflare Web Analytics om: die telt alleen paginabezoeken.
+
+* **Wat er in gaat** (tabel `site_gebeurtenissen`, migraties 0072 en 0073):
+  tijdstip, een willekeurig id per tabblad uit `sessionStorage`, het
+  volgnummer binnen dat tabblad, het soort gebeurtenis (`pagina`, `klik`,
+  `dode_klik`, `woedeklik`, `fout`, `scroll`, `registratie`, `inlog`), het pad
+  zonder queryparameters — op `van` en `utm_source` na —, de vaste naam van
+  wat er aangeklikt is, telefoon/tablet/computer op schermbreedte, het domein
+  van de verwijzer, of iemand is ingelogd, en de schuilnaam hieronder.
+* **Wat er nooit in gaat:** geen koekje, geen IP-adres, geen user-agent, geen
+  e-mailadres of gebruikers-id, niets uit een invoerveld, en niets op `/admin`.
+* **Routes:** de database deelt het `volgnummer` uit, niet de browser — dan
+  klopt de volgorde ook na een herlaadactie. `registratie` meldt de site zelf
+  met `meldMeting()` zodra de aanmelding gelukt is; `inlog` zet `meet_opslaan`
+  erbij op het moment dat een tabblad van uitgelogd naar ingelogd gaat.
+* **Schuilnaam:** alleen bij een ingelogde leerling, en alleen om zijn klikken
+  over meerdere dagen te kunnen volgen. Het is HMAC-SHA256 van het
+  gebruikers-id, als hex, de eerste 16 tekens. Het gebruikers-id zelf komt
+  nergens in de tabel. Het geheim staat op twee plekken, net als
+  `WEBHOOK_SECRET`: als Worker-secret `MEET_SCHUILNAAM_GEHEIM` (daar rekent de
+  site mee, `src/lib/meten/schuilnaam.ts`) en in de Vault als
+  `meet_schuilnaam_geheim` (daar rekenen de overzichten mee,
+  `meet_schuilnaam()`). **Dezelfde waarde**, anders sluiten de twee kanten
+  niet op elkaar aan; `schuilnaam.test.ts` legt de rekensom vast. Ontbreekt
+  het geheim, dan blijft de kolom leeg en werkt de rest gewoon. Wie niet is
+  ingelogd krijgt niets blijvends — alleen het sessie-id van dat tabblad.
+* **Hoe:** `src/lib/meten/meter.ts` verzamelt in de browser en stuurt elke drie
+  seconden één pakketje met `navigator.sendBeacon` naar `/api/meet`. Dat
+  scriptje laadt pas als de pagina er staat (`src/components/meten.tsx`). De
+  rekenregels staan los in `src/lib/meten/gebeurtenis.ts`, met tests.
+* **Namen van knoppen:** zet `data-meet="..."` op een knop of link. Staat die
+  er niet, dan wordt het het soort element plus een korte tekst. De namen zijn
+  op telefoon en computer hetzelfde, zodat de totalen optellen.
+* **Grenzen:** hoogstens 300 gebeurtenissen per tabblad per uur, bekende
+  crawlers en testbrowsers (`navigator.webdriver`) meten niet mee, en lokaal
+  staat het meten uit. Wil je het op je eigen computer bekijken, zet dan
+  `NEXT_PUBLIC_MEET_LOKAAL=1` in `.env.local`.
+* **Opruimen:** ruwe rijen blijven 90 dagen staan. `site_meting_onderhoud()`
+  schrijft de dagtotalen weg en gooit de rest weg, hoogstens één keer per dag.
+  Deze database heeft geen pg_cron, dus roept `/api/meet` die functie af en toe
+  mee aan.
+* **Kijken wat eruit komt:** de views `meet_bezoekers_per_dag`,
+  `meet_apparaat_per_dag`, `meet_trechter` (startpagina → proefsom →
+  registreren → eerste som; de proefsom telt zowel op `/proberen` als op de
+  startpagina zelf), `meet_doelen_top`, `meet_dode_klikken`,
+  `meet_woedeklikken`, `meet_fouten`, `meet_scroll_per_pagina`,
+  `meet_routes_top` (de twintig meestgelopen routes, eerste zes stappen),
+  `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en dagen
+  actief) en `meet_voortgang_per_schuilnaam` (opgetelde voortgang naast de
+  schuilnaam). De alleen-lezen analistrol mag daar bij; het geheim achter de
+  schuilnaam kan die rol niet opvragen.
 
 ---
 
@@ -227,7 +311,7 @@ Settings**.
 │   ├── content/theory/             # Theorietekst in de code
 │   ├── i18n/                       # Taal: alleen Nederlands
 │   ├── lib/                        # Oefenen, nakijken, mail, database
-│   └── middleware.ts               # Sessie en taalcode
+│   └── proxy.ts                    # Sessie en taalcode
 ├── messages/nl.json                # De Nederlandse zinnen
 ├── supabase/
 │   ├── migrations/                 # Databasewijzigingen, op volgorde
@@ -235,6 +319,7 @@ Settings**.
 │   └── seed.sql                    # Alleen de vaste testopgaven
 ├── e2e/                            # Weg van een leerling in de browser
 ├── scripts/                        # Hulpjes voor controles
+├── mobiel/                         # De Expo-app, eigen package.json en AGENTS.md
 └── .env.local.example
 ```
 
@@ -251,6 +336,7 @@ Settings**.
 | `npm run typecheck` | TypeScript-controle (`tsc --noEmit`)    |
 | `npm test`        | Vitest (unit tests, eenmalig)             |
 | `npm run test:watch` | Vitest in watch-modus                  |
+| `npm run test:e2e`   | Playwright e2e-tests (weg van een leerling) |
 | `npm run cf:build`   | Bouw voor Cloudflare Workers           |
 | `npm run cf:preview` | Die bouw lokaal starten in Workers     |
 
@@ -261,11 +347,14 @@ antwoorden in `src/lib/practice/engine.ts`.
 ### Automatische controle
 
 Bij elke pull request draait `.github/workflows/controle.yml` met `npm run lint`,
-`npm run typecheck`, `npm test` en `npm run cf:build`. Dat is nodig omdat
-`next build` sinds Next.js 16 zelf geen lint meer draait. De bouw voor
-Cloudflare Workers draait in deze controle, zodat een pull request die die
-bouw breekt meteen rood wordt. Cloudflare bouwt daarnaast zelf elke pull
-request (Workers Builds) en zet `main` live.
+`npm run typecheck`, `npm test`, `npm run cf:build` en de e2e-tests
+(`npm run test:e2e`, de verplichte check "Weg van een leerling", verdeeld
+over drie machines — zie "De e2e-tests" in [`AGENTS.md`](./AGENTS.md)). Dat is
+nodig omdat `next build` sinds Next.js 16 zelf geen lint meer draait. De bouw
+voor Cloudflare Workers draait in deze controle, zodat een pull request die
+die bouw breekt meteen rood wordt. De e2e-controle wordt overgeslagen als een
+pull request alleen tekst verandert. Cloudflare bouwt daarnaast zelf elke
+pull request (Workers Builds) en zet `main` live.
 
 ### Lokaal op Workers
 
@@ -283,6 +372,55 @@ preview de productie-stand. Zet de site niet zelf live met `wrangler` of
 
 ---
 
+## Twee sites uit deze repo
+
+Sinds AFG-489 staan er twee sites in deze repo. Dezelfde code, dezelfde
+database en dezelfde accounts; alleen de naam, de startpagina en een paar
+teksten verschillen.
+
+| | `afgeleide` | `wiskundemetaaf` |
+| --- | --- | --- |
+| Adres | www.afgeleideoefenen.nl | www.wiskundemetaaf.nl |
+| Naam in de kop | AfgeleideOefenen**.nl** | Wiskunde met **Aaf** |
+| Startpagina | differentiëren per onderwerp | het centraal examen |
+| Worker | `afgeleide-oefenen` | `wiskundemetaaf` |
+| Wrangler-config | `wrangler.jsonc` | `wrangler.wiskundemetaaf.jsonc` |
+
+Welke van de twee er gebouwd wordt, zegt `NEXT_PUBLIC_SITE_VARIANT` bij de
+bouw. Staat die variabele er niet, dan is het `afgeleide` — een bestaande bouw
+blijft dus precies doen wat hij deed. De instellingen per site staan in
+[`src/config/site.ts`](src/config/site.ts).
+
+Lokaal naar de andere site kijken:
+
+```bash
+npm run dev:wiskundemetaaf           # gewone ontwikkelserver
+npm run cf:preview:wiskundemetaaf    # dezelfde code in de Workers-omgeving
+```
+
+De tweede worker wordt uit dezelfde repo gebouwd, met een eigen
+wrangler-config en één extra bouwvariabele. In Workers Builds staat bij de
+worker `wiskundemetaaf`:
+
+* **Build command:** `npx opennextjs-cloudflare build -c wrangler.wiskundemetaaf.jsonc`
+* **Deploy command:** `npx wrangler deploy -c wrangler.wiskundemetaaf.jsonc`
+* **Build variables:** dezelfde `NEXT_PUBLIC_*` als bij `afgeleide-oefenen`,
+  maar met `NEXT_PUBLIC_SITE_URL=https://www.wiskundemetaaf.nl` en
+  `NEXT_PUBLIC_SITE_VARIANT=wiskundemetaaf`.
+* **Secrets:** dezelfde lijst als bij `afgeleide-oefenen`, zie
+  [`docs/omgeving.md`](docs/omgeving.md).
+
+In `supabase/config.toml` staan de adressen van wiskundemetaaf.nl al bij
+`additional_redirect_urls`. Die komen pas op het echte project zodra iemand
+met de hand `supabase config push` draait — zie "De instellingen van de echte
+site" hierboven.
+
+De klikmeting houdt de twee uit elkaar met de kolom `site` in
+`site_gebeurtenissen` (migratie 0081). De server zet die waarde, niet de
+browser.
+
+---
+
 ## Wat al staat
 
 De site is live. Sectie 11 in `idea.md` (vier fasen met lege vinkjes) is het
@@ -294,11 +432,18 @@ een pull request, zoals hieronder.
 ## Hoe iets live komt
 
 1. Eigen tak vanaf de nieuwste `main`, pull request met `gh pr create`.
-2. De controles in GitHub moeten groen zijn. Cloudflare Workers Builds bouwt
-   de pull request en zet er een voorbeeldversie op een `*.workers.dev`-adres
-   bij.
-3. Merge naar `main`. Workers Builds zet die versie live op
+2. De controles in GitHub moeten groen zijn.
+3. Merge (squash) naar `main`. Gaat het om iets kritieks (de site of het
+   inloggen doet het niet, het nakijken rekent verkeerd, een lek, of de bouw
+   op `main` is stuk), zet dan `[Kritiek]` vooraan de titel.
+4. Cloudflare Workers Builds bouwt `main` en zet die versie meteen live op
    afgeleideoefenen.nl (worker `afgeleide-oefenen`).
+
+Er is **geen voorbeeldversie** van een tak op een `*.workers.dev`-adres:
+Workers Builds bouwt wel elke tak, maar die bouw faalt, dus er komt geen
+versie te staan. Bekijk je werk lokaal met `npm run dev` of
+`npm run cf:preview`. Wat er moet gebeuren om het terug te krijgen staat onder
+"Er is geen voorbeeldversie van een tak" in `AGENTS.md`.
 
 Deployen met `wrangler` of `opennextjs-cloudflare deploy` doe je niet.
 

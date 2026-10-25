@@ -8,7 +8,7 @@ import { ProbeerKnop } from '@/components/probeer-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import type { VideoUitleg } from '@/lib/videos'
 import { MathKeyboard } from '@/components/math-keyboard'
-import { Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner, NakijkMelding } from '@/components/ui'
 import { verkleinFoto } from '@/lib/images/compress'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 
@@ -68,6 +68,7 @@ type Labels = {
   askPhoto: string
   askPhotoHint: string
   askPhotoRemove: string
+  askPhotoAlt: string
   askPhotoBusy: string
   askPhotoTooBig: string
   groupGeneral: string
@@ -80,6 +81,7 @@ type Labels = {
   askNoAccount: string
   askLogin: string
   askRegister: string
+  videoAanvraagLink: string
 }
 
 const initialVraagState: VideoVraagState = { error: null, sent: false }
@@ -99,6 +101,7 @@ function VideoLink({ video, isActive }: { video: VideoItem; isActive: boolean })
       <Link
         href={video.href as '/uitleg-videos'}
         scroll={false}
+        data-meet="video-kiezen"
         aria-current={isActive ? 'true' : undefined}
         className={`flex min-h-11 items-start gap-2.5 rounded-xl border p-3 transition ${
           isActive
@@ -134,6 +137,7 @@ function Hoofdstukgroep({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
+        data-meet="video-groep"
         aria-expanded={open}
         className="flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-text transition hover:text-accent"
       >
@@ -174,15 +178,15 @@ function VideoUitlegBlok({
   return (
     <section className="mt-5 space-y-5 text-base leading-relaxed text-text">
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {labels.learnTitle}
-        </h3>
+        </h2>
         <p className="mt-1">{uitleg.leer}</p>
       </div>
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {labels.ruleTitle}
-        </h3>
+        </h2>
         <div className="mt-2 space-y-2 overflow-x-auto rounded-lg bg-accent-light/60 px-4 py-3 text-[0.95em]">
           {uitleg.regel.map((regel) => (
             <p key={regel}>
@@ -192,9 +196,9 @@ function VideoUitlegBlok({
         </div>
       </div>
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {labels.exampleTitle}
-        </h3>
+        </h2>
         <ol className="mt-2 space-y-2">
           {uitleg.stappen.map((stap, i) => (
             <li key={stap} className="flex items-start gap-2">
@@ -232,6 +236,7 @@ export function UitlegVideosClient({
   loginHref,
   registerHref,
   oefenHref,
+  videoAanvraagHref,
   videoAlsKop,
   labels,
 }: {
@@ -242,6 +247,7 @@ export function UitlegVideosClient({
   loginHref: string
   registerHref: string
   oefenHref: string
+  videoAanvraagHref: string
   /** Op een videopagina is de videotitel de enige hoofdkop. Het overzicht houdt "Uitlegvideo's". */
   videoAlsKop: boolean
   labels: Labels
@@ -299,6 +305,7 @@ export function UitlegVideosClient({
           <button
             type="button"
             onClick={naarVraagFormulier}
+            data-meet="video-stel-een-vraag"
             className="mt-3 min-h-11 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/90"
           >
             {labels.askCta}
@@ -340,10 +347,16 @@ export function UitlegVideosClient({
           ) : null}
           {active ? (
             <div className="mt-5 flex flex-wrap items-start gap-3">
+              <ProbeerKnop
+                oefenen={`${active.oefenen}&van=uitlegvideo`}
+                dataMeet="video-oefen-nu"
+                label="Oefen dit nu"
+              />
               <DeelKnop />
               {active.theorieHref ? (
                 <Link
                   href={active.theorieHref as '/theorie'}
+                  data-meet="video-naar-theorie"
                   className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
                 >
                   {labels.writtenLink}
@@ -387,24 +400,28 @@ export function UitlegVideosClient({
                   />
                 ))}
               </div>
+              <p className="mt-3 text-sm">
+                <Link
+                  href={videoAanvraagHref as '/video-aanvragen'}
+                  data-meet="video-naar-aanvragen"
+                  className="text-accent underline-offset-2 hover:underline"
+                >
+                  {labels.videoAanvraagLink}
+                </Link>
+              </p>
             </div>
           )}
         </aside>
       </div>
 
-      {/* Oefenen */}
-      {active?.hasPractice ? (
+      {/* Oefenen: ingelogde leerlingen kunnen hier meteen doorgaan. Zonder
+          account staat de knop "Oefen dit nu" al direct onder de video. */}
+      {active?.hasPractice && isLoggedIn && vragen.length > 0 ? (
         <section className="mt-10">
           <h2 className="font-serif text-2xl text-text">{labels.practiceTitle}</h2>
-          {isLoggedIn && vragen.length > 0 ? (
-            <div className="mt-4">
-              <OefenKaart key={active.slug} vragen={vragen} oefenHref={oefenHref} labels={labels} />
-            </div>
-          ) : !isLoggedIn ? (
-            <div className="mt-4">
-              <ProbeerKnop oefenen={active.oefenen} />
-            </div>
-          ) : null}
+          <div className="mt-4">
+            <OefenKaart key={active.slug} vragen={vragen} oefenHref={oefenHref} labels={labels} />
+          </div>
         </section>
       ) : null}
 
@@ -446,11 +463,16 @@ function AccountNodigMelding({
     <div className="rounded-xl border border-accent-2/40 bg-accent-2-light px-4 py-3">
       <p className="text-sm text-accent-2">{labels.askNoAccount}</p>
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        <Link href={loginHref as '/inloggen'} className="text-accent underline underline-offset-2">
+        <Link
+          href={loginHref as '/inloggen'}
+          data-meet="video-inloggen"
+          className="text-accent underline underline-offset-2"
+        >
           {labels.askLogin}
         </Link>
         <Link
           href={registerHref as '/registreren'}
+          data-meet="video-registreren"
           className="text-accent underline underline-offset-2"
         >
           {labels.askRegister}
@@ -469,6 +491,7 @@ type VraagResultaat =
       correctAnswer: string
       latexCorrectAnswer: string | null
       steps: Array<{ id: string; step_order: number; step_description: string }>
+      melding: string | null
     }
 
 function OefenKaart({
@@ -534,6 +557,7 @@ function OefenKaart({
             correctAnswer: result.correctAnswer,
             latexCorrectAnswer: result.latexCorrectAnswer,
             steps: result.steps,
+            melding: result.melding,
           },
         }))
       }
@@ -544,11 +568,17 @@ function OefenKaart({
 
   const navigatie = (
     <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-      <Button className="min-h-11 px-4" onClick={() => gaNaarVraag(index - 1)} disabled={index === 0}>
+      <Button
+        className="min-h-11 px-4"
+        data-meet="video-vorige-vraag"
+        onClick={() => gaNaarVraag(index - 1)}
+        disabled={index === 0}
+      >
         ← {labels.previousQuestion}
       </Button>
       <Button
         className="min-h-11 px-4"
+        data-meet="video-volgende-vraag"
         onClick={() => gaNaarVraag(index + 1)}
         disabled={index === vragen.length - 1}
       >
@@ -569,6 +599,7 @@ function OefenKaart({
               key={v.id}
               type="button"
               onClick={() => gaNaarVraag(i)}
+              data-meet="video-vraag-kiezen"
               aria-current={isActive ? 'true' : undefined}
               className={`rounded-xl border p-3 text-left transition ${
                 isActive
@@ -626,7 +657,12 @@ function OefenKaart({
             <MathKeyboard onInsert={handleInsert} disabled={pending} />
           </label>
           <ErrorBanner>{error}</ErrorBanner>
-          <Button type="submit" disabled={pending || !answer.trim()} className="min-h-11 px-4">
+          <Button
+            type="submit"
+            data-meet="video-nakijken"
+            disabled={pending || !answer.trim()}
+            className="min-h-11 px-4"
+          >
             {pending ? labels.checking : labels.check}
           </Button>
         </form>
@@ -667,6 +703,11 @@ function OefenKaart({
               })()}
             </span>
           </div>
+          {resultaat.melding && (
+            <div className="mt-3">
+              <NakijkMelding text={resultaat.melding} />
+            </div>
+          )}
           {resultaat.steps.length > 0 && (
             <div className="mt-4 rounded-lg border border-border bg-white/90 shadow-sm">
               <div className="px-4 py-3">
@@ -693,7 +734,11 @@ function OefenKaart({
       </div>
 
       <p className="mt-3 text-sm">
-        <Link href={oefenHref as '/oefenen'} className="text-accent underline underline-offset-2">
+        <Link
+          href={oefenHref as '/oefenen'}
+          data-meet="video-meer-oefenen"
+          className="text-accent underline underline-offset-2"
+        >
           {labels.morePractice} →
         </Link>
       </p>
@@ -799,7 +844,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previews[i]}
-                  alt={foto.name}
+                  alt={labels.askPhotoAlt}
                   className="size-24 rounded-lg border border-border object-cover"
                 />
                 <button
@@ -809,7 +854,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
                     setFotos(fotos.filter((_, j) => j !== i))
                   }}
                   aria-label={`${labels.askPhotoRemove}: ${foto.name}`}
-                  className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full border border-border bg-surface text-sm leading-none text-text-muted shadow-sm transition hover:text-accent-2"
+                  className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full border border-border bg-surface text-sm leading-none text-text-muted shadow-sm transition before:absolute before:-inset-3 before:content-[''] hover:text-accent-2"
                 >
                   ×
                 </button>
@@ -820,7 +865,7 @@ function VraagFormulier({ labels }: { labels: Labels }) {
       </div>
 
       <ErrorBanner>{fotoFout ?? state.error}</ErrorBanner>
-      <Button type="submit" disabled={fotoBezig} className="min-h-11 px-4">
+      <Button type="submit" data-meet="video-vraag-versturen" disabled={fotoBezig} className="min-h-11 px-4">
         {labels.askSend}
       </Button>
     </form>

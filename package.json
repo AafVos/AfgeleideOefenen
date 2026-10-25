@@ -16,14 +16,17 @@
     "test:e2e": "node scripts/e2e.mjs",
     "cf:build": "opennextjs-cloudflare build && node scripts/statische-cache.mjs",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:build:wiskundemetaaf": "NEXT_PUBLIC_SITE_VARIANT=wiskundemetaaf opennextjs-cloudflare build -c wrangler.wiskundemetaaf.jsonc && node scripts/statische-cache.mjs",
+    "cf:preview:wiskundemetaaf": "NEXT_PUBLIC_SITE_VARIANT=wiskundemetaaf opennextjs-cloudflare build -c wrangler.wiskundemetaaf.jsonc && NEXT_PUBLIC_SITE_VARIANT=wiskundemetaaf opennextjs-cloudflare preview -c wrangler.wiskundemetaaf.jsonc",
+    "dev:wiskundemetaaf": "NEXT_PUBLIC_SITE_VARIANT=wiskundemetaaf next dev",
     "postinstall": "node scripts/koppel-bouw.mjs"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.20.10",
+    "@opennextjs/cloudflare": "^1.20.13",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.0",
-    "katex": "^0.16.45",
-    "next": "16.3.8",
+    "katex": "^0.18.2",
+    "next": "16.4.2",
     "next-intl": "^4.11.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -32,7 +35,6 @@
   "devDependencies": {
     "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4",
-    "@types/katex": "^0.16.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -41,7 +43,8 @@
     "supabase": "^2.120.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.11",
+    "vitest": "^4.1.12",
     "wrangler": "^4.149.0"
-  }
+  },
+  "packageManager": "npm@11.21.1"
 }

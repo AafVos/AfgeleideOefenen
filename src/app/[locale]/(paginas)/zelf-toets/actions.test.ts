@@ -32,6 +32,9 @@ type QueryResult = {
   count?: number | null
 }
 
+/** Een opgeslagen antwoord in de nepdatabase. */
+type AntwoordRij = { id: string; is_correct: boolean | null }
+
 const db = vi.hoisted(() => ({
   sessions: [] as Sessie[],
   questions: [] as VraagRij[],
@@ -44,6 +47,14 @@ const db = vi.hoisted(() => ({
   deleteFailCount: 0,
   sid: 0,
   picked: ['q1', 'q2', 'q3', 'q2'] as string[],
+  /** Zet de rijen klaar die het nakijken van één antwoord nodig heeft. */
+  nakijken: false,
+  antwoorden: [] as AntwoordRij[],
+  /** Wat de nep-AI zegt over een fout antwoord, of een fout. */
+  aiZegtGoed: false,
+  aiValtOm: false,
+  /** De allereerste opzoeking (de sessie) gooit een fout (netwerk). */
+  sessieOphalenValtOm: false,
 }))
 
 function reset() {
@@ -58,6 +69,11 @@ function reset() {
   db.deleteFailCount = 0
   db.sid = 0
   db.picked = ['q1', 'q2', 'q3', 'q2']
+  db.nakijken = false
+  db.antwoorden = []
+  db.aiZegtGoed = false
+  db.aiValtOm = false
+  db.sessieOphalenValtOm = false
 }
 
 function invoegFout(): DbFout {
@@ -122,7 +138,8 @@ function makeClient() {
         return { data: null, count: aantal, error: null }
       }
 
-      if (db.antwoordFout && table === 'user_sessions_new' && op === 'select') {
+      if (db.nakijken && table === 'user_sessions_new' && op === 'select') {
+        if (db.sessieOphalenValtOm) throw new Error('fetch failed')
         return {
           data: {
             id: filterWaarde,
@@ -133,13 +150,10 @@ function makeClient() {
           error: null,
         }
       }
-      if (db.antwoordFout && table === 'custom_test_questions' && op === 'select') {
+      if (db.nakijken && table === 'custom_test_questions' && op === 'select') {
         return { data: { question_id: 'q1' }, error: null }
       }
-      if (db.antwoordFout && table === 'session_answers_new' && op === 'select') {
-        return { data: null, error: null }
-      }
-      if (db.antwoordFout && table === 'questions_new' && op === 'select') {
+      if (db.nakijken && table === 'questions_new' && op === 'select') {
         return {
           data: {
             id: 'q1',
@@ -150,16 +164,29 @@ function makeClient() {
           error: null,
         }
       }
-      if (db.antwoordFout && table === 'session_answers_new' && op === 'insert') {
-        return {
-          data: null,
-          error: {
-            code: '23505',
-            message: db.antwoordFout,
-            details: null,
-            hint: null,
-          },
+      if (db.nakijken && table === 'session_answers_new') {
+        if (op === 'insert') {
+          if (db.antwoordFout) {
+            return {
+              data: null,
+              error: { code: '23505', message: db.antwoordFout, details: null, hint: null },
+            }
+          }
+          const rij = {
+            id: `a${db.antwoorden.length + 1}`,
+            is_correct: ((vals as Record<string, unknown>).is_correct ?? null) as boolean | null,
+          }
+          db.antwoorden.push(rij)
+          return { data: { id: rij.id }, error: null }
         }
+        if (op === 'update') {
+          const rij = db.antwoorden.find((a) => a.id === filterWaarde)
+          if (rij) rij.is_correct = true
+          return { data: null, error: null }
+        }
+        // Een telling aan het eind; verder: nog geen antwoord op deze vraag.
+        if (head) return { data: null, count: db.antwoorden.length, error: null }
+        return { data: null, error: null }
       }
 
       return { data: null, error: null }
@@ -168,6 +195,11 @@ function makeClient() {
     const keten = {
       insert(waarde: unknown) {
         op = 'insert'
+        vals = waarde
+        return keten
+      },
+      update(waarde: unknown) {
+        op = 'update'
         vals = waarde
         return keten
       },
@@ -209,8 +241,26 @@ vi.mock('@/lib/supabase/server', () => ({
   createServiceRoleClient: () => makeClient(),
 }))
 
+// Hierlangs haalt `requireUser()` de ingelogde leerling op.
+vi.mock('@/lib/supabase/request-cache', () => ({
+  getCurrentUser: async () => ({ id: userId }),
+}))
+
 vi.mock('@/lib/practice/custom-test', () => ({
   pickQuestionsForTest: async () => db.picked,
+}))
+
+vi.mock('@/lib/ai/check-answer-new', () => ({
+  checkWrongAnswerNew: async () => {
+    if (db.aiValtOm) throw new Error('fetch failed')
+    return {
+      errorExplanation: db.aiZegtGoed ? '' : 'Je hebt de macht laten staan.',
+      category: null,
+      fromCache: false,
+      isMathematicallyCorrect: db.aiZegtGoed,
+      generatedSteps: [],
+    }
+  },
 }))
 
 vi.mock('next-intl/server', () => ({
@@ -221,6 +271,7 @@ vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
 }))
 
+const { EXTRA_CONTROLE_MISLUKT } = await import('@/lib/practice/nakijken')
 const { createCustomTestAction, submitCustomTestAnswerAction } = await import('./actions')
 
 const payload = {
@@ -259,9 +310,9 @@ describe('createCustomTestAction', () => {
     expect(db.sessions[0]?.name).toBe('Zelf-toets')
   })
 
-  it('vraagt om minstens één onderwerp', async () => {
+  it('vraagt om minstens één theorieblok', async () => {
     const res = await createCustomTestAction({ ...payload, clusterIds: [] })
-    expect(res).toEqual({ error: 'Kies minstens één onderwerp.' })
+    expect(res).toEqual({ error: 'Kies minstens één theorieblok.' })
     expect(db.sessions).toEqual([])
   })
 
@@ -390,6 +441,7 @@ describe('submitCustomTestAnswerAction', () => {
 
   it('zet een mislukte opslag om in een Nederlandse zin', async () => {
     const ruw = 'duplicate key value violates unique constraint "session_answers_new_pkey"'
+    db.nakijken = true
     db.antwoordFout = ruw
 
     const result = await submitCustomTestAnswerAction('s1', 'q1', '6x')
@@ -402,5 +454,62 @@ describe('submitCustomTestAnswerAction', () => {
     expect(vi.mocked(console.error).mock.calls.flat().join(' ')).toContain(
       'session_answers_new_pkey',
     )
+  })
+
+  it('rekent een antwoord dat meteen klopt goed', async () => {
+    db.nakijken = true
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '6x')
+
+    expect(result).toMatchObject({ kind: 'correct' })
+    expect(db.antwoorden).toEqual([{ id: 'a1', is_correct: true }])
+  })
+
+  it('rekent een goed antwoord in een andere schrijfwijze alsnog goed', async () => {
+    db.nakijken = true
+    db.aiZegtGoed = true
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '3 \\cdot 2x')
+
+    expect(result).toMatchObject({ kind: 'correct' })
+    // Eerst fout opgeslagen, daarna bijgewerkt: geen tweede rij.
+    expect(db.antwoorden).toEqual([{ id: 'a1', is_correct: true }])
+  })
+
+  it('zegt het tegen de leerling als de extra controle mislukt', async () => {
+    db.nakijken = true
+    db.aiValtOm = true
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '3x')
+
+    expect(result).toMatchObject({
+      kind: 'incorrect',
+      correctAnswer: '6x',
+      melding: EXTRA_CONTROLE_MISLUKT,
+    })
+    // Het antwoord van de leerling is wél bewaard.
+    expect(db.antwoorden).toEqual([{ id: 'a1', is_correct: false }])
+    expect(JSON.stringify(result)).not.toContain('fetch failed')
+  })
+
+  it('meldt niets extra als het antwoord gewoon fout is', async () => {
+    db.nakijken = true
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '3x')
+
+    expect(result).toMatchObject({ kind: 'incorrect', melding: null })
+  })
+
+  it('geeft een nette melding als de allereerste opzoeking (de sessie) omvalt', async () => {
+    db.nakijken = true
+    db.sessieOphalenValtOm = true
+
+    const result = await submitCustomTestAnswerAction('s1', 'q1', '6x')
+
+    expect(result).toEqual({
+      kind: 'error',
+      message: 'Opslaan is niet gelukt. Probeer het nog eens.',
+    })
+    expect(JSON.stringify(result)).not.toContain('fetch failed')
   })
 })

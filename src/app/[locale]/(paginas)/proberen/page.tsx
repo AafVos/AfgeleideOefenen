@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 
 import { Link } from '@/i18n/navigation'
+import { googleLoginAan } from '@/lib/auth/google'
 import { leesProefSelectie } from '@/lib/practice/proberen'
 import { laadProef } from '@/lib/practice/proberen-laden'
-import { canoniek, deelkaart } from '@/lib/seo'
+import { canoniek, deelkaart, nietIndexeren } from '@/lib/seo'
 
 import { ProberenClient } from './proberen-client'
 
@@ -25,7 +26,7 @@ export async function generateMetadata({
       title: TITEL,
       description: OMSCHRIJVING,
     }),
-    robots: { index: false, follow: true },
+    robots: nietIndexeren(),
   }
 }
 
@@ -54,7 +55,12 @@ export default async function ProberenPage({
   if (!pakket) return <Leeg />
 
   return (
-    <ProberenClient titel={pakket.titel} opgaven={pakket.opgaven} selectie={selectie} />
+    <ProberenClient
+      titel={pakket.titel}
+      opgaven={pakket.opgaven}
+      selectie={selectie}
+      googleAan={googleLoginAan()}
+    />
   )
 }
 

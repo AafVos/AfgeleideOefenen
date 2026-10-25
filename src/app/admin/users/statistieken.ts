@@ -1,3 +1,4 @@
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 import type { ProfileRole } from '@/lib/supabase/types'
 import type { createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -35,7 +36,7 @@ export async function fetchAllRows<T>(
   for (let page = 0; page < MAX_PAGES; page++) {
     const from = page * pageSize
     const { data, error } = await fetchPage(from, from + pageSize - 1)
-    if (error) throw new Error(error.message)
+    gooiAlsFout(error)
     if (!data || data.length === 0) break
     for (const row of data) rows.push(row)
     // Een niet-volle pagina betekent: dit was de laatste.
@@ -64,7 +65,7 @@ export async function fetchAllAuthUsers(
   const users: AuthUser[] = []
   for (let page = 1; page <= MAX_PAGES; page++) {
     const { data, error } = await listUsers({ page, perPage })
-    if (error) throw new Error(error.message)
+    gooiAlsFout(error)
     const batch = data?.users ?? []
     if (batch.length === 0) break
     for (const user of batch) users.push(user)

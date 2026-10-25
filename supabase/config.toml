@@ -522,6 +522,14 @@ additional_redirect_urls = [
   # Zonder deze regel komt wie op een voorbeeldversie zijn wachtwoord vergeet
   # of zich registreert, via de mail op de echte site terecht.
   "https://*-afgeleide-oefenen.alhvos.workers.dev/**",
+  # wiskundemetaaf.nl: dezelfde database en dezelfde accounts, maar een eigen
+  # domein en een eigen worker (AFG-489). Zonder deze regels komt wie zich daar
+  # aanmeldt of zijn wachtwoord vergeet, via de mail op afgeleideoefenen.nl
+  # terecht.
+  "https://www.wiskundemetaaf.nl/**",
+  "https://wiskundemetaaf.nl/**",
+  "https://wiskundemetaaf.alhvos.workers.dev/**",
+  "https://*-wiskundemetaaf.alhvos.workers.dev/**",
 ]
 
 [remotes.productie.auth.rate_limit]

@@ -38,6 +38,35 @@ export function moetNaamVragen(user: NaamGebruiker): boolean {
   return true
 }
 
+/**
+ * Hoe lang na het aanmaken van het account we een terugkeer van Google nog
+ * een aanmelding noemen. Supabase maakt de gebruiker aan tijdens het
+ * inwisselen van de code, dus in de praktijk zit er hooguit een seconde
+ * tussen. Een minuut is ruim genoeg en nog steeds ver van het tweede bezoek
+ * van een bestaande leerling.
+ */
+const NIEUW_BINNEN_MS = 60_000
+
+type NieuweGebruiker = { created_at?: string | null }
+
+/**
+ * Is dit een gloednieuw account, of logt een bekende leerling opnieuw in?
+ *
+ * De browser kan dat niet zien: die is bij Google geweest en komt ingelogd
+ * terug. Alleen de server weet wanneer het account is aangemaakt.
+ */
+export function isNieuweAanmelding(
+  user: NieuweGebruiker,
+  nu: number = Date.now(),
+): boolean {
+  if (!user.created_at) return false
+  const gemaakt = Date.parse(user.created_at)
+  if (Number.isNaN(gemaakt)) return false
+  const verschil = nu - gemaakt
+  // Een klok die een paar seconden voorloopt mag dit niet laten afketsen.
+  return verschil > -NIEUW_BINNEN_MS && verschil < NIEUW_BINNEN_MS
+}
+
 /** Waar Google de leerling na het inloggen naartoe stuurt. */
 export function googleCallbackAdres(origin: string, ruwPad: unknown): string {
   const url = new URL('/auth/callback', origin.replace(/\/+$/, ''))

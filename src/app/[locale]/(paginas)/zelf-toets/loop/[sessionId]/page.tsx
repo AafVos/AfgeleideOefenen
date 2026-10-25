@@ -46,7 +46,8 @@ export default async function ZelfToetsRunnerPage({
   }
 
   if (state.ended || !state.nextQuestionId) {
-    const results = await loadTestResults(supabase, user.id, sessionId)
+    const outcome = await loadTestResults(supabase, user.id, sessionId)
+    const results = outcome.status === 'ready' ? outcome.results : null
     const correctCount = results?.correctCount ?? 0
     const totalCount = results?.totalCount ?? state.totalCount
     const pct =
@@ -81,19 +82,19 @@ export default async function ZelfToetsRunnerPage({
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/dashboard"
-              className="rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90"
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90"
             >
               {t('toDashboard')}
             </Link>
             <Link
               href={`/zelf-toets/resultaat/${sessionId}`}
-              className="rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text hover:bg-surface-2"
             >
               {t('viewDetails')}
             </Link>
             <Link
               href="/zelf-toets"
-              className="rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text hover:bg-surface-2"
             >
               {t('newTest')}
             </Link>

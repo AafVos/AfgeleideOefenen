@@ -6,8 +6,9 @@ import { Link } from '@/i18n/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
+import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
-import { Button, ErrorBanner } from '@/components/ui'
+import { Button, ErrorBanner, NakijkMelding } from '@/components/ui'
 import {
   skipStudyQuestionAction,
   startStudySessionAction,
@@ -17,7 +18,7 @@ import {
 } from '@/lib/practice/chapter-actions'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
 import { MASTERY_THRESHOLD } from '@/lib/practice/engine'
-import { nogEenGoedZin } from '@/lib/practice/nog-een-goed'
+import { netBeheerst, nogEenGoedZin } from '@/lib/practice/nog-een-goed'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
 import { useTimeSpent } from '@/lib/practice/use-time-spent'
 import type { UitlegVideo } from '@/lib/videos'
@@ -60,6 +61,7 @@ type State =
       correctAnswer: string
       latexCorrectAnswer: string | null
       errorExplanation: string | null
+      melding: string | null
     }
   /** De leerling wist het niet en vroeg de uitwerking op (zie AFG-102). */
   | {
@@ -99,6 +101,10 @@ export function StudyCard({
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const [lastAttempt, setLastAttempt] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
+  // Twee klikken vlak na elkaar: `submitting` staat dan nog op false, want
+  // React tekent pas aan het eind van de tel opnieuw en de knop is dus nog
+  // niet grijs. Een ref staat meteen goed (AFG-505).
+  const bezigRef = useRef(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const feedbackRef = useRef<HTMLDivElement | null>(null)
   const { secondsSpent, restart: restartTimer } = useTimeSpent()
@@ -160,8 +166,9 @@ export function StudyCard({
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!answer.trim() || state.phase !== 'input') return
+    if (!answer.trim() || state.phase !== 'input' || bezigRef.current) return
 
+    bezigRef.current = true
     setSubmitting(true)
     const submitted = answer
     const seconds = secondsSpent()
@@ -171,6 +178,7 @@ export function StudyCard({
         submitted,
         seconds,
       )
+      bezigRef.current = false
       setSubmitting(false)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })
@@ -195,6 +203,7 @@ export function StudyCard({
         correctAnswer: result.correctAnswer,
         latexCorrectAnswer: result.latexCorrectAnswer,
         errorExplanation: result.errorExplanation,
+        melding: result.melding,
       })
     })
   }
@@ -204,12 +213,14 @@ export function StudyCard({
    * dat de leerling eerst iets moet verzinnen om fout te laten rekenen.
    */
   function skip() {
-    if (state.phase !== 'input' || submitting) return
+    if (state.phase !== 'input' || submitting || bezigRef.current) return
 
+    bezigRef.current = true
     setSubmitting(true)
     const seconds = secondsSpent()
     startTransition(async () => {
       const result: SkipResult = await skipStudyQuestionAction(question.id, seconds)
+      bezigRef.current = false
       setSubmitting(false)
       if (result.kind === 'error') {
         setState({ phase: 'input', error: result.message })
@@ -238,6 +249,7 @@ export function StudyCard({
           <Link
             href={`/uitleg-videos/${encodeURIComponent(video.slug)}` as '/uitleg-videos'}
             title={video.title}
+            data-meet="oefenen-video-bij-opgave"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent-light px-2.5 py-1 text-xs font-medium text-accent transition hover:border-accent/60"
           >
             <IconVideo />
@@ -366,6 +378,7 @@ export function StudyCard({
                 <Button
                   type="submit"
                   data-tour="nakijken"
+                  data-meet="oefenen-nakijken"
                   className="min-h-11 px-5"
                   disabled={(pending && submitting) || !answer.trim()}
                 >
@@ -378,6 +391,7 @@ export function StudyCard({
                 <Button
                   type="button"
                   variant="secondary"
+                  data-meet="oefenen-weet-ik-niet"
                   className="min-h-11 px-5"
                   onClick={skip}
                   disabled={pending && submitting}
@@ -411,41 +425,64 @@ export function StudyCard({
         </div>
       )}
 
-      {state.phase === 'correct' && (
-        <div className="rounded-xl border border-accent/30 bg-accent-light p-4">
-          <p className="font-serif text-xl text-accent">
-            {state.mastered ? t('correctMastered') : t('correct')}
-          </p>
-          <p className="mt-1 text-sm text-accent/80">
-            {state.mastered
-              ? t('masteredBody')
-              : (nogEenGoedZin(state.streak, state.clusterName || clusterName || '') ??
-                t('streakBody', {
-                  streak: state.streak,
-                  remaining: MASTERY_THRESHOLD - state.streak,
-                }))}
-          </p>
-          <div className="mt-4 flex items-center gap-2">
-            <Button onClick={next} disabled={pending} className="min-h-11 px-5">
-              {pending ? t('navigating') : t('nextQuestion')}
-            </Button>
-            <button
-              type="button"
-              onClick={retry}
-              disabled={pending}
-              className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
+      {state.phase === 'correct' && (() => {
+        const justMastered = netBeheerst(state.streak, state.mastered)
+        return (
+          <div
+            className={`rounded-xl border border-accent/30 bg-accent-light p-4 ${
+              justMastered ? 'animate-mastered-flash' : ''
+            }`}
+          >
+            <p
+              className={`font-serif text-accent ${
+                justMastered ? 'text-2xl font-semibold' : 'text-xl'
+              }`}
             >
-              {t('retryButton')}
-            </button>
+              {state.mastered ? t('correctMastered') : t('correct')}
+            </p>
+            <p className="mt-1 text-sm text-accent/80">
+              {state.mastered
+                ? t('masteredBody')
+                : (nogEenGoedZin(state.streak, state.clusterName || clusterName || '') ??
+                  t('streakBody', {
+                    streak: state.streak,
+                    remaining: MASTERY_THRESHOLD - state.streak,
+                  }))}
+            </p>
+            <div className="mt-4 flex items-center gap-2">
+              <Button
+                onClick={next}
+                disabled={pending}
+                data-meet="oefenen-volgende"
+                className="min-h-11 px-5"
+              >
+                {pending ? t('navigating') : t('nextQuestion')}
+              </Button>
+              <button
+                type="button"
+                onClick={retry}
+                disabled={pending}
+                data-meet="oefenen-opnieuw"
+                className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white disabled:opacity-60"
+              >
+                {t('retryButton')}
+              </button>
+            </div>
+            {justMastered && (
+              <div className="mt-3">
+                <DeelKnop compact />
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {state.phase === 'wrong' && (
         <div ref={feedbackRef}>
           <WrongFeedback
             steps={steps}
             explanation={state.errorExplanation}
+            melding={state.melding}
             revealed={revealed}
             onReveal={() => setRevealed(true)}
             onNext={next}
@@ -515,13 +552,19 @@ function AfterAnswerButtons({
   const t = useTranslations('PracticeCard')
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <Button onClick={onNext} disabled={pending} className="min-h-11 px-5">
+      <Button
+        onClick={onNext}
+        disabled={pending}
+        data-meet="oefenen-volgende"
+        className="min-h-11 px-5"
+      >
         {pending ? t('navigating') : t('nextPlus')}
       </Button>
       <Button
         variant="secondary"
         onClick={onRetry}
         disabled={pending}
+        data-meet="oefenen-opnieuw"
         className="min-h-11 px-5"
       >
         {t('retryButton')}
@@ -555,6 +598,7 @@ function FoutUitleg({ text }: { text: string | null }) {
 function WrongFeedback({
   steps,
   explanation,
+  melding,
   revealed,
   onReveal,
   onNext,
@@ -563,6 +607,7 @@ function WrongFeedback({
 }: {
   steps: Step[]
   explanation: string | null
+  melding: string | null
   revealed: boolean
   onReveal: () => void
   onNext: () => void
@@ -570,20 +615,31 @@ function WrongFeedback({
   pending: boolean
 }) {
   const t = useTranslations('PracticeCard')
-  const uitleg = <FoutUitleg text={explanation} />
+  const uitleg = (
+    <>
+      <FoutUitleg text={explanation} />
+      <NakijkMelding text={melding} />
+    </>
+  )
 
   if (!revealed) {
     return (
       <div className="space-y-4">
         {uitleg}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={onRetry} disabled={pending} className="min-h-11 px-5">
+          <Button
+            onClick={onRetry}
+            disabled={pending}
+            data-meet="oefenen-opnieuw"
+            className="min-h-11 px-5"
+          >
             {t('retryButton')}
           </Button>
           <Button
             variant="secondary"
             onClick={onReveal}
             disabled={pending}
+            data-meet="oefenen-antwoord-zien"
             className="min-h-11 px-5"
           >
             {t('showAnswer')}

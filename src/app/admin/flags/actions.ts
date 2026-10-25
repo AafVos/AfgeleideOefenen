@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { assertAdmin } from '@/lib/supabase/admin'
+import { gooiAlsFout } from '@/lib/supabase/fouten'
 
 export async function resolveFlagAction(
   flagId: string,
@@ -17,6 +18,6 @@ export async function resolveFlagAction(
       resolved_by: userId,
     })
     .eq('id', flagId)
-  if (error) throw new Error(error.message)
+  gooiAlsFout(error)
   revalidatePath('/admin/flags')
 }
