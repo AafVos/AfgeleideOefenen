@@ -160,8 +160,8 @@ const VIDEOS: UitlegVideo[] = [
     },
     soort: 'vraaguitwerking',
     chapter: 'H2',
-    duration: '1:20',
-    src: `${STORAGE_BASE}/som-34.mp4`,
+    duration: '1:22',
+    src: `${STORAGE_BASE}/som-34-aaf.mp4`,
     clusterIds: [
       // De quotiëntregel · Eenvoudige breuk (het cluster van som 34)
       'a56f5e6f-4637-4087-98a4-6a60cec1deec',
@@ -189,8 +189,8 @@ const VIDEOS: UitlegVideo[] = [
     },
     soort: 'algemeen',
     chapter: 'H2',
-    duration: '1:42',
-    src: `${STORAGE_BASE}/quotientregel.mp4`,
+    duration: '1:50',
+    src: `${STORAGE_BASE}/quotientregel-aaf.mp4`,
     clusterIds: [
       // De quotiëntregel · Eenvoudige breuk (het cluster van #36)
       'a56f5e6f-4637-4087-98a4-6a60cec1deec',
