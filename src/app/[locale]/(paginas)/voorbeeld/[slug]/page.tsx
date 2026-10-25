@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
+import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
@@ -80,6 +81,20 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           <p className="text-sm text-text-muted">Drie sommen over dit onderwerp, zonder account.</p>
           <ProbeerKnop oefenen={voorbeeld.oefenen} />
         </div>
+
+        {voorbeeld.examenbrug && (
+          <p className="mt-4 text-sm text-text-muted">
+            Dit soort som komt op het examen voor —{' '}
+            <Link
+              href={`${EXAMENTRAINING_PAD}?van=voorbeeld-examen` as '/theorie/examentraining'}
+              data-meet="voorbeeld-examentraining"
+              className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+            >
+              oefen verder in de examentraining
+            </Link>
+            .
+          </p>
+        )}
 
         <details className="mt-10">
           <summary className="inline-flex min-h-11 cursor-pointer list-none items-center font-medium text-accent underline-offset-2 hover:underline">

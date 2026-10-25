@@ -122,6 +122,24 @@ describe('antwoordpagina-s', () => {
     )
   })
 
+  it('toont de brug naar de examentraining op de drukste pagina-s (AFG-623)', () => {
+    const metBrug = [
+      'wortel-x',
+      'een-gedeeld-door-x',
+      'e-tot-de-x',
+      'ln-x',
+      'sin-x',
+      'cos-x',
+    ]
+    for (const slug of metBrug) {
+      expect(getVoorbeeld(slug)?.examenbrug).toBe(true)
+    }
+    const zonderBrug = voorbeelden.filter((v) => !metBrug.includes(v.slug))
+    for (const voorbeeld of zonderBrug) {
+      expect(voorbeeld.examenbrug).toBeFalsy()
+    }
+  })
+
   it('zet elke pagina in de sitemap', () => {
     const urls = sitemap().map((item) => item.url)
     for (const voorbeeld of voorbeelden) {
