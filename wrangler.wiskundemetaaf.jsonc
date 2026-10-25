@@ -18,10 +18,16 @@
     "binding": "ASSETS",
     // /nl geeft het klaargezette bestand, zonder eerst door te sturen naar /nl/.
     "html_handling": "drop-trailing-slash",
-    // Zie wrangler.jsonc voor de uitleg: /inloggen moet, anders dan de
-    // andere klaargezette pagina's, eerst naar de worker voor een
-    // zoekopdracht (`?naar=`) of een sessiekoekje (AFG-632).
-    "run_worker_first": ["/nl/inloggen", "/nl/inloggen/"]
+    // Zie wrangler.jsonc voor de uitleg: /inloggen en /uitleg-videos moeten,
+    // anders dan de andere klaargezette pagina's, eerst naar de worker voor
+    // een zoekopdracht (`?naar=` resp. `?video=`) of een sessiekoekje
+    // (AFG-632, AFG-635).
+    "run_worker_first": [
+      "/nl/inloggen",
+      "/nl/inloggen/",
+      "/nl/uitleg-videos",
+      "/nl/uitleg-videos/"
+    ]
   },
   // De startpagina-ingang blijft klein. worker-next.js is de al gebundelde
   // Next-server en laadt pas als een pagina hem echt nodig heeft.
