@@ -64,6 +64,57 @@ describe('answersMatch', () => {
     )
   })
 
+  it('AFG-640: \\cdot na een sluithaakje werd nooit omgezet, dus een goed antwoord telde fout', () => {
+    // h2_productregel/twee_polynomen vraag 2: f(x) = (2 - 3x^2)(2 + 7x).
+    // Vóór de migratie stond dit als `answer`, zonder answer_alternatives.
+    const oudeData = '-6x(2 + 7x) + (2 - 3x^2) \\cdot 7'
+    // Een cijfer vóór \cdot is niet genoeg: hier staat een sluithaakje vóór,
+    // dus \cdot blijft letterlijk staan en een leerling kan nooit winnen.
+    expect(answersMatch('-63x^2 - 12x + 14', oudeData, [])).toBe(false)
+    expect(answersMatch('-6x(2+7x)+(2-3x^2)*7', oudeData, [])).toBe(false)
+
+    // Na de migratie: `answer` is typeklaar en de vereenvoudigde vorm en de
+    // vorm met een gewone * staan als answer_alternatives.
+    const nieuwAntwoord = '-6x(2 + 7x) + 7(2 - 3x^2)'
+    const nieuweAlternatieven = [
+      '-6x(2 + 7x) + (2 - 3x^2) * 7',
+      '-63x^2 - 12x + 14',
+    ]
+    expect(
+      answersMatch('-63x^2 - 12x + 14', nieuwAntwoord, nieuweAlternatieven),
+    ).toBe(true)
+    expect(
+      answersMatch(
+        '-6x(2+7x)+(2-3x^2)*7',
+        nieuwAntwoord,
+        nieuweAlternatieven,
+      ),
+    ).toBe(true)
+  })
+
+  it('AFG-640: zelfde probleem en oplossing bij vraag 5 van twee_polynomen', () => {
+    // f(x) = (5x^5 - 3)(3x - 2)
+    const oudeData = '25x^4(3x - 2) + (5x^5 - 3) \\cdot 3'
+    expect(answersMatch('90x^5 - 50x^4 - 9', oudeData, [])).toBe(false)
+    expect(answersMatch('25x^4(3x-2)+(5x^5-3)*3', oudeData, [])).toBe(false)
+
+    const nieuwAntwoord = '25x^4(3x - 2) + 3(5x^5 - 3)'
+    const nieuweAlternatieven = [
+      '25x^4(3x - 2) + (5x^5 - 3) * 3',
+      '90x^5 - 50x^4 - 9',
+    ]
+    expect(
+      answersMatch('90x^5 - 50x^4 - 9', nieuwAntwoord, nieuweAlternatieven),
+    ).toBe(true)
+    expect(
+      answersMatch(
+        '25x^4(3x-2)+(5x^5-3)*3',
+        nieuwAntwoord,
+        nieuweAlternatieven,
+      ),
+    ).toBe(true)
+  })
+
   it('rekent een fout antwoord fout', () => {
     expect(answersMatch('2x', '3x')).toBe(false)
     expect(answersMatch('', '3x')).toBe(false)
