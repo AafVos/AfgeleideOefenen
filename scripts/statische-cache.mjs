@@ -296,14 +296,28 @@ function isVersieZonderSessie(html) {
 /**
  * Haalt `paginas` op bij de draaiende `next start`-server en zet ze klaar
  * als los bestand: verborgen onder `cdn-cgi/<mapNaam>` voor de worker zelf,
- * en openbaar op hun eigen adres zodat Cloudflare ze rechtstreeks als
- * statisch bestand serveert, zonder de worker aan te roepen.
+ * en (als `openbaarZetten` aan staat) ook openbaar op hun eigen adres zodat
+ * Cloudflare ze rechtstreeks als statisch bestand serveert, zonder de worker
+ * aan te roepen.
+ *
+ * Staat het pad in `run_worker_first` (wrangler.jsonc), dan hoort
+ * `openbaarZetten` uit: OpenNext's eigen asset-resolver serveert zo'n
+ * openbaar bestand namelijk zelf óók terug zodra de worker draait, los van
+ * elke zoekopdracht (zie node_modules/@opennextjs/cloudflare/dist/api/overrides/asset-resolver).
+ * Dat ondermijnt precies de uitzondering die `run_worker_first` daar mogelijk
+ * moest maken (AFG-637): `anoniemeInloggenPagina`/`anoniemeUitlegVideosPagina`
+ * laten een verzoek met `?mail=`, `?error=`, `?naar=` of `?video=` terecht
+ * naar de echte server gaan, maar die kreeg zo alsnog het kale bestand terug.
  */
 async function schrijfStatischeMap(
   poort,
   mapNaam,
   paginas,
-  { controleerAnoniem = isVersieZonderSessie, sessieHerkenningScript = sessieScript } = {},
+  {
+    controleerAnoniem = isVersieZonderSessie,
+    sessieHerkenningScript = sessieScript,
+    openbaarZetten = true,
+  } = {},
 ) {
   const map = path.join(bestanden, 'cdn-cgi', mapNaam)
   fs.mkdirSync(map, { recursive: true })
@@ -326,6 +340,7 @@ async function schrijfStatischeMap(
       ? html
       : html.replace('<head>', `<head>${sessieHerkenningScript}`)
     fs.writeFileSync(path.join(map, pagina.bestand), metScript)
+    if (!openbaarZetten) continue
     // Zonder dit bestand start de worker. Met het bestand geeft Cloudflare
     // de pagina zelf, net als de startpagina.
     const openbaar = path.join(bestanden, pagina.pad.replace(/^\//, ''), 'index.html')
@@ -402,15 +417,23 @@ async function schrijfStatischePaginas() {
     }
 
     await schrijfStatischeMap(poort, 'theorie', theoriePaginas())
-    await schrijfStatischeMap(poort, 'uitleg-videos', uitlegVideosPaginas())
+    // /nl/uitleg-videos staat in run_worker_first (?video= moet naar de
+    // server kunnen doorsturen), dus geen openbaar bestand op het echte pad:
+    // zie de uitleg bij schrijfStatischeMap hierboven (AFG-637).
+    await schrijfStatischeMap(poort, 'uitleg-videos', uitlegVideosPaginas(), {
+      openbaarZetten: false,
+    })
     await schrijfStatischeMap(poort, 'voorbeeld', voorbeeldPaginas())
     // De inlogpagina linkt niet naar zichzelf; de bevestiging dat dit de
     // versie zonder sessie is, is hier het inlogformulier zelf. Een
     // gevonden sessiekoekje stuurt hier naar het dashboard, niet naar een
     // "/persoonlijk"-adres dat voor deze pagina niet bestaat.
+    // /nl/inloggen staat ook in run_worker_first (?mail=, ?error=, ?naar=),
+    // dus ook hier geen openbaar bestand op het echte pad (AFG-637).
     await schrijfStatischeMap(poort, 'inloggen', inloggenPaginas(), {
       controleerAnoniem: (html) => html.includes('name="email"'),
       sessieHerkenningScript: naarDashboardScript,
+      openbaarZetten: false,
     })
   } finally {
     stop()
