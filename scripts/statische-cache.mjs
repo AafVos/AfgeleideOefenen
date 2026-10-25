@@ -9,6 +9,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import net from 'node:net'
 import path from 'node:path'
+import { ontbrekendeSupabaseVariabelen } from './statische-cache-omgeving.mjs'
 
 const wortel = '.open-next'
 const cache = path.join(wortel, 'cache')
@@ -500,6 +501,21 @@ function maakKleineIngang() {
   }
   fs.rmSync(bron, { force: true })
   fs.writeFileSync(worker, ingang)
+}
+
+// AFG-373: Cloudflare Workers Builds zet de Supabase-bouwvariabelen niet op
+// een pull-requesttak. Pagina's als /nl/inloggen maken dan geen Supabase-
+// client aan en geven 500, waardoor schrijfStatischeMap hieronder de hele
+// bouw liet falen. Op `main` staan de variabelen er wel (net als in de
+// GitHub-controle "Bouw voor Workers", met nepwaarden) — daar blijft een
+// echte 500 de bouw dus gewoon stoppen; dat vangnet raken we hier niet aan.
+const ontbrekend = ontbrekendeSupabaseVariabelen(process.env)
+if (ontbrekend.length > 0) {
+  console.warn(
+    `Geen ${ontbrekend.join(' en ')} in de omgeving: de statische cache en de kleine ingang worden overgeslagen. ` +
+      'Dit hoort bij een voorbeeldbouw zonder bouwvariabelen (bijvoorbeeld Cloudflare Workers Builds op een pull-requesttak).',
+  )
+  process.exit(0)
 }
 
 if (!fs.existsSync(cache)) {
