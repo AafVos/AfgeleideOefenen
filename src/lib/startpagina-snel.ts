@@ -82,6 +82,21 @@ export function anoniemeUitlegVideosPagina(request: Request): boolean {
   return anoniemePagina(request, (pathname) => UITLEG_VIDEOS_PAD.test(pathname))
 }
 
+// /nl/inloggen. Geen `?naar=`, `?error=` of `?mail=`: die bezoeken (bijv. na
+// een link met een terugkeerpad) horen bij de gewone server, net als het
+// adres van een ingelogde leerling (anoniemePagina sluit die al uit).
+const INLOGGEN_PAD = /^\/nl\/inloggen\/?$/
+
+/**
+ * Geldt voor een kaal bezoek aan de inlogpagina zonder sessie. De pagina is
+ * voor iedereen zonder sessie gelijk: wie wel een sessie heeft redirect de
+ * gewone server altijd door (zie page.tsx), dus die versie hoeft hier niet
+ * klaar te staan.
+ */
+export function anoniemeInloggenPagina(request: Request): boolean {
+  return anoniemePagina(request, (pathname) => INLOGGEN_PAD.test(pathname))
+}
+
 // /nl/voorbeeld/wortel-x. Elk voorbeeld staat al vast via
 // generateStaticParams, dus elk bestaand adres heeft een klaargezet bestand.
 const VOORBEELD_PAD = /^\/nl\/voorbeeld\/([a-z0-9-]+)\/?$/

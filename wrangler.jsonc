@@ -8,7 +8,16 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
     // /nl geeft het klaargezette bestand, zonder eerst door te sturen naar /nl/.
-    "html_handling": "drop-trailing-slash"
+    "html_handling": "drop-trailing-slash",
+    // Cloudflare geeft een bestand dat op het pad past altijd rechtstreeks
+    // terug, los van een zoekopdracht of koekje (AFG-632). Voor /nl, /theorie,
+    // /uitleg-videos en /voorbeeld/* kan dat: die hebben geen zoekopdracht die
+    // iets anders moet laten zien. /inloggen wel (`?naar=`, `?error=`,
+    // `?mail=`, of een sessiekoekje): die moeten naar de gewone server in
+    // plaats van altijd het klaargezette, anonieme bestand te krijgen. Dit
+    // stuurt alleen dat ene pad eerst naar de worker, die zelf beslist
+    // (zie src/lib/startpagina-snel.ts, anoniemeInloggenPagina).
+    "run_worker_first": ["/nl/inloggen", "/nl/inloggen/"]
   },
   // De startpagina-ingang blijft klein. worker-next.js is de al gebundelde
   // Next-server en laadt pas als een pagina hem echt nodig heeft.

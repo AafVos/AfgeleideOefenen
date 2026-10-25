@@ -25,6 +25,7 @@ const ingang = `// ${merkteken}
 // zware Next-bundel (worker-next.js) wordt pas geladen als die echt nodig
 // is. Iemand die is ingelogd gaat wel door die bundel, zodat de kop klopt.
 import {
+  anoniemeInloggenPagina,
   anoniemeStartpagina,
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
@@ -90,6 +91,19 @@ export default {
       await bestand.body?.cancel();
     }
 
+    if (env.ASSETS && anoniemeInloggenPagina(request)) {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/inloggen/index.html",
+      );
+      if (bestand.ok) {
+        const antwoord = uitBestand(bestand);
+        antwoord.headers.set("cache-control", "private, no-store");
+        antwoord.headers.set("x-inloggen", "bestand");
+        return antwoord;
+      }
+      await bestand.body?.cancel();
+    }
+
     const voorbeeld = anoniemeVoorbeeldBestand(request);
     if (env.ASSETS && voorbeeld) {
       const bestand = await env.ASSETS.fetch(
@@ -144,6 +158,11 @@ function verzamel(map, uitkomst, naam) {
   }
 }
 
+// Geen sessie gezien bij het binnenhalen van het verzoek (anoniemePagina),
+// maar wel een sessiekoekje in de browser: dan toch naar het dashboard, in
+// plaats van de leerling op een bezoekerspagina te laten staan.
+const naarDashboardScript = `<script>(function(){var delen=document.cookie.split(";");for(var i=0;i<delen.length;i++){var naam=delen[i].split("=")[0].trim();if(/^sb-.+-auth-token(?:\\.\\d+)?$/.test(naam)){location.replace("/nl/dashboard");return}}})()</script>`
+
 function schrijfStartpagina() {
   const kandidaten = []
   verzamel(cache, kandidaten, 'nl.cache')
@@ -161,10 +180,9 @@ function schrijfStartpagina() {
     throw new Error('De klaargezette startpagina mist de kop.')
   }
 
-  const script = `<script>(function(){var delen=document.cookie.split(";");for(var i=0;i<delen.length;i++){var naam=delen[i].split("=")[0].trim();if(/^sb-.+-auth-token(?:\\.\\d+)?$/.test(naam)){location.replace("/nl/dashboard");return}}})()</script>`
-  const metScript = html.includes(script)
+  const metScript = html.includes(naarDashboardScript)
     ? html
-    : html.replace('<head>', `<head>${script}`)
+    : html.replace('<head>', `<head>${naarDashboardScript}`)
 
   fs.mkdirSync(path.dirname(startHtml), { recursive: true })
   fs.writeFileSync(startHtml, metScript)
@@ -221,6 +239,15 @@ function uitlegVideosPaginas() {
   return [{ pad: '/nl/uitleg-videos', bestand: 'index.html', titel: titel[1] }]
 }
 
+function inloggenPaginas() {
+  const tekst = fs.readFileSync(MESSAGES_BESTAND, 'utf8')
+  const titel = tekst.match(/"Login":\s*{\s*"title":\s*"([^"]+)"/)
+  if (!titel) {
+    throw new Error('Geen titel gevonden voor de inlogpagina.')
+  }
+  return [{ pad: '/nl/inloggen', bestand: 'index.html', titel: titel[1] }]
+}
+
 function voorbeeldPaginas() {
   const tekst = fs.readFileSync(VOORBEELDEN_BESTAND, 'utf8')
   const paginas = []
@@ -258,13 +285,26 @@ function leegStroom(stroom) {
   stroom?.on('data', () => {})
 }
 
+// Standaard-bevestiging dat een opgehaalde pagina echt de versie zonder
+// sessie is: die linkt naar de inlogpagina. Voor de inlogpagina zelf klopt
+// die aanname niet (zie inloggenPaginas hieronder), die heeft zijn eigen
+// bevestiging.
+function isVersieZonderSessie(html) {
+  return html.includes('href="/nl/inloggen"')
+}
+
 /**
  * Haalt `paginas` op bij de draaiende `next start`-server en zet ze klaar
  * als los bestand: verborgen onder `cdn-cgi/<mapNaam>` voor de worker zelf,
  * en openbaar op hun eigen adres zodat Cloudflare ze rechtstreeks als
  * statisch bestand serveert, zonder de worker aan te roepen.
  */
-async function schrijfStatischeMap(poort, mapNaam, paginas) {
+async function schrijfStatischeMap(
+  poort,
+  mapNaam,
+  paginas,
+  { controleerAnoniem = isVersieZonderSessie, sessieHerkenningScript = sessieScript } = {},
+) {
   const map = path.join(bestanden, 'cdn-cgi', mapNaam)
   fs.mkdirSync(map, { recursive: true })
   for (const pagina of paginas) {
@@ -279,12 +319,12 @@ async function schrijfStatischeMap(poort, mapNaam, paginas) {
     if (!html.includes(pagina.titel)) {
       throw new Error(`${pagina.pad} mist de titel.`)
     }
-    if (!html.includes('href="/nl/inloggen"')) {
+    if (!controleerAnoniem(html)) {
       throw new Error(`${pagina.pad} is niet de versie zonder sessie.`)
     }
-    const metScript = html.includes('statisch-sessie')
+    const metScript = html.includes(sessieHerkenningScript)
       ? html
-      : html.replace('<head>', `<head>${sessieScript}`)
+      : html.replace('<head>', `<head>${sessieHerkenningScript}`)
     fs.writeFileSync(path.join(map, pagina.bestand), metScript)
     // Zonder dit bestand start de worker. Met het bestand geeft Cloudflare
     // de pagina zelf, net als de startpagina.
@@ -364,6 +404,14 @@ async function schrijfStatischePaginas() {
     await schrijfStatischeMap(poort, 'theorie', theoriePaginas())
     await schrijfStatischeMap(poort, 'uitleg-videos', uitlegVideosPaginas())
     await schrijfStatischeMap(poort, 'voorbeeld', voorbeeldPaginas())
+    // De inlogpagina linkt niet naar zichzelf; de bevestiging dat dit de
+    // versie zonder sessie is, is hier het inlogformulier zelf. Een
+    // gevonden sessiekoekje stuurt hier naar het dashboard, niet naar een
+    // "/persoonlijk"-adres dat voor deze pagina niet bestaat.
+    await schrijfStatischeMap(poort, 'inloggen', inloggenPaginas(), {
+      controleerAnoniem: (html) => html.includes('name="email"'),
+      sessieHerkenningScript: naarDashboardScript,
+    })
   } finally {
     stop()
   }
