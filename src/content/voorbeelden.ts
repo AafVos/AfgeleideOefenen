@@ -27,6 +27,12 @@ export type Voorbeeld = {
   theorieNaam: string;
   /** Drie tot vijf slugs van andere voorbeelden uit dezelfde familie. */
   verwant: readonly string[];
+  /**
+   * Toont een korte brug naar de examentraining onder "Probeer 3 sommen".
+   * Alleen op de drukste voorbeeldpagina's (AFG-623): die staan hoog in
+   * Google en geven een bezoeker zo een tweede reden om te blijven.
+   */
+  examenbrug?: boolean;
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
@@ -71,6 +77,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
       "x-kwadraat",
       "een-gedeeld-door-x",
     ],
+    examenbrug: true,
     f: (x) => Math.sqrt(x),
     df: (x) => 1 / (2 * Math.sqrt(x)),
     punten: [1, 4, 9],
@@ -208,6 +215,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
       "x-kwadraat",
       "een-gedeeld-door-wortel-x",
     ],
+    examenbrug: true,
     f: (x) => 1 / x,
     df: (x) => -1 / (x * x),
     punten: [-2, 0.5, 3],
@@ -439,6 +447,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
       "e-tot-de-min-x",
       "x-keer-e-tot-de-x",
     ],
+    examenbrug: true,
     f: (x) => Math.exp(x),
     df: (x) => Math.exp(x),
     punten: [-1, 0, 1],
@@ -568,6 +577,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theoriePad: LN,
     theorieNaam: "Logaritmes",
     verwant: ["ln-2x", "ln-x-kwadraat", "x-keer-ln-x", "ln-x-kwadraat-plus-1"],
+    examenbrug: true,
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
@@ -684,6 +694,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theoriePad: GONIO,
     theorieNaam: "Basisformules goniometrie",
     verwant: ["cos-x", "sin-3x", "tan-x", "sin-x-kwadraat"],
+    examenbrug: true,
     f: (x) => Math.sin(x),
     df: (x) => Math.cos(x),
     punten: [0, 0.5, 1],
@@ -707,6 +718,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theoriePad: GONIO,
     theorieNaam: "Basisformules goniometrie",
     verwant: ["sin-x", "cos-2x", "tan-x", "sin-3x"],
+    examenbrug: true,
     f: (x) => Math.cos(x),
     df: (x) => -Math.sin(x),
     punten: [0, 0.5, 1],
