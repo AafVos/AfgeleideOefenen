@@ -347,6 +347,11 @@ export function UitlegVideosClient({
           ) : null}
           {active ? (
             <div className="mt-5 flex flex-wrap items-start gap-3">
+              <ProbeerKnop
+                oefenen={`${active.oefenen}&van=uitlegvideo`}
+                dataMeet="video-oefen-nu"
+                label="Oefen dit nu"
+              />
               <DeelKnop />
               {active.theorieHref ? (
                 <Link
@@ -409,19 +414,14 @@ export function UitlegVideosClient({
         </aside>
       </div>
 
-      {/* Oefenen */}
-      {active?.hasPractice ? (
+      {/* Oefenen: ingelogde leerlingen kunnen hier meteen doorgaan. Zonder
+          account staat de knop "Oefen dit nu" al direct onder de video. */}
+      {active?.hasPractice && isLoggedIn && vragen.length > 0 ? (
         <section className="mt-10">
           <h2 className="font-serif text-2xl text-text">{labels.practiceTitle}</h2>
-          {isLoggedIn && vragen.length > 0 ? (
-            <div className="mt-4">
-              <OefenKaart key={active.slug} vragen={vragen} oefenHref={oefenHref} labels={labels} />
-            </div>
-          ) : !isLoggedIn ? (
-            <div className="mt-4">
-              <ProbeerKnop oefenen={active.oefenen} />
-            </div>
-          ) : null}
+          <div className="mt-4">
+            <OefenKaart key={active.slug} vragen={vragen} oefenHref={oefenHref} labels={labels} />
+          </div>
         </section>
       ) : null}
 
