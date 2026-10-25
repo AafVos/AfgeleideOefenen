@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { answersMatch, normalizeAnswer } from './engine'
 
 /**
- * Migratie 0083: de laatste LaTeX-restjes in answer/answer_alternatives die
+ * Migratie 0085: de laatste LaTeX-restjes in answer/answer_alternatives die
  * normalizeAnswer niet wegnormaliseert (vervolg op 0058).
  *
  * normalizeAnswer zet "^(...)" (ronde haakjes) om naar een kale exponent,
@@ -26,7 +26,7 @@ describe('normalizeAnswer: waarom de accolade- en \\cdot-vormen kapot waren', ()
   })
 })
 
-const MIGRATIE = 'supabase/migrations/0083_laatste_latex_restjes_antwoorden.sql'
+const MIGRATIE = 'supabase/migrations/0085_laatste_latex_restjes_antwoorden.sql'
 
 type Vraag = {
   naam: string
@@ -37,7 +37,7 @@ type Vraag = {
   /** Een paar schrijfwijzen die een leerling kan typen en die goed horen te zijn. */
   goed: string[]
   /**
-   * Letterlijke tekst die in migratie 0083 zelf moet staan. Standaard de
+   * Letterlijke tekst die in migratie 0085 zelf moet staan. Standaard de
    * hele alternatievenlijst; bij h2 (waar alleen het answer-veld verandert)
    * expliciet gezet.
    */
@@ -145,7 +145,7 @@ const vragen: Vraag[] = [
     alternatieven: ['16x^3 + 12x^2 + 2x'],
     restjes: ['2 \\cdot (4x + 1)(2x^{2} + x)'],
     goed: ['2*(4x+1)(2x^2+x)', '16x^3+12x^2+2x'],
-    // De alternatieven zelf zet 0047 al goed neer; 0083 verandert hier
+    // De alternatieven zelf zet 0047 al goed neer; 0085 verandert hier
     // alleen het answer-veld.
     inMigratie: ['2*(4x + 1)(2x^2 + x)'],
   },
@@ -162,7 +162,7 @@ const vragen: Vraag[] = [
   },
 ]
 
-describe('migratie 0083: laatste LaTeX-restjes antwoorden', () => {
+describe('migratie 0085: laatste LaTeX-restjes antwoorden', () => {
   it.each(vragen)('$naam: geen \\ of {}/} meer in answer/answer_alternatives', (vraag) => {
     const alles = [vraag.antwoord, ...vraag.alternatieven].join('|')
     expect(alles).not.toMatch(/[{}\\]/)
