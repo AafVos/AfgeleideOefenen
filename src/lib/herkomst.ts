@@ -5,6 +5,7 @@ export const TOEGESTANE_HERKOMST = [
   'klas',
   'forum',
   'proberen',
+  'proefsom',
 ] as const
 
 export type Herkomst = (typeof TOEGESTANE_HERKOMST)[number]

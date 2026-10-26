@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
+import { GoogleKnop } from '@/components/google-knop'
 import { MathKeyboard } from '@/components/math-keyboard'
 import { Math as TeX, RichMath } from '@/components/math'
 import { Badge, Button } from '@/components/ui'
@@ -41,12 +42,44 @@ const QUESTIONS: Record<Difficulty, QuestionConfig> = {
   },
 }
 
+/**
+ * Verschijnt direct na het nakijken (AFG-657): op 25 oktober klikten alle
+ * bezoekers die nakeken door naar "drie sommen", maar niemand registreerde.
+ * Deze CTA zet Google-aanmelden bovenaan, met e-mail eronder.
+ */
+function BewaarVoortgang({ googleAan }: { googleAan: boolean }) {
+  const t = useTranslations('HomeDemo')
+  return (
+    <div className="mt-3 rounded-xl border border-border bg-surface p-4">
+      <p className="font-serif text-lg text-text">{t('bewaarTitle')}</p>
+      <div className="mt-3 max-w-sm">
+        {googleAan && (
+          <GoogleKnop oefenpad={null} dataMeet="home-proefsom-bewaar-google" />
+        )}
+        <Link
+          href="/registreren?van=proefsom"
+          data-meet="home-proefsom-bewaar-email"
+          className={
+            googleAan
+              ? 'inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-surface px-5 py-3 text-sm font-medium text-text shadow-sm hover:bg-surface-2'
+              : 'inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-accent/90'
+          }
+        >
+          {t('bewaarEmail')}
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function DemoCard({
   difficulty,
   onSubmit,
+  googleAan,
 }: {
   difficulty: Difficulty
   onSubmit: () => void
+  googleAan: boolean
 }) {
   const t = useTranslations('HomeDemo')
   const q = QUESTIONS[difficulty]
@@ -143,103 +176,95 @@ function DemoCard({
       )}
 
       {state.phase === 'correct' && (
-        <div className="rounded-xl border border-accent/30 bg-accent-light p-4">
-          <p className="font-serif text-xl text-accent">{t('correctTitle')}</p>
-          <p className="mt-1 text-sm text-accent">{t('correctBody')}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Link
-              href={DRIE_SOMMEN}
-              data-meet="home-proefsom-drie-sommen"
-              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
-            >
-              {t('correctCta')}
-            </Link>
-            <Link
-              href="/registreren"
-              data-meet="home-proefsom-registreren"
-              className="text-sm text-accent underline-offset-2 hover:underline"
-            >
-              {t('orAccount')}
-            </Link>
-            <button
-              type="button"
-              onClick={retry}
-              data-meet="home-proefsom-opnieuw"
-              className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white"
-            >
-              {t('tryAnother')}
-            </button>
+        <>
+          <div className="rounded-xl border border-accent/30 bg-accent-light p-4">
+            <p className="font-serif text-xl text-accent">{t('correctTitle')}</p>
+            <p className="mt-1 text-sm text-accent">{t('correctBody')}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link
+                href={DRIE_SOMMEN}
+                data-meet="home-proefsom-drie-sommen"
+                className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
+              >
+                {t('correctCta')}
+              </Link>
+              <button
+                type="button"
+                onClick={retry}
+                data-meet="home-proefsom-opnieuw"
+                className="inline-flex min-h-11 items-center rounded-lg border border-accent/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent transition hover:bg-white"
+              >
+                {t('tryAnother')}
+              </button>
+            </div>
           </div>
-        </div>
+          <BewaarVoortgang googleAan={googleAan} />
+        </>
       )}
 
       {state.phase === 'wrong' && (
-        <div className="rounded-xl border border-accent-2/40 bg-accent-2-light p-4">
-          <p className="font-serif text-xl text-accent-2">{t('wrongTitle')}</p>
-          <div className="mt-2 flex flex-col gap-1 text-sm text-accent-2">
-            <span>
-              {t('studentAnswer')}:{' '}
-              <span className="font-serif">
-                <TeX tex={toLatexPreview(state.studentAnswer)} />
+        <>
+          <div className="rounded-xl border border-accent-2/40 bg-accent-2-light p-4">
+            <p className="font-serif text-xl text-accent-2">{t('wrongTitle')}</p>
+            <div className="mt-2 flex flex-col gap-1 text-sm text-accent-2">
+              <span>
+                {t('studentAnswer')}:{' '}
+                <span className="font-serif">
+                  <TeX tex={toLatexPreview(state.studentAnswer)} />
+                </span>
               </span>
-            </span>
-            <span>
-              {t('correctAnswer')}:{' '}
-              <span className="font-serif">
-                <TeX tex={q.correctLatex} />
+              <span>
+                {t('correctAnswer')}:{' '}
+                <span className="font-serif">
+                  <TeX tex={q.correctLatex} />
+                </span>
               </span>
-            </span>
-          </div>
-
-          <div className="mt-4 rounded-lg border border-border bg-white/90">
-            <div className="px-4 py-3">
-              <p className="text-sm font-semibold text-text">{t('stepsTitle')}</p>
             </div>
-            <ol className="list-none space-y-1 border-t border-border px-3 py-3 text-sm text-text">
-              {[1, 2, 3].map((n) => (
-                <li key={n} className="flex items-start gap-3 px-3 py-2 leading-relaxed">
-                  <span className="min-w-[1.25rem] shrink-0 font-semibold tabular-nums text-accent">
-                    {n}.
-                  </span>
-                  <span>
-                    <RichMath source={t(`${difficulty}Step${n}` as 'easyStep1')} />
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Link
-              href={DRIE_SOMMEN}
-              data-meet="home-proefsom-drie-sommen"
-              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
-            >
-              {t('wrongCta')}
-            </Link>
-            <Link
-              href="/registreren"
-              data-meet="home-proefsom-registreren"
-              className="text-sm text-accent-2 underline-offset-2 hover:underline"
-            >
-              {t('orAccount')}
-            </Link>
-            <button
-              type="button"
-              onClick={retry}
-              data-meet="home-proefsom-opnieuw"
-              className="inline-flex min-h-11 items-center rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white"
-            >
-              {t('tryAgain')}
-            </button>
+            <div className="mt-4 rounded-lg border border-border bg-white/90">
+              <div className="px-4 py-3">
+                <p className="text-sm font-semibold text-text">{t('stepsTitle')}</p>
+              </div>
+              <ol className="list-none space-y-1 border-t border-border px-3 py-3 text-sm text-text">
+                {[1, 2, 3].map((n) => (
+                  <li key={n} className="flex items-start gap-3 px-3 py-2 leading-relaxed">
+                    <span className="min-w-[1.25rem] shrink-0 font-semibold tabular-nums text-accent">
+                      {n}.
+                    </span>
+                    <span>
+                      <RichMath source={t(`${difficulty}Step${n}` as 'easyStep1')} />
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link
+                href={DRIE_SOMMEN}
+                data-meet="home-proefsom-drie-sommen"
+                className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-accent/90"
+              >
+                {t('wrongCta')}
+              </Link>
+              <button
+                type="button"
+                onClick={retry}
+                data-meet="home-proefsom-opnieuw"
+                className="inline-flex min-h-11 items-center rounded-lg border border-accent-2/40 bg-white/70 px-4 py-2 text-sm font-medium text-accent-2 transition hover:bg-white"
+              >
+                {t('tryAgain')}
+              </button>
+            </div>
           </div>
-        </div>
+          <BewaarVoortgang googleAan={googleAan} />
+        </>
       )}
     </div>
   )
 }
 
-export function HomeDemo() {
+export function HomeDemo({ googleAan }: { googleAan: boolean }) {
   const t = useTranslations('HomeDemo')
   const [active, setActive] = useState<Difficulty>('easy')
   /**
@@ -304,6 +329,7 @@ export function HomeDemo() {
         key={`${active}-${klikTeller}`}
         difficulty={active}
         onSubmit={() => setHeeftGeprobeerd(true)}
+        googleAan={googleAan}
       />
     </section>
   )
