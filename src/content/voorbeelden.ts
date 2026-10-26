@@ -33,6 +33,12 @@ export type Voorbeeld = {
    * Google en geven een bezoeker zo een tweede reden om te blijven.
    */
   examenbrug?: boolean;
+  /**
+   * Extra FAQ-vraag "Hoe oefen je ...?" in het JSON-LD-schema (AFG-658):
+   * alleen op de drukste pagina's uit de zoekcluster die amper klikken
+   * krijgt, als kans op een FAQ-rich result naast de belofte-eerste meta.
+   */
+  faqUitgebreid?: boolean;
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
@@ -216,6 +222,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
       "een-gedeeld-door-wortel-x",
     ],
     examenbrug: true,
+    faqUitgebreid: true,
     f: (x) => 1 / x,
     df: (x) => -1 / (x * x),
     punten: [-2, 0.5, 3],
@@ -448,6 +455,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
       "x-keer-e-tot-de-x",
     ],
     examenbrug: true,
+    faqUitgebreid: true,
     f: (x) => Math.exp(x),
     df: (x) => Math.exp(x),
     punten: [-1, 0, 1],
@@ -578,6 +586,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theorieNaam: "Logaritmes",
     verwant: ["ln-2x", "ln-x-kwadraat", "x-keer-ln-x", "ln-x-kwadraat-plus-1"],
     examenbrug: true,
+    faqUitgebreid: true,
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
@@ -695,6 +704,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theorieNaam: "Basisformules goniometrie",
     verwant: ["cos-x", "sin-3x", "tan-x", "sin-x-kwadraat"],
     examenbrug: true,
+    faqUitgebreid: true,
     f: (x) => Math.sin(x),
     df: (x) => Math.cos(x),
     punten: [0, 0.5, 1],
@@ -719,6 +729,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theorieNaam: "Basisformules goniometrie",
     verwant: ["sin-x", "cos-2x", "tan-x", "sin-3x"],
     examenbrug: true,
+    faqUitgebreid: true,
     f: (x) => Math.cos(x),
     df: (x) => -Math.sin(x),
     punten: [0, 0.5, 1],
@@ -861,6 +872,17 @@ export function voorbeeldTitel(voorbeeld: Voorbeeld): string {
   const zonderDe = voorbeeld.kop.replace(/^De /, "");
   const metHoofdletter = zonderDe.charAt(0).toUpperCase() + zonderDe.slice(1);
   return `${metHoofdletter} oefenen`;
+}
+
+/**
+ * Tweede FAQ-vraag voor pagina's met `faqUitgebreid` (AFG-658), in
+ * spreektaal en zonder het kant-en-klare antwoord: "Hoe oefen je de
+ * afgeleide van ln x?" Het antwoord is `omschrijving`, die al belofte-eerst
+ * is voor de meta.
+ */
+export function voorbeeldOefenVraag(voorbeeld: Voorbeeld): string {
+  const metKleineLetter = voorbeeld.kop.charAt(0).toLowerCase() + voorbeeld.kop.slice(1);
+  return `Hoe oefen je ${metKleineLetter}?`;
 }
 
 export function getVoorbeelden(): readonly Voorbeeld[] {

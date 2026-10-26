@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import sitemap from '@/app/sitemap'
 
-import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from './voorbeelden'
+import {
+  getVoorbeeld,
+  getVoorbeelden,
+  voorbeeldOefenVraag,
+  voorbeeldPad,
+  voorbeeldTitel,
+} from './voorbeelden'
 
 describe('antwoordpagina-s', () => {
   const voorbeelden = getVoorbeelden()
@@ -138,6 +144,25 @@ describe('antwoordpagina-s', () => {
     for (const voorbeeld of zonderBrug) {
       expect(voorbeeld.examenbrug).toBeFalsy()
     }
+  })
+
+  it('heeft een extra FAQ-vraag op de drukste pagina-s zonder klikken (AFG-658)', () => {
+    const metUitgebreideFaq = ['een-gedeeld-door-x', 'e-tot-de-x', 'ln-x', 'sin-x', 'cos-x']
+    for (const slug of metUitgebreideFaq) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.faqUitgebreid).toBe(true)
+      const vraag = voorbeeldOefenVraag(voorbeeld)
+      expect(vraag.startsWith('Hoe oefen je de afgeleide van ')).toBe(true)
+      expect(vraag.endsWith('?')).toBe(true)
+      // Het antwoord op de extra vraag blijft belofte-eerst: geen kant-en-klaar antwoord.
+      expect(voorbeeld.omschrijving).not.toBe(voorbeeld.antwoordTekst)
+      expect(voorbeeld.omschrijving).not.toMatch(/^De afgeleide van .+ is /)
+    }
+    const zonderUitgebreideFaq = voorbeelden.filter((v) => !metUitgebreideFaq.includes(v.slug))
+    for (const voorbeeld of zonderUitgebreideFaq) {
+      expect(voorbeeld.faqUitgebreid).toBeFalsy()
+    }
+    expect(voorbeeldOefenVraag(getVoorbeeld('ln-x')!)).toBe('Hoe oefen je de afgeleide van ln x?')
   })
 
   it('zet elke pagina in de sitemap', () => {
