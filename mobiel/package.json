@@ -42,5 +42,8 @@
     "lint": "expo lint",
     "test": "vitest run"
   },
+  "overrides": {
+    "zod": "^4.6.7"
+  },
   "private": true
 }

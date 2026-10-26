@@ -26,10 +26,10 @@
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.0",
     "katex": "^0.18.2",
-    "next": "16.4.2",
+    "next": "16.4.3",
     "next-intl": "^4.11.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "resend": "^6.12.3"
   },
   "devDependencies": {
@@ -39,12 +39,18 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.3",
     "supabase": "^2.120.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.12",
-    "wrangler": "^4.149.0"
+    "wrangler": "^4.152.0"
+  },
+  "overrides": {
+    "undici": "^7.30.1",
+    "@dotenvx/dotenvx": {
+      "undici": "^6.29.1"
+    }
   },
   "packageManager": "npm@11.21.1"
 }
