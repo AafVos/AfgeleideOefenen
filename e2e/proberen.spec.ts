@@ -15,8 +15,8 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   if (error) throw new Error(error.message)
 
   await page.goto('/nl/theorie/machtsregel')
-  await page.getByRole('link', { name: 'Probeer 3 sommen' }).click()
-  await expect(page).toHaveURL(/\/nl\/proberen\?chapter=h2&topic=h2_termsgewijs$/)
+  await page.getByRole('link', { name: 'Oefen dit onderwerp' }).click()
+  await expect(page).toHaveURL(/\/nl\/proberen\?chapter=h2&topic=h2_termsgewijs&van=theorie$/)
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()
 
@@ -90,6 +90,16 @@ test('een uitlegvideo-pagina heeft een knop "Oefen dit nu", met van=uitlegvideo 
   await expect(page).toHaveURL(
     /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=negatieve_macht&van=uitlegvideo$/,
   )
+  await expect(page).not.toHaveURL(/inloggen/)
+  await expect(page.getByText(/Som 1 van /)).toBeVisible()
+})
+
+test('een theoriepagina heeft een knop "Oefen dit onderwerp", met van=theorie voor de bronmeting', async ({
+  page,
+}) => {
+  await page.goto('/nl/theorie/kettingregel')
+  await page.getByRole('link', { name: 'Oefen dit onderwerp' }).click()
+  await expect(page).toHaveURL(/\/nl\/proberen\?chapter=h6&topic=h6_kettingregel&van=theorie$/)
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()
 })

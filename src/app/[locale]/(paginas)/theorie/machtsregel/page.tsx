@@ -94,8 +94,12 @@ export default function MachtsregelPage() {
       </section>
 
       <div className="mt-12 flex flex-wrap items-start gap-4">
+        <ProbeerKnop
+          oefenen={`${MACHTSREGEL_OEFENEN}&van=theorie`}
+          dataMeet="theorie-oefen-dit-onderwerp"
+          label="Oefen dit onderwerp"
+        />
         <DeelKnop />
-        <ProbeerKnop oefenen={MACHTSREGEL_OEFENEN} />
         <Link
           href={MACHTSREGEL_OEFENEN}
           className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
