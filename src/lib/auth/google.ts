@@ -1,3 +1,4 @@
+import { leesHerkomst } from '../herkomst'
 import { veiligOefenpad } from './oefenpad'
 
 /**
@@ -67,12 +68,23 @@ export function isNieuweAanmelding(
   return verschil > -NIEUW_BINNEN_MS && verschil < NIEUW_BINNEN_MS
 }
 
-/** Waar Google de leerling na het inloggen naartoe stuurt. */
-export function googleCallbackAdres(origin: string, ruwPad: unknown): string {
+/**
+ * Waar Google de leerling na het inloggen naartoe stuurt. Een meegegeven
+ * herkomst (`?van=`) komt terug in `request.url` van `/auth/callback`: Google
+ * zelf geeft niets van ons door, maar Supabase bewaart deze adresregel wel en
+ * stuurt hem zo terug na het inwisselen van de code.
+ */
+export function googleCallbackAdres(
+  origin: string,
+  ruwPad: unknown,
+  ruweHerkomst?: unknown,
+): string {
   const url = new URL('/auth/callback', origin.replace(/\/+$/, ''))
   url.searchParams.set('via', 'google')
   const pad = veiligOefenpad(ruwPad)
   url.searchParams.set('next', pad ?? '/dashboard')
+  const herkomst = leesHerkomst(ruweHerkomst)
+  if (herkomst) url.searchParams.set('van', herkomst)
   return url.toString()
 }
 

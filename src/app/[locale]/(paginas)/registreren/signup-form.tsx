@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useActionState, useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -9,6 +9,7 @@ import { ErrorBanner } from '@/components/ui'
 import { Link } from '@/i18n/navigation'
 import { hrefMetOefenpad } from '@/lib/auth/oefenpad'
 import type { Herkomst } from '@/lib/herkomst'
+import { haalOnthoudenHerkomst } from '@/lib/herkomst-sessie'
 import { meldMeting } from '@/lib/meten/melden'
 
 import { signupAction, type SignupState } from './actions'
@@ -17,6 +18,16 @@ import { resendConfirmationAction } from '../inloggen/actions'
 const initialState: SignupState = { errorKey: null, noticeKey: null }
 
 const COOLDOWN_SECONDS = 60
+
+/** Niemand verandert de bewaarde herkomst tijdens dit bezoek, dus er valt niets te volgen. */
+function nietVolgen(): () => void {
+  return () => {}
+}
+
+/** Op de server is er geen `sessionStorage` om in te kijken. */
+function geenOnthoudenHerkomst(): Herkomst | null {
+  return null
+}
 
 export function SignupForm({
   herkomst = null,
@@ -29,6 +40,10 @@ export function SignupForm({
 }) {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
+  // Stond `?van=` niet op déze pagina, dan valt deze terug op wat een
+  // eerdere pagina van dit bezoek heeft opgeslagen (`?van=` of `utm_source`).
+  const onthouden = useSyncExternalStore(nietVolgen, haalOnthoudenHerkomst, geenOnthoudenHerkomst)
+  const herkomstWaarde = herkomst ?? onthouden
   const [showPassword, setShowPassword] = useState(false)
   const [resendPending, startResend] = useTransition()
   const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -64,8 +79,8 @@ export function SignupForm({
   useEffect(() => {
     if (!state.noticeKey || gemeld.current) return
     gemeld.current = true
-    meldMeting('registratie', herkomst ? `registratie-via-${herkomst}` : undefined)
-  }, [state.noticeKey, herkomst])
+    meldMeting('registratie', herkomstWaarde ? `registratie-via-${herkomstWaarde}` : undefined)
+  }, [state.noticeKey, herkomstWaarde])
 
   function handleResend() {
     if (!state.email) return
@@ -117,7 +132,11 @@ export function SignupForm({
         {googleAan ? (
           <div className="space-y-2">
             <p className="text-sm text-text-muted">{t('googlePrompt')}</p>
-            <GoogleKnop oefenpad={oefenpad} dataMeet="google-aanmelden-na-mail" />
+            <GoogleKnop
+              oefenpad={oefenpad}
+              herkomst={herkomstWaarde}
+              dataMeet="google-aanmelden-na-mail"
+            />
           </div>
         ) : null}
 
@@ -134,9 +153,11 @@ export function SignupForm({
 
   return (
     <div className="space-y-4">
-      {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
+      {googleAan ? <GoogleKnop oefenpad={oefenpad} herkomst={herkomstWaarde} /> : null}
       <form action={formAction} className="space-y-4">
-      {herkomst ? <input type="hidden" name="van" defaultValue={herkomst} /> : null}
+      {herkomstWaarde ? (
+        <input type="hidden" name="van" value={herkomstWaarde} readOnly />
+      ) : null}
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
         label={t('usernameLabel')}
