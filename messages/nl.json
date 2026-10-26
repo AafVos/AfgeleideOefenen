@@ -671,5 +671,10 @@
     "misluktH1": "Deze link werkt niet meer",
     "misluktBody": "Misschien is hij al gebruikt. Je kunt herinneringen ook aan- en uitzetten op je voortgangspagina.",
     "naarDashboard": "Naar je voortgang"
+  },
+  "Meten": {
+    "uitgezet": "Dit apparaat telt niet meer mee in de meting.",
+    "aangezet": "Dit apparaat telt weer mee in de meting.",
+    "sluiten": "Sluiten"
   }
 }
