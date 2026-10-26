@@ -6,7 +6,13 @@ import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
 import { StickyProbeerBalk } from '@/components/sticky-probeer-balk'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
-import { getVoorbeeld, getVoorbeelden, voorbeeldPad, voorbeeldTitel } from '@/content/voorbeelden'
+import {
+  getVoorbeeld,
+  getVoorbeelden,
+  voorbeeldOefenVraag,
+  voorbeeldPad,
+  voorbeeldTitel,
+} from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
 
@@ -49,21 +55,35 @@ export default async function VoorbeeldPage({ params }: PageProps) {
     .map((naam) => getVoorbeeld(naam))
     .filter((item) => item !== null)
 
+  const mainEntity = [
+    {
+      '@type': 'Question',
+      name: voorbeeld.kop,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: voorbeeld.antwoordTekst,
+      },
+    },
+    ...(voorbeeld.faqUitgebreid
+      ? [
+          {
+            '@type': 'Question',
+            name: voorbeeldOefenVraag(voorbeeld),
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: voorbeeld.omschrijving,
+            },
+          },
+        ]
+      : []),
+  ]
+
   const kaartje = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     '@id': `${adres}#antwoord`,
     url: adres,
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: voorbeeld.kop,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: voorbeeld.antwoordTekst,
-        },
-      },
-    ],
+    mainEntity,
   }
 
   return (
