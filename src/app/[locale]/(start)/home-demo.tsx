@@ -141,6 +141,9 @@ function DemoCard({
             // terecht, niet op een kind. Focus dan het antwoordveld.
             if (e.target === e.currentTarget) inputRef.current?.focus()
           }}
+          // data-meet staat ook in KLIKBAAR (src/lib/meten/meter.ts): zonder
+          // dit telde zo'n klik nog als dode_klik, ook al deed hij al iets.
+          data-meet="home-proefsom-formulier"
           className="space-y-3"
         >
           <label className="block">
