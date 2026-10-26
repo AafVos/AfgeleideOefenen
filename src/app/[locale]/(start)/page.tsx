@@ -129,10 +129,10 @@ export default async function HomePage() {
           <p className="mt-2 sm:mt-4">
             <a
               href="#proefsom"
-              data-meet="start-herfstvakantie"
+              data-meet="start-toetsweek-proefsom"
               className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
             >
-              {t('herfstvakantie')}
+              {t('toetsweekProefsom')}
             </a>
           </p>
 
