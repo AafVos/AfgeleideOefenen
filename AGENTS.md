@@ -199,13 +199,20 @@ Elke merge op `main` blijft meteen live. Er komt geen versienummer in
 als er nog geen datum-release is, staan alleen de pull requests van de
 afgelopen 24 uur erin, en de tag op de huidige `main` is daarna het beginpunt.
 
-## Elke dag om 16:00 UTC: de herinneringsmail
+## Elke dag om 16:00 UTC: de herinneringsmail en het onderhoud van de klikmeting
 
 De eerste geplande taak die niet op GitHub draait maar op de Worker zelf
 (AFG-487). `triggers.crons` in `wrangler.jsonc` laat Cloudflare elke dag de
 `scheduled`-ingang aanroepen; die staat in de ingang-sjabloon bovenin
-`scripts/statische-cache.mjs` en geeft het door aan `/api/cron/herinneringen`,
-met het geheim `WEBHOOK_SECRET` in de kop. Er komt dus geen nieuw geheim bij.
+`scripts/statische-cache.mjs` en geeft het door aan `/api/cron/herinneringen`
+en `/api/cron/meting-onderhoud`, met het geheim `WEBHOOK_SECRET` in de kop.
+Er komt dus geen nieuw geheim bij. Faalt één van de twee routes, dan draait
+de andere gewoon door.
+
+`/api/cron/meting-onderhoud` roept `site_meting_onderhoud()` aan (AFG-667):
+die werkt `site_dagtotalen` bij tot gisteren en ruimt rijen ouder dan 90 dagen
+op. Eerder liftte dat mee op 1% van de verzoeken aan `/api/meet`; bij weinig
+verkeer (een schoolvakantie) kon dat dagenlang niet gebeuren.
 
 * **Opt-in.** `profiles.herinnering_mail` staat standaard uit. De leerling zet
   hem zelf aan op het dashboard, en krijgt daarbij eerst de vraag of hij 16 of
