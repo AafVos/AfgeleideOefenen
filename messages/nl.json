@@ -20,13 +20,15 @@
     "privacy": "Privacyverklaring",
     "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl"
   },
+  "YoutubeWelkom": {
+    "tekst": "Kom je van YouTube? Oefen de som zelf — meteen nakijken.",
+    "cta": "Probeer de som"
+  },
   "Home": {
     "eyebrow": "Wiskunde B · VWO 4 / 5 / 6",
     "h1Start": "Afgeleide oefenen voor",
     "h1Accent": "wiskunde B",
     "lead": "Oefenen met differentiëren op het VWO. Je kijkt elk antwoord direct na en bij een fout zie je stap voor stap waar het misging.",
-    "youtubeWelkom": "Kom je van YouTube? Oefen de som zelf — meteen nakijken.",
-    "youtubeWelkomCta": "Probeer de som",
     "zoekzin": "Zoek je differentiëren oefenen? Kies hieronder een regel.",
     "toetsweek": "Toetsweek? Oefen de regel die je moet kennen.",
     "herfstvakantie": "Herfstvakantie? Maak hieronder drie sommen zonder account.",

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { DeelKnop } from '@/components/deel-knop'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { ProbeerKnop } from '@/components/probeer-knop'
@@ -13,6 +14,8 @@ import {
   SOMREGEL_VOORBEELDEN,
 } from '@/content/theory/somregel'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -36,6 +39,14 @@ export default function SomregelPage() {
     <div className="mx-auto max-w-3xl px-4 py-12">
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{SOMREGEL_TITEL}</h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(SOMREGEL_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Je gebruikt de somregel als er een plus of een min tussen de delen staat. Je
         differentieert elke term apart en telt die uitkomsten daarna weer op.
