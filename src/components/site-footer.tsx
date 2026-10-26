@@ -3,12 +3,13 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
+import { cn } from '@/components/ui'
 
-export async function SiteFooter() {
+export async function SiteFooter({ className }: { className?: string } = {}) {
   const t = await getTranslations('Footer')
 
   return (
-    <footer className="shrink-0 border-t border-border bg-surface">
+    <footer className={cn('shrink-0 border-t border-border bg-surface', className)}>
       {/* Rechts blijft leeg: daar staat het hulp-poppetje overheen. */}
       <div className="flex flex-col gap-1 px-4 py-2 pr-20 sm:flex-row sm:items-center sm:justify-between">
         <Link
