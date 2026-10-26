@@ -292,6 +292,8 @@ test('omhoog scrollen schuift de kop meteen, en het poppetje dekt de link niet @
 test('de voettekst op de oefenpagina is niet vast en komt pas in beeld na scrollen @telefoon', async ({
   page,
 }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 640, 'Dit gaat over telefoonformaat.')
+
   await page.goto('/nl/oefenen')
   await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
   await page.waitForTimeout(400)
