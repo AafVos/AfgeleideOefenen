@@ -16,12 +16,6 @@ vi.mock('next/headers', () => ({
   cookies: async () => ({ getAll }),
 }))
 
-vi.mock('next/server', () => ({
-  after: (taak: () => unknown) => {
-    void taak()
-  },
-}))
-
 const { POST } = await import('./route')
 
 const SESSIE = '7a1e0c4e-2b6f-4e2a-9d1e-3f8a5c6b7d20'
@@ -67,8 +61,6 @@ beforeEach(() => {
   getClaims.mockReset()
   getClaims.mockResolvedValue({ data: { claims: { sub: GEBRUIKER } } })
   vi.stubEnv('MEET_SCHUILNAAM_GEHEIM', 'proef-geheim-niet-echt')
-  // Standaard geen onderhoud, anders roept de route de database twee keer aan.
-  vi.spyOn(Math, 'random').mockReturnValue(0.9)
 })
 
 describe('POST /api/meet', () => {
@@ -171,14 +163,6 @@ describe('POST /api/meet', () => {
 
     expect((await POST(zending(veel))).status).toBe(204)
     expect(rpc).not.toHaveBeenCalled()
-  })
-
-  it('doet het dagelijkse onderhoud af en toe', async () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0)
-
-    await POST(zending([klik()]))
-
-    expect(rpc).toHaveBeenCalledWith('site_meting_onderhoud')
   })
 
   it('laat een leerling nooit merken dat de database stuk is', async () => {

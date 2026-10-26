@@ -131,21 +131,33 @@ export default {
   },
 
   // De nachtelijke taken. Cloudflare roept dit aan volgens triggers.crons in
-  // wrangler.jsonc. Het echte werk staat in een gewone route van de site, dus
-  // hier zetten we alleen een verzoek in elkaar en geven dat aan de Next-bundel
-  // — zonder het netwerk op te gaan.
+  // wrangler.jsonc. Het echte werk staat in gewone routes van de site, dus
+  // hier zetten we alleen de verzoeken in elkaar en geven ze aan de
+  // Next-bundel — zonder het netwerk op te gaan. Eén route die mislukt mag de
+  // andere niet tegenhouden.
   async scheduled(event, env, ctx) {
     const basis = env.NEXT_PUBLIC_SITE_URL || "https://www.afgeleideoefenen.nl";
-    const verzoek = new Request(basis + "/api/cron/herinneringen", {
-      method: "POST",
-      headers: { "x-webhook-secret": env.WEBHOOK_SECRET || "" },
-    });
-
     const next = await import("./worker-next.js");
-    const antwoord = await next.default.fetch(verzoek, env, ctx);
-    // Alleen de status in de log: wie er mail kreeg hoort daar niet in.
-    console.log("[herinneringen] status " + antwoord.status);
-    await antwoord.body?.cancel();
+
+    async function roepAan(pad) {
+      const verzoek = new Request(basis + pad, {
+        method: "POST",
+        headers: { "x-webhook-secret": env.WEBHOOK_SECRET || "" },
+      });
+      try {
+        const antwoord = await next.default.fetch(verzoek, env, ctx);
+        // Alleen de status in de log: gegevens van leerlingen horen daar niet in.
+        console.log("[" + pad + "] status " + antwoord.status);
+        await antwoord.body?.cancel();
+      } catch (fout) {
+        console.error("[" + pad + "] " + fout);
+      }
+    }
+
+    // AFG-667: de dagtotalen van de klikmeting moeten hier draaien, niet meer
+    // afhankelijk van verkeer op /api/meet.
+    await roepAan("/api/cron/meting-onderhoud");
+    await roepAan("/api/cron/herinneringen");
   },
 };
 `

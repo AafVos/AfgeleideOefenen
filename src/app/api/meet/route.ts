@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers'
-import { after } from 'next/server'
 
 import { SITE_CONFIG } from '@/config/site'
 import { geldigeZending, isBot } from '@/lib/meten/gebeurtenis'
@@ -24,9 +23,6 @@ import { heeftSessiekoekje } from '@/lib/supabase/sessie-koekje'
 
 /** Hoe groot een verzending hoogstens mag zijn. Ruim boven 40 gebeurtenissen. */
 const MAX_BYTES = 16_000
-
-/** Eén op de honderd verzendingen kijkt of het dagelijks onderhoud nog moet. */
-const ONDERHOUD_KANS = 0.01
 
 /**
  * Wie er klikt, als schuilnaam. Zonder sessiekoekje kijken we Supabase niet
@@ -84,17 +80,6 @@ export async function POST(req: Request) {
   if (error) {
     // Een meting die niet aankomt mag nooit een leerling in de weg zitten.
     console.error('[meet]', error.message)
-  }
-
-  // Deze database heeft geen pg_cron, dus liften de dagtotalen en het
-  // opruimen na 90 dagen mee op het verkeer. De functie zelf doet hoogstens
-  // één keer per dag iets.
-  if (Math.random() < ONDERHOUD_KANS) {
-    after(async () => {
-      const { error: onderhoudsfout } =
-        await createServiceRoleClient().rpc('site_meting_onderhoud')
-      if (onderhoudsfout) console.error('[meet onderhoud]', onderhoudsfout.message)
-    })
   }
 
   return new Response(null, { status: 204 })

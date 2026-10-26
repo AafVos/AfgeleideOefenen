@@ -213,8 +213,9 @@ Cloudflare Web Analytics om: die telt alleen paginabezoeken.
   `NEXT_PUBLIC_MEET_LOKAAL=1` in `.env.local`.
 * **Opruimen:** ruwe rijen blijven 90 dagen staan. `site_meting_onderhoud()`
   schrijft de dagtotalen weg en gooit de rest weg, hoogstens één keer per dag.
-  Deze database heeft geen pg_cron, dus roept `/api/meet` die functie af en toe
-  mee aan.
+  Deze database heeft geen pg_cron, dus roept de dagelijkse Worker-cron
+  (`/api/cron/meting-onderhoud`, zie `triggers.crons` in `wrangler.jsonc`)
+  die functie aan (AFG-667).
 * **Kijken wat eruit komt:** de views `meet_bezoekers_per_dag`,
   `meet_apparaat_per_dag`, `meet_trechter` (startpagina → proefsom →
   registreren → eerste som; de proefsom telt zowel op `/proberen` als op de
