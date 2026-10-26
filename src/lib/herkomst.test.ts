@@ -9,6 +9,7 @@ describe('leesHerkomst', () => {
     expect(leesHerkomst('klas')).toBe('klas')
     expect(leesHerkomst('forum')).toBe('forum')
     expect(leesHerkomst('proberen')).toBe('proberen')
+    expect(leesHerkomst('proefsom')).toBe('proefsom')
   })
 
   it('neemt hoofdletters en spaties weg', () => {

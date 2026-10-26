@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation'
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
+import { googleLoginAan } from '@/lib/auth/google'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 
 import { ExamenStart } from './examen-start'
@@ -161,7 +162,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <HomeDemo />
+        <HomeDemo googleAan={googleLoginAan()} />
 
         <section className="mt-10 text-center">
           <p className="text-sm text-text-muted">{t('tagline')}</p>
