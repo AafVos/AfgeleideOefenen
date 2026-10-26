@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   anoniemeInloggenPagina,
+  anoniemeRegistrerenPagina,
   anoniemeStartpagina,
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
@@ -176,6 +177,27 @@ describe('anoniemeInloggenPagina', () => {
     expect(
       anoniemeInloggenPagina(
         verzoek('/nl/inloggen', {
+          headers: { cookie: 'sb-project-auth-token=geheim' },
+        }),
+      ),
+    ).toBe(false)
+  })
+})
+
+describe('anoniemeRegistrerenPagina', () => {
+  it('geldt voor een kaal bezoek aan de registratiepagina', () => {
+    expect(anoniemeRegistrerenPagina(verzoek('/nl/registreren'))).toBe(true)
+    expect(anoniemeRegistrerenPagina(verzoek('/nl/registreren/'))).toBe(true)
+  })
+
+  it('geldt niet met een herkomstcode, een terugkeerpad of een sessiekoekje', () => {
+    expect(anoniemeRegistrerenPagina(verzoek('/nl/registreren?van=youtube'))).toBe(false)
+    expect(
+      anoniemeRegistrerenPagina(verzoek('/nl/registreren?naar=%2Foefenen')),
+    ).toBe(false)
+    expect(
+      anoniemeRegistrerenPagina(
+        verzoek('/nl/registreren', {
           headers: { cookie: 'sb-project-auth-token=geheim' },
         }),
       ),
