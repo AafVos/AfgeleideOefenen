@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from 'react'
+import { useActionState, useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useTranslations } from 'next-intl'
 
@@ -19,16 +19,6 @@ const initialState: SignupState = { errorKey: null, noticeKey: null }
 
 const COOLDOWN_SECONDS = 60
 
-/** Niemand verandert de bewaarde herkomst tijdens dit bezoek, dus er valt niets te volgen. */
-function nietVolgen(): () => void {
-  return () => {}
-}
-
-/** Op de server is er geen `sessionStorage` om in te kijken. */
-function geenOnthoudenHerkomst(): Herkomst | null {
-  return null
-}
-
 export function SignupForm({
   herkomst = null,
   oefenpad = null,
@@ -42,8 +32,9 @@ export function SignupForm({
   const t = useTranslations('Register')
   // Stond `?van=` niet op déze pagina, dan valt deze terug op wat een
   // eerdere pagina van dit bezoek heeft opgeslagen (`?van=` of `utm_source`).
-  const onthouden = useSyncExternalStore(nietVolgen, haalOnthoudenHerkomst, geenOnthoudenHerkomst)
-  const herkomstWaarde = herkomst ?? onthouden
+  // Eén keer lezen, bij hydratatie (lazy initializer): een latere her-render
+  // die deze waarde nog zou veranderen is hier niet nodig.
+  const [herkomstWaarde] = useState<Herkomst | null>(() => herkomst ?? haalOnthoudenHerkomst())
   const [showPassword, setShowPassword] = useState(false)
   const [resendPending, startResend] = useTransition()
   const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -155,9 +146,7 @@ export function SignupForm({
     <div className="space-y-4">
       {googleAan ? <GoogleKnop oefenpad={oefenpad} herkomst={herkomstWaarde} /> : null}
       <form action={formAction} className="space-y-4" noValidate>
-      {herkomstWaarde ? (
-        <input type="hidden" name="van" value={herkomstWaarde} readOnly />
-      ) : null}
+      {herkomstWaarde ? <input type="hidden" name="van" defaultValue={herkomstWaarde} /> : null}
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
         label={t('usernameLabel')}
