@@ -208,6 +208,7 @@
     "resendExpiredButton": "Stuur bevestigingsmail opnieuw",
     "resendExpiredSuccess": "Mail verstuurd. Check je inbox (en je spammap). Je kunt daarna inloggen.",
     "errorMissingFields": "Vul je e-mailadres en wachtwoord in.",
+    "errorMissingEmail": "Vul je e-mailadres in.",
     "errorInvalidCredentials": "Onjuiste combinatie van e-mail en wachtwoord.",
     "errorUnconfirmed": "Je hebt je e-mailadres nog niet bevestigd. Check je inbox.",
     "errorGeneric": "Er ging iets mis bij het inloggen. Probeer het opnieuw.",

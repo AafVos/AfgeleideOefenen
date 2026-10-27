@@ -135,7 +135,7 @@ export function SignupForm({
   return (
     <div className="space-y-4">
       {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className="space-y-4" noValidate>
       {herkomst ? <input type="hidden" name="van" defaultValue={herkomst} /> : null}
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field

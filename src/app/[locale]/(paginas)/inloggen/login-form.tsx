@@ -40,7 +40,7 @@ export function LoginForm({
   return (
     <div className="space-y-4">
       {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className="space-y-4" noValidate>
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
         label={t('emailLabel')}

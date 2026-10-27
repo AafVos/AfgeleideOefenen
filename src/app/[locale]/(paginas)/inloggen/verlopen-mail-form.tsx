@@ -9,10 +9,13 @@ export function VerlopenMailForm() {
   const t = useTranslations('Login')
   const [email, setEmail] = useState('')
   const [resendPending, startResend] = useTransition()
-  const [resendResult, setResendResult] = useState<'nog-niet' | 'gelukt' | 'mislukt'>('nog-niet')
+  const [resendResult, setResendResult] = useState<'nog-niet' | 'gelukt' | 'mislukt' | 'leeg'>('nog-niet')
 
   function handleResend() {
-    if (!email.trim()) return
+    if (!email.trim()) {
+      setResendResult('leeg')
+      return
+    }
     startResend(async () => {
       const { ok } = await resendConfirmationAction(email.trim())
       setResendResult(ok ? 'gelukt' : 'mislukt')
@@ -26,6 +29,7 @@ export function VerlopenMailForm() {
         handleResend()
       }}
       className="space-y-3"
+      noValidate
     >
       {resendResult === 'gelukt' ? (
         <p role="status" className="rounded-md border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent">
@@ -36,6 +40,11 @@ export function VerlopenMailForm() {
           {resendResult === 'mislukt' && (
             <p role="alert" className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2">
               {t('resendError')}
+            </p>
+          )}
+          {resendResult === 'leeg' && (
+            <p role="alert" className="rounded-md border border-accent-2/30 bg-accent-2-light px-3 py-2 text-sm text-accent-2">
+              {t('errorMissingEmail')}
             </p>
           )}
           <label className="block">
