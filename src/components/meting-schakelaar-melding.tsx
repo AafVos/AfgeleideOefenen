@@ -44,17 +44,19 @@ function Melding({ actie, onSluiten }: { actie: MetenActie; onSluiten: () => voi
   }, [onSluiten])
 
   return (
+    // top-4, niet bottom-4: rechtsonder is de vaste plek van het poppetje
+    // (zie welcome-tour.tsx en "Het poppetje" in docs/ontwerpregels.md).
     <div
       role="status"
-      className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text shadow-lg sm:inset-x-auto sm:right-4"
+      className="fixed inset-x-4 top-4 z-50 mx-auto max-w-sm rounded-lg border border-accent/30 bg-accent-light px-4 py-2 text-sm text-accent sm:inset-x-auto sm:right-4"
     >
-      <div className="flex items-start gap-3">
-        <p className="flex-1">{actie === 'uit' ? t('uitgezet') : t('aangezet')}</p>
+      <div className="flex items-center gap-2">
+        <p className="flex-1 py-1">{actie === 'uit' ? t('uitgezet') : t('aangezet')}</p>
         <button
           type="button"
           onClick={onSluiten}
           aria-label={t('sluiten')}
-          className="-m-2 flex size-8 shrink-0 items-center justify-center rounded-md text-lg leading-none text-text-muted hover:bg-surface-2 hover:text-text"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md text-lg leading-none text-accent hover:bg-accent/10"
         >
           ×
         </button>
