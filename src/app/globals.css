@@ -126,3 +126,12 @@ body {
   clip-path: inset(50%);
   contain: paint;
 }
+
+/* De oefenpagina heeft haar eigen scrollgebied (`[data-oefen-volledig]` in
+   oefenen-client.tsx) en toont de voettekst daar zelf aan het eind van de
+   lijst sommen. Zonder deze regel zou de voettekst van `(paginas)/layout.tsx`
+   daar nog een keer bovenop staan, als vaste balk die juist de ruimte
+   wegneemt die AFG-595 aan de opgave wilde teruggeven. */
+main:has([data-oefen-volledig]) .site-footer-mobiel {
+  display: none;
+}

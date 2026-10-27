@@ -284,8 +284,40 @@ test('omhoog scrollen schuift de kop meteen, en het poppetje dekt de link niet @
   const headerNa = await header.boundingBox()
   expect(terug && headerNa && terug.y >= headerNa.y + headerNa.height - 1).toBeTruthy()
   expect(await page.evaluate(() => window.scrollY)).toBe(0)
+})
+
+// AFG-595: op de telefoon neemt de voettekst geen vaste ruimte meer in op de
+// oefenpagina. Hij scrolt mee binnen hetzelfde scrollgebied als de sommen
+// (`[data-oefen-scroll]`), zodat de opgave de volle hoogte krijgt.
+test('de voettekst op de oefenpagina is niet vast en komt pas in beeld na scrollen @telefoon', async ({
+  page,
+}) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 640, 'Dit gaat over telefoonformaat.')
+
+  await page.goto('/nl/oefenen')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+  await page.waitForTimeout(400)
+
+  const scroller = page.locator('[data-oefen-scroll]')
+  // Op deze pagina staat ook nog een verborgen voettekst uit `(paginas)/layout.tsx`
+  // (zie `main:has([data-oefen-volledig])` in `globals.css`) — scope daarom op
+  // het scrollgebied, anders levert `page.locator('footer')` twee vakken op.
+  const footer = scroller.locator('footer')
+  const footerLink = scroller.getByRole('link', { name: /integraaloefenen\.nl/ })
+
+  await scroller.evaluate((el) => {
+    el.scrollTop = 0
+  })
+  await expect(footerLink).not.toBeInViewport()
+  const positie = await footer.evaluate((el) => getComputedStyle(el).position)
+  expect(['fixed', 'sticky']).not.toContain(positie)
+
+  await scroller.evaluate((el) => {
+    el.scrollTop = el.scrollHeight
+  })
+  await expect(footerLink).toBeInViewport()
 
   const poppetje = await page.getByRole('button', { name: 'Vraag het Aaf' }).boundingBox()
-  const link = await page.getByRole('link', { name: /integraaloefenen\.nl/ }).boundingBox()
+  const link = await footerLink.boundingBox()
   expect(poppetje && link && !vakkenOverlappen(poppetje, link)).toBeTruthy()
 })
