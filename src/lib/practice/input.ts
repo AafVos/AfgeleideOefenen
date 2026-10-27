@@ -25,19 +25,30 @@ export function toLatexPreview(raw: string): string {
   s = s.replace(/√\(([^()]*)\)/g, '\\sqrt{$1}')
   s = s.replace(/√([A-Za-z0-9]+)/g, '\\sqrt{$1}')
 
+  // Ontbrekend grondtal: de macht-knop zet "^()" neer vóórdat er een
+  // grondtal getypt is. Staat er niets (geldigs) direct vóór de "^" —
+  // geen cijfer, letter of sluithaakje — zet dan een placeholder-vakje
+  // als grondtal neer. Anders verdwijnt die ontbrekende "^(" stilletjes
+  // en lijkt bv. "^(4)" gewoon op "4".
+  s = s.replace(/(?<![A-Za-z0-9)\]}])\^\(\s*([^()]+?)\s*\)/g, '\\square^{$1}')
   // a^(...) — pakt groepen tussen haakjes, ook met negatief teken en /
   s = s.replace(/\^\(\s*([^()]+?)\s*\)/g, '^{$1}')
   // a^token — losse exponent zonder haakjes (1 of meer cijfers/letters of -
-  //  gevolgd door cijfers/letters)
+  //  gevolgd door cijfers/letters), met dezelfde controle op het grondtal
+  s = s.replace(/(?<![A-Za-z0-9)\]}])\^(-?[A-Za-z0-9]+)/g, '\\square^{$1}')
   s = s.replace(/\^(-?[A-Za-z0-9]+)/g, '^{$1}')
 
   // Onaffe machten: laat een placeholder-vakje zien zodat de preview niet
-  // breekt terwijl je nog typt.
-  //   x^()      → x^{□}
-  //   x^(-1     → x^{-1□}   (haakje nog niet gesloten)
-  //   x^        → x^{□}
+  // breekt terwijl je nog typt. Ontbreekt ook hier het grondtal, dan komt
+  // er aan beide kanten van de "^" een vakje.
+  //   x^()      → x^{□}       ^()      → □^{□}
+  //   x^(-1     → x^{-1□}     ^(-1     → □^{-1□}   (haakje nog niet gesloten)
+  //   x^        → x^{□}       ^        → □^{□}
+  s = s.replace(/(?<![A-Za-z0-9)\]}])\^\(\s*\)/g, '\\square^{\\square}')
   s = s.replace(/\^\(\s*\)/g, '^{\\square}')
+  s = s.replace(/(?<![A-Za-z0-9)\]}])\^\(\s*([^()]*)$/g, '\\square^{$1\\square}')
   s = s.replace(/\^\(\s*([^()]*)$/g, '^{$1\\square}')
+  s = s.replace(/(?<![A-Za-z0-9)\]}])\^(?=$|[^{])/g, '\\square^{\\square}')
   s = s.replace(/\^(?=$|[^{])/g, '^{\\square}')
 
   // (num)/(den) → \dfrac{...}{...} — lege groepen krijgen een placeholder-

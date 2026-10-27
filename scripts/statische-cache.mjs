@@ -27,6 +27,7 @@ const ingang = `// ${merkteken}
 // is. Iemand die is ingelogd gaat wel door die bundel, zodat de kop klopt.
 import {
   anoniemeInloggenPagina,
+  anoniemeRegistrerenPagina,
   anoniemeStartpagina,
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
@@ -100,6 +101,19 @@ export default {
         const antwoord = uitBestand(bestand);
         antwoord.headers.set("cache-control", "private, no-store");
         antwoord.headers.set("x-inloggen", "bestand");
+        return antwoord;
+      }
+      await bestand.body?.cancel();
+    }
+
+    if (env.ASSETS && anoniemeRegistrerenPagina(request)) {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/registreren/index.html",
+      );
+      if (bestand.ok) {
+        const antwoord = uitBestand(bestand);
+        antwoord.headers.set("cache-control", "private, no-store");
+        antwoord.headers.set("x-registreren", "bestand");
         return antwoord;
       }
       await bestand.body?.cancel();
@@ -259,6 +273,15 @@ function inloggenPaginas() {
     throw new Error('Geen titel gevonden voor de inlogpagina.')
   }
   return [{ pad: '/nl/inloggen', bestand: 'index.html', titel: titel[1] }]
+}
+
+function registrerenPaginas() {
+  const tekst = fs.readFileSync(MESSAGES_BESTAND, 'utf8')
+  const titel = tekst.match(/"Register":\s*{\s*"title":\s*"([^"]+)"/)
+  if (!titel) {
+    throw new Error('Geen titel gevonden voor de registratiepagina.')
+  }
+  return [{ pad: '/nl/registreren', bestand: 'index.html', titel: titel[1] }]
 }
 
 function voorbeeldPaginas() {
@@ -445,6 +468,14 @@ async function schrijfStatischePaginas() {
     // dus ook hier geen openbaar bestand op het echte pad (AFG-637).
     await schrijfStatischeMap(poort, 'inloggen', inloggenPaginas(), {
       controleerAnoniem: (html) => html.includes('name="email"'),
+      sessieHerkenningScript: naarDashboardScript,
+      openbaarZetten: false,
+    })
+    // De registratiepagina linkt wel naar /nl/inloggen (de standaard-
+    // bevestiging klopt dus), maar staat net als /nl/inloggen in
+    // run_worker_first (`?van=`, `?naar=`), dus ook hier geen openbaar
+    // bestand op het echte pad (AFG-686, zie AFG-637/AFG-632 hierboven).
+    await schrijfStatischeMap(poort, 'registreren', registrerenPaginas(), {
       sessieHerkenningScript: naarDashboardScript,
       openbaarZetten: false,
     })

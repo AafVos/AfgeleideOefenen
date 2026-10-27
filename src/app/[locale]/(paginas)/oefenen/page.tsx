@@ -25,6 +25,7 @@ import { canoniek, deelkaart, nietIndexeren } from '@/lib/seo'
 import { getChapters } from '@/lib/supabase/request-cache'
 import { requireUser } from '@/lib/supabase/require-user'
 import { createClient } from '@/lib/supabase/server'
+import { SiteFooter } from '@/components/site-footer'
 
 import { OefenenClient } from './oefenen-client'
 
@@ -248,6 +249,7 @@ async function BlokPagina({ searchParams }: PageProps) {
       allTiles={allTiles}
       question={question}
       startBij={startBij}
+      voettekst={<SiteFooter className="sm:hidden" />}
       labels={{
         chapterLabel: t('chapterLabel'),
         h1: t('h1'),

@@ -370,12 +370,8 @@ test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
     .evaluate((veld: HTMLInputElement) => veld.validity.tooShort)
   expect(teKort).toBe(true)
 
-  // En als de browser die controle niet doet (een oude telefoon, een
-  // uitgezette instelling), dan vangt de server het alsnog op — in het
-  // Nederlands.
-  await page.locator('form').first().evaluate((form: HTMLFormElement) => {
-    form.noValidate = true
-  })
+  // Het formulier zet native validatie uit (noValidate, AFG-675); de server
+  // vangt een te kort wachtwoord dus zelf op, in het Nederlands.
   await page.getByRole('button', { name: 'Account aanmaken' }).click()
   await expect(
     page.getByText('Je wachtwoord moet minstens 8 tekens lang zijn.'),
@@ -384,6 +380,29 @@ test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   // Er is dus geen account aangemaakt en er is geen mail de deur uit.
   const { data } = await testDatabase().auth.admin.listUsers({ perPage: 100 })
   expect(data.users.map((u) => u.email)).not.toContain(email)
+})
+
+test('leeg registratieformulier toont een Nederlandse melding, geen Engelse systeemballon (AFG-675)', async ({
+  page,
+}) => {
+  await page.goto('/nl/registreren')
+  await page.getByRole('button', { name: 'Account aanmaken' }).click()
+
+  // Zonder `noValidate` op het formulier had de browser hier zelf een
+  // Engelse foutballon getoond ("Please fill out this field") en was de
+  // server-actie nooit aangeroepen — dan zou deze melding niet verschijnen.
+  await expect(page).toHaveURL(/\/nl\/registreren/)
+  await expect(foutmelding(page)).toHaveText('Vul een e-mailadres en wachtwoord in.')
+})
+
+test('leeg inlogformulier toont een Nederlandse melding, geen Engelse systeemballon (AFG-675)', async ({
+  page,
+}) => {
+  await page.goto('/nl/inloggen')
+  await page.getByRole('button', { name: 'Inloggen' }).click()
+
+  await expect(page).toHaveURL(/\/nl\/inloggen/)
+  await expect(foutmelding(page)).toHaveText('Vul je e-mailadres en wachtwoord in.')
 })
 
 test('niet-overeenkomende wachtwoorden wissen niet het e-mailadres en de gebruikersnaam (AFG-553)', async ({

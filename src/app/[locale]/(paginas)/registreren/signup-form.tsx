@@ -154,7 +154,7 @@ export function SignupForm({
   return (
     <div className="space-y-4">
       {googleAan ? <GoogleKnop oefenpad={oefenpad} herkomst={herkomstWaarde} /> : null}
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className="space-y-4" noValidate>
       {herkomstWaarde ? (
         <input type="hidden" name="van" value={herkomstWaarde} readOnly />
       ) : null}

@@ -847,6 +847,8 @@ type BlokProps = {
   /** Anker als het adres leeg is en de leerling al geoefend heeft. */
   startBij: string | null
   labels: BlokLabels
+  /** Op de telefoon scrolt hij mee onderaan dit scrollgebied — zie AFG-595. */
+  voettekst: React.ReactNode
 }
 
 /**
@@ -1051,6 +1053,7 @@ function BlokWeergave({
   question,
   startBij,
   labels,
+  voettekst,
 }: BlokProps) {
   const [adres, setAdres] = useState(adresVanServer)
   const [allTilesState, setAllTilesState] = useState(allTiles)
@@ -1686,6 +1689,7 @@ function BlokWeergave({
   return (
     <div
       ref={paginaRef}
+      data-oefen-volledig=""
       className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row"
     >
       <aside
@@ -1916,6 +1920,7 @@ function BlokWeergave({
             </Card>
           ) : null}
         </div>
+        {voettekst}
       </div>
 
       {boomOpen && (
