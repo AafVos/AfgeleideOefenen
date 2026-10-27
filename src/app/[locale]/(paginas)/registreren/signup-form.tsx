@@ -9,6 +9,7 @@ import { ErrorBanner } from '@/components/ui'
 import { Link } from '@/i18n/navigation'
 import { hrefMetOefenpad } from '@/lib/auth/oefenpad'
 import type { Herkomst } from '@/lib/herkomst'
+import { haalOnthoudenHerkomst } from '@/lib/herkomst-sessie'
 import { meldMeting } from '@/lib/meten/melden'
 
 import { signupAction, type SignupState } from './actions'
@@ -29,6 +30,11 @@ export function SignupForm({
 }) {
   const [state, formAction] = useActionState(signupAction, initialState)
   const t = useTranslations('Register')
+  // Stond `?van=` niet op déze pagina, dan valt deze terug op wat een
+  // eerdere pagina van dit bezoek heeft opgeslagen (`?van=` of `utm_source`).
+  // Eén keer lezen, bij hydratatie (lazy initializer): een latere her-render
+  // die deze waarde nog zou veranderen is hier niet nodig.
+  const [herkomstWaarde] = useState<Herkomst | null>(() => herkomst ?? haalOnthoudenHerkomst())
   const [showPassword, setShowPassword] = useState(false)
   const [resendPending, startResend] = useTransition()
   const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -64,8 +70,8 @@ export function SignupForm({
   useEffect(() => {
     if (!state.noticeKey || gemeld.current) return
     gemeld.current = true
-    meldMeting('registratie', herkomst ? `registratie-via-${herkomst}` : undefined)
-  }, [state.noticeKey, herkomst])
+    meldMeting('registratie', herkomstWaarde ? `registratie-via-${herkomstWaarde}` : undefined)
+  }, [state.noticeKey, herkomstWaarde])
 
   function handleResend() {
     if (!state.email) return
@@ -117,7 +123,11 @@ export function SignupForm({
         {googleAan ? (
           <div className="space-y-2">
             <p className="text-sm text-text-muted">{t('googlePrompt')}</p>
-            <GoogleKnop oefenpad={oefenpad} dataMeet="google-aanmelden-na-mail" />
+            <GoogleKnop
+              oefenpad={oefenpad}
+              herkomst={herkomstWaarde}
+              dataMeet="google-aanmelden-na-mail"
+            />
           </div>
         ) : null}
 
@@ -134,9 +144,9 @@ export function SignupForm({
 
   return (
     <div className="space-y-4">
-      {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
+      {googleAan ? <GoogleKnop oefenpad={oefenpad} herkomst={herkomstWaarde} /> : null}
       <form action={formAction} className="space-y-4" noValidate>
-      {herkomst ? <input type="hidden" name="van" defaultValue={herkomst} /> : null}
+      {herkomstWaarde ? <input type="hidden" name="van" defaultValue={herkomstWaarde} /> : null}
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
         label={t('usernameLabel')}
