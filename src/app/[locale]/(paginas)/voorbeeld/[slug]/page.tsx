@@ -179,17 +179,17 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </ul>
         </section>
 
-        <div className="mt-12 flex flex-col gap-3">
-          <DeelKnop />
+        <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <DeelKnop variant="tekstlink" />
           <Link
             href={voorbeeld.oefenen as '/oefenen'}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+            className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
           >
-            Oefen dit soort sommen
+            Oefenen met een account
           </Link>
           <Link
             href={voorbeeld.theoriePad as '/theorie'}
-            className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
+            className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
           >
             {voorbeeld.theorieNaam}
           </Link>

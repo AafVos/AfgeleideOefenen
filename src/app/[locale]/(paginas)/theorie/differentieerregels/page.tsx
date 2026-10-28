@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
-import { DeelKnop } from '@/components/deel-knop'
-import { ProbeerKnop } from '@/components/probeer-knop'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { Link } from '@/i18n/navigation'
 import {
   DIFFERENTIEERREGELS_OEFENEN,
@@ -83,26 +82,10 @@ export default function DifferentieerregelsPage() {
         </p>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <ProbeerKnop
-          oefenen={`${DIFFERENTIEERREGELS_OEFENEN}&van=theorie`}
-          dataMeet="theorie-oefen-dit-onderwerp"
-          label="Oefen dit onderwerp"
-        />
-        <DeelKnop />
-        <Link
-          href={DIFFERENTIEERREGELS_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/theorie"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle theorie
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={DIFFERENTIEERREGELS_OEFENEN}
+        extra={[{ href: '/theorie', label: 'Alle theorie' }]}
+      />
     </div>
   )
 }

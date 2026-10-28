@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
-import { DeelKnop } from '@/components/deel-knop'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
   QUOTIENTREGEL_FORMULE,
@@ -105,32 +103,13 @@ export default function QuotientregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <ProbeerKnop
-          oefenen={`${QUOTIENTREGEL_OEFENEN}&van=theorie`}
-          dataMeet="theorie-oefen-dit-onderwerp"
-          label="Oefen dit onderwerp"
-        />
-        <DeelKnop />
-        <Link
-          href={QUOTIENTREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/uitleg-videos/quotientregel"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Bekijk de video: De quotiëntregel
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={QUOTIENTREGEL_OEFENEN}
+        extra={[
+          { href: '/uitleg-videos/quotientregel', label: 'Bekijk de video: De quotiëntregel' },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }

@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
-import { DeelKnop } from '@/components/deel-knop'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 
 import {
   EXAMENTRAINING_EXAMENBLAD,
@@ -91,32 +89,13 @@ export default function ExamentrainingPage() {
         </p>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <ProbeerKnop
-          oefenen={`${EXAMENTRAINING_OEFENEN}&van=theorie`}
-          dataMeet="theorie-oefen-dit-onderwerp"
-          label="Oefen dit onderwerp"
-        />
-        <DeelKnop />
-        <Link
-          href={EXAMENTRAINING_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/registreren"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Account aanmaken
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={EXAMENTRAINING_OEFENEN}
+        extra={[
+          { href: '/registreren', label: 'Account aanmaken' },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }

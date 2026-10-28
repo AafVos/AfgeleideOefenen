@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
-import { DeelKnop } from '@/components/deel-knop'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
   MACHTSREGEL_FORMULE,
@@ -104,32 +102,13 @@ export default function MachtsregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <ProbeerKnop
-          oefenen={`${MACHTSREGEL_OEFENEN}&van=theorie`}
-          dataMeet="theorie-oefen-dit-onderwerp"
-          label="Oefen dit onderwerp"
-        />
-        <DeelKnop />
-        <Link
-          href={MACHTSREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/theorie#kaart-h6-machten_herschrijven"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Wortels en negatieve machten
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={MACHTSREGEL_OEFENEN}
+        extra={[
+          { href: '/theorie#kaart-h6-machten_herschrijven', label: 'Wortels en negatieve machten' },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }
