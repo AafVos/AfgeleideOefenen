@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
+import { BeheerderMeting } from '@/components/beheerder-meting'
 import { SITE_CONFIG } from '@/config/site'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
@@ -49,6 +50,8 @@ export default async function AdminLayout({
   // alleen een brede tabel.
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      {/* /admin heeft geen SiteHeader, die dit elders al zet. */}
+      <BeheerderMeting isAdmin />
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-accent">

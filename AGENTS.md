@@ -238,6 +238,30 @@ verkeer (een schoolvakantie) kon dat dagenlang niet gebeuren.
   In het antwoord staan alleen aantallen, nooit adressen. `e2e/herinnering.spec.ts`
   doet precies dit, met de neppe Resend ervoor.
 
+## Klikmeting: zelf uitzetten, en nooit de beheerder
+
+Wie niet mee wil tellen (AFG-685), zet dat per apparaat uit — de hele
+schakelaar staat in `src/lib/meten/schakelaar.ts`:
+
+* **Adres met `?meten=uit`** zet een vlag in `localStorage`
+  (`meet-uit`). Zolang die er staat, stuurt `meter.ts` niets voor dit
+  apparaat: `metenMag()` kijkt er bij elke meting naar. `?meten=aan` haalt de
+  vlag weer weg. Beide parameters verdwijnen meteen uit de adresregel
+  (`pikMetenSchakelaarUitAdres`), en komen dus ook niet in een gemeten pad
+  terecht.
+* **Eén keer een bevestiging** — "Dit apparaat telt niet meer mee in de
+  meting" of het omgekeerde bij `aan` — via `MetingSchakelaarMelding`
+  (`src/components/meting-schakelaar-melding.tsx`), die in de hoofdlay-out
+  naast `<Meten />` staat.
+* **De beheerder krijgt de vlag vanzelf.** Is `profiles.role` van de
+  ingelogde gebruiker `admin`, dan zet `BeheerderMeting`
+  (`src/components/beheerder-meting.tsx`) de vlag zelf, zodra `SiteHeader`
+  rendert of op `/admin`. Dat gebeurt op elk apparaat waar ze inlogt, telkens
+  opnieuw — een nieuwe browser of een gewiste `localStorage` telt dus weer
+  mee totdat ze daar opnieuw inlogt.
+* **Geen koekje, geen persoonsgegeven.** Alleen een vlag in `localStorage` van
+  dit ene apparaat; de server weet niet wie hem gezet heeft.
+
 ## De e2e-tests: een echte browser door de site
 
 In `e2e/` staan Playwright-tests die de weg van een leerling nalopen:
