@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { DeelKnop } from '@/components/deel-knop'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { ProbeerKnop } from '@/components/probeer-knop'
@@ -13,6 +14,8 @@ import {
   EXAMENTRAINING_TITEL,
 } from '@/content/theory/examentraining'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -38,6 +41,14 @@ export default function ExamentrainingPage() {
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">
         {EXAMENTRAINING_TITEL}
       </h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(EXAMENTRAINING_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Op het centraal examen wiskunde B vwo gebruik je de afgeleide in allerlei vragen.
         Hier oefen je die vragen. Het examen is {EXAMENTRAINING_MOMENT}.
