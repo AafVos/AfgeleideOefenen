@@ -105,8 +105,12 @@ export default function ProductregelPage() {
       </section>
 
       <div className="mt-12 flex flex-wrap items-start gap-4">
+        <ProbeerKnop
+          oefenen={`${PRODUCTREGEL_OEFENEN}&van=theorie`}
+          dataMeet="theorie-oefen-dit-onderwerp"
+          label="Oefen dit onderwerp"
+        />
         <DeelKnop />
-        <ProbeerKnop oefenen={PRODUCTREGEL_OEFENEN} />
         <Link
           href={PRODUCTREGEL_OEFENEN}
           className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"

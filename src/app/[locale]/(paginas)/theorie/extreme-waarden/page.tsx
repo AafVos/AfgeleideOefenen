@@ -105,8 +105,12 @@ export default function ExtremeWaardenPage() {
       </section>
 
       <div className="mt-12 flex flex-wrap items-start gap-4">
+        <ProbeerKnop
+          oefenen={`${EXTREME_WAARDEN_OEFENEN}&van=theorie`}
+          dataMeet="theorie-oefen-dit-onderwerp"
+          label="Oefen dit onderwerp"
+        />
         <DeelKnop />
-        <ProbeerKnop oefenen={EXTREME_WAARDEN_OEFENEN} />
         <Link
           href={EXTREME_WAARDEN_OEFENEN}
           className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
