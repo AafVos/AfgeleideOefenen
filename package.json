@@ -24,7 +24,7 @@
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.13",
     "@supabase/ssr": "^0.10.2",
-    "@supabase/supabase-js": "^2.104.0",
+    "@supabase/supabase-js": "^2.118.0",
     "katex": "^0.18.2",
     "next": "16.4.3",
     "next-intl": "^4.14.9",
