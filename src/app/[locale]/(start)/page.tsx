@@ -211,14 +211,16 @@ export default async function HomePage() {
           <ul className="mt-4 space-y-1">
             {(
               [
-                ['zoek5', '/voorbeeld/ln-x'],
-                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
-                ['zoek3', '/voorbeeld/sin-x'],
-                ['zoek1', '/voorbeeld/x-kwadraat'],
-                ['zoek2', '/voorbeeld/wortel-x'],
-                ['zoek4', '/voorbeeld/e-tot-de-x'],
-                ['zoek6', '/theorie/raaklijn'],
-                ['zoek7', '/theorie/extreme-waarden'],
+                ['zoek5', '/voorbeeld/ln-x?van=veelgezocht'],
+                ['zoek8', '/voorbeeld/een-gedeeld-door-x?van=veelgezocht'],
+                ['zoek3', '/voorbeeld/sin-x?van=veelgezocht'],
+                ['zoek9', '/voorbeeld/cos-x?van=veelgezocht'],
+                ['zoek1', '/voorbeeld/x-kwadraat?van=veelgezocht'],
+                ['zoek2', '/voorbeeld/wortel-x?van=veelgezocht'],
+                ['zoek4', '/voorbeeld/e-tot-de-x?van=veelgezocht'],
+                ['zoek10', '/voorbeeld/e-tot-de-2x?van=veelgezocht'],
+                ['zoek6', '/theorie/raaklijn?van=veelgezocht'],
+                ['zoek7', '/theorie/extreme-waarden?van=veelgezocht'],
               ] as const
             ).map(([labelKey, href]) => (
               <li key={href}>
