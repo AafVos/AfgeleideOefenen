@@ -93,6 +93,12 @@ jobs:
       - name: Rekenregels
         run: npm test
 
+      # Leest elke migratie met `_oefenstof_` in de bestandsnaam en
+      # controleert vraag, antwoord en stappen (zie AGENTS.md,
+      # "Oefenstof-migraties"). Geen database nodig, draait in seconden.
+      - name: Oefenstof-check
+        run: npm run test:oefenstof
+
   # Dezelfde site, gebouwd voor Cloudflare Workers. De live site is deze bouw.
   workers:
     name: Bouw voor Workers
@@ -219,12 +225,43 @@ jobs:
             exit 0
           fi
 
-          # Blijft er na de tekstbestanden iets over, dan moet de browser erdoor.
+          # Blijft er na de tekstbestanden iets over, dan moet de browser erdoor —
+          # tenzij dat "iets over" alleen oefenstof-migraties zijn (zie
+          # AGENTS.md, "Oefenstof-migraties"): puur nieuwe of gewijzigde
+          # vragen, geen schema. Daarvoor is dezelfde weg van een leerling
+          # niet anders.
           rest=$(printf '%s\n' "$gewijzigd" | grep -vE '(\.md$|^docs/|^content-bron/)' || true)
-          if [ -n "$rest" ]; then
-            echo "draaien=ja" >> "$GITHUB_OUTPUT"
-          else
+          if [ -z "$rest" ]; then
             echo "draaien=nee" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          alleen_oefenstof="ja"
+          while IFS= read -r bestand; do
+            [ -z "$bestand" ] && continue
+            if ! printf '%s' "$bestand" | grep -qE '^supabase/migrations/[0-9]+.*_oefenstof_.*\.sql$'; then
+              alleen_oefenstof="nee"
+              break
+            fi
+            # Verwijderd of hernoemd bestand: niets meer om op DDL te controleren.
+            if [ ! -f "$bestand" ]; then
+              alleen_oefenstof="nee"
+              break
+            fi
+            # Veiligheidsnet: ook met de juiste naam telt een migratie die
+            # schema aanraakt (nieuwe tabel, kolom, policy, functie buiten
+            # pg_temp) niet als oefenstof. Dan toch de browser erdoor.
+            if grep -qiE 'create[[:space:]]+table|alter[[:space:]]+table|drop[[:space:]]+table|drop[[:space:]]+column|create[[:space:]]+policy|create[[:space:]]+trigger|create[[:space:]]+extension|grant[[:space:]]|create[[:space:]]+(or[[:space:]]+replace[[:space:]]+)?function[[:space:]]+public\.' "$bestand"; then
+              alleen_oefenstof="nee"
+              break
+            fi
+          done <<< "$rest"
+
+          if [ "$alleen_oefenstof" = "ja" ]; then
+            echo "Alleen oefenstof-migraties gewijzigd — de weg van een leerling blijft hetzelfde."
+            echo "draaien=nee" >> "$GITHUB_OUTPUT"
+          else
+            echo "draaien=ja" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Overgeslagen
