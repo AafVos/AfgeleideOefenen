@@ -39,6 +39,13 @@ export type Voorbeeld = {
    * krijgt, als kans op een FAQ-rich result naast de belofte-eerste meta.
    */
   faqUitgebreid?: boolean;
+  /**
+   * Typvorm zonder spatie, bijvoorbeeld "lnx" naast "ln x" (AFG-704):
+   * Search Console laat zien dat leerlingen zo zoeken, maar de pagina's
+   * scoorden 0 klikken omdat de titel alleen de vorm met spatie toonde.
+   * Komt in de titel als "(lnx)" naast de leesbare vorm.
+   */
+  typVorm?: string;
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
@@ -587,6 +594,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     verwant: ["ln-2x", "ln-x-kwadraat", "x-keer-ln-x", "ln-x-kwadraat-plus-1"],
     examenbrug: true,
     faqUitgebreid: true,
+    typVorm: "lnx",
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
@@ -705,6 +713,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     verwant: ["cos-x", "sin-3x", "tan-x", "sin-x-kwadraat"],
     examenbrug: true,
     faqUitgebreid: true,
+    typVorm: "sinx",
     f: (x) => Math.sin(x),
     df: (x) => Math.cos(x),
     punten: [0, 0.5, 1],
@@ -730,6 +739,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     verwant: ["sin-x", "cos-2x", "tan-x", "sin-3x"],
     examenbrug: true,
     faqUitgebreid: true,
+    typVorm: "cosx",
     f: (x) => Math.cos(x),
     df: (x) => -Math.sin(x),
     punten: [0, 0.5, 1],
@@ -867,11 +877,16 @@ export function voorbeeldPad(slug: string): string {
  * "oefenen" erachter. Leerlingen zoeken op "afgeleide ln x", niet op "de
  * afgeleide van", en een naslagkaart-titel wint geen klik naast "oefenen".
  * De kop zelf (de `h1` op de pagina) blijft ongemoeid.
+ *
+ * Heeft het voorbeeld een `typVorm` (AFG-704), dan komt die erbij tussen
+ * haakjes, bijvoorbeeld "Afgeleide van ln x (lnx) oefenen": leerlingen die
+ * zonder spatie zoeken, zien dan toch hun eigen zoekwoord terug.
  */
 export function voorbeeldTitel(voorbeeld: Voorbeeld): string {
   const zonderDe = voorbeeld.kop.replace(/^De /, "");
   const metHoofdletter = zonderDe.charAt(0).toUpperCase() + zonderDe.slice(1);
-  return `${metHoofdletter} oefenen`;
+  const typVorm = voorbeeld.typVorm ? ` (${voorbeeld.typVorm})` : "";
+  return `${metHoofdletter}${typVorm} oefenen`;
 }
 
 /**
