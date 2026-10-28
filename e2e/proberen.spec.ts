@@ -31,11 +31,18 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   await geefAntwoord(page, 'onzin')
   await expect(page.getByText('Goed!', { exact: true })).toBeHidden()
   await expect(page.getByText('Niet helemaal goed')).toBeVisible()
+
+  // Al na de eerste nagekeken som (goed of fout) staat de deel-CTA er, niet
+  // pas na alle drie.
+  await expect(page.getByRole('button', { name: 'Stuur naar een klasgenoot' })).toBeVisible()
+
   await page.getByRole('button', { name: 'Laat het goede antwoord zien' }).click()
   await expect(page.getByText('Schrijf de macht naar voren')).toBeVisible()
 
   await page.getByRole('button', { name: 'Volgende som' }).click()
   await expect(page.getByText('Som 2 van 3')).toBeVisible()
+  // Vanaf som 2 staat de deel-CTA er niet nogmaals.
+  await expect(page.getByRole('button', { name: 'Stuur naar een klasgenoot' })).toBeHidden()
   await geefAntwoord(page, '3x^2')
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   await expect(page.getByText('Schrijf de macht naar voren')).toBeVisible()

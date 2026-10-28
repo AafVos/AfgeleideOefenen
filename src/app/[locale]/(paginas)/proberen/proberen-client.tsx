@@ -317,6 +317,15 @@ export function ProberenClient({
             <Verder laatste={laatste} onVolgende={volgende} onOpnieuw={opnieuw} />
           </div>
         )}
+
+        {index === 0 && fase.soort !== 'invoer' && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <p className="text-sm text-text-muted">
+              Handig voor de toetsweek: je klasgenoten kunnen deze proefsom ook maken.
+            </p>
+            <DeelKnop compact />
+          </div>
+        )}
       </div>
     </div>
   )
