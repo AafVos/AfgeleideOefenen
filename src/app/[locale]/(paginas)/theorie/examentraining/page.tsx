@@ -58,7 +58,7 @@ export default function ExamentrainingPage() {
         rooster en de examenstof staan op{' '}
         <a
           href={EXAMENTRAINING_EXAMENBLAD}
-          className="font-medium text-accent underline-offset-2 hover:underline"
+          className="font-medium text-accent underline underline-offset-2"
         >
           Examenblad
         </a>
