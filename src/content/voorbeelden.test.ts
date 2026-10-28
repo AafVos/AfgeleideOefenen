@@ -122,10 +122,22 @@ describe('antwoordpagina-s', () => {
       expect(titel.endsWith(' oefenen')).toBe(true)
       expect(titel.length).toBeLessThanOrEqual(60)
     }
-    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x (lnx) oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('sin-x')!)).toBe('Afgeleide van sin x (sinx) oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('cos-x')!)).toBe('Afgeleide van cos x (cosx) oefenen')
     expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
       'Afgeleide van e tot de macht 2x oefenen',
     )
+  })
+
+  it('zet de typvorm zonder spatie naast de leesbare vorm in de titel (AFG-704)', () => {
+    const metTypVorm = ['ln-x', 'sin-x', 'cos-x']
+    for (const slug of metTypVorm) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.typVorm).toBeTruthy()
+      expect(voorbeeldTitel(voorbeeld)).toContain(`(${voorbeeld.typVorm})`)
+      expect(voorbeeld.omschrijving).not.toContain(voorbeeld.typVorm)
+    }
   })
 
   it('toont de brug naar de examentraining op de drukste pagina-s (AFG-623)', () => {
