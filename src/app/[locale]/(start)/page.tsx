@@ -155,7 +155,7 @@ export default async function HomePage() {
             <Link
               href="/inloggen"
               data-meet="start-inloggen"
-              className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center rounded-lg px-5 py-3 text-text-muted hover:bg-surface-2 hover:text-text"
             >
               {t('ctaLogin')}
             </Link>
