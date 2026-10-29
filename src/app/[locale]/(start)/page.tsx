@@ -9,6 +9,8 @@ import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { googleLoginAan } from '@/lib/auth/google'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
 
+import { StickyStartProefsom } from '@/components/sticky-start-proefsom'
+
 import { ExamenStart } from './examen-start'
 import { HomeDemo } from './home-demo'
 
@@ -139,6 +141,7 @@ export default async function HomePage() {
 
           <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
             <a
+              id="start-hero-proefsom"
               href="#proefsom"
               data-meet="start-regels"
               className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
@@ -161,6 +164,12 @@ export default async function HomePage() {
             </Link>
           </div>
         </section>
+
+        <StickyStartProefsom
+          tekst={t('ctaRegel')}
+          primaryId="start-hero-proefsom"
+          doelId="proefsom"
+        />
 
         <HomeDemo googleAan={googleLoginAan()} />
 
