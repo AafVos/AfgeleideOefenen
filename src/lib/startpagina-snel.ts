@@ -150,3 +150,29 @@ export function statischZonderPersoonlijk(pathname: string): string | null {
   if (/^\/nl\/voorbeeld\/[a-z0-9-]+$/.test(basis)) return basis
   return null
 }
+
+const REDIRECT_STATUSSEN = new Set([301, 302, 303, 307, 308])
+
+/**
+ * OpenNext maakt de Location-kop van een redirect naar hetzelfde domein
+ * bewust relatief (`normalizeLocationHeader` in
+ * `node_modules/@opennextjs/aws/dist/core/routing/util.js`): een redirect
+ * vanuit `src/proxy.ts` die zelf een absoluut adres meegeeft, komt bij de
+ * bezoeker alsnog aan als `Location: /nl/...`. Google hield daardoor de oude
+ * URL zonder /nl naast de canonieke /nl-variant vast (AFG-738). Dit zet de
+ * kop terug naar een absoluut adres voordat het antwoord de rand verlaat.
+ */
+export function metAbsoluteLocatie(antwoord: Response, oorsprong: string): Response {
+  const locatie = antwoord.headers.get('location')
+  if (!REDIRECT_STATUSSEN.has(antwoord.status) || !locatie?.startsWith('/')) {
+    return antwoord
+  }
+
+  const headers = new Headers(antwoord.headers)
+  headers.set('location', `${oorsprong}${locatie}`)
+  return new Response(antwoord.body, {
+    status: antwoord.status,
+    statusText: antwoord.statusText,
+    headers,
+  })
+}

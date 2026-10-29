@@ -32,6 +32,7 @@ import {
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
   anoniemeVoorbeeldBestand,
+  metAbsoluteLocatie,
   statischZonderPersoonlijk,
 } from "../src/lib/startpagina-snel.ts";
 
@@ -141,7 +142,8 @@ export default {
     }
 
     const next = await import("./worker-next.js");
-    return next.default.fetch(request, env, ctx);
+    const antwoord = await next.default.fetch(request, env, ctx);
+    return metAbsoluteLocatie(antwoord, url.origin);
   },
 
   // De nachtelijke taken. Cloudflare roept dit aan volgens triggers.crons in
