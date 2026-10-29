@@ -12,6 +12,7 @@ import {
   EXAMENTRAINING_TITEL,
 } from '@/content/theory/examentraining'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
 
@@ -88,6 +89,8 @@ export default function ExamentrainingPage() {
           en je voortgang te bewaren maak je een gratis account, of log je in.
         </p>
       </section>
+
+      <WiskundeMetAafVideos pagina="examentraining" />
 
       <TheorieOefenActies
         oefenen={EXAMENTRAINING_OEFENEN}

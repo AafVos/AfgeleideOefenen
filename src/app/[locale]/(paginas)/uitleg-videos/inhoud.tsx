@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { getCurrentUser } from '@/lib/supabase/request-cache'
 import { createClient } from '@/lib/supabase/server'
 import { getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
@@ -63,71 +64,79 @@ export async function UitlegVideosInhoud({
   }
 
   return (
-    <UitlegVideosClient
-      videos={videos.map((v) => ({
-        slug: v.slug,
-        title: v.title,
-        description: v.description,
-        uitleg: v.uitleg,
-        duration: v.duration,
-        src: v.src,
-        href: `/${locale}${uitlegVideoPad(v.slug)}`,
-        soort: v.soort,
-        chapter: v.chapter,
-        hasPractice: v.clusterIds.length > 0,
-        oefenen: v.oefenen,
-        theorieHref: v.theoriePad ? `/${locale}${v.theoriePad}` : null,
-      }))}
-      activeSlug={activeVideo?.slug ?? null}
-      vragen={vragen}
-      isLoggedIn={!!user}
-      loginHref={`/${locale}/inloggen`}
-      registerHref={`/${locale}/registreren`}
-      oefenHref={`/${locale}/oefenen`}
-      videoAanvraagHref={`/${locale}/video-aanvragen`}
-      videoAlsKop={slug !== null}
-      labels={{
-        h1: t('h1'),
-        intro: t('intro'),
-        playlistTitle: t('playlistTitle'),
-        practiceTitle: t('practiceTitle'),
-        questionTile: t.raw('questionTile') as string,
-        preview: t('preview'),
-        placeholder: t('placeholder'),
-        check: t('check'),
-        checking: t('checking'),
-        correct: t('correct'),
-        wrongTitle: t('wrongTitle'),
-        yourAnswer: t('yourAnswer'),
-        correctAnswer: t('correctAnswer'),
-        stepsTitle: t('stepsTitle'),
-        nextQuestion: t('nextQuestion'),
-        previousQuestion: t('previousQuestion'),
-        morePractice: t('morePractice'),
-        askTitle: t('askTitle'),
-        askIntro: t('askIntro'),
-        askCta: t('askCta'),
-        askPlaceholder: t('askPlaceholder'),
-        askSend: t('askSend'),
-        askThanks: t('askThanks'),
-        askPhoto: t('askPhoto'),
-        askPhotoHint: t('askPhotoHint'),
-        askPhotoRemove: t('askPhotoRemove'),
-        askPhotoAlt: t('askPhotoAlt'),
-        askPhotoBusy: t('askPhotoBusy'),
-        askPhotoTooBig: t('askPhotoTooBig'),
-        groupGeneral: t('groupGeneral'),
-        groupWalkthrough: t('groupWalkthrough'),
-        chapterOther: t('chapterOther'),
-        learnTitle: t('learnTitle'),
-        ruleTitle: t('ruleTitle'),
-        exampleTitle: t('exampleTitle'),
-        writtenLink: t('writtenLink'),
-        askNoAccount: t('askNoAccount'),
-        askLogin: t('askLogin'),
-        askRegister: t('askRegister'),
-        videoAanvraagLink: t('videoAanvraagLink'),
-      }}
-    />
+    <>
+      {slug === null ? (
+        <WiskundeMetAafVideos
+          pagina="uitleg-videos"
+          className="mx-auto w-full max-w-5xl px-4 pt-8 sm:pt-12"
+        />
+      ) : null}
+      <UitlegVideosClient
+        videos={videos.map((v) => ({
+          slug: v.slug,
+          title: v.title,
+          description: v.description,
+          uitleg: v.uitleg,
+          duration: v.duration,
+          src: v.src,
+          href: `/${locale}${uitlegVideoPad(v.slug)}`,
+          soort: v.soort,
+          chapter: v.chapter,
+          hasPractice: v.clusterIds.length > 0,
+          oefenen: v.oefenen,
+          theorieHref: v.theoriePad ? `/${locale}${v.theoriePad}` : null,
+        }))}
+        activeSlug={activeVideo?.slug ?? null}
+        vragen={vragen}
+        isLoggedIn={!!user}
+        loginHref={`/${locale}/inloggen`}
+        registerHref={`/${locale}/registreren`}
+        oefenHref={`/${locale}/oefenen`}
+        videoAanvraagHref={`/${locale}/video-aanvragen`}
+        videoAlsKop={slug !== null}
+        labels={{
+          h1: t('h1'),
+          intro: t('intro'),
+          playlistTitle: t('playlistTitle'),
+          practiceTitle: t('practiceTitle'),
+          questionTile: t.raw('questionTile') as string,
+          preview: t('preview'),
+          placeholder: t('placeholder'),
+          check: t('check'),
+          checking: t('checking'),
+          correct: t('correct'),
+          wrongTitle: t('wrongTitle'),
+          yourAnswer: t('yourAnswer'),
+          correctAnswer: t('correctAnswer'),
+          stepsTitle: t('stepsTitle'),
+          nextQuestion: t('nextQuestion'),
+          previousQuestion: t('previousQuestion'),
+          morePractice: t('morePractice'),
+          askTitle: t('askTitle'),
+          askIntro: t('askIntro'),
+          askCta: t('askCta'),
+          askPlaceholder: t('askPlaceholder'),
+          askSend: t('askSend'),
+          askThanks: t('askThanks'),
+          askPhoto: t('askPhoto'),
+          askPhotoHint: t('askPhotoHint'),
+          askPhotoRemove: t('askPhotoRemove'),
+          askPhotoAlt: t('askPhotoAlt'),
+          askPhotoBusy: t('askPhotoBusy'),
+          askPhotoTooBig: t('askPhotoTooBig'),
+          groupGeneral: t('groupGeneral'),
+          groupWalkthrough: t('groupWalkthrough'),
+          chapterOther: t('chapterOther'),
+          learnTitle: t('learnTitle'),
+          ruleTitle: t('ruleTitle'),
+          exampleTitle: t('exampleTitle'),
+          writtenLink: t('writtenLink'),
+          askNoAccount: t('askNoAccount'),
+          askLogin: t('askLogin'),
+          askRegister: t('askRegister'),
+          videoAanvraagLink: t('videoAanvraagLink'),
+        }}
+      />
+    </>
   )
 }
