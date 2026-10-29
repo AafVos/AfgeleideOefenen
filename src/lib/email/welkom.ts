@@ -186,6 +186,13 @@ Vertel het door aan vrienden. Hoe meer vragen er binnenkomen, hoe meer uitleg er
 Groeten van Aaf`
 }
 
+/** Nooit `e.message` loggen: Resend neemt het geweigerde adres daar soms letterlijk in op. */
+function soortFout(e: unknown): string {
+  return e && typeof e === 'object' && 'name' in e && typeof e.name === 'string'
+    ? e.name
+    : 'onbekend'
+}
+
 type ServiceClient = ReturnType<typeof createServiceRoleClient>
 
 /**
@@ -282,7 +289,9 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
       })
       if (mailError) throw mailError
     } catch (e) {
-      console.error('[welkomstmail]', e)
+      // Alleen de soort fout loggen, nooit de boodschap zelf: Resend neemt het
+      // geweigerde adres soms letterlijk op in `message`.
+      console.error('[welkomstmail] versturen mislukt', soortFout(e))
       await supabase.auth.admin.updateUserById(userId, {
         user_metadata: { ...user.user_metadata, welcome_sent_at: null },
       })
@@ -297,7 +306,7 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
 
     return { verstuurd: true }
   } catch (e) {
-    console.error('[welkomstmail]', e)
+    console.error('[welkomstmail] versturen mislukt', soortFout(e))
     if (vastgehouden) await laatClaimVrij(supabase, userId)
     return { verstuurd: false, reden: 'fout' }
   }
