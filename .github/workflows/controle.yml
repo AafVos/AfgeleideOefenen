@@ -353,6 +353,13 @@ jobs:
       # waarna de tests niet eens starten. Mislukt het ophalen via ghcr,
       # dan één keer de gewone volgorde. Een fout in een migratie is geen
       # ophaalfout en krijgt die tweede poging niet.
+      #
+      # AFG-747: een mislukte eerste poging start soms wél al een deel van de
+      # containers (bijvoorbeeld de database of de testpostbus) voordat een
+      # andere image niet opgehaald kan worden. Die containers blijven dan
+      # draaien op hun vaste poort (54321-54324). Een tweede poging zonder
+      # eerst op te ruimen botst dan op "address already in use" — dat was de
+      # echte oorzaak van deze controle die leek op een infrastructuurfout.
       - name: Lokale Supabase starten
         if: ${{ steps.nodig.outputs.draaien == 'ja' }}
         timeout-minutes: 4
@@ -371,6 +378,7 @@ jobs:
           fi
           if grep -qE 'toomanyrequests|Rate exceeded|Data limit exceeded|manifest unknown|failed to pull docker image' "$log"; then
             echo "::warning::Ophalen via ghcr.io liep vast; nog een keer via de gewone registers."
+            npx supabase stop --no-backup || true
             starten
             exit $?
           fi
