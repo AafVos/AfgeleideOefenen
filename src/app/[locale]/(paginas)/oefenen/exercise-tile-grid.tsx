@@ -81,7 +81,7 @@ function TileGrid({
                     href={tile.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center text-left text-xs leading-snug text-accent underline-offset-2 hover:underline"
+                    className="inline-flex min-h-11 items-center text-left text-xs leading-snug text-accent underline underline-offset-2"
                   >
                     {bron}
                   </a>

@@ -130,7 +130,7 @@ export function DashboardGrid({
         <div className="mb-5 rounded-xl border border-border bg-surface px-4 py-3">
           <IntegraalVerwijzing
             tekst={t('integraal')}
-            className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+            className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
           />
         </div>
       )}
@@ -250,7 +250,7 @@ function OpfrisRegel({ opfrissen }: { opfrissen: OpfrisData }) {
       <KlikLink
         href={opfrissen.href}
         bezigTekst="Opgave openen"
-        className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+        className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
       >
         {t('opfrissenLink')}
       </KlikLink>

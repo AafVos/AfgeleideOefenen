@@ -128,7 +128,7 @@ export function TestRunnerCard({
               href={question.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
             >
               {question.source_label}
             </a>
