@@ -7,6 +7,7 @@ import {
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
   anoniemeVoorbeeldBestand,
+  metAbsoluteLocatie,
   statischZonderPersoonlijk,
 } from './startpagina-snel'
 
@@ -255,5 +256,42 @@ describe('statischZonderPersoonlijk', () => {
     expect(statischZonderPersoonlijk('/nl/oefenen/persoonlijk')).toBeNull()
     expect(statischZonderPersoonlijk('/nl/theorie/kettingregel/extra/persoonlijk')).toBeNull()
     expect(statischZonderPersoonlijk('/nl/voorbeeld/persoonlijk')).toBeNull()
+  })
+})
+
+describe('metAbsoluteLocatie', () => {
+  it('maakt een relatieve Location-kop van een redirect absoluut', () => {
+    const antwoord = new Response(null, {
+      status: 301,
+      headers: { location: '/nl/voorbeeld/wortel-x' },
+    })
+
+    const resultaat = metAbsoluteLocatie(antwoord, 'https://www.afgeleideoefenen.nl')
+
+    expect(resultaat.status).toBe(301)
+    expect(resultaat.headers.get('location')).toBe(
+      'https://www.afgeleideoefenen.nl/nl/voorbeeld/wortel-x',
+    )
+  })
+
+  it('laat een Location-kop die al absoluut is met rust', () => {
+    const antwoord = new Response(null, {
+      status: 308,
+      headers: { location: 'https://www.afgeleideoefenen.nl/nl/dashboard' },
+    })
+
+    const resultaat = metAbsoluteLocatie(antwoord, 'https://www.afgeleideoefenen.nl')
+
+    expect(resultaat.headers.get('location')).toBe(
+      'https://www.afgeleideoefenen.nl/nl/dashboard',
+    )
+  })
+
+  it('laat een gewoon antwoord zonder redirect met rust', () => {
+    const antwoord = new Response('<!DOCTYPE html>', { status: 200 })
+
+    const resultaat = metAbsoluteLocatie(antwoord, 'https://www.afgeleideoefenen.nl')
+
+    expect(resultaat).toBe(antwoord)
   })
 })
