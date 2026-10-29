@@ -1,6 +1,9 @@
+import path from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 
 import { answersMatch } from './engine'
+import { parseOefenstofMigratie } from './oefenstof-migraties'
 
 /**
  * De acht opgaven uit migratie 0092 (nieuwe soort "Kettingregel met een
@@ -107,5 +110,42 @@ describe.each(opgaven)('ketting_eenvoudige_breuk vraag $nr', (o) => {
 
   it('het (nog niet samengevoegde) alternatief wordt ook goedgerekend', () => {
     expect(answersMatch(o.alternatief, o.antwoord, [o.alternatief])).toBe(true)
+  })
+})
+
+/**
+ * De naam van de vraagfunctie (bijv. $g$ in "g(x) = ...") mag niet ook de
+ * naam zijn van de teller of de noemer in de stap die ze "Noem $g(x) = ...$
+ * en $h(x) = ...$" introduceert — dat is twee verschillende functies met
+ * dezelfde letter in één uitleg (dezelfde foutklasse als migratie 0075).
+ * Deze test leest de migratie zelf, niet een kopie, zodat hij de echte fout
+ * laat zien.
+ */
+describe('ketting_eenvoudige_breuk: vraagfunctie botst niet met teller/noemer', () => {
+  const bestand = path.join(
+    process.cwd(),
+    'supabase/migrations/0092_oefenstof_h6_ketting_eenvoudige_breuk.sql',
+  )
+  const { vragen, stappen } = parseOefenstofMigratie(bestand)
+
+  it.each(vragen)('vraag $orderIndex', (v) => {
+    const vraagLetter = /^([fgh])\(x\)\s*=/.exec(v.latexBody)?.[1]
+    expect(vraagLetter, `geen functienaam gevonden in "${v.latexBody}"`).toBeDefined()
+
+    const introStap = stappen.find((s) => s.qOrder === v.orderIndex && s.stepOrder === 1)
+    expect(introStap, `geen stap 1 (teller/noemer) voor vraag ${v.orderIndex}`).toBeDefined()
+
+    const tellerNoemerLetters = [...(introStap?.stepDescription.matchAll(/\$([fgh])\(x\)/g) ?? [])].map(
+      (m) => m[1],
+    )
+    expect(
+      tellerNoemerLetters,
+      `stap 1 van vraag ${v.orderIndex} noemt geen teller/noemer: "${introStap?.stepDescription}"`,
+    ).toHaveLength(2)
+
+    expect(
+      tellerNoemerLetters,
+      `vraagfunctie "${vraagLetter}" wordt ook gebruikt voor teller of noemer in vraag ${v.orderIndex}: "${introStap?.stepDescription}"`,
+    ).not.toContain(vraagLetter)
   })
 })

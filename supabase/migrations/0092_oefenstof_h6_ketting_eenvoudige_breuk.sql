@@ -59,14 +59,14 @@ FROM (VALUES
   ),
   (
     2, 1,
-    $vraag$g(x) = \dfrac{\sqrt{4x - 3}}{x}$vraag$,
+    $vraag$f(x) = \dfrac{\sqrt{4x - 3}}{x}$vraag$,
     $ant$(3 - 2x)/(x^2*sqrt(4x - 3))$ant$,
     $latex$\dfrac{3 - 2x}{x^{2}\sqrt{4x - 3}}$latex$,
     ARRAY[$alt$(2x/sqrt(4x - 3) - sqrt(4x - 3))/x^2$alt$]::text[]
   ),
   (
     3, 1,
-    $vraag$h(x) = \dfrac{(3x + 2)^{2}}{x}$vraag$,
+    $vraag$f(x) = \dfrac{(3x + 2)^{2}}{x}$vraag$,
     $ant$(9x^2 - 4)/x^2$ant$,
     $latex$\dfrac{9x^{2} - 4}{x^{2}}$latex$,
     ARRAY[$alt$(6(3x + 2)*x - (3x + 2)^2)/x^2$alt$]::text[]
@@ -80,14 +80,14 @@ FROM (VALUES
   ),
   (
     5, 2,
-    $vraag$g(x) = \dfrac{(2x - 1)^{2}}{x + 3}$vraag$,
+    $vraag$f(x) = \dfrac{(2x - 1)^{2}}{x + 3}$vraag$,
     $ant$(4x^2 + 24x - 13)/(x + 3)^2$ant$,
     $latex$\dfrac{4x^{2} + 24x - 13}{(x + 3)^{2}}$latex$,
     ARRAY[$alt$(4(2x - 1)*(x + 3) - (2x - 1)^2)/(x + 3)^2$alt$]::text[]
   ),
   (
     6, 2,
-    $vraag$h(x) = \dfrac{\sqrt{5x - 4}}{x - 2}$vraag$,
+    $vraag$f(x) = \dfrac{\sqrt{5x - 4}}{x - 2}$vraag$,
     $ant$(-5x - 2)/(2(x - 2)^2*sqrt(5x - 4))$ant$,
     $latex$\dfrac{-5x - 2}{2(x - 2)^{2}\sqrt{5x - 4}}$latex$,
     ARRAY[$alt$(5(x - 2)/(2*sqrt(5x - 4)) - sqrt(5x - 4))/(x - 2)^2$alt$]::text[]
@@ -101,7 +101,7 @@ FROM (VALUES
   ),
   (
     8, 3,
-    $vraag$g(x) = \dfrac{\sqrt{3x + 4}}{2x - 3}$vraag$,
+    $vraag$f(x) = \dfrac{\sqrt{3x + 4}}{2x - 3}$vraag$,
     $ant$(-6x - 25)/(2(2x - 3)^2*sqrt(3x + 4))$ant$,
     $latex$\dfrac{-6x - 25}{2(2x - 3)^{2}\sqrt{3x + 4}}$latex$,
     ARRAY[$alt$(3(2x - 3)/(2*sqrt(3x + 4)) - 2*sqrt(3x + 4))/(2x - 3)^2$alt$]::text[]
@@ -152,7 +152,7 @@ FROM (VALUES
   ),
   (
     2, 3,
-    $stap$De teller op één noemer is $\dfrac{2x - (4x - 3)}{\sqrt{4x - 3}} = \dfrac{3 - 2x}{\sqrt{4x - 3}}$. Deel door $x^{2}$: $g'(x) = \dfrac{3 - 2x}{x^{2}\sqrt{4x - 3}}$.$stap$
+    $stap$De teller op één noemer is $\dfrac{2x - (4x - 3)}{\sqrt{4x - 3}} = \dfrac{3 - 2x}{\sqrt{4x - 3}}$. Deel door $x^{2}$: $f'(x) = \dfrac{3 - 2x}{x^{2}\sqrt{4x - 3}}$.$stap$
   ),
   (
     3, 0,
@@ -168,7 +168,7 @@ FROM (VALUES
   ),
   (
     3, 3,
-    $stap$Uitwerken: $6(3x + 2)x = 18x^{2} + 12x$ en $(3x + 2)^{2} = 9x^{2} + 12x + 4$. De teller is $9x^{2} - 4$. Deel door $x^{2}$: $h'(x) = \dfrac{9x^{2} - 4}{x^{2}}$.$stap$
+    $stap$Uitwerken: $6(3x + 2)x = 18x^{2} + 12x$ en $(3x + 2)^{2} = 9x^{2} + 12x + 4$. De teller is $9x^{2} - 4$. Deel door $x^{2}$: $f'(x) = \dfrac{9x^{2} - 4}{x^{2}}$.$stap$
   ),
   (
     4, 0,
@@ -200,7 +200,7 @@ FROM (VALUES
   ),
   (
     5, 3,
-    $stap$Uitwerken: $4(2x - 1)(x + 3) = 8x^{2} + 20x - 12$ en $(2x - 1)^{2} = 4x^{2} - 4x + 1$. De teller is $4x^{2} + 24x - 13$. Deel door $(x + 3)^{2}$: $g'(x) = \dfrac{4x^{2} + 24x - 13}{(x + 3)^{2}}$.$stap$
+    $stap$Uitwerken: $4(2x - 1)(x + 3) = 8x^{2} + 20x - 12$ en $(2x - 1)^{2} = 4x^{2} - 4x + 1$. De teller is $4x^{2} + 24x - 13$. Deel door $(x + 3)^{2}$: $f'(x) = \dfrac{4x^{2} + 24x - 13}{(x + 3)^{2}}$.$stap$
   ),
   (
     6, 0,
@@ -216,7 +216,7 @@ FROM (VALUES
   ),
   (
     6, 3,
-    $stap$De teller op één noemer is $\dfrac{5(x - 2) - 2(5x - 4)}{2\sqrt{5x - 4}} = \dfrac{-5x - 2}{2\sqrt{5x - 4}}$. Deel door $(x - 2)^{2}$: $h'(x) = \dfrac{-5x - 2}{2(x - 2)^{2}\sqrt{5x - 4}}$.$stap$
+    $stap$De teller op één noemer is $\dfrac{5(x - 2) - 2(5x - 4)}{2\sqrt{5x - 4}} = \dfrac{-5x - 2}{2\sqrt{5x - 4}}$. Deel door $(x - 2)^{2}$: $f'(x) = \dfrac{-5x - 2}{2(x - 2)^{2}\sqrt{5x - 4}}$.$stap$
   ),
   (
     7, 0,
@@ -248,7 +248,7 @@ FROM (VALUES
   ),
   (
     8, 3,
-    $stap$De teller op één noemer is $\dfrac{3(2x - 3) - 4(3x + 4)}{2\sqrt{3x + 4}} = \dfrac{-6x - 25}{2\sqrt{3x + 4}}$. Deel door $(2x - 3)^{2}$: $g'(x) = \dfrac{-6x - 25}{2(2x - 3)^{2}\sqrt{3x + 4}}$.$stap$
+    $stap$De teller op één noemer is $\dfrac{3(2x - 3) - 4(3x + 4)}{2\sqrt{3x + 4}} = \dfrac{-6x - 25}{2\sqrt{3x + 4}}$. Deel door $(2x - 3)^{2}$: $f'(x) = \dfrac{-6x - 25}{2(2x - 3)^{2}\sqrt{3x + 4}}$.$stap$
   )
 ) AS v(q_order, step_order, step_description)
 JOIN public.topics_new t
