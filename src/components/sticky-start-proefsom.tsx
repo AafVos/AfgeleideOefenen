@@ -6,16 +6,24 @@ import { useEffect, useState } from 'react'
  * Plakkende knop onderaan de startpagina (telefoon én computer), zodat de
  * proefsom-CTA bereikbaar blijft voor een bezoeker die scrolt zonder meteen
  * te starten (AFG-739). Toont zich zodra de knop met `primaryId` uit beeld
- * scrolt, en verdwijnt weer zodra de bezoeker bij de sectie met `doelId`
- * (de proefsom zelf) is aangekomen — daar is de vangnet-knop overbodig en
- * zou hij anders de rest van de pagina (FAQ, slot-CTA) blijven overlappen.
+ * scrolt, en verdwijnt zodra er ook maar één pixel van de sectie met
+ * `doelId` (de proefsom zelf) in beeld komt — en blijft daarna verborgen,
+ * ook als je terugscrolt.
+ *
+ * Bewust "ook maar één pixel", niet "helemaal voorbij" (de vorige aanpak,
+ * controle-FAIL op PR #451): de proefsom-sectie is vaak hoger dan het
+ * scherm, dus "voorbij" liet de knop het hele stuk daartussen over het
+ * antwoordveld en de knoppenrij heen liggen. Op deze pagina staat de
+ * proefsom bovendien maar een handvol pixels onder de hero-knop, dus in de
+ * praktijk verschijnt deze balk vooral op een laag scherm (een telefoon met
+ * nog zichtbare browserbalk, of een klein browservenster) — dat is het
+ * scenario uit AFG-739 (bezoekers die wegklikken zonder de proefsom te
+ * zien). Overlap met de proefsom zelf kan hiermee nooit gebeuren.
  *
  * Op de computer staat de voettekst altijd vast onderin het scherm (zie
  * `(start)/layout.tsx`: daar staat hij buiten de scrollende `main`). Deze
  * balk schuift daarom vanaf `sm` een footer-hoogte (ca. 61px) omhoog, anders
- * zou hij daar precies bovenop vallen. Op de telefoon scrolt de voettekst
- * gewoon mee en is de balk daarvoor allang verdwenen (zie `voorbijDoel`
- * hierboven), dus daar kan hij gewoon onderaan blijven plakken.
+ * zou hij daar precies bovenop vallen.
  */
 export function StickyStartProefsom({
   tekst,
@@ -27,7 +35,7 @@ export function StickyStartProefsom({
   doelId: string
 }) {
   const [heroUitBeeld, setHeroUitBeeld] = useState(false)
-  const [voorbijDoel, setVoorbijDoel] = useState(false)
+  const [doelBereikt, setDoelBereikt] = useState(false)
 
   useEffect(() => {
     const hero = document.getElementById(primaryId)
@@ -39,9 +47,9 @@ export function StickyStartProefsom({
     )
     heroObserver.observe(hero)
 
-    const doelObserver = new IntersectionObserver(([entry]) =>
-      setVoorbijDoel(!entry.isIntersecting && entry.boundingClientRect.top < 0),
-    )
+    const doelObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setDoelBereikt(true)
+    })
     doelObserver.observe(doel)
 
     return () => {
@@ -50,7 +58,7 @@ export function StickyStartProefsom({
     }
   }, [primaryId, doelId])
 
-  if (!heroUitBeeld || voorbijDoel) return null
+  if (!heroUitBeeld || doelBereikt) return null
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center border-t border-border bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:bottom-16 sm:border-0 sm:bg-transparent sm:p-0">
