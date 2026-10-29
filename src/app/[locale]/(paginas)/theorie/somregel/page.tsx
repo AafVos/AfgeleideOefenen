@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
-import { DeelKnop } from '@/components/deel-knop'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
   SOMREGEL_FORMULE,
@@ -104,32 +102,16 @@ export default function SomregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <ProbeerKnop
-          oefenen={`${SOMREGEL_OEFENEN}&van=theorie`}
-          dataMeet="theorie-oefen-dit-onderwerp"
-          label="Oefen dit onderwerp"
-        />
-        <DeelKnop />
-        <Link
-          href={SOMREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/uitleg-videos/somregel-of-productregel"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Bekijk de video: Somregel of productregel?
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={SOMREGEL_OEFENEN}
+        extra={[
+          {
+            href: '/uitleg-videos/somregel-of-productregel',
+            label: 'Bekijk de video: Somregel of productregel?',
+          },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }

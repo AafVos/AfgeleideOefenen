@@ -81,12 +81,26 @@ test('de voorbeeldpagina heeft dezelfde knop, met van=voorbeeld voor de bronmeti
   page,
 }) => {
   await page.goto('/nl/voorbeeld/wortel-x')
-  await page.getByRole('link', { name: 'Probeer 3 sommen' }).click()
+  await page.getByRole('link', { name: 'Probeer 3 sommen' }).first().click()
   await expect(page).toHaveURL(
     /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=wortelvorm&van=voorbeeld$/,
   )
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()
+})
+
+/**
+ * Onderaan de pagina (na de uitwerking en de gerelateerde afgeleiden) moet
+ * een leerling nog steeds in één oogopslag een echte hoofdknop zien, niet
+ * alleen tekstlinks (AFG-717/AFG-721: de Controleur zag hier maar drie
+ * gelijke tekstlinks en geen hoofdknop meer).
+ */
+test('de voorbeeldpagina heeft ook onderaan een duidelijke hoofdknop', async ({ page }) => {
+  await page.goto('/nl/voorbeeld/wortel-x')
+  const knoppen = page.getByRole('link', { name: 'Probeer 3 sommen' })
+  await expect(knoppen).toHaveCount(2)
+  await knoppen.last().scrollIntoViewIfNeeded()
+  await expect(knoppen.last()).toBeVisible()
 })
 
 test('een uitlegvideo-pagina heeft een knop "Oefen dit nu", met van=uitlegvideo voor de bronmeting', async ({

@@ -179,20 +179,23 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </ul>
         </section>
 
-        <div className="mt-12 flex flex-col gap-3">
-          <DeelKnop />
-          <Link
-            href={voorbeeld.oefenen as '/oefenen'}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-          >
-            Oefen dit soort sommen
-          </Link>
-          <Link
-            href={voorbeeld.theoriePad as '/theorie'}
-            className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-          >
-            {voorbeeld.theorieNaam}
-          </Link>
+        <div className="mt-12 flex flex-col items-start gap-4">
+          <ProbeerKnop oefenen={voorbeeld.oefenen} dataMeet="probeer-3-sommen-onderaan" />
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <DeelKnop variant="tekstlink" />
+            <Link
+              href={voorbeeld.oefenen as '/oefenen'}
+              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+            >
+              Oefenen met een account
+            </Link>
+            <Link
+              href={voorbeeld.theoriePad as '/theorie'}
+              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+            >
+              {voorbeeld.theorieNaam}
+            </Link>
+          </div>
         </div>
       </div>
     </>
