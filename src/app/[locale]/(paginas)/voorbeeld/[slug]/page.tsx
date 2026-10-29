@@ -19,6 +19,8 @@ import { Link } from '@/i18n/navigation'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
 
+import { Uitwerking } from './uitwerking'
+
 type PageProps = {
   params: Promise<{ locale: string; slug: string }>
 }
@@ -121,7 +123,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
             <Link
               href={`${EXAMENTRAINING_PAD}?van=voorbeeld-examen` as '/theorie/examentraining'}
               data-meet="voorbeeld-examentraining"
-              className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
             >
               oefen verder in de examentraining
             </Link>
@@ -129,11 +131,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </p>
         )}
 
-        <details className="mt-10">
-          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center font-medium text-accent underline-offset-2 hover:underline">
-            Toon uitwerking
-          </summary>
-
+        <Uitwerking>
           <section className="mt-6 rounded-xl bg-accent-light/60 px-4 py-5">
             <h2 className="text-sm font-medium uppercase tracking-wider text-accent">Antwoord</h2>
             <div className="mt-3 flex flex-col gap-2 overflow-x-auto text-[0.95em] leading-loose">
@@ -160,7 +158,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
               <RichMath source={voorbeeld.fout} />
             </p>
           </section>
-        </details>
+        </Uitwerking>
 
         <section className="mt-12">
           <h2 className="font-serif text-2xl text-text">Gerelateerde afgeleiden</h2>
@@ -170,7 +168,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
               <li key={ander.slug}>
                 <Link
                   href={voorbeeldPad(ander.slug) as '/voorbeeld'}
-                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
                 >
                   {ander.kop}
                 </Link>

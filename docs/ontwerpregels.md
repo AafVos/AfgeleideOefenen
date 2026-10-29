@@ -39,6 +39,14 @@ achtergrond), `ghost` (geen rand, voor een minder belangrijke actie),
   knop-gewicht verdient — een "annuleren" of "ik weet het later wel". Er is
   nog geen aparte variant voor; gebruik `ghost` met duidelijke tekst, geen
   kale `<a>` die op gewone tekst lijkt.
+- **Groene tekstlink** (losse link of in-/uitklapknop in groene tekst, zonder
+  kader): altijd `text-accent underline underline-offset-2`, nooit alleen
+  `hover:underline`. Vastgelegd op 2026-10-28 (AFG-718): op een telefoon
+  bestaat er geen hover, dus zonder onderstreping is zo'n link voor een
+  kleurenblinde leerling niet te onderscheiden van gewone tekst. Een
+  in-/uitklapknop (zoals "Toon de stappen") wisselt bovendien zijn tekst naar
+  "Verberg ..." en krijgt een pijltje dat van richting wisselt, zodat
+  duidelijk is dat hij al open staat.
 - Taal op knoppen: kort, je-vorm, een werkwoord. "Controleren", niet
   "Controleer je antwoord hier".
 

@@ -27,6 +27,7 @@ type Labels = {
   exampleLabel: string
   detailsLabel: string
   showSteps: string
+  hideSteps: string
   answerLabel: string
   practiceSelf: string
   practiceChapter: string
@@ -519,6 +520,7 @@ function ChapterSection({
             exampleLabel={labels.exampleLabel}
             detailsLabel={labels.detailsLabel}
             showSteps={labels.showSteps}
+            hideSteps={labels.hideSteps}
             answerLabel={labels.answerLabel}
           />
         ))}
@@ -527,7 +529,15 @@ function ChapterSection({
   )
 }
 
-function ExampleSteps({ steps, label }: { steps: string[]; label: string }) {
+function ExampleSteps({
+  steps,
+  label,
+  hideLabel,
+}: {
+  steps: string[]
+  label: string
+  hideLabel: string
+}) {
   const [open, setOpen] = useState(false)
   return (
     <div className="mt-2 border-t border-border pt-2">
@@ -536,9 +546,21 @@ function ExampleSteps({ steps, label }: { steps: string[]; label: string }) {
         aria-expanded={open}
         onClick={() => setOpen((nu) => !nu)}
         data-meet="theorie-meer-uitleg"
-        className="min-h-11 py-2 text-left font-medium text-accent"
+        className="inline-flex min-h-11 items-center gap-1.5 py-2 text-left font-medium text-accent underline underline-offset-2"
       >
-        {label}
+        {open ? hideLabel : label}
+        <svg
+          viewBox="0 0 24 24"
+          className={`size-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
       </button>
       {open && (
         <ol className="mt-1 space-y-1">
@@ -566,6 +588,7 @@ function TheoryCard({
   exampleLabel,
   detailsLabel,
   showSteps,
+  hideSteps,
   answerLabel,
 }: {
   chapterSlug: string
@@ -575,6 +598,7 @@ function TheoryCard({
   exampleLabel: string
   detailsLabel: string
   showSteps: string
+  hideSteps: string
   answerLabel: string
 }) {
   const hasNotes = (card.notes?.length ?? 0) > 0
@@ -668,7 +692,7 @@ function TheoryCard({
                 >
                   <TeX tex={ex.problem} />
                   {ex.steps && ex.steps.length > 0 && (
-                    <ExampleSteps steps={ex.steps} label={showSteps} />
+                    <ExampleSteps steps={ex.steps} label={showSteps} hideLabel={hideSteps} />
                   )}
                   <p className="mt-2 border-t border-border pt-2">
                     <span className="text-text-muted">{answerLabel}: </span>
