@@ -183,13 +183,13 @@ export default async function VoorbeeldPage({ params }: PageProps) {
             <DeelKnop variant="tekstlink" />
             <Link
               href={voorbeeld.oefenen as '/oefenen'}
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             >
               Oefenen met een account
             </Link>
             <Link
               href={voorbeeld.theoriePad as '/theorie'}
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             >
               {voorbeeld.theorieNaam}
             </Link>

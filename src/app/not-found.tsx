@@ -60,7 +60,7 @@ export default async function NotFound() {
           <p className="mt-6 text-sm text-text-muted">
             <Link
               href={`/${TAAL}`}
-              className="font-medium text-accent underline-offset-2 hover:underline"
+              className="font-medium text-accent underline underline-offset-2"
             >
               {t('ctaHome')}
             </Link>
