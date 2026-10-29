@@ -120,7 +120,7 @@ export default async function HomePage() {
                 <Link
                   href="/hoe-het-werkt"
                   data-meet="start-hoe-het-werkt"
-                  className="font-medium text-accent underline-offset-2 hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {t('subLeadLink')}
                 </Link>
@@ -131,7 +131,7 @@ export default async function HomePage() {
             <a
               href="#proefsom"
               data-meet="start-toetsweek-proefsom"
-              className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center font-medium text-accent underline underline-offset-2"
             >
               {t('toetsweekProefsom')}
             </a>
@@ -170,7 +170,7 @@ export default async function HomePage() {
             <IntegraalVerwijzing
               tekst={t('integraal')}
               dataMeet="start-integraal"
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             />
           </p>
         </section>
@@ -225,7 +225,7 @@ export default async function HomePage() {
                 <Link
                   href={href}
                   data-meet="start-veelgezocht"
-                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
                 >
                   {t(labelKey)}
                 </Link>
@@ -238,7 +238,7 @@ export default async function HomePage() {
                 <Link
                   href={EXAMENTRAINING_PAD}
                   data-meet="start-examentraining"
-                  className="font-medium text-accent underline-offset-2 hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {chunks}
                 </Link>

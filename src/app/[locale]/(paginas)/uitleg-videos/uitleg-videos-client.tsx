@@ -404,7 +404,7 @@ export function UitlegVideosClient({
                 <Link
                   href={videoAanvraagHref as '/video-aanvragen'}
                   data-meet="video-naar-aanvragen"
-                  className="text-accent underline-offset-2 hover:underline"
+                  className="text-accent underline underline-offset-2"
                 >
                   {labels.videoAanvraagLink}
                 </Link>
