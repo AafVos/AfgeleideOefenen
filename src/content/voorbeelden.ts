@@ -46,6 +46,13 @@ export type Voorbeeld = {
    * Komt in de titel als "(lnx)" naast de leesbare vorm.
    */
   typVorm?: string;
+  /**
+   * Zichtbaar blokje onder de H1: andere manieren waarop leerlingen naar
+   * deze som zoeken, bijvoorbeeld ["afgeleide lnx", "afgeleide ln(x)"]
+   * (AFG-766). Anders dan `typVorm` (die alleen in de titel/meta staat)
+   * ziet een leerling dit echt op de pagina. Nooit het antwoord erin.
+   */
+  ookGezochtAls?: readonly string[];
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
@@ -230,6 +237,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     ],
     examenbrug: true,
     faqUitgebreid: true,
+    ookGezochtAls: ["afgeleide 1/x", "afgeleide een gedeeld door x"],
     f: (x) => 1 / x,
     df: (x) => -1 / (x * x),
     punten: [-2, 0.5, 3],
@@ -463,6 +471,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     ],
     examenbrug: true,
     faqUitgebreid: true,
+    ookGezochtAls: ["afgeleide e^x", "afgeleide e tot de x"],
     f: (x) => Math.exp(x),
     df: (x) => Math.exp(x),
     punten: [-1, 0, 1],
@@ -595,6 +604,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     examenbrug: true,
     faqUitgebreid: true,
     typVorm: "lnx",
+    ookGezochtAls: ["afgeleide lnx", "afgeleide ln(x)"],
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
@@ -714,6 +724,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     examenbrug: true,
     faqUitgebreid: true,
     typVorm: "sinx",
+    ookGezochtAls: ["afgeleide sinx", "afgeleide sin(x)"],
     f: (x) => Math.sin(x),
     df: (x) => Math.cos(x),
     punten: [0, 0.5, 1],
@@ -740,6 +751,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     examenbrug: true,
     faqUitgebreid: true,
     typVorm: "cosx",
+    ookGezochtAls: ["afgeleide cosx", "afgeleide cos(x)"],
     f: (x) => Math.cos(x),
     df: (x) => -Math.sin(x),
     punten: [0, 0.5, 1],

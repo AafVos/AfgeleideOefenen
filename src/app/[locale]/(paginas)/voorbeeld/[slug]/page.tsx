@@ -103,6 +103,12 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         <p className="text-sm font-medium uppercase tracking-wider text-accent">Voorbeeld</p>
         <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{voorbeeld.kop}</h1>
 
+        {voorbeeld.ookGezochtAls && voorbeeld.ookGezochtAls.length > 0 && (
+          <p className="mt-2 text-sm text-text-muted">
+            Ook gezocht als: {voorbeeld.ookGezochtAls.join(', ')}.
+          </p>
+        )}
+
         <Suspense fallback={null}>
           <YoutubeWelkom
             ctaHref={proberenVanOefenen(voorbeeld.oefenen)}
