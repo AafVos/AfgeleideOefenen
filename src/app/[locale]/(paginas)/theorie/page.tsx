@@ -45,6 +45,8 @@ export default async function TheoriePage() {
         chapterLabel: t('chapterLabel'),
         collapseSidebar: t('collapseSidebar'),
         expandSidebar: t('expandSidebar'),
+        kiesOnderdeel: 'Kies een onderdeel',
+        sluiten: 'Sluiten',
         exampleLabel: t('example'),
         detailsLabel: t('detailsLabel'),
         showSteps: t('showSteps'),
