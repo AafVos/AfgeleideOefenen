@@ -43,8 +43,12 @@ describe('wiskunde-met-aaf-videos', () => {
     expect(video?.bron).toBe('CE vwo wiskunde B 2024 · tijdvak 1 · vraag 1')
   })
 
-  it('geeft niets terug voor een pagina zonder video', () => {
-    expect(getWiskundeMetAafVideos('quotientregel')).toEqual([])
-    expect(getWiskundeMetAafVideos('uitleg-videos')).toEqual([])
+  it('kent de quotiëntregelvideo op quotientregel, examentraining en uitleg-videos', () => {
+    const video = getWiskundeMetAafVideos('quotientregel')[0]
+    expect(video?.youtubeId).toBe('dE6p5y89aFQ')
+    expect(video?.soort).toBe('lang')
+    expect(getWiskundeMetAafVideos('examentraining').map((v) => v.id)).toContain(video?.id)
+    expect(getWiskundeMetAafVideos('uitleg-videos').map((v) => v.id)).toContain(video?.id)
+    expect(video?.bron).toBe('CE vwo wiskunde B 2023 · tijdvak 2 · vraag 1')
   })
 })
