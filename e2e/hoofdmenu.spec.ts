@@ -69,7 +69,11 @@ test('elk item in het hamburgermenu is minstens 44px hoog (AFG-771) @telefoon', 
   const hamburger = page.getByLabel('Menu openen')
   await hamburger.tap()
 
-  const items = page.locator('nav a, nav button[type="submit"]')
+  // Scope op het hamburgermenu zelf: de desktop-balk heeft ook een <nav>,
+  // die op telefoonformaat verborgen is (hoogte 0) maar wel matcht op een
+  // generieke `nav`-selector.
+  const menu = page.getByLabel('Menu sluiten').locator('xpath=..').locator('nav')
+  const items = menu.locator('a, button[type="submit"]')
   const aantal = await items.count()
   expect(aantal).toBeGreaterThan(0)
 
