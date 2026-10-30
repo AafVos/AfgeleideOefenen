@@ -1,4 +1,5 @@
 import { MACHTSREGEL_OEFENEN } from '@/content/theory/machtsregel'
+import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
 
 /**
  * Video's van het YouTube-kanaal "Wiskunde met Aaf" (@WiskundeMetAaf),
@@ -47,11 +48,22 @@ const VIDEOS: WiskundeMetAafVideo[] = [
     oefenen: MACHTSREGEL_OEFENEN,
   },
 
-  // AFG-753 vervolg: twee video's volgen zodra ze live staan (zie het ticket
-  // en het vervolgticket) — een lange video over examen 2023-II vraag 1
-  // (quotiëntregel, pagina's quotientregel/examentraining/uitleg-videos) en,
-  // alleen als die lange video er dan nog niet staat, een Short over
-  // hetzelfde onderwerp.
+  {
+    id: 'examen-2023-ii-vraag-1-raaklijn-in-o',
+    title: 'Examenvraag vwo wiskunde B: de raaklijn in O',
+    description:
+      'Aaf leidt met de quotiëntregel de afgeleide af en bepaalt daarmee de vergelijking van de raaklijn in punt O.',
+    soort: 'lang',
+    duration: '2:55',
+    youtubeId: 'dE6p5y89aFQ',
+    bron: 'CE vwo wiskunde B 2023 · tijdvak 2 · vraag 1',
+    paginas: ['quotientregel', 'examentraining', 'uitleg-videos'],
+    oefenen: QUOTIENTREGEL_OEFENEN,
+  },
+
+  // AFG-768: de bijbehorende Short (BtdNsJpE2Js) komt er niet apart bij
+  // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
+  // staat (zie de regel hierboven in dit bestand).
 ]
 
 /** Video's die op deze pagina moeten verschijnen, in de volgorde van `VIDEOS`. */
