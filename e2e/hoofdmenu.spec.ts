@@ -55,3 +55,26 @@ test('op de telefoon sluit het hoofdmenu bij een tik ernaast (AFG-622) @telefoon
   await page.locator('body').tap({ position: { x: 5, y: 5 } })
   await expect(link).toBeHidden()
 })
+
+/**
+ * Elk item in het hamburgermenu moet minstens 44px hoog zijn, anders is de
+ * tikzone op de telefoon te klein — vooral riskant bij "Uitloggen" vlak
+ * onder "Feedback sturen" (AFG-771).
+ */
+test('elk item in het hamburgermenu is minstens 44px hoog (AFG-771) @telefoon', async ({
+  page,
+}) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 700, 'Dit gaat over telefoonformaat.')
+
+  const hamburger = page.getByLabel('Menu openen')
+  await hamburger.tap()
+
+  const items = page.locator('nav a, nav button[type="submit"]')
+  const aantal = await items.count()
+  expect(aantal).toBeGreaterThan(0)
+
+  for (let i = 0; i < aantal; i++) {
+    const vak = await items.nth(i).boundingBox()
+    expect(vak?.height ?? 0).toBeGreaterThanOrEqual(44)
+  }
+})
