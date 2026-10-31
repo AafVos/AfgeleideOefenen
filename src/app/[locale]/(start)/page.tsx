@@ -153,6 +153,34 @@ export default async function HomePage() {
           </div>
         </section>
 
+        <section className="mt-10">
+          <h2 className="font-serif text-2xl text-text">{t('veelGezochtH2')}</h2>
+          <ul className="mt-4 space-y-1">
+            {(
+              [
+                ['zoek5', '/voorbeeld/ln-x'],
+                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
+                ['zoek3', '/voorbeeld/sin-x'],
+                ['zoek1', '/voorbeeld/x-kwadraat'],
+                ['zoek2', '/voorbeeld/wortel-x'],
+                ['zoek4', '/voorbeeld/e-tot-de-x'],
+                ['zoek6', '/theorie/raaklijn'],
+                ['zoek7', '/theorie/extreme-waarden'],
+              ] as const
+            ).map(([labelKey, href]) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  data-meet="start-veelgezocht"
+                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
+                >
+                  {t(labelKey)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section className="mt-10 text-center">
           <p className="text-sm text-text-muted">{t('tagline')}</p>
           <p className="mt-4">
@@ -192,31 +220,6 @@ export default async function HomePage() {
                     {t(titleKey)}
                   </p>
                   <p className="mt-1 text-sm text-text-muted">{t(bodyKey)}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <h2 className="mt-10 font-serif text-2xl text-text">{t('veelGezochtH2')}</h2>
-          <ul className="mt-4 space-y-1">
-            {(
-              [
-                ['zoek5', '/voorbeeld/ln-x'],
-                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
-                ['zoek3', '/voorbeeld/sin-x'],
-                ['zoek1', '/voorbeeld/x-kwadraat'],
-                ['zoek2', '/voorbeeld/wortel-x'],
-                ['zoek4', '/voorbeeld/e-tot-de-x'],
-                ['zoek6', '/theorie/raaklijn'],
-                ['zoek7', '/theorie/extreme-waarden'],
-              ] as const
-            ).map(([labelKey, href]) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  data-meet="start-veelgezocht"
-                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
-                >
-                  {t(labelKey)}
                 </Link>
               </li>
             ))}
