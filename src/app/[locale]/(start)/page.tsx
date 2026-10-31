@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
+import { StickyStartProefsom } from '@/components/sticky-start-proefsom'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
@@ -110,6 +111,8 @@ export default async function HomePage() {
         </section>
 
         <HomeDemo googleAan={googleLoginAan()} />
+
+        <StickyStartProefsom doelId="proefsom" />
 
         <section className="mt-8 text-center">
           <p className="mx-auto max-w-xl text-sm leading-relaxed text-text-muted">
