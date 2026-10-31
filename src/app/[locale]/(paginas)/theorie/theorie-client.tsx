@@ -7,6 +7,12 @@ import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import { cn } from '@/components/ui'
+import {
+  DESKTOP_QUERY,
+  LocatieBalk,
+  OnderdeelOverlay,
+  useIsDesktop,
+} from '@/components/mobiel-locatie-kiezer'
 import type { OverviewCard } from '@/content/theory/afgeleiden'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { heeftSessiekoekje } from '@/lib/supabase/sessie-koekje'
@@ -24,6 +30,8 @@ type Labels = {
   chapterLabel: string
   collapseSidebar: string
   expandSidebar: string
+  kiesOnderdeel: string
+  sluiten: string
   exampleLabel: string
   detailsLabel: string
   showSteps: string
@@ -32,14 +40,6 @@ type Labels = {
   practiceSelf: string
   practiceChapter: string
   freeAccount: string
-}
-
-const desktopQuery = '(min-width: 1024px)'
-
-function subscribeDesktop(onChange: () => void) {
-  const mq = window.matchMedia(desktopQuery)
-  mq.addEventListener('change', onChange)
-  return () => mq.removeEventListener('change', onChange)
 }
 
 /** Het sessiekoekje staat pas in de browser. De server leest het niet, zodat de pagina statisch blijft. */
@@ -59,19 +59,16 @@ function useIngelogd() {
   return useSyncExternalStore(subscribeIngelogd, leesIngelogd, () => false)
 }
 
-/** Op de server (en bij de eerste paint) dicht, zodat een telefoon de formule ziet. */
-function useIsDesktop() {
-  return useSyncExternalStore(
-    subscribeDesktop,
-    () => window.matchMedia(desktopQuery).matches,
-    () => false,
-  )
-}
-
 /** "H2 — De afgeleide functie" → { code: "H2", short: "De afgeleide functie" } */
 function splitTitle(title: string): { code: string | null; short: string } {
   const m = title.match(/^(H\d+)\s*[—–-]\s*(.+)$/)
   return m ? { code: m[1]!, short: m[2]! } : { code: null, short: title }
+}
+
+/** "H2 — De afgeleide functie" → "H2 – De afgeleide functie" */
+function hoofdstukTitel(chapter: TheorieChapter): string {
+  const { code, short } = splitTitle(chapter.title)
+  return code ? `${code} – ${short}` : short
 }
 
 /**
@@ -112,8 +109,11 @@ export function TheorieClient({
 }) {
   const isDesktop = useIsDesktop()
   // null = volg het scherm: dicht op een telefoon, open op een computer.
+  // Geldt alleen voor de zijbalk op een computer; op een telefoon gebruikt
+  // deze pagina dezelfde locatie-balk + "Kies een onderdeel" als Oefenen.
   const [sidebarChoice, setSidebarChoice] = useState<boolean | null>(null)
   const sidebarOpen = sidebarChoice ?? isDesktop
+  const [boomOpen, setBoomOpen] = useState(false)
   const [activeSlug, setActiveSlug] = useState<string | null>(chapters[0]?.slug ?? null)
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
   const [openCards, setOpenCards] = useState<Set<string>>(new Set())
@@ -154,10 +154,10 @@ export function TheorieClient({
   }
 
   const toonHoofdstuk = useCallback((slug: string, kaartId: string | null) => {
-    const mobiel = !window.matchMedia(desktopQuery).matches
-    // Op een telefoon klapt de lijst eerst dicht. Scroll pas daarna, anders
-    // schuift het hoofdstuk mee omhoog en verdwijnt de kop uit beeld.
-    if (mobiel) setSidebarChoice(false)
+    const mobiel = !window.matchMedia(DESKTOP_QUERY).matches
+    // Op een telefoon sluit het "Kies een onderdeel"-scherm eerst. Scroll pas
+    // daarna, anders schuift het hoofdstuk mee omhoog en verdwijnt de kop uit beeld.
+    if (mobiel) setBoomOpen(false)
     programmatischRef.current = true
     markeerScrollEinde()
     setActiveSlug(slug)
@@ -288,15 +288,97 @@ export function TheorieClient({
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [activeSlug, activeCardId, isDesktop, sidebarOpen])
 
+  const actieveHoofdstuk = chapters.find((ch) => ch.slug === activeSlug) ?? chapters[0] ?? null
+  const actieveKaart = actieveHoofdstuk?.cards.find((card) => card.id === activeCardId) ?? null
+  const kop = actieveHoofdstuk
+    ? actieveKaart
+      ? `${hoofdstukTitel(actieveHoofdstuk)} · ${actieveKaart.title}`
+      : hoofdstukTitel(actieveHoofdstuk)
+    : labels.h1
+
+  function hoofdstukkenLijst() {
+    return (
+      <ul className="space-y-0.5">
+        {chapters.map((ch) => {
+          const active = ch.slug === activeSlug
+          const { code, short } = splitTitle(ch.title)
+          return (
+            <li key={ch.slug}>
+              <button
+                ref={(el) => {
+                  if (el) chapterBtnRefs.current.set(ch.slug, el)
+                  else chapterBtnRefs.current.delete(ch.slug)
+                }}
+                type="button"
+                onClick={() => zetAnker(`#hoofdstuk-${ch.slug}`)}
+                data-meet="theorie-hoofdstuk"
+                className={
+                  active
+                    ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
+                    : 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
+                }
+              >
+                <span className="truncate text-left">
+                  {code && (
+                    <>
+                      <span className="font-mono font-semibold">{code}</span>
+                      {' – '}
+                    </>
+                  )}
+                  {short}
+                </span>
+              </button>
+
+              {active && ch.cards.length > 0 && (
+                <ul className="mb-1 mt-0.5">
+                  {ch.cards.map((card) => {
+                    const cardActive = card.id === activeCardId
+                    return (
+                      <li key={card.id}>
+                        <button
+                          ref={(el) => {
+                            const key = `${ch.slug}/${card.id}`
+                            if (el) cardBtnRefs.current.set(key, el)
+                            else cardBtnRefs.current.delete(key)
+                          }}
+                          type="button"
+                          onClick={() => zetAnker(`#kaart-${ch.slug}-${card.id}`)}
+                          data-meet="theorie-kaart-in-zijbalk"
+                          aria-current={cardActive ? 'true' : undefined}
+                          className={
+                            cardActive
+                              ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent-light py-1.5 pl-7 pr-3 text-xs font-medium text-accent'
+                              : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
+                          }
+                        >
+                          <span
+                            className={
+                              cardActive
+                                ? 'size-1.5 shrink-0 rounded-full bg-accent'
+                                : 'size-1.5 shrink-0 rounded-full bg-border'
+                            }
+                          />
+                          <span className="truncate text-left">{card.title}</span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    )
+  }
+
   return (
     <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-hidden">
-      {/* ── Sidebar ─────────────────────────────────────────────────── */}
+      {/* ── Zijbalk (computer) ──────────────────────────────────────── */}
       <aside
         className={cn(
-          'nice-scrollbar shrink-0 border-b border-border bg-surface lg:h-full lg:min-h-0 lg:shrink lg:border-b-0 lg:border-r',
-          sidebarOpen
-            ? 'overflow-x-auto p-4 lg:w-64 lg:overflow-x-visible lg:overflow-y-auto lg:py-8'
-            : 'px-0 py-2 lg:w-11 lg:py-4',
+          'nice-scrollbar hidden shrink-0 border-border bg-surface lg:block lg:h-full lg:min-h-0 lg:shrink lg:border-r',
+          sidebarOpen ? 'lg:w-64 lg:overflow-y-auto lg:p-4 lg:py-8' : 'lg:w-11 lg:py-4',
         )}
       >
         <div className={sidebarOpen ? 'flex items-center justify-between gap-2' : 'flex justify-center'}>
@@ -314,15 +396,8 @@ export function TheorieClient({
               sidebarOpen ? labels.collapseSidebar : `${labels.chapterLabel} — ${labels.expandSidebar}`
             }
             title={sidebarOpen ? labels.collapseSidebar : labels.expandSidebar}
-            className={
-              sidebarOpen
-                ? 'inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text'
-                : 'inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md px-3 text-text-muted hover:bg-surface-2 hover:text-text lg:size-11 lg:w-11 lg:px-0'
-            }
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
           >
-            {!sidebarOpen && (
-              <span className="text-sm font-medium text-text lg:hidden">{labels.chapterLabel}</span>
-            )}
             <svg
               viewBox="0 0 24 24"
               className={`size-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`}
@@ -339,86 +414,16 @@ export function TheorieClient({
           </button>
         </div>
 
-        {sidebarOpen && (
-          <ul className="mt-3 space-y-0.5">
-            {chapters.map((ch) => {
-              const active = ch.slug === activeSlug
-              const { code, short } = splitTitle(ch.title)
-              return (
-                <li key={ch.slug}>
-                  <button
-                    ref={(el) => {
-                      if (el) chapterBtnRefs.current.set(ch.slug, el)
-                      else chapterBtnRefs.current.delete(ch.slug)
-                    }}
-                    type="button"
-                    onClick={() => zetAnker(`#hoofdstuk-${ch.slug}`)}
-                    data-meet="theorie-hoofdstuk"
-                    className={
-                      active
-                        ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white'
-                        : 'flex min-h-11 w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-surface-2 hover:text-text'
-                    }
-                  >
-                    <span className="truncate text-left">
-                      {code && (
-                        <>
-                          <span className="font-mono font-semibold">{code}</span>
-                          {' – '}
-                        </>
-                      )}
-                      {short}
-                    </span>
-                  </button>
-
-                  {active && ch.cards.length > 0 && (
-                    <ul className="mb-1 mt-0.5">
-                      {ch.cards.map((card) => {
-                        const cardActive = card.id === activeCardId
-                        return (
-                          <li key={card.id}>
-                            <button
-                              ref={(el) => {
-                                const key = `${ch.slug}/${card.id}`
-                                if (el) cardBtnRefs.current.set(key, el)
-                                else cardBtnRefs.current.delete(key)
-                              }}
-                              type="button"
-                              onClick={() => zetAnker(`#kaart-${ch.slug}-${card.id}`)}
-                              data-meet="theorie-kaart-in-zijbalk"
-                              aria-current={cardActive ? 'true' : undefined}
-                              className={
-                                cardActive
-                                  ? 'flex min-h-11 w-full items-center gap-2 rounded-md bg-accent-light py-1.5 pl-7 pr-3 text-xs font-medium text-accent'
-                                  : 'flex min-h-11 w-full items-center gap-2 rounded-md py-1.5 pl-7 pr-3 text-xs text-text-muted hover:text-text'
-                              }
-                            >
-                              <span
-                                className={
-                                  cardActive
-                                    ? 'size-1.5 shrink-0 rounded-full bg-accent'
-                                    : 'size-1.5 shrink-0 rounded-full bg-border'
-                                }
-                              />
-                              <span className="truncate text-left">{card.title}</span>
-                            </button>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        {sidebarOpen && <div className="mt-3">{hoofdstukkenLijst()}</div>}
       </aside>
 
-      {/* ── Content ─────────────────────────────────────────────────── */}
+      {/* ── Inhoud ──────────────────────────────────────────────────── */}
       <div
         ref={inhoudRef}
         className="nice-scrollbar lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain"
       >
+        <LocatieBalk label={kop} onOpen={() => setBoomOpen(true)} dataMeet="theorie-kies-onderdeel" />
+
         <div className="mx-auto max-w-5xl space-y-12 px-4 py-8">
           <h1 className="sr-only">{labels.h1}</h1>
           <div className="flex flex-wrap items-center gap-4">
@@ -443,6 +448,16 @@ export function TheorieClient({
           ))}
         </div>
       </div>
+
+      <OnderdeelOverlay
+        open={boomOpen}
+        onClose={() => setBoomOpen(false)}
+        title={labels.kiesOnderdeel}
+        closeLabel={labels.sluiten}
+        dataMeetSluiten="theorie-kies-onderdeel-sluiten"
+      >
+        {hoofdstukkenLijst()}
+      </OnderdeelOverlay>
     </div>
   )
 }

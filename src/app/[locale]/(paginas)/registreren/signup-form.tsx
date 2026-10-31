@@ -113,7 +113,7 @@ export function SignupForm({
               type="button"
               onClick={handleResend}
               disabled={resendPending}
-              className="font-medium text-accent hover:underline disabled:opacity-60"
+              className="font-medium text-accent underline underline-offset-2 disabled:opacity-60"
             >
               {resendPending ? t('resendPending') : t('resendButton')}
             </button>
@@ -192,7 +192,7 @@ export function SignupForm({
         <Link
           href={hrefMetOefenpad('/inloggen', oefenpad)}
           data-meet="registreren-naar-inloggen"
-          className="font-medium text-accent hover:underline"
+          className="font-medium text-accent underline underline-offset-2"
         >
           {t('loginLink')}
         </Link>

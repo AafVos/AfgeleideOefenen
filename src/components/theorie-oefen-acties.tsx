@@ -3,7 +3,7 @@ import { ProbeerKnop } from '@/components/probeer-knop'
 import { Link } from '@/i18n/navigation'
 
 const TEKSTLINK =
-  'inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline'
+  'inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2'
 
 /**
  * Bodem van een theoriepagina: één groene hoofdknop om verder te oefenen

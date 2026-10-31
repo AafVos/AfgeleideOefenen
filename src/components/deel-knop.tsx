@@ -48,7 +48,7 @@ export function DeelKnop({
         data-meet="delen"
         className={
           variant === 'tekstlink'
-            ? 'inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline'
+            ? 'inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2'
             : compact
               ? 'inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm text-text hover:bg-surface-2'
               : 'inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2'

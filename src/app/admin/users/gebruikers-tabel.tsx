@@ -76,7 +76,7 @@ export function GebruikersTabel({ users }: { users: UserOverview[] }) {
                     </select>
                     <button
                       type="submit"
-                      className="text-xs font-medium text-accent hover:underline"
+                      className="text-xs font-medium text-accent underline underline-offset-2"
                     >
                       zet
                     </button>

@@ -221,11 +221,16 @@ Cloudflare Web Analytics om: die telt alleen paginabezoeken.
   registreren → eerste som; de proefsom telt zowel op `/proberen` als op de
   startpagina zelf), `meet_doelen_top`, `meet_dode_klikken`,
   `meet_woedeklikken`, `meet_fouten`, `meet_scroll_per_pagina`,
-  `meet_routes_top` (de twintig meestgelopen routes, eerste zes stappen),
-  `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en dagen
-  actief) en `meet_voortgang_per_schuilnaam` (opgetelde voortgang naast de
+  `meet_routes_top` (de twintig meestgelopen routes per site, eerste zes
+  stappen), `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en
+  dagen actief) en `meet_voortgang_per_schuilnaam` (opgetelde voortgang naast de
   schuilnaam). De alleen-lezen analistrol mag daar bij; het geheim achter de
-  schuilnaam kan die rol niet opvragen.
+  schuilnaam kan die rol niet opvragen. Elk van die overzichten behalve
+  `meet_voortgang_per_schuilnaam` heeft een kolom `site` (`afgeleide` of
+  `wiskundemetaaf`): zonder filter op die kolom tel je de cijfers van
+  allebei de sites bij elkaar op. `meet_voortgang_per_schuilnaam` leest uit
+  `user_progress_new`, niet uit `site_gebeurtenissen`, en heeft die kolom
+  niet.
 
 ---
 

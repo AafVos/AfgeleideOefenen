@@ -3,13 +3,12 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
+import { StickyStartProefsom } from '@/components/sticky-start-proefsom'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { googleLoginAan } from '@/lib/auth/google'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
-
-import { StickyStartProefsom } from '@/components/sticky-start-proefsom'
 
 import { ExamenStart } from './examen-start'
 import { HomeDemo } from './home-demo'
@@ -102,15 +101,21 @@ export default async function HomePage() {
             {t('h1Start')}{' '}
             <span className="whitespace-nowrap text-accent">{t('h1Accent')}</span>
           </h1>
-          <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-6">
+          <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-4">
             {t('lead')}
           </p>
 
           <Suspense fallback={null}>
             <YoutubeWelkom ctaHref="#proefsom" ctaDataMeet="start-youtube-proefsom" />
           </Suspense>
+        </section>
 
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-text-muted sm:mt-4">
+        <HomeDemo googleAan={googleLoginAan()} />
+
+        <StickyStartProefsom doelId="proefsom" />
+
+        <section className="mt-8 text-center">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-text-muted">
             {t.rich('subLead', {
               oefenen: (chunks) => (
                 <span className="text-text">{chunks}</span>
@@ -122,36 +127,19 @@ export default async function HomePage() {
                 <Link
                   href="/hoe-het-werkt"
                   data-meet="start-hoe-het-werkt"
-                  className="font-medium text-accent underline-offset-2 hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {t('subLeadLink')}
                 </Link>
               ),
             })}
           </p>
-          <p className="mt-2 sm:mt-4">
-            <a
-              href="#proefsom"
-              data-meet="start-toetsweek-proefsom"
-              className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
-            >
-              {t('toetsweekProefsom')}
-            </a>
-          </p>
 
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
-            <a
-              id="start-hero-proefsom"
-              href="#proefsom"
-              data-meet="start-regels"
-              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
-            >
-              {t('ctaRegel')}
-            </a>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/registreren"
               data-meet="start-registreren"
-              className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
               {t('ctaRegister')}
             </Link>
@@ -165,17 +153,13 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <StickyStartProefsom tekst={t('ctaRegel')} primaryId="start-hero-proefsom" />
-
-        <HomeDemo googleAan={googleLoginAan()} />
-
         <section className="mt-10 text-center">
           <p className="text-sm text-text-muted">{t('tagline')}</p>
           <p className="mt-4">
             <IntegraalVerwijzing
               tekst={t('integraal')}
               dataMeet="start-integraal"
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             />
           </p>
         </section>
@@ -230,7 +214,7 @@ export default async function HomePage() {
                 <Link
                   href={href}
                   data-meet="start-veelgezocht"
-                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
                 >
                   {t(labelKey)}
                 </Link>
@@ -243,7 +227,7 @@ export default async function HomePage() {
                 <Link
                   href={EXAMENTRAINING_PAD}
                   data-meet="start-examentraining"
-                  className="font-medium text-accent underline-offset-2 hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {chunks}
                 </Link>

@@ -103,6 +103,12 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         <p className="text-sm font-medium uppercase tracking-wider text-accent">Voorbeeld</p>
         <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{voorbeeld.kop}</h1>
 
+        {voorbeeld.ookGezochtAls && voorbeeld.ookGezochtAls.length > 0 && (
+          <p className="mt-2 text-sm text-text-muted">
+            Ook gezocht als: {voorbeeld.ookGezochtAls.join(', ')}.
+          </p>
+        )}
+
         <Suspense fallback={null}>
           <YoutubeWelkom
             ctaHref={proberenVanOefenen(voorbeeld.oefenen)}
@@ -183,13 +189,13 @@ export default async function VoorbeeldPage({ params }: PageProps) {
             <DeelKnop variant="tekstlink" />
             <Link
               href={voorbeeld.oefenen as '/oefenen'}
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             >
               Oefenen met een account
             </Link>
             <Link
               href={voorbeeld.theoriePad as '/theorie'}
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             >
               {voorbeeld.theorieNaam}
             </Link>

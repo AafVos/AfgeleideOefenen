@@ -140,6 +140,20 @@ describe('antwoordpagina-s', () => {
     }
   })
 
+  it('toont "Ook gezocht als" met typvormen op de drukste pagina-s (AFG-766)', () => {
+    const metOokGezochtAls = ['een-gedeeld-door-x', 'e-tot-de-x', 'ln-x', 'sin-x', 'cos-x']
+    for (const slug of metOokGezochtAls) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.ookGezochtAls).toBeDefined()
+      expect(voorbeeld.ookGezochtAls!.length).toBeGreaterThan(0)
+      for (const vorm of voorbeeld.ookGezochtAls!) {
+        // Geen spoiler: het antwoord (bijvoorbeeld "cos(x)" op de sin-x-pagina) hoort hier niet in.
+        expect(vorm).not.toContain(voorbeeld.antwoordTekst)
+        expect(vorm.length).toBeGreaterThan(0)
+      }
+    }
+  })
+
   it('toont de brug naar de examentraining op de drukste pagina-s (AFG-623)', () => {
     const metBrug = [
       'wortel-x',

@@ -12,6 +12,7 @@ import {
   MACHTSREGEL_VOORBEELDEN,
 } from '@/content/theory/machtsregel'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
 
@@ -101,6 +102,8 @@ export default function MachtsregelPage() {
           ))}
         </ul>
       </section>
+
+      <WiskundeMetAafVideos pagina="machtsregel" />
 
       <TheorieOefenActies
         oefenen={MACHTSREGEL_OEFENEN}

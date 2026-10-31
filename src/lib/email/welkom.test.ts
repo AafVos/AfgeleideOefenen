@@ -128,6 +128,26 @@ describe('welkomstmail', () => {
     expect(deleteClaim).toHaveBeenCalledWith('user_id', USER_ID)
   })
 
+  it('logt bij een mislukte verzending nooit het adres van de leerling', async () => {
+    send.mockResolvedValue({
+      error: { name: 'validation_error', message: 'leerling@example.test geweigerd' },
+    })
+
+    await stuurWelkomstmail(USER_ID)
+
+    const gelogd = vi.mocked(console.error).mock.calls.flat().join(' ')
+    expect(gelogd).not.toContain('leerling@example.test')
+  })
+
+  it('logt ook bij een gegooide fout nooit het adres van de leerling', async () => {
+    send.mockRejectedValue(new Error('leerling@example.test geweigerd'))
+
+    await stuurWelkomstmail(USER_ID)
+
+    const gelogd = vi.mocked(console.error).mock.calls.flat().join(' ')
+    expect(gelogd).not.toContain('leerling@example.test')
+  })
+
   it('houdt de overige metagegevens heel bij het terugdraaien', async () => {
     send.mockRejectedValue(new Error('geen verbinding'))
 
