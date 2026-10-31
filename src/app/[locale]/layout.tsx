@@ -70,13 +70,19 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      {/* De hele pagina vult het scherm. De kop en de footer blijven staan;
-          alleen het midden scrolt. Zo schuift er geen tekst onder de kop.
-          De kop zelf zit in de lay-out van de pagina, niet hier: de
-          startpagina heeft een kop zonder inlogcontrole. */}
+      {/* De hele pagina vult het scherm. De kop blijft altijd staan; alleen
+          het midden scrolt. Zo schuift er geen tekst onder de kop. De kop
+          zelf zit in de lay-out van de pagina, niet hier: de startpagina
+          heeft een kop zonder inlogcontrole.
+          Op de computer blijft de voettekst hier ook vast staan, als laatste
+          vak in deze kolom. Op de telefoon staat hij hier niet: daar hoort
+          hij onderaan de pagina-inhoud, zodat hij meescrolt in plaats van
+          permanent ruimte in te nemen — zie `(paginas)/layout.tsx` en
+          `(start)/layout.tsx`, en `oefenen-client.tsx` voor de oefenpagina
+          (die zelf bepaalt wat er scrolt). */}
       <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
         {children}
-        <SiteFooter />
+        <SiteFooter className="hidden sm:block" />
       </div>
     </NextIntlClientProvider>
   )

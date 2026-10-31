@@ -20,6 +20,7 @@ import {
   SCROLL_STAPPEN,
   schoonPad,
   slaPadOver,
+  utmBron,
   verwijzerDomein,
   type Gebeurtenis,
   type Klikplek,
@@ -121,6 +122,7 @@ export function startMeten(): Meter | null {
   let gestuurdDitUur = 0
   let uurBegin = Date.now()
   let verwijzer = verwijzerDomein(document.referrer, window.location.hostname)
+  let utmSource = utmBron(window.location.search)
   let gehaaldeStappen = new Set<number>()
   let kliks: Klikplek[] = []
   let gestopt = false
@@ -147,12 +149,15 @@ export function startMeten(): Meter | null {
       // als wat hij op dat moment is.
       apparaat: apparaatVanBreedte(window.innerWidth),
       verwijzer,
+      utm_source: utmSource,
       // De server bepaalt dit zelf uit het sessiekoekje; de browser kan er
       // niet bij.
       ingelogd: false,
     })
-    // De verwijzer hoort maar bij de eerste gebeurtenis van het tabblad.
+    // De verwijzer en utm_source horen maar bij de eerste gebeurtenis van
+    // het tabblad.
     verwijzer = null
+    utmSource = null
 
     if (wachtrij.length >= MAX_PER_ZENDING) verstuur()
   }

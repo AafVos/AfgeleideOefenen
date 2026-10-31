@@ -175,7 +175,7 @@ export default async function ZelfToetsResultaatPage({
                     topicSlug: group.topicSlug,
                     clusterSlug: group.clusterSlug,
                   })}
-                  className="font-medium text-accent hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {t('drillLink')} →
                 </Link>

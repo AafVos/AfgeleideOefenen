@@ -97,6 +97,22 @@ export function anoniemeInloggenPagina(request: Request): boolean {
   return anoniemePagina(request, (pathname) => INLOGGEN_PAD.test(pathname))
 }
 
+// /nl/registreren. Geen `?van=` of `?naar=`: die bezoeken (bijv. een link
+// met een herkomstcode of een terugkeerpad) horen bij de gewone server, net
+// als het adres van een ingelogde leerling (anoniemePagina sluit die al
+// uit).
+const REGISTREREN_PAD = /^\/nl\/registreren\/?$/
+
+/**
+ * Geldt voor een kaal bezoek aan de registratiepagina zonder sessie. De
+ * pagina is voor iedereen zonder sessie gelijk: wie wel een sessie heeft
+ * redirect de gewone server altijd door (zie page.tsx), dus die versie
+ * hoeft hier niet klaar te staan.
+ */
+export function anoniemeRegistrerenPagina(request: Request): boolean {
+  return anoniemePagina(request, (pathname) => REGISTREREN_PAD.test(pathname))
+}
+
 // /nl/voorbeeld/wortel-x. Elk voorbeeld staat al vast via
 // generateStaticParams, dus elk bestaand adres heeft een klaargezet bestand.
 const VOORBEELD_PAD = /^\/nl\/voorbeeld\/([a-z0-9-]+)\/?$/
@@ -133,4 +149,30 @@ export function statischZonderPersoonlijk(pathname: string): string | null {
   if (basis === '/nl/uitleg-videos') return basis
   if (/^\/nl\/voorbeeld\/[a-z0-9-]+$/.test(basis)) return basis
   return null
+}
+
+const REDIRECT_STATUSSEN = new Set([301, 302, 303, 307, 308])
+
+/**
+ * OpenNext maakt de Location-kop van een redirect naar hetzelfde domein
+ * bewust relatief (`normalizeLocationHeader` in
+ * `node_modules/@opennextjs/aws/dist/core/routing/util.js`): een redirect
+ * vanuit `src/proxy.ts` die zelf een absoluut adres meegeeft, komt bij de
+ * bezoeker alsnog aan als `Location: /nl/...`. Google hield daardoor de oude
+ * URL zonder /nl naast de canonieke /nl-variant vast (AFG-738). Dit zet de
+ * kop terug naar een absoluut adres voordat het antwoord de rand verlaat.
+ */
+export function metAbsoluteLocatie(antwoord: Response, oorsprong: string): Response {
+  const locatie = antwoord.headers.get('location')
+  if (!REDIRECT_STATUSSEN.has(antwoord.status) || !locatie?.startsWith('/')) {
+    return antwoord
+  }
+
+  const headers = new Headers(antwoord.headers)
+  headers.set('location', `${oorsprong}${locatie}`)
+  return new Response(antwoord.body, {
+    status: antwoord.status,
+    statusText: antwoord.statusText,
+    headers,
+  })
 }

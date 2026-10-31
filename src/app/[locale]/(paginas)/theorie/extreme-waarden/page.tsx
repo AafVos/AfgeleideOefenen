@@ -1,7 +1,6 @@
-import { DeelKnop } from '@/components/deel-knop'
+import { Suspense } from 'react'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
   EXTREME_WAARDEN_FORMULE,
@@ -13,6 +12,8 @@ import {
   EXTREME_WAARDEN_VOORBEELDEN,
 } from '@/content/theory/extreme-waarden'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -36,6 +37,14 @@ export default function ExtremeWaardenPage() {
     <div className="mx-auto max-w-3xl px-4 py-12">
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{EXTREME_WAARDEN_TITEL}</h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(EXTREME_WAARDEN_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Een extreme waarde is een top: de grootste of de kleinste waarde in de buurt. Daar
         is de helling van de grafiek nul.
@@ -93,22 +102,10 @@ export default function ExtremeWaardenPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <DeelKnop />
-        <ProbeerKnop oefenen={EXTREME_WAARDEN_OEFENEN} />
-        <Link
-          href={EXTREME_WAARDEN_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={EXTREME_WAARDEN_OEFENEN}
+        extra={[{ href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' }]}
+      />
     </div>
   )
 }

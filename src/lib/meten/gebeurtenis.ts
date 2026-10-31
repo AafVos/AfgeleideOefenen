@@ -53,6 +53,8 @@ export type Gebeurtenis = {
   waarde: number | null
   apparaat: MeetApparaat
   verwijzer: string | null
+  /** `?utm_source=` van de landingspagina, bijvoorbeeld `chatgpt.com`. */
+  utm_source: string | null
   ingelogd: boolean
 }
 
@@ -98,6 +100,16 @@ export function verwijzerDomein(verwijzer: string, eigenHost: string): string | 
   const kaal = host.replace(/^www\./, '')
   if (kaal === eigenHost.replace(/^www\./, '')) return null
   return kaal.slice(0, 80)
+}
+
+/**
+ * `?utm_source=` van de landingspagina, in kleine letters. Komt de bezoeker
+ * zonder die parameter binnen, dan is er niets te melden.
+ */
+export function utmBron(zoekreeks: string): string | null {
+  const parameters = new URLSearchParams(zoekreeks.replace(/^\?/, ''))
+  const waarde = parameters.get('utm_source')?.trim().toLowerCase()
+  return waarde ? waarde.slice(0, 80) : null
 }
 
 const BOTS =
@@ -215,6 +227,10 @@ export function geldigeGebeurtenis(ruw: unknown): Gebeurtenis | null {
     verwijzer:
       typeof rij.verwijzer === 'string' && rij.verwijzer
         ? rij.verwijzer.slice(0, 80)
+        : null,
+    utm_source:
+      typeof rij.utm_source === 'string' && rij.utm_source
+        ? rij.utm_source.slice(0, 80)
         : null,
     ingelogd: rij.ingelogd === true,
   }

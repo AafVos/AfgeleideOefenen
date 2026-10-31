@@ -27,10 +27,12 @@ const ingang = `// ${merkteken}
 // is. Iemand die is ingelogd gaat wel door die bundel, zodat de kop klopt.
 import {
   anoniemeInloggenPagina,
+  anoniemeRegistrerenPagina,
   anoniemeStartpagina,
   anoniemeTheorieBestand,
   anoniemeUitlegVideosPagina,
   anoniemeVoorbeeldBestand,
+  metAbsoluteLocatie,
   statischZonderPersoonlijk,
 } from "../src/lib/startpagina-snel.ts";
 
@@ -105,6 +107,19 @@ export default {
       await bestand.body?.cancel();
     }
 
+    if (env.ASSETS && anoniemeRegistrerenPagina(request)) {
+      const bestand = await env.ASSETS.fetch(
+        "http://assets.local/cdn-cgi/registreren/index.html",
+      );
+      if (bestand.ok) {
+        const antwoord = uitBestand(bestand);
+        antwoord.headers.set("cache-control", "private, no-store");
+        antwoord.headers.set("x-registreren", "bestand");
+        return antwoord;
+      }
+      await bestand.body?.cancel();
+    }
+
     const voorbeeld = anoniemeVoorbeeldBestand(request);
     if (env.ASSETS && voorbeeld) {
       const bestand = await env.ASSETS.fetch(
@@ -127,25 +142,38 @@ export default {
     }
 
     const next = await import("./worker-next.js");
-    return next.default.fetch(request, env, ctx);
+    const antwoord = await next.default.fetch(request, env, ctx);
+    return metAbsoluteLocatie(antwoord, url.origin);
   },
 
   // De nachtelijke taken. Cloudflare roept dit aan volgens triggers.crons in
-  // wrangler.jsonc. Het echte werk staat in een gewone route van de site, dus
-  // hier zetten we alleen een verzoek in elkaar en geven dat aan de Next-bundel
-  // — zonder het netwerk op te gaan.
+  // wrangler.jsonc. Het echte werk staat in gewone routes van de site, dus
+  // hier zetten we alleen de verzoeken in elkaar en geven ze aan de
+  // Next-bundel — zonder het netwerk op te gaan. Eén route die mislukt mag de
+  // andere niet tegenhouden.
   async scheduled(event, env, ctx) {
     const basis = env.NEXT_PUBLIC_SITE_URL || "https://www.afgeleideoefenen.nl";
-    const verzoek = new Request(basis + "/api/cron/herinneringen", {
-      method: "POST",
-      headers: { "x-webhook-secret": env.WEBHOOK_SECRET || "" },
-    });
-
     const next = await import("./worker-next.js");
-    const antwoord = await next.default.fetch(verzoek, env, ctx);
-    // Alleen de status in de log: wie er mail kreeg hoort daar niet in.
-    console.log("[herinneringen] status " + antwoord.status);
-    await antwoord.body?.cancel();
+
+    async function roepAan(pad) {
+      const verzoek = new Request(basis + pad, {
+        method: "POST",
+        headers: { "x-webhook-secret": env.WEBHOOK_SECRET || "" },
+      });
+      try {
+        const antwoord = await next.default.fetch(verzoek, env, ctx);
+        // Alleen de status in de log: gegevens van leerlingen horen daar niet in.
+        console.log("[" + pad + "] status " + antwoord.status);
+        await antwoord.body?.cancel();
+      } catch (fout) {
+        console.error("[" + pad + "] " + fout);
+      }
+    }
+
+    // AFG-667: de dagtotalen van de klikmeting moeten hier draaien, niet meer
+    // afhankelijk van verkeer op /api/meet.
+    await roepAan("/api/cron/meting-onderhoud");
+    await roepAan("/api/cron/herinneringen");
   },
 };
 `
@@ -247,6 +275,15 @@ function inloggenPaginas() {
     throw new Error('Geen titel gevonden voor de inlogpagina.')
   }
   return [{ pad: '/nl/inloggen', bestand: 'index.html', titel: titel[1] }]
+}
+
+function registrerenPaginas() {
+  const tekst = fs.readFileSync(MESSAGES_BESTAND, 'utf8')
+  const titel = tekst.match(/"Register":\s*{\s*"title":\s*"([^"]+)"/)
+  if (!titel) {
+    throw new Error('Geen titel gevonden voor de registratiepagina.')
+  }
+  return [{ pad: '/nl/registreren', bestand: 'index.html', titel: titel[1] }]
 }
 
 function voorbeeldPaginas() {
@@ -433,6 +470,14 @@ async function schrijfStatischePaginas() {
     // dus ook hier geen openbaar bestand op het echte pad (AFG-637).
     await schrijfStatischeMap(poort, 'inloggen', inloggenPaginas(), {
       controleerAnoniem: (html) => html.includes('name="email"'),
+      sessieHerkenningScript: naarDashboardScript,
+      openbaarZetten: false,
+    })
+    // De registratiepagina linkt wel naar /nl/inloggen (de standaard-
+    // bevestiging klopt dus), maar staat net als /nl/inloggen in
+    // run_worker_first (`?van=`, `?naar=`), dus ook hier geen openbaar
+    // bestand op het echte pad (AFG-686, zie AFG-637/AFG-632 hierboven).
+    await schrijfStatischeMap(poort, 'registreren', registrerenPaginas(), {
       sessieHerkenningScript: naarDashboardScript,
       openbaarZetten: false,
     })

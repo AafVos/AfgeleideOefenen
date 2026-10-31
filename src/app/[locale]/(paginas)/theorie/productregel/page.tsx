@@ -1,7 +1,6 @@
-import { DeelKnop } from '@/components/deel-knop'
+import { Suspense } from 'react'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
   PRODUCTREGEL_FORMULE,
@@ -13,6 +12,8 @@ import {
   PRODUCTREGEL_VOORBEELDEN,
 } from '@/content/theory/productregel'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -36,6 +37,14 @@ export default function ProductregelPage() {
     <div className="mx-auto max-w-3xl px-4 py-12">
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{PRODUCTREGEL_TITEL}</h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(PRODUCTREGEL_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Je gebruikt de productregel als twee functies met elkaar vermenigvuldigd worden. Je
         differentieert ze om de beurt en telt die twee uitkomsten op.
@@ -93,28 +102,16 @@ export default function ProductregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <DeelKnop />
-        <ProbeerKnop oefenen={PRODUCTREGEL_OEFENEN} />
-        <Link
-          href={PRODUCTREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/uitleg-videos/somregel-of-productregel"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Bekijk de video: Somregel of productregel?
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={PRODUCTREGEL_OEFENEN}
+        extra={[
+          {
+            href: '/uitleg-videos/somregel-of-productregel',
+            label: 'Bekijk de video: Somregel of productregel?',
+          },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }

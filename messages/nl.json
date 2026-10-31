@@ -20,17 +20,17 @@
     "privacy": "Privacyverklaring",
     "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl"
   },
+  "YoutubeWelkom": {
+    "tekst": "Kom je van YouTube? Oefen de som zelf — meteen nakijken.",
+    "cta": "Probeer de som"
+  },
   "Home": {
     "eyebrow": "Wiskunde B · VWO 4 / 5 / 6",
     "h1Start": "Afgeleide oefenen voor",
     "h1Accent": "wiskunde B",
     "lead": "Oefenen met differentiëren op het VWO. Je kijkt elk antwoord direct na en bij een fout zie je stap voor stap waar het misging.",
-    "youtubeWelkom": "Kom je van YouTube? Oefen de som zelf — meteen nakijken.",
-    "youtubeWelkomCta": "Probeer de som",
     "zoekzin": "Zoek je differentiëren oefenen? Kies hieronder een regel.",
     "toetsweek": "Toetsweek? Oefen de regel die je moet kennen.",
-    "herfstvakantie": "Herfstvakantie? Maak hieronder drie sommen zonder account.",
-    "ctaRegel": "Probeer een som",
     "subLead": "Er zijn twee manieren om te oefenen: <oefenen>per hoofdstuk</oefenen>, waarbij je zelf een onderwerp en een opgave kiest, en de <zelfToets>zelf-toets</zelfToets>, waarmee je jezelf overhoort over de onderwerpen die jij uitkiest. <howItWorks>Zo werkt het</howItWorks>.",
     "subLeadLink": "Zo werkt het",
     "ctaRegister": "Gratis account aanmaken",
@@ -172,6 +172,7 @@
     "noTopics": "Er zijn nog geen onderwerpen beschikbaar.",
     "example": "Voorbeeldopgaven",
     "showSteps": "Toon de stappen",
+    "hideSteps": "Verberg de stappen",
     "answerLabel": "Antwoord",
     "practiceSelf": "Zelf oefenen",
     "practiceChapter": "Oefen dit hoofdstuk",
@@ -208,6 +209,7 @@
     "resendExpiredButton": "Stuur bevestigingsmail opnieuw",
     "resendExpiredSuccess": "Mail verstuurd. Check je inbox (en je spammap). Je kunt daarna inloggen.",
     "errorMissingFields": "Vul je e-mailadres en wachtwoord in.",
+    "errorMissingEmail": "Vul je e-mailadres in.",
     "errorInvalidCredentials": "Onjuiste combinatie van e-mail en wachtwoord.",
     "errorUnconfirmed": "Je hebt je e-mailadres nog niet bevestigd. Check je inbox.",
     "errorGeneric": "Er ging iets mis bij het inloggen. Probeer het opnieuw.",

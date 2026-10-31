@@ -1,7 +1,6 @@
-import { DeelKnop } from '@/components/deel-knop'
+import { Suspense } from 'react'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 
 import {
   EXAMENTRAINING_EXAMENBLAD,
@@ -13,6 +12,9 @@ import {
   EXAMENTRAINING_TITEL,
 } from '@/content/theory/examentraining'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -38,6 +40,14 @@ export default function ExamentrainingPage() {
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">
         {EXAMENTRAINING_TITEL}
       </h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(EXAMENTRAINING_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Op het centraal examen wiskunde B vwo gebruik je de afgeleide in allerlei vragen.
         Hier oefen je die vragen. Het examen is {EXAMENTRAINING_MOMENT}.
@@ -47,7 +57,7 @@ export default function ExamentrainingPage() {
         rooster en de examenstof staan op{' '}
         <a
           href={EXAMENTRAINING_EXAMENBLAD}
-          className="font-medium text-accent underline-offset-2 hover:underline"
+          className="font-medium text-accent underline underline-offset-2"
         >
           Examenblad
         </a>
@@ -80,28 +90,15 @@ export default function ExamentrainingPage() {
         </p>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <DeelKnop />
-        <ProbeerKnop oefenen={EXAMENTRAINING_OEFENEN} />
-        <Link
-          href={EXAMENTRAINING_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/registreren"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Account aanmaken
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <WiskundeMetAafVideos pagina="examentraining" />
+
+      <TheorieOefenActies
+        oefenen={EXAMENTRAINING_OEFENEN}
+        extra={[
+          { href: '/registreren', label: 'Account aanmaken' },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }

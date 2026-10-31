@@ -40,7 +40,7 @@ export function LoginForm({
   return (
     <div className="space-y-4">
       {googleAan ? <GoogleKnop oefenpad={oefenpad} /> : null}
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className="space-y-4" noValidate>
       {oefenpad ? <input type="hidden" name="naar" defaultValue={oefenpad} /> : null}
       <Field
         label={t('emailLabel')}
@@ -79,7 +79,7 @@ export function LoginForm({
                 type="button"
                 onClick={handleResend}
                 disabled={resendPending}
-                className="font-medium text-accent hover:underline disabled:opacity-60"
+                className="font-medium text-accent underline underline-offset-2 disabled:opacity-60"
               >
                 {resendPending ? t('resendPending') : t('resendButton')}
               </button>

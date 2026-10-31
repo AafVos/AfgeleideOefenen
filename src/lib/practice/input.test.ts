@@ -51,6 +51,34 @@ describe('toLatexPreview', () => {
     })
   })
 
+  describe('ontbrekend grondtal (AFG-697)', () => {
+    it('^(4), ingevoegd door de machtsknop vóór er een grondtal getypt is, krijgt een vakje als grondtal', () => {
+      expect(toLatexPreview('^(4)')).toBe('\\square^{4}')
+    })
+
+    it('^4 zonder haakjes en zonder grondtal krijgt ook een vakje', () => {
+      expect(toLatexPreview('^4')).toBe('\\square^{4}')
+    })
+
+    it('een grondtal ná een +, *, ( of spatie telt ook als ontbrekend', () => {
+      expect(toLatexPreview('3+^(2)')).toBe('3+\\square^{2}')
+      expect(toLatexPreview('(^(2))')).toBe('(\\square^{2})')
+    })
+
+    it('blijft normaal werken zodra er wél een grondtal staat', () => {
+      expect(toLatexPreview('x^(4)')).toBe('x^{4}')
+      expect(toLatexPreview('4^(2)')).toBe('4^{2}')
+      expect(toLatexPreview('(x+1)^(2)')).toBe('(x+1)^{2}')
+      expect(toLatexPreview('sqrt(x)^(2)')).toBe('\\sqrt{x}^{2}')
+    })
+
+    it('onaffe macht zonder grondtal krijgt aan beide kanten een vakje', () => {
+      expect(toLatexPreview('^()')).toBe('\\square^{\\square}')
+      expect(toLatexPreview('^(-1')).toBe('\\square^{-1\\square}')
+      expect(toLatexPreview('^')).toBe('\\square^{\\square}')
+    })
+  })
+
   describe('onaffe macht (placeholder tijdens het typen)', () => {
     it('x^() wordt x^{□}', () => {
       expect(toLatexPreview('x^()')).toBe('x^{\\square}')

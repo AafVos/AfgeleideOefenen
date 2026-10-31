@@ -14,17 +14,20 @@
     // `?van=youtube`-bannertje leest de zoekopdracht clientside, na het
     // laden van het klaargezette bestand), /theorie en /voorbeeld/* kan dat:
     // die hebben geen zoekopdracht die de server anders moet laten zien.
-    // /inloggen (`?naar=`, `?error=`, `?mail=`, of een sessiekoekje) en
+    // /inloggen (`?naar=`, `?error=`, `?mail=`, of een sessiekoekje),
+    // /registreren (`?van=`, `?naar=`, of een sessiekoekje; AFG-686) en
     // /uitleg-videos (`?video=` stuurt een oude gedeelde link via de server
     // door naar de losse video, zie stuurOudeVideolinkDoor) wel: die moeten
     // naar de gewone server in plaats van altijd het klaargezette, anonieme
     // bestand te krijgen (AFG-635: die server-redirect viel anders stil).
     // Dit stuurt alleen die paden eerst naar de worker, die zelf beslist
-    // (zie src/lib/startpagina-snel.ts, anoniemeInloggenPagina en
-    // anoniemeUitlegVideosPagina).
+    // (zie src/lib/startpagina-snel.ts, anoniemeInloggenPagina,
+    // anoniemeRegistrerenPagina en anoniemeUitlegVideosPagina).
     "run_worker_first": [
       "/nl/inloggen",
       "/nl/inloggen/",
+      "/nl/registreren",
+      "/nl/registreren/",
       "/nl/uitleg-videos",
       "/nl/uitleg-videos/"
     ]

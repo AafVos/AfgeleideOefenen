@@ -16,6 +16,7 @@ import { DeelKnop } from '@/components/deel-knop'
 import { KlikLink } from '@/components/klik-link'
 import { Link, useRouter } from '@/i18n/navigation'
 import { Card, cn } from '@/components/ui'
+import { LocatieBalk, OnderdeelOverlay, useIsDesktop } from '@/components/mobiel-locatie-kiezer'
 import type {
   ChapterInfo,
   ClusterInfo,
@@ -97,23 +98,6 @@ function useSoortKeuze(): [SoortKeuze, (soort: SoortKeuze) => void] {
     window.dispatchEvent(new Event(SOORT_EVENT))
   }, [])
   return [soort, kies]
-}
-
-const desktopQuery = '(min-width: 1024px)'
-
-function subscribeDesktop(onChange: () => void) {
-  const mq = window.matchMedia(desktopQuery)
-  mq.addEventListener('change', onChange)
-  return () => mq.removeEventListener('change', onChange)
-}
-
-/** Op de server (en bij de eerste paint) dicht, zodat een telefoon de opgave ziet. */
-function useIsDesktop() {
-  return useSyncExternalStore(
-    subscribeDesktop,
-    () => window.matchMedia(desktopQuery).matches,
-    () => false,
-  )
 }
 
 type Question = {
@@ -847,6 +831,8 @@ type BlokProps = {
   /** Anker als het adres leeg is en de leerling al geoefend heeft. */
   startBij: string | null
   labels: BlokLabels
+  /** Op de telefoon scrolt hij mee onderaan dit scrollgebied — zie AFG-595. */
+  voettekst: React.ReactNode
 }
 
 /**
@@ -1051,6 +1037,7 @@ function BlokWeergave({
   question,
   startBij,
   labels,
+  voettekst,
 }: BlokProps) {
   const [adres, setAdres] = useState(adresVanServer)
   const [allTilesState, setAllTilesState] = useState(allTiles)
@@ -1149,14 +1136,6 @@ function BlokWeergave({
     }
   }
 
-  useEffect(() => {
-    if (!boomOpen) return
-    function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') setBoomOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [boomOpen])
 
   const vraagKopjes = useMemo(
     () => (selectie ? kopjesVoorSelectie(selectie, allTopics, allClusters, allTilesState) : []),
@@ -1686,6 +1665,7 @@ function BlokWeergave({
   return (
     <div
       ref={paginaRef}
+      data-oefen-volledig=""
       className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row"
     >
       <aside
@@ -1734,18 +1714,12 @@ function BlokWeergave({
         data-oefen-scroll=""
         className="nice-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
       >
-        <button
-          type="button"
-          onClick={() => setBoomOpen(true)}
-          data-tour="hoofdstukken"
-          data-meet="oefenen-kies-onderdeel"
-          className="sticky top-0 z-20 flex min-h-11 w-full items-center justify-between gap-3 border-b border-border bg-surface px-4 text-left text-sm font-medium [overflow-anchor:none] lg:hidden"
-        >
-          <span className="min-w-0 truncate">{kop}</span>
-          <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="currentColor" aria-hidden>
-            <path d="M7 10l5 5 5-5H7z" />
-          </svg>
-        </button>
+        <LocatieBalk
+          label={kop}
+          onOpen={() => setBoomOpen(true)}
+          dataTour="hoofdstukken"
+          dataMeet="oefenen-kies-onderdeel"
+        />
 
         <div className="mx-auto max-w-6xl px-4 py-8">
           {vraagOpen ? (
@@ -1916,29 +1890,18 @@ function BlokWeergave({
             </Card>
           ) : null}
         </div>
+        {voettekst}
       </div>
 
-      {boomOpen && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col bg-surface lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label={labels.kiesOnderdeel}
-        >
-          <div className="flex items-center justify-between border-b border-border px-4">
-            <p className="text-sm font-medium">{labels.kiesOnderdeel}</p>
-            <button
-              type="button"
-              onClick={() => setBoomOpen(false)}
-              data-meet="oefenen-kies-onderdeel-sluiten"
-              className="min-h-11 px-3 text-sm font-medium text-text"
-            >
-              {labels.sluiten}
-            </button>
-          </div>
-          <div className="nice-scrollbar flex-1 overflow-y-auto p-4">{boomLijst()}</div>
-        </div>
-      )}
+      <OnderdeelOverlay
+        open={boomOpen}
+        onClose={() => setBoomOpen(false)}
+        title={labels.kiesOnderdeel}
+        closeLabel={labels.sluiten}
+        dataMeetSluiten="oefenen-kies-onderdeel-sluiten"
+      >
+        {boomLijst()}
+      </OnderdeelOverlay>
     </div>
   )
 }

@@ -73,7 +73,7 @@ export function UsernameForm({ initialUsername }: { initialUsername: string }) {
           <button
             type="button"
             onClick={() => setOpenedAt(state)}
-            className="ml-3 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            className="ml-3 inline-flex min-h-11 items-center font-medium text-accent underline underline-offset-2"
           >
             {t('change')}
           </button>

@@ -102,4 +102,20 @@ describe('stuurHerinnering', () => {
 
     expect(resultaat).toEqual({ verstuurd: false, reden: 'fout' })
   })
+
+  it('zet het e-mailadres van de leerling nooit in het logboek, ook niet bij een fout', async () => {
+    const foutSpion = vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Resend neemt soms het geweigerde adres op in de foutmelding zelf.
+    send.mockResolvedValue({
+      error: { name: 'validation_error', message: 'leerling@test.local geweigerd' },
+    })
+
+    await stuurHerinnering('leerling@test.local', INHOUD)
+
+    // JSON.stringify in plaats van join: anders verdwijnt de boodschap van
+    // Resend achter "[object Object]" en zegt de test niets.
+    const gelogd = JSON.stringify(foutSpion.mock.calls)
+    expect(gelogd).not.toContain('leerling@test.local')
+    foutSpion.mockRestore()
+  })
 })

@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 
 import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
 import { StickyProbeerBalk } from '@/components/sticky-probeer-balk'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import {
   getVoorbeeld,
@@ -14,7 +16,10 @@ import {
   voorbeeldTitel,
 } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
+
+import { Uitwerking } from './uitwerking'
 
 type PageProps = {
   params: Promise<{ locale: string; slug: string }>
@@ -98,6 +103,19 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         <p className="text-sm font-medium uppercase tracking-wider text-accent">Voorbeeld</p>
         <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{voorbeeld.kop}</h1>
 
+        {voorbeeld.ookGezochtAls && voorbeeld.ookGezochtAls.length > 0 && (
+          <p className="mt-2 text-sm text-text-muted">
+            Ook gezocht als: {voorbeeld.ookGezochtAls.join(', ')}.
+          </p>
+        )}
+
+        <Suspense fallback={null}>
+          <YoutubeWelkom
+            ctaHref={proberenVanOefenen(voorbeeld.oefenen)}
+            ctaDataMeet="voorbeeld-youtube-probeer"
+          />
+        </Suspense>
+
         <div id="probeer-knop-primair" className="mt-6 flex flex-col items-start gap-2">
           <p className="text-sm text-text-muted">Drie sommen over dit onderwerp, zonder account.</p>
           <ProbeerKnop oefenen={voorbeeld.oefenen} />
@@ -111,7 +129,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
             <Link
               href={`${EXAMENTRAINING_PAD}?van=voorbeeld-examen` as '/theorie/examentraining'}
               data-meet="voorbeeld-examentraining"
-              className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
             >
               oefen verder in de examentraining
             </Link>
@@ -119,11 +137,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </p>
         )}
 
-        <details className="mt-10">
-          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center font-medium text-accent underline-offset-2 hover:underline">
-            Toon uitwerking
-          </summary>
-
+        <Uitwerking>
           <section className="mt-6 rounded-xl bg-accent-light/60 px-4 py-5">
             <h2 className="text-sm font-medium uppercase tracking-wider text-accent">Antwoord</h2>
             <div className="mt-3 flex flex-col gap-2 overflow-x-auto text-[0.95em] leading-loose">
@@ -150,7 +164,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
               <RichMath source={voorbeeld.fout} />
             </p>
           </section>
-        </details>
+        </Uitwerking>
 
         <section className="mt-12">
           <h2 className="font-serif text-2xl text-text">Gerelateerde afgeleiden</h2>
@@ -160,7 +174,7 @@ export default async function VoorbeeldPage({ params }: PageProps) {
               <li key={ander.slug}>
                 <Link
                   href={voorbeeldPad(ander.slug) as '/voorbeeld'}
-                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
                 >
                   {ander.kop}
                 </Link>
@@ -169,20 +183,23 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </ul>
         </section>
 
-        <div className="mt-12 flex flex-col gap-3">
-          <DeelKnop />
-          <Link
-            href={voorbeeld.oefenen as '/oefenen'}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-          >
-            Oefen dit soort sommen
-          </Link>
-          <Link
-            href={voorbeeld.theoriePad as '/theorie'}
-            className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-          >
-            {voorbeeld.theorieNaam}
-          </Link>
+        <div className="mt-12 flex flex-col items-start gap-4">
+          <ProbeerKnop oefenen={voorbeeld.oefenen} dataMeet="probeer-3-sommen-onderaan" />
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <DeelKnop variant="tekstlink" />
+            <Link
+              href={voorbeeld.oefenen as '/oefenen'}
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
+            >
+              Oefenen met een account
+            </Link>
+            <Link
+              href={voorbeeld.theoriePad as '/theorie'}
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
+            >
+              {voorbeeld.theorieNaam}
+            </Link>
+          </div>
         </div>
       </div>
     </>

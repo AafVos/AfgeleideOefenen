@@ -213,18 +213,24 @@ Cloudflare Web Analytics om: die telt alleen paginabezoeken.
   `NEXT_PUBLIC_MEET_LOKAAL=1` in `.env.local`.
 * **Opruimen:** ruwe rijen blijven 90 dagen staan. `site_meting_onderhoud()`
   schrijft de dagtotalen weg en gooit de rest weg, hoogstens één keer per dag.
-  Deze database heeft geen pg_cron, dus roept `/api/meet` die functie af en toe
-  mee aan.
+  Deze database heeft geen pg_cron, dus roept de dagelijkse Worker-cron
+  (`/api/cron/meting-onderhoud`, zie `triggers.crons` in `wrangler.jsonc`)
+  die functie aan (AFG-667).
 * **Kijken wat eruit komt:** de views `meet_bezoekers_per_dag`,
   `meet_apparaat_per_dag`, `meet_trechter` (startpagina → proefsom →
   registreren → eerste som; de proefsom telt zowel op `/proberen` als op de
   startpagina zelf), `meet_doelen_top`, `meet_dode_klikken`,
   `meet_woedeklikken`, `meet_fouten`, `meet_scroll_per_pagina`,
-  `meet_routes_top` (de twintig meestgelopen routes, eerste zes stappen),
-  `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en dagen
-  actief) en `meet_voortgang_per_schuilnaam` (opgetelde voortgang naast de
+  `meet_routes_top` (de twintig meestgelopen routes per site, eerste zes
+  stappen), `meet_route_naar_registratie`, `meet_per_schuilnaam` (sessies en
+  dagen actief) en `meet_voortgang_per_schuilnaam` (opgetelde voortgang naast de
   schuilnaam). De alleen-lezen analistrol mag daar bij; het geheim achter de
-  schuilnaam kan die rol niet opvragen.
+  schuilnaam kan die rol niet opvragen. Elk van die overzichten behalve
+  `meet_voortgang_per_schuilnaam` heeft een kolom `site` (`afgeleide` of
+  `wiskundemetaaf`): zonder filter op die kolom tel je de cijfers van
+  allebei de sites bij elkaar op. `meet_voortgang_per_schuilnaam` leest uit
+  `user_progress_new`, niet uit `site_gebeurtenissen`, en heeft die kolom
+  niet.
 
 ---
 

@@ -124,6 +124,55 @@ met 0001 t/m 0028, de bestanden waarvan het resultaat al aanwezig was.
 Mergen is niet hetzelfde als draaien: zie "Elke ochtend: is elke migratie ook
 echt gedraaid?" hieronder.
 
+## Oefenstof-migraties: de snelle check (`npm run test:oefenstof`)
+
+Een migratie **telt als oefenstof** als zijn bestandsnaam `_oefenstof_` bevat
+(bijvoorbeeld `0087_oefenstof_h2_raaklijn_vergelijking.sql`) én hij alleen
+`INSERT`/`UPDATE`/`DELETE` op de vraagtabellen bevat (`topics_new`,
+`topic_clusters_new`, `questions_new`, `question_steps_new`), plus de
+gebruikelijke `DO $$ ... $$`-verificatie en eventuele `pg_temp`-hulpfuncties
+(zie migratie 0083 voor dat patroon). Een migratie die schema raakt (nieuwe
+tabel, kolom, policy, trigger, extensie, of een `public`-functie) hoort **geen**
+`_oefenstof_` in de naam te krijgen, ook niet als hij toevallig ook vragen
+bijwerkt — dan telt hij als een gewone migratie en draait de volle controle.
+
+`npm run test:oefenstof` (`src/lib/practice/oefenstof.test.ts`, met de parser
+in `oefenstof-migraties.ts`) leest **alle** `_oefenstof_`-migraties in
+`supabase/migrations/` — niet alleen die van de huidige pull request — en
+controleert zonder database, in seconden:
+
+* het eigen `answer` en elk `answer_alternatives`-item worden door
+  `answersMatch` goedgerekend;
+* alle LaTeX (de vraag, het antwoord met zijn `answer_prefix`, en elke stap)
+  rendert zonder fout met KaTeX;
+* er staat geen losse functienaam `u`, `v` of `w` (alleen `f`, `g`, `h`);
+* elke (onderwerp, soort)-combinatie die in deze migraties voorkomt heeft
+  minstens 8 vragen.
+
+Dit controleert **niet** of het antwoord ook wiskundig klopt — dat blijft een
+losse test per migratie die de som onafhankelijk narekent, zoals
+`kromme-door-toppen.test.ts` al deed.
+
+**De vaste vorm.** De parser verwacht precies de vorm die recente migraties al
+gebruiken (zie bijvoorbeeld `0065_h6_kromme_door_toppen.sql`): een
+`INSERT INTO public.questions_new (...) SELECT ... FROM (VALUES (...), (...))
+AS v(order_index, difficulty, latex_body, answer, latex_answer,
+answer_prefix, alternatives)`, met de teksten tussen dollar-quotes
+(`$vraag$...$vraag$`) en de alternatieven als `ARRAY[...]::text[]`, gevolgd
+door `JOIN public.topics_new t ON t.slug = '...'` en
+`JOIN public.topic_clusters_new c ON ... c.slug = '...'`. Stappen volgen
+dezelfde vorm in `public.question_steps_new`, met kolommen
+`(q_order, step_order, step_description)`. Wijk je van deze kolomvolgorde af,
+dan leest de parser de migratie niet (en faalt de test met een duidelijke
+foutmelding in plaats van iets stilletjes verkeerd te lezen).
+
+In `.github/workflows/controle.yml` slaat de job `Weg van een leerling` de
+browser over als **alle** gewijzigde bestanden ofwel tekst zijn (zoals nu al)
+ofwel oefenstof-migraties die met bovenstaande filenaam-regel overeenkomen
+**en** geen schema-trefwoorden bevatten (`CREATE TABLE`, `ALTER TABLE`, een
+`public`-functie, enzovoort) — dat laatste is een veiligheidsnet voor een
+migratie die per ongeluk toch `_oefenstof_` heet.
+
 ## Elke ochtend: is elke migratie ook echt gedraaid?
 
 `.github/workflows/migraties-vergelijken.yml` vergelijkt de bestanden in
@@ -199,13 +248,20 @@ Elke merge op `main` blijft meteen live. Er komt geen versienummer in
 als er nog geen datum-release is, staan alleen de pull requests van de
 afgelopen 24 uur erin, en de tag op de huidige `main` is daarna het beginpunt.
 
-## Elke dag om 16:00 UTC: de herinneringsmail
+## Elke dag om 16:00 UTC: de herinneringsmail en het onderhoud van de klikmeting
 
 De eerste geplande taak die niet op GitHub draait maar op de Worker zelf
 (AFG-487). `triggers.crons` in `wrangler.jsonc` laat Cloudflare elke dag de
 `scheduled`-ingang aanroepen; die staat in de ingang-sjabloon bovenin
-`scripts/statische-cache.mjs` en geeft het door aan `/api/cron/herinneringen`,
-met het geheim `WEBHOOK_SECRET` in de kop. Er komt dus geen nieuw geheim bij.
+`scripts/statische-cache.mjs` en geeft het door aan `/api/cron/herinneringen`
+en `/api/cron/meting-onderhoud`, met het geheim `WEBHOOK_SECRET` in de kop.
+Er komt dus geen nieuw geheim bij. Faalt één van de twee routes, dan draait
+de andere gewoon door.
+
+`/api/cron/meting-onderhoud` roept `site_meting_onderhoud()` aan (AFG-667):
+die werkt `site_dagtotalen` bij tot gisteren en ruimt rijen ouder dan 90 dagen
+op. Eerder liftte dat mee op 1% van de verzoeken aan `/api/meet`; bij weinig
+verkeer (een schoolvakantie) kon dat dagenlang niet gebeuren.
 
 * **Opt-in.** `profiles.herinnering_mail` staat standaard uit. De leerling zet
   hem zelf aan op het dashboard, en krijgt daarbij eerst de vraag of hij 16 of

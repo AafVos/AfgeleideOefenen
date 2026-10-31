@@ -121,7 +121,14 @@ function DemoCard({
   const tone = q.difficulty === 1 ? 'accent' : q.difficulty === 2 ? 'warn' : 'danger'
 
   return (
-    <div className="rounded-2xl border-2 border-accent/30 bg-surface p-6 shadow-sm">
+    /**
+     * `animate-mastered-flash` (AFG-666): een klik op het niveau remount deze
+     * kaart altijd (ook bij herklik op het al actieve niveau, AFG-548), maar
+     * bij een lege invoer ziet de nieuwe kaart er dan identiek uit aan de
+     * vorige — geen zichtbare reactie op de klik, vandaar de woedeklikken.
+     * Deze flash maakt elke klik zichtbaar, ongeacht of de inhoud verandert.
+     */
+    <div className="animate-mastered-flash rounded-2xl border-2 border-accent/30 bg-surface p-6 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
         <Badge tone={tone}>
           {t(`difficulty${q.difficulty}` as 'difficulty1')}

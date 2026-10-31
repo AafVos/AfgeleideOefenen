@@ -59,14 +59,14 @@ export default async function SignupPage({
       </div>
 
       <p className="mt-2 text-center text-sm text-text-muted">
-        <Link href={hrefMetOefenpad('/wachtwoord-vergeten', oefenpad)} className="text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/wachtwoord-vergeten', oefenpad)} className="text-accent underline underline-offset-2">
           {t('forgotPassword')}
         </Link>
       </p>
       <p className="mt-4 text-center text-sm leading-relaxed text-text-muted">
         {t.rich('privacyNote', {
           link: (chunks) => (
-            <Link href="/privacy" className="font-medium text-accent hover:underline">
+            <Link href="/privacy" className="font-medium text-accent underline underline-offset-2">
               {chunks}
             </Link>
           ),

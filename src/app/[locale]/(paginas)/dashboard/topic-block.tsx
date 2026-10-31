@@ -100,7 +100,7 @@ export function ChapterBlock({
                 <KlikLink
                   href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}`}
                   bezigTekst="Oefenen openen"
-                  className="group flex min-h-11 items-center gap-3 px-4 py-2 text-text hover:text-accent"
+                  className="flex min-h-11 items-center gap-3 px-4 py-2 text-text hover:text-accent"
                 >
                   <span
                     className={cn(
@@ -108,7 +108,7 @@ export function ChapterBlock({
                       tPct === 100 ? 'bg-accent' : 'bg-border',
                     )}
                   />
-                  <span className="min-w-0 flex-1 truncate group-hover:underline">
+                  <span className="min-w-0 flex-1 truncate underline underline-offset-2">
                     {topic.title}
                   </span>
                   <span className="shrink-0 tabular-nums text-xs text-text-muted">
@@ -191,12 +191,14 @@ function OnderwerpRegel({ onderwerp }: { onderwerp: OnderwerpRij }) {
       <KlikLink
         href={hrefVoorOnderwerp(onderwerp.chapterSlug, onderwerp.slug)}
         bezigTekst="Oefenen openen"
-        className="group flex min-h-11 items-center gap-3 px-4 py-2 text-text hover:text-accent"
+        className="flex min-h-11 items-center gap-3 px-4 py-2 text-text hover:text-accent"
       >
         <span
           className={cn('size-1.5 shrink-0 rounded-full', pct === 100 ? 'bg-accent' : 'bg-border')}
         />
-        <span className="min-w-0 flex-1 break-words group-hover:underline">{onderwerp.title}</span>
+        <span className="min-w-0 flex-1 break-words underline underline-offset-2">
+          {onderwerp.title}
+        </span>
         <VoortgangCijfers clusters={onderwerp.clusters} />
       </KlikLink>
       <ReeksZinnen clusters={onderwerp.clusters} inspringen="pl-9" />
@@ -285,10 +287,10 @@ export function NieuwHoofdstukBlock({
                       <KlikLink
                         href={hrefVoorBlok(blok.slug)}
                         bezigTekst="Oefenen openen"
-                        className="group flex min-h-11 items-center gap-3 py-2 pl-12 pr-4 text-sm text-text hover:text-accent"
+                        className="flex min-h-11 items-center gap-3 py-2 pl-12 pr-4 text-sm text-text hover:text-accent"
                       >
                         <span className="shrink-0 font-mono text-text-muted">{blok.letter}</span>
-                        <span className="min-w-0 flex-1 break-words group-hover:underline">
+                        <span className="min-w-0 flex-1 break-words underline underline-offset-2">
                           {blok.title}
                         </span>
                         <VoortgangCijfers clusters={blok.clusters} />

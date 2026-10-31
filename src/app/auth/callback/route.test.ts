@@ -8,16 +8,30 @@ const {
   stuurWelkomstmail,
   bestemmingNaInloggen,
   bestemmingNaBevestigen,
+  profielUpdate,
 } = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn(),
   zetGekozenGebruikersnaam: vi.fn(),
   stuurWelkomstmail: vi.fn(),
   bestemmingNaInloggen: vi.fn(),
   bestemmingNaBevestigen: vi.fn(),
+  profielUpdate: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: async () => ({ auth: { exchangeCodeForSession } }),
+  createClient: async () => ({
+    auth: { exchangeCodeForSession },
+    from: (tabel: string) => ({
+      update: (waarden: Record<string, unknown>) => ({
+        eq: (kolom: string, waarde: unknown) => ({
+          is: (kolom2: string, waarde2: unknown) => {
+            profielUpdate(tabel, waarden, kolom, waarde, kolom2, waarde2)
+            return Promise.resolve({ error: null })
+          },
+        }),
+      }),
+    }),
+  }),
 }))
 vi.mock('@/lib/supabase/gebruikersnaam', () => ({ zetGekozenGebruikersnaam }))
 vi.mock('@/lib/email/welkom', () => ({ stuurWelkomstmail }))
@@ -116,5 +130,49 @@ describe('terugkeer van Google: telt de aanmelding mee', () => {
       'https://afgeleideoefenen.nl/nl/inloggen?error=google_afgebroken',
     )
     expect(exchangeCodeForSession).not.toHaveBeenCalled()
+  })
+})
+
+describe('terugkeer van Google: herkomst', () => {
+  it('zet de meegegeven herkomst op het profiel van een gloednieuw account', async () => {
+    exchangeCodeForSession.mockResolvedValue({ data: { user: gebruiker() }, error: null })
+
+    await naarGoogleEnTerug('?via=google&code=abc&next=%2Fdashboard&van=youtube')
+
+    expect(profielUpdate).toHaveBeenCalledWith(
+      'profiles',
+      { herkomst: 'youtube' },
+      'id',
+      'u-1',
+      'herkomst',
+      null,
+    )
+  })
+
+  it('zet niets als er geen ?van= meekomt', async () => {
+    exchangeCodeForSession.mockResolvedValue({ data: { user: gebruiker() }, error: null })
+
+    await naarGoogleEnTerug()
+
+    expect(profielUpdate).not.toHaveBeenCalled()
+  })
+
+  it('negeert een onbekende herkomst', async () => {
+    exchangeCodeForSession.mockResolvedValue({ data: { user: gebruiker() }, error: null })
+
+    await naarGoogleEnTerug('?via=google&code=abc&next=%2Fdashboard&van=reclame')
+
+    expect(profielUpdate).not.toHaveBeenCalled()
+  })
+
+  it('zet niets bij een leerling die opnieuw inlogt', async () => {
+    exchangeCodeForSession.mockResolvedValue({
+      data: { user: gebruiker({ created_at: '2026-09-01T10:00:00.000Z' }) },
+      error: null,
+    })
+
+    await naarGoogleEnTerug('?via=google&code=abc&next=%2Fdashboard&van=youtube')
+
+    expect(profielUpdate).not.toHaveBeenCalled()
   })
 })
