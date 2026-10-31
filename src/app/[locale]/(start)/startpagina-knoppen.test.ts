@@ -11,7 +11,7 @@ describe('startpagina-knoppen', () => {
     )
 
     const knoppen = pagina.slice(
-      pagina.indexOf('mt-3 flex flex-wrap'),
+      pagina.indexOf('mt-6 flex flex-wrap'),
       pagina.indexOf('tagline'),
     )
 
@@ -29,7 +29,7 @@ describe('startpagina-knoppen', () => {
       knoppen.indexOf("t('ctaLogin')"),
     )
 
-    expect(registrerenBlok).toContain('border border-border')
-    expect(inloggenBlok).not.toContain('border')
+    expect(registrerenBlok).toContain('bg-accent')
+    expect(inloggenBlok).not.toContain('bg-accent')
   })
 })
