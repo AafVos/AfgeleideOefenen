@@ -8,6 +8,7 @@ import {
   voorbeeldOefenVraag,
   voorbeeldPad,
   voorbeeldTitel,
+  voorbeeldWatIsVraag,
 } from './voorbeelden'
 
 describe('antwoordpagina-s', () => {
@@ -189,6 +190,28 @@ describe('antwoordpagina-s', () => {
       expect(voorbeeld.faqUitgebreid).toBeFalsy()
     }
     expect(voorbeeldOefenVraag(getVoorbeeld('ln-x')!)).toBe('Hoe oefen je de afgeleide van ln x?')
+  })
+
+  it('toont "Wat is de afgeleide...?" met de standaardregel op de top-voorbeeldpagina-s (AFG-780)', () => {
+    const metWatIs = ['een-gedeeld-door-x', 'ln-x', 'sin-x']
+    for (const slug of metWatIs) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.watIsZichtbaar).toBe(true)
+      const vraag = voorbeeldWatIsVraag(voorbeeld)
+      expect(vraag.startsWith('Wat is de afgeleide van ')).toBe(true)
+      expect(vraag.endsWith('?')).toBe(true)
+      // Zichtbaar antwoord is de standaardregel, geen spoiler van de oefensom.
+      expect(voorbeeld.antwoordTekst.length).toBeGreaterThan(0)
+    }
+    const zonderWatIs = voorbeelden.filter((v) => !metWatIs.includes(v.slug))
+    for (const voorbeeld of zonderWatIs) {
+      expect(voorbeeld.watIsZichtbaar).toBeFalsy()
+    }
+    expect(voorbeeldWatIsVraag(getVoorbeeld('ln-x')!)).toBe('Wat is de afgeleide van ln x?')
+    expect(voorbeeldWatIsVraag(getVoorbeeld('sin-x')!)).toBe('Wat is de afgeleide van sin x?')
+    expect(voorbeeldWatIsVraag(getVoorbeeld('een-gedeeld-door-x')!)).toBe(
+      'Wat is de afgeleide van 1 gedeeld door x?',
+    )
   })
 
   it('zet elke pagina in de sitemap', () => {
