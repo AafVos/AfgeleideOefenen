@@ -300,7 +300,10 @@ export function HomeDemo({ googleAan }: { googleAan: boolean }) {
   }
 
   return (
-    <section id="proefsom" className="mt-3 scroll-mt-6 sm:mt-8">
+    // Onderpadding: vangt de plakkende proefsom-knop op (AFG-739, AFG-751).
+    // Die balk blijft na scrollen staan en zou zonder deze ruimte over het
+    // antwoordveld en de knoppenrij hierboven heen kunnen vallen.
+    <section id="proefsom" className="mt-3 scroll-mt-6 pb-24 sm:mt-8 sm:pb-32">
       <div className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
         <span className="text-xs font-medium uppercase tracking-wider text-accent">
           {t('eyebrow')}

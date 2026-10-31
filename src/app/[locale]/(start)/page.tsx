@@ -165,11 +165,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <StickyStartProefsom
-          tekst={t('ctaRegel')}
-          primaryId="start-hero-proefsom"
-          doelId="proefsom"
-        />
+        <StickyStartProefsom tekst={t('ctaRegel')} primaryId="start-hero-proefsom" />
 
         <HomeDemo googleAan={googleLoginAan()} />
 
