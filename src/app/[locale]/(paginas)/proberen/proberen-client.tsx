@@ -186,6 +186,16 @@ export function ProberenClient({
               e.preventDefault()
               verstuur(false)
             }}
+            onClick={(e) => {
+              // Een klik tussen de blokken in dit formulier (de marge van
+              // space-y-3) komt rechtstreeks op het formulier terecht, niet
+              // op een kind-element. Daar is het antwoordveld bedoeld, dus
+              // zet de klik daarheen door.
+              if (e.target === e.currentTarget) invoerRef.current?.focus()
+            }}
+            // data-meet staat ook in KLIKBAAR (src/lib/meten/meter.ts): zonder
+            // dit telde zo'n klik nog als dode_klik, ook al deed hij al iets.
+            data-meet="proefsom-formulier"
             className="space-y-3"
           >
             <label className="block">

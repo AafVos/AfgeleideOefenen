@@ -140,7 +140,19 @@ function DemoCard({
       </div>
 
       {state.phase === 'input' && (
-        <form onSubmit={submit} className="space-y-3">
+        <form
+          onSubmit={submit}
+          onClick={(e) => {
+            // Zie src/app/[locale]/(paginas)/proberen/proberen-client.tsx:
+            // een klik in de marge tussen de blokken komt op het formulier
+            // terecht, niet op een kind. Focus dan het antwoordveld.
+            if (e.target === e.currentTarget) inputRef.current?.focus()
+          }}
+          // data-meet staat ook in KLIKBAAR (src/lib/meten/meter.ts): zonder
+          // dit telde zo'n klik nog als dode_klik, ook al deed hij al iets.
+          data-meet="home-proefsom-formulier"
+          className="space-y-3"
+        >
           <label className="block">
             <div className="mb-2 flex min-h-8 items-center gap-2">
               <span className="text-xs uppercase tracking-wide text-text-muted">
