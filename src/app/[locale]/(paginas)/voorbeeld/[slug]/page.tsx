@@ -14,6 +14,7 @@ import {
   voorbeeldOefenVraag,
   voorbeeldPad,
   voorbeeldTitel,
+  voorbeeldWatIsVraag,
 } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
@@ -107,6 +108,13 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           <p className="mt-2 text-sm text-text-muted">
             Ook gezocht als: {voorbeeld.ookGezochtAls.join(', ')}.
           </p>
+        )}
+
+        {voorbeeld.watIsZichtbaar && (
+          <section className="mt-6">
+            <h2 className="font-serif text-xl text-text">{voorbeeldWatIsVraag(voorbeeld)}</h2>
+            <p className="mt-2 text-text-muted">{voorbeeld.antwoordTekst}</p>
+          </section>
         )}
 
         <Suspense fallback={null}>

@@ -53,6 +53,13 @@ export type Voorbeeld = {
    * ziet een leerling dit echt op de pagina. Nooit het antwoord erin.
    */
   ookGezochtAls?: readonly string[];
+  /**
+   * Zichtbare kop "Wat is de afgeleide van ...?" met de standaardregel als
+   * losse zin (`antwoordTekst`), boven de ingeklapte uitwerking (AFG-780):
+   * voor zoekopdrachten als "wat is de afgeleide van ln(x)" die nu hoog
+   * staan maar 0 klikken krijgen. Geen spoiler van de oefensom.
+   */
+  watIsZichtbaar?: boolean;
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
@@ -238,6 +245,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     examenbrug: true,
     faqUitgebreid: true,
     ookGezochtAls: ["afgeleide 1/x", "afgeleide een gedeeld door x"],
+    watIsZichtbaar: true,
     f: (x) => 1 / x,
     df: (x) => -1 / (x * x),
     punten: [-2, 0.5, 3],
@@ -605,6 +613,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     faqUitgebreid: true,
     typVorm: "lnx",
     ookGezochtAls: ["afgeleide lnx", "afgeleide ln(x)"],
+    watIsZichtbaar: true,
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
@@ -725,6 +734,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     faqUitgebreid: true,
     typVorm: "sinx",
     ookGezochtAls: ["afgeleide sinx", "afgeleide sin(x)"],
+    watIsZichtbaar: true,
     f: (x) => Math.sin(x),
     df: (x) => Math.cos(x),
     punten: [0, 0.5, 1],
@@ -910,6 +920,16 @@ export function voorbeeldTitel(voorbeeld: Voorbeeld): string {
 export function voorbeeldOefenVraag(voorbeeld: Voorbeeld): string {
   const metKleineLetter = voorbeeld.kop.charAt(0).toLowerCase() + voorbeeld.kop.slice(1);
   return `Hoe oefen je ${metKleineLetter}?`;
+}
+
+/**
+ * Zichtbare "wat is"-vraag voor pagina's met `watIsZichtbaar` (AFG-780):
+ * "Wat is de afgeleide van ln x?" Het antwoord is `antwoordTekst`, de
+ * bekende standaardregel.
+ */
+export function voorbeeldWatIsVraag(voorbeeld: Voorbeeld): string {
+  const metKleineLetter = voorbeeld.kop.charAt(0).toLowerCase() + voorbeeld.kop.slice(1);
+  return `Wat is ${metKleineLetter}?`;
 }
 
 export function getVoorbeelden(): readonly Voorbeeld[] {
