@@ -96,21 +96,21 @@ export function ChapterBlock({
           {chapter.topics.map((topic) => {
             const { mastered: tMastered, total: tTotal, pct: tPct } = telBeheerst(topic.clusters)
             return (
-              <li key={topic.id} className="px-4 py-2 text-sm">
-                <div className="flex items-center gap-3">
+              <li key={topic.id} className="text-sm">
+                <KlikLink
+                  href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}`}
+                  bezigTekst="Oefenen openen"
+                  className="group flex min-h-11 items-center gap-3 px-4 py-2 text-text hover:text-accent"
+                >
                   <span
                     className={cn(
                       'size-1.5 shrink-0 rounded-full',
                       tPct === 100 ? 'bg-accent' : 'bg-border',
                     )}
                   />
-                  <KlikLink
-                    href={`/oefenen?chapter=${encodeURIComponent(topic.chapterSlug)}&topic=${encodeURIComponent(topic.slug)}`}
-                    bezigTekst="Oefenen openen"
-                    className="min-w-0 flex-1 truncate text-text hover:text-accent hover:underline"
-                  >
+                  <span className="min-w-0 flex-1 truncate group-hover:underline">
                     {topic.title}
-                  </KlikLink>
+                  </span>
                   <span className="shrink-0 tabular-nums text-xs text-text-muted">
                     {tMastered}/{tTotal}
                   </span>
@@ -122,12 +122,12 @@ export function ChapterBlock({
                   >
                     {tPct}%
                   </span>
-                </div>
+                </KlikLink>
                 {topic.clusters.map((cluster) => {
                   const zin = nogEenGoedZin(cluster.correctStreak ?? 0, cluster.title)
                   if (!zin) return null
                   return (
-                    <p key={cluster.id} className="mt-1 pl-5 text-xs text-accent">
+                    <p key={cluster.id} className="mt-1 pl-9 pr-4 text-xs text-accent">
                       {zin}
                     </p>
                   )
@@ -187,21 +187,19 @@ function VoortgangCijfers({ clusters }: { clusters: ClusterVoortgang[] }) {
 function OnderwerpRegel({ onderwerp }: { onderwerp: OnderwerpRij }) {
   const { pct } = telBeheerst(onderwerp.clusters)
   return (
-    <li className="px-4 py-2 text-sm">
-      <div className="flex min-h-11 items-center gap-3">
+    <li className="text-sm">
+      <KlikLink
+        href={hrefVoorOnderwerp(onderwerp.chapterSlug, onderwerp.slug)}
+        bezigTekst="Oefenen openen"
+        className="group flex min-h-11 items-center gap-3 px-4 py-2 text-text hover:text-accent"
+      >
         <span
           className={cn('size-1.5 shrink-0 rounded-full', pct === 100 ? 'bg-accent' : 'bg-border')}
         />
-        <KlikLink
-          href={hrefVoorOnderwerp(onderwerp.chapterSlug, onderwerp.slug)}
-          bezigTekst="Oefenen openen"
-          className="min-w-0 flex-1 break-words text-text hover:text-accent hover:underline"
-        >
-          {onderwerp.title}
-        </KlikLink>
+        <span className="min-w-0 flex-1 break-words group-hover:underline">{onderwerp.title}</span>
         <VoortgangCijfers clusters={onderwerp.clusters} />
-      </div>
-      <ReeksZinnen clusters={onderwerp.clusters} inspringen="pl-5" />
+      </KlikLink>
+      <ReeksZinnen clusters={onderwerp.clusters} inspringen="pl-9" />
     </li>
   )
 }

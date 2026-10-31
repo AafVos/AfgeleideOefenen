@@ -139,6 +139,21 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
   await expect(regel).toContainText('100%')
 })
 
+/**
+ * AFG-665: in een dashboardrij was alleen de titeltekst een link; het
+ * bolletje en de cijfers ernaast waren losse tekst zonder link eromheen.
+ * Een klik daar landde op de rij zelf en deed niets, terwijl de hele rij
+ * er als één klikbaar blok uitziet. De hele rij hoort naar /oefenen te
+ * linken, niet alleen de titel.
+ */
+test('een klik op de cijfers in een dashboardrij opent de oefenpagina', async ({
+  page,
+}) => {
+  const regel = await dashboardRegel(page, 'Beheersen (e2e)')
+  await regel.getByText(/^\d+%$/).click()
+  await expect(page).toHaveURL(/\/nl\/oefenen\?chapter=e2e&topic=e2e_beheersen/)
+})
+
 test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon', async ({
   page,
 }) => {
