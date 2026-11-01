@@ -6,6 +6,8 @@
  * en in het formulier, en wordt bij elk gebruik opnieuw gecontroleerd.
  */
 
+import { herkomstUitZoekreeks } from '../herkomst-sessie'
+
 export const OEFENPAD_PARAM = 'naar'
 
 const HERKOMST = 'https://afgeleideoefenen.nl'
@@ -85,7 +87,12 @@ export function oefenpadUitAdres(ruw: unknown): string | null {
 
 /**
  * Waar een uitgelogde bezoeker van een afgeschermde pagina naartoe gaat.
- * Alleen vanaf oefenen blijft het gekozen pad bewaard.
+ * Alleen vanaf oefenen blijft het gekozen pad bewaard, maar een herkomstcode
+ * (`?van=youtube`, `?van=toetsweek`, …) blijft op elke afgeschermde pagina
+ * staan: `<Meten />` op het inlogscherm zet hem opzij in sessionStorage
+ * (`src/lib/herkomst-sessie.ts`), zodat een latere registratie nog meetelt.
+ * Zonder dit viel elke herkomst van een niet-ingelogde klik op een
+ * afgeschermde pagina weg (AFG-795).
  */
 export function inlogAdres(padZonderTaal: string, zoek: string): string {
   const url = new URL('/nl/inloggen', HERKOMST)
@@ -93,5 +100,7 @@ export function inlogAdres(padZonderTaal: string, zoek: string): string {
     const pad = veiligOefenpad(`${padZonderTaal}${zoek}`)
     if (pad) url.searchParams.set(OEFENPAD_PARAM, pad)
   }
+  const herkomst = herkomstUitZoekreeks(zoek)
+  if (herkomst) url.searchParams.set('van', herkomst)
   return `${url.pathname}${url.search}`
 }
