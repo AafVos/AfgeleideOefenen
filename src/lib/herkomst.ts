@@ -6,6 +6,7 @@ export const TOEGESTANE_HERKOMST = [
   'forum',
   'proberen',
   'proefsom',
+  'toetsweek',
   'chatgpt',
   'zoeken',
 ] as const
