@@ -350,6 +350,18 @@ export function HomeDemo({ googleAan }: { googleAan: boolean }) {
         onSubmit={() => setHeeftGeprobeerd(true)}
         googleAan={googleAan}
       />
+
+      {/* Toetsweek-ingang (AFG-793): secundair naast de proefsom, geen
+          aparte banner die de proefsom onder de vouw duwt (zie AFG-783). */}
+      <p className="mt-4 text-center">
+        <Link
+          href="/zelf-toets?van=toetsweek"
+          data-meet="home-proefsom-zelftoets"
+          className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text shadow-sm hover:bg-surface-2"
+        >
+          {t('zelfToetsCta')}
+        </Link>
+      </p>
     </section>
   )
 }
