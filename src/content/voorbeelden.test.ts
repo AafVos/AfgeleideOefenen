@@ -214,6 +214,28 @@ describe('antwoordpagina-s', () => {
     )
   })
 
+  it('toont "Ook gezocht: afgeleide van ln(2x)" als brug naar een andere functie (AFG-794)', () => {
+    const lnX = getVoorbeeld('ln-x')!
+    expect(lnX.ookGezochtFunctie).toBeDefined()
+    const brug = lnX.ookGezochtFunctie!
+    expect(brug.kop).toBe('Ook gezocht: afgeleide van ln(2x)')
+    expect(brug.uitleg).toMatch(/kettingregel/)
+    expect(brug.uitleg).toMatch(/\$g/)
+    expect(brug.uitleg).toMatch(/\$h/)
+    expect(brug.uitleg).not.toMatch(/\$f/)
+    expect(brug.uitleg).not.toMatch(/\$[uv]\(/)
+    expect(brug.uitleg).not.toMatch(/\b[uv]\(/)
+    expect(brug.oefenen).toContain('van=ook-gezocht')
+    expect(brug.oefenen.startsWith('/oefenen?')).toBe(true)
+    // Rekenkundig nagekeken: afgeleide van ln(2x) is 1/x, net als de oefenstof waarnaar gelinkt wordt.
+    expect(getVoorbeeld('ln-2x')!.antwoord).toBe('\\dfrac{1}{x}')
+
+    const zonderBrug = voorbeelden.filter((v) => v.slug !== 'ln-x')
+    for (const voorbeeld of zonderBrug) {
+      expect(voorbeeld.ookGezochtFunctie).toBeUndefined()
+    }
+  })
+
   it('zet elke pagina in de sitemap', () => {
     const urls = sitemap().map((item) => item.url)
     for (const voorbeeld of voorbeelden) {

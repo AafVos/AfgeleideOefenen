@@ -174,6 +174,22 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </section>
         </Uitwerking>
 
+        {voorbeeld.ookGezochtFunctie && (
+          <section className="mt-10">
+            <h2 className="font-serif text-xl text-text">{voorbeeld.ookGezochtFunctie.kop}</h2>
+            <p className="mt-2 text-text-muted">
+              <RichMath source={voorbeeld.ookGezochtFunctie.uitleg} />
+            </p>
+            <Link
+              href={voorbeeld.ookGezochtFunctie.oefenen as '/oefenen'}
+              data-meet="voorbeeld-ook-gezocht-functie"
+              className="mt-2 inline-flex min-h-11 items-center text-accent underline underline-offset-2"
+            >
+              Oefen de kettingregel
+            </Link>
+          </section>
+        )}
+
         <section className="mt-12">
           <h2 className="font-serif text-2xl text-text">Gerelateerde afgeleiden</h2>
           <p className="mt-4 text-text-muted">Bekijk ook deze afgeleiden uit dezelfde familie.</p>
