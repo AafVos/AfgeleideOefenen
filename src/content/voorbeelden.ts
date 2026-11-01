@@ -60,13 +60,26 @@ export type Voorbeeld = {
    * staan maar 0 klikken krijgen. Geen spoiler van de oefensom.
    */
   watIsZichtbaar?: boolean;
+  /**
+   * Zichtbare sectie "Ook gezocht: afgeleide van ..." voor een nabije maar
+   * écht andere functie (AFG-794), bijvoorbeeld ln(2x) op de ln(x)-pagina:
+   * één zin met de standaardaanpak en een link naar passende oefenstof
+   * (`?van=ook-gezocht`). Anders dan `ookGezochtAls` (een andere schrijfwijze
+   * van dezelfde som) gaat dit over een andere functie, dus mag het antwoord
+   * hier wel in staan.
+   */
+  ookGezochtFunctie?: {
+    kop: string;
+    uitleg: string;
+    oefenen: string;
+  };
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
 };
 
-function oefen(chapter: string, topic: string, cluster: string): string {
-  return `/oefenen?chapter=${chapter}&topic=${topic}&cluster=${cluster}&van=voorbeeld`;
+function oefen(chapter: string, topic: string, cluster: string, van = "voorbeeld"): string {
+  return `/oefenen?chapter=${chapter}&topic=${topic}&cluster=${cluster}&van=${van}`;
 }
 
 const MACHT = "/theorie/machtsregel";
@@ -614,6 +627,12 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     typVorm: "lnx",
     ookGezochtAls: ["afgeleide lnx", "afgeleide ln(x)"],
     watIsZichtbaar: true,
+    ookGezochtFunctie: {
+      kop: "Ook gezocht: afgeleide van ln(2x)",
+      uitleg:
+        "Dat is een andere functie: bij $\\ln(2x)$ staat $2x$ tussen de haakjes, dus reken je met de kettingregel. Noem de functie $g(x) = \\ln(2x)$ met kern $h(x) = 2x$. Eerst de afgeleide van $\\ln$ met de kern erin, dan keer de afgeleide van de kern: $g'(x) = \\dfrac{1}{2x} \\cdot 2 = \\dfrac{1}{x}$.",
+      oefenen: oefen("h9", "h9_logaritmes", "ln_ketting", "ook-gezocht"),
+    },
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
