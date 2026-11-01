@@ -3,12 +3,14 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
+import { ProbeerKnop } from '@/components/probeer-knop'
 import { StickyStartProefsom } from '@/components/sticky-start-proefsom'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { googleLoginAan } from '@/lib/auth/google'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
+import { getUitlegVideos } from '@/lib/videos'
 
 import { ExamenStart } from './examen-start'
 import { HomeDemo } from './home-demo'
@@ -41,6 +43,10 @@ export default async function HomePage() {
   const t = await getTranslations('Home')
 
   const domain = SITE_CONFIG.domain
+
+  // Alleen de algemene uitlegvideo's (geen vraaguitwerkingen): dezelfde
+  // oefenlink-mapping als op de uitlegvideo-pagina's zelf (AFG-625).
+  const uitlegVideoOefenen = getUitlegVideos().filter((video) => video.soort === 'algemeen')
 
   const FAQ_ITEMS = [
     { question: t('faq1Q'), answer: t('faq1A') },
@@ -152,6 +158,24 @@ export default async function HomePage() {
             </Link>
           </div>
         </section>
+
+        {uitlegVideoOefenen.length > 0 ? (
+          <section className="mt-10">
+            <h2 className="font-serif text-2xl text-text">{t('uitlegVideoH2')}</h2>
+            <p className="mt-2 text-text-muted">{t('uitlegVideoIntro')}</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {uitlegVideoOefenen.map((video) => (
+                <ProbeerKnop
+                  key={video.slug}
+                  oefenen={`${video.oefenen}&van=youtube`}
+                  dataMeet="start-uitlegvideo-oefenen"
+                  label={video.title}
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm font-medium text-text hover:border-accent/40 hover:bg-surface-2"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="mt-10">
           <h2 className="font-serif text-2xl text-text">{t('veelGezochtH2')}</h2>
