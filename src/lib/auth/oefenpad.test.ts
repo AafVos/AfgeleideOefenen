@@ -122,4 +122,23 @@ describe('inlogAdres', () => {
     expect(inlogAdres('/instellingen', '?x=1')).toBe('/nl/inloggen')
     expect(inlogAdres('/oefenen', '')).toBe('/nl/inloggen?naar=%2Foefenen')
   })
+
+  it('bewaart de herkomst ook op een beveiligde pagina die geen oefenpad is', () => {
+    // AFG-795: een niet-ingelogde klik op /zelf-toets?van=proefsom verloor de
+    // herkomst, want alleen /oefenen kreeg een bewaard pad. Zonder herkomst op
+    // het inlogscherm telt een latere registratie niet meer mee.
+    expect(inlogAdres('/zelf-toets', '?van=proefsom')).toBe('/nl/inloggen?van=proefsom')
+    expect(inlogAdres('/dashboard', '?van=youtube')).toBe('/nl/inloggen?van=youtube')
+  })
+
+  it('negeert een onbekende of onveilige herkomstcode', () => {
+    expect(inlogAdres('/dashboard', '?van=onzin')).toBe('/nl/inloggen')
+    expect(inlogAdres('/dashboard', '?van=<script>')).toBe('/nl/inloggen')
+  })
+
+  it('bewaart herkomst én oefenpad samen voor /oefenen', () => {
+    expect(inlogAdres('/oefenen', '?chapter=h2&van=proefsom')).toBe(
+      '/nl/inloggen?naar=%2Foefenen%3Fchapter%3Dh2%26van%3Dproefsom&van=proefsom',
+    )
+  })
 })
