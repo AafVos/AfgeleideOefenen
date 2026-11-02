@@ -546,6 +546,8 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theoriePad: E_MACHT,
     theorieNaam: "E-machten",
     verwant: ["e-tot-de-2x", "sin-x-kwadraat", "e-tot-de-x", "e-tot-de-min-x"],
+    typVorm: "e^x^2",
+    ookGezochtAls: ["afgeleide e^x^2", "afgeleide e^(x^2)"],
     f: (x) => Math.exp(x * x),
     df: (x) => 2 * x * Math.exp(x * x),
     punten: [-0.5, 0, 0.5],

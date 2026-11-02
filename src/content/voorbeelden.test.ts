@@ -129,10 +129,13 @@ describe('antwoordpagina-s', () => {
     expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
       'Afgeleide van e tot de macht 2x oefenen',
     )
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-x-kwadraat')!)).toBe(
+      'Afgeleide van e tot de macht x kwadraat (e^x^2) oefenen',
+    )
   })
 
   it('zet de typvorm zonder spatie naast de leesbare vorm in de titel (AFG-704)', () => {
-    const metTypVorm = ['ln-x', 'sin-x', 'cos-x']
+    const metTypVorm = ['ln-x', 'sin-x', 'cos-x', 'e-tot-de-x-kwadraat']
     for (const slug of metTypVorm) {
       const voorbeeld = getVoorbeeld(slug)!
       expect(voorbeeld.typVorm).toBeTruthy()
@@ -142,7 +145,14 @@ describe('antwoordpagina-s', () => {
   })
 
   it('toont "Ook gezocht als" met typvormen op de drukste pagina-s (AFG-766)', () => {
-    const metOokGezochtAls = ['een-gedeeld-door-x', 'e-tot-de-x', 'ln-x', 'sin-x', 'cos-x']
+    const metOokGezochtAls = [
+      'een-gedeeld-door-x',
+      'e-tot-de-x',
+      'e-tot-de-x-kwadraat',
+      'ln-x',
+      'sin-x',
+      'cos-x',
+    ]
     for (const slug of metOokGezochtAls) {
       const voorbeeld = getVoorbeeld(slug)!
       expect(voorbeeld.ookGezochtAls).toBeDefined()
