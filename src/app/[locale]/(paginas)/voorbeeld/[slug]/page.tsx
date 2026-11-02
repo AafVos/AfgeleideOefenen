@@ -131,6 +131,21 @@ export default async function VoorbeeldPage({ params }: PageProps) {
 
         <StickyProbeerBalk oefenen={voorbeeld.oefenen} primaryId="probeer-knop-primair" />
 
+        {/* Toetsweek-brug (AFG-817): zelfde boodschap als de knop op de
+            startpagina (AFG-793), hier als korte tekstlink onder de
+            primaire proefsom-CTA. */}
+        <p className="mt-4 text-sm text-text-muted">
+          Toetsweek?{' '}
+          <Link
+            href="/zelf-toets?van=voorbeeld-toetsweek"
+            data-meet="voorbeeld-zelftoets"
+            className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
+          >
+            Doe een korte zelf-toets
+          </Link>
+          .
+        </p>
+
         {voorbeeld.examenbrug && (
           <p className="mt-4 text-sm text-text-muted">
             Dit soort som komt op het examen voor —{' '}
