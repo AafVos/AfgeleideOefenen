@@ -360,10 +360,19 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
 test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   const email = uniekAdres()
 
+  // Zelf invullen in plaats van `vulRegistratieIn`: die verstuurt het
+  // formulier al, en React 19 maakt onbeheerde velden na een afgeronde
+  // formulieractie leeg (zie de test bij AFG-553 hieronder). Checken we de
+  // browservalidatie pas ná die klik, dan wint soms de server: zodra de
+  // paginacompilatie al warm is (zoals verderop in deze suite) komt het
+  // antwoord terug vóórdat we kijken, en is het veld dan alweer leeg.
+  await page.goto('/nl/registreren')
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('input[name="password"]').fill('kort')
+  await page.locator('input[name="passwordConfirm"]').fill('kort')
+
   // Zoals een leerling het meemaakt: de browser laat het formulier niet eens
   // weg, want de velden eisen acht tekens.
-  await vulRegistratieIn(page, { email, wachtwoord: 'kort' })
-  await expect(page).toHaveURL(/\/nl\/registreren/)
   await expect(page.getByText('Minstens 8 tekens.').first()).toBeVisible()
   const teKort = await page
     .locator('input[name="password"]')
