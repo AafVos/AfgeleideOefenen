@@ -140,6 +140,46 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
 })
 
 /**
+ * AFG-808: vóór nummer 11 en 12 moest de volgende opgave nog van de server
+ * komen (nog niet in de cache van de browser). Zonder zichtbare feedback
+ * leek "Volgende" niets te doen, en leerlingen gingen dan verder klikken —
+ * op het opgavenummer in de zijbalk, of op een leeg vlak. Dit test dat er
+ * binnen een seconde iets te zien is, en dat "Volgende" én het opgavenummer
+ * daarna gewoon naar de volgende opgave gaan.
+ */
+test('bij een trage verbinding blijft "Volgende" en het opgavenummer werken', async ({
+  page,
+}) => {
+  await kiesOpgave(page, { soortSom: 'Trage verbinding (e2e)', nummer: 11 })
+  await geefAntwoord(page, '9')
+
+  // Simuleer een trage verbinding: opgave 12 staat nog niet in de cache
+  // van de browser en moet dus echt van de server komen.
+  await page.route('**/oefenen*', async (route) => {
+    if (route.request().method() === 'POST') {
+      await new Promise((resolve) => setTimeout(resolve, 1_200))
+    }
+    await route.continue()
+  })
+
+  await page.getByRole('button', { name: 'Volgende' }).click()
+  await expect(page.getByText('Opgave openen…')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible({ timeout: 5_000 })
+
+  // Het opgavenummer in de zijbalk (niet de tegel uit het overzicht) werkt
+  // ook nog, naar een opgave die ook nog niet in de cache van deze pagina zit.
+  // Nummer 10 (de examentegel) is in geen enkele andere test beantwoord, dus
+  // het opschrift blijft hier altijd kaal "Opgave 10".
+  await page.getByRole('link', { name: 'Opgave 10', exact: true }).click()
+  await expect(page.getByText('Opgave openen…')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible({ timeout: 5_000 })
+})
+
+/**
  * AFG-665: in een dashboardrij was alleen de titeltekst een link; het
  * bolletje en de cijfers ernaast waren losse tekst zonder link eromheen.
  * Een klik daar landde op de rij zelf en deed niets, terwijl de hele rij
