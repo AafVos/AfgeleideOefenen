@@ -1828,10 +1828,10 @@ function BlokWeergave({
                     // Vervangt de vorige opgave meteen: zonder dit zag een
                     // trage verbinding er even leeg uit, en leerlingen gingen
                     // dan nog eens klikken (zie AFG-808).
-                    <div
+                    <Card
                       role="status"
                       aria-live="polite"
-                      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-6 text-sm text-text-muted shadow-sm"
+                      className="flex items-center gap-3 text-sm text-text-muted"
                     >
                       <svg
                         className="size-5 shrink-0 animate-spin text-accent"
@@ -1845,7 +1845,7 @@ function BlokWeergave({
                         <path d="M12 3a9 9 0 1 1-9 9" />
                       </svg>
                       <span>Opgave openen…</span>
-                    </div>
+                    </Card>
                   )}
                 </div>
               </div>
