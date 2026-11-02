@@ -340,14 +340,28 @@ export function StudyCard({
           {showHint && (
             <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-muted">
               <p>{t('formatHint')}</p>
-              <button
-                type="button"
-                onClick={() => setShowVoorbeeld((v) => !v)}
-                className="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-accent underline underline-offset-2"
+              <details
+                className="mt-1"
+                open={showVoorbeeld}
+                onToggle={(e) => setShowVoorbeeld(e.currentTarget.open)}
               >
-                {t('formatHintExampleToggle')}
-              </button>
-              {showVoorbeeld && <p className="mt-1">{t('formatHintExample')}</p>}
+                <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 font-medium text-accent underline underline-offset-2">
+                  {showVoorbeeld ? t('formatHintExampleHide') : t('formatHintExampleToggle')}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className={`size-3 shrink-0 transition-transform ${showVoorbeeld ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </summary>
+                <p className="mt-1">{t('formatHintExample')}</p>
+              </details>
             </div>
           )}
           <div className="relative">

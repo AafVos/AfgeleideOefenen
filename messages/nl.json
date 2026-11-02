@@ -401,6 +401,7 @@
     "hasVideo": "Uitlegvideo",
     "formatHint": "Typ alleen het antwoord, bijvoorbeeld 2x of 1/x — geen hele zin.",
     "formatHintExampleToggle": "Voorbeeld van een antwoord",
+    "formatHintExampleHide": "Verberg voorbeeld",
     "formatHintExample": "Bijvoorbeeld: bij het antwoord 3x^2 + 2 typ je 3x^2+2 — met ^ voor een macht, zonder spaties of woorden erbij."
   },
   "FreeExercise": {
