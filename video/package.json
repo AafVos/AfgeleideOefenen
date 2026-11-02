@@ -17,12 +17,12 @@
     "render:shorts-integraal": "bash scripts/render-integraal-shorts.sh"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.538",
-    "@remotion/google-fonts": "^4.0.538",
-    "@remotion/player": "^4.0.538",
+    "@remotion/cli": "^4.0.539",
+    "@remotion/google-fonts": "^4.0.539",
+    "@remotion/player": "^4.0.539",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "remotion": "^4.0.538"
+    "remotion": "^4.0.539"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
