@@ -214,6 +214,9 @@ test('de ruimte boven de bronregel van een examentegel opent ook de opgave (AFG-
   })
   await expect(bronLink).toBeVisible()
   const bronDiv = bronLink.locator('xpath=..')
+  // De pagina toont alle hoofdstukken onder elkaar; zonder dit scrollt de
+  // examentegel niet in beeld en missen de coördinaten hieronder.
+  await bronDiv.scrollIntoViewIfNeeded()
   const vak = await bronDiv.boundingBox()
   const linkVak = await bronLink.boundingBox()
   if (!vak || !linkVak) throw new Error('kon de bronregel niet vinden')
