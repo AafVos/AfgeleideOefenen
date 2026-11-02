@@ -206,8 +206,11 @@ test('de ruimte boven de bronregel van een examentegel opent ook de opgave (AFG-
   await page.goto('/nl/oefenen?chapter=e2e')
   await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
 
+  // `exact`: zonder dat matcht dit ook de tegel zelf, die deze bronregel
+  // als onderdeel van zijn eigen (langere) aria-label meedraagt.
   const bronLink = page.getByRole('link', {
     name: 'CE vwo wiskunde B 2099 · tijdvak 1 · vraag 9 (e2e)',
+    exact: true,
   })
   await expect(bronLink).toBeVisible()
   const bronDiv = bronLink.locator('xpath=..')

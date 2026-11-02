@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import {
+  TESTHOOFDSTUK,
   TESTLEERLING,
   dashboardKaart,
   dashboardRegel,
@@ -140,21 +141,43 @@ test('na drie goede antwoorden staat het onderwerp op beheerst', async ({
 })
 
 /**
- * AFG-808: vóór nummer 11 en 12 moest de volgende opgave nog van de server
- * komen (nog niet in de cache van de browser). Zonder zichtbare feedback
- * leek "Volgende" niets te doen, en leerlingen gingen dan verder klikken —
- * op het opgavenummer in de zijbalk, of op een leeg vlak. Dit test dat er
- * binnen een seconde iets te zien is, en dat "Volgende" én het opgavenummer
- * daarna gewoon naar de volgende opgave gaan.
+ * AFG-808: de volgende opgave (via "Volgende", of via het opgavenummer in de
+ * zijbalk) moest soms nog van de server komen — nog niet in de cache van de
+ * browser. Zonder zichtbare feedback leek dat niets te doen, en leerlingen
+ * gingen dan verder klikken: op het opgavenummer, of op een leeg vlak. Dit
+ * test dat er binnen een seconde iets te zien is, en dat "Volgende" én het
+ * opgavenummer daarna gewoon naar de nieuwe opgave gaan.
  */
 test('bij een trage verbinding blijft "Volgende" en het opgavenummer werken', async ({
   page,
 }) => {
-  await kiesOpgave(page, { soortSom: 'Trage verbinding (e2e)', nummer: 11 })
+  await page.goto(`/nl/oefenen?chapter=${TESTHOOFDSTUK.slug}`)
+  const hoofdstuk = page.locator(TESTHOOFDSTUK.anker)
+
+  // Een tegel buiten "Trage verbinding (e2e)", voor de klik op het
+  // opgavenummer verderop: "Volgende" gaat daar nooit vanzelf naartoe, dus
+  // die staat gegarandeerd nog niet in de cache van de browser.
+  const bronHref = await hoofdstuk
+    .getByRole('link', { name: /CE vwo wiskunde B 2099/ })
+    .getAttribute('href')
+  if (!bronHref) throw new Error('kon de bron-testopgave niet vinden')
+  const bronVraagId = new URL(bronHref, 'http://localhost').searchParams.get('q')
+  if (!bronVraagId) throw new Error('de bron-testopgave heeft geen vraag-id in de link')
+
+  const eersteTegel = hoofdstuk.getByRole('link', { name: /f\(x\) = 9x/ })
+  // De eerste klik kan aankomen voordat de pagina klaarstaat; die doet dan
+  // niets. Dat overkomt een leerling met een trage verbinding ook.
+  await expect(async () => {
+    await eersteTegel.click()
+    await expect(
+      page.getByRole('button', { name: 'Nakijken', exact: true }),
+    ).toBeVisible({ timeout: 3_000 })
+  }).toPass({ timeout: 60_000, intervals: [500, 1_000, 2_000] })
+
   await geefAntwoord(page, '9')
 
-  // Simuleer een trage verbinding: opgave 12 staat nog niet in de cache
-  // van de browser en moet dus echt van de server komen.
+  // Simuleer een trage verbinding: de volgende opgave en de opgave uit de
+  // zijbalk staan nog niet in de cache van de browser.
   await page.route('**/oefenen*', async (route) => {
     if (route.request().method() === 'POST') {
       await new Promise((resolve) => setTimeout(resolve, 1_200))
@@ -169,10 +192,8 @@ test('bij een trage verbinding blijft "Volgende" en het opgavenummer werken', as
   ).toBeVisible({ timeout: 5_000 })
 
   // Het opgavenummer in de zijbalk (niet de tegel uit het overzicht) werkt
-  // ook nog, naar een opgave die ook nog niet in de cache van deze pagina zit.
-  // Nummer 10 (de examentegel) is in geen enkele andere test beantwoord, dus
-  // het opschrift blijft hier altijd kaal "Opgave 10".
-  await page.getByRole('link', { name: 'Opgave 10', exact: true }).click()
+  // ook nog, naar de bron-opgave die nog nergens in deze pagina geopend is.
+  await page.locator('aside').locator(`a[href*="q=${bronVraagId}"]`).click()
   await expect(page.getByText('Opgave openen…')).toBeVisible()
   await expect(
     page.getByRole('button', { name: 'Nakijken', exact: true }),
