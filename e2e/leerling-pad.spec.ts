@@ -158,10 +158,11 @@ test('bij een trage verbinding blijft "Volgende" en het opgavenummer werken', as
   // opgavenummer verderop: "Volgende" gaat daar nooit vanzelf naartoe, dus
   // die staat gegarandeerd nog niet in de cache van de browser.
   // De tekst van de bronregel staat ook in het (langere) opschrift van de
-  // tegel zelf; beide linken naar dezelfde opgave, dus de eerste is genoeg.
+  // tegel zelf; de link van de bronregel gaat naar de externe bron (geen
+  // vraag-id), dus de tegel zelf (de laatste treffer) is wat we willen.
   const bronHref = await hoofdstuk
     .getByRole('link', { name: /CE vwo wiskunde B 2099/ })
-    .first()
+    .last()
     .getAttribute('href')
   if (!bronHref) throw new Error('kon de bron-testopgave niet vinden')
   const bronVraagId = new URL(bronHref, 'http://localhost').searchParams.get('q')
