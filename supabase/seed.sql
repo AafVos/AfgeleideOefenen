@@ -150,7 +150,15 @@ values
    (select id from public.chapters where slug = 'e2e'), 3, true),
   -- Achteraan, zodat de nummers van de bestaande tests hetzelfde blijven.
   ('e2e_soort', 'Soort som (e2e)',
-   (select id from public.chapters where slug = 'e2e'), 4, true)
+   (select id from public.chapters where slug = 'e2e'), 4, true),
+  -- Achteraan, zodat de nummers van de bestaande tests hetzelfde blijven.
+  ('e2e_bron', 'Bron (e2e)',
+   (select id from public.chapters where slug = 'e2e'), 5, true),
+  -- Achteraan, zodat de nummers van de bestaande tests hetzelfde blijven.
+  -- Eigen topic (niet e2e_beheersen), zodat de test voor een trage
+  -- verbinding de voortgangstelling van "Beheersen (e2e)" niet meetelt.
+  ('e2e_traag', 'Trage verbinding (e2e)',
+   (select id from public.chapters where slug = 'e2e'), 6, true)
 on conflict (slug) do update
   set title       = excluded.title,
       chapter_id  = excluded.chapter_id,
@@ -169,7 +177,11 @@ values
   ((select id from public.topics_new where slug = 'e2e_uitwerking'),
    'e2e_niet_weten', 'Ik weet het niet (e2e)', 1),
   ((select id from public.topics_new where slug = 'e2e_soort'),
-   'e2e_verhaal', 'Verhaaltje (e2e)', 1)
+   'e2e_verhaal', 'Verhaaltje (e2e)', 1),
+  ((select id from public.topics_new where slug = 'e2e_bron'),
+   'e2e_examen', 'Examenvraag (e2e)', 1),
+  ((select id from public.topics_new where slug = 'e2e_traag'),
+   'e2e_traag_som', 'Trage verbinding (e2e)', 1)
 on conflict (topic_id, slug) do update
   set title       = excluded.title,
       order_index = excluded.order_index;
@@ -178,7 +190,10 @@ on conflict (topic_id, slug) do update
 delete from public.questions_new
  where topic_id in (
    select id from public.topics_new
-    where slug in ('e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking', 'e2e_soort')
+    where slug in (
+      'e2e_nakijken', 'e2e_beheersen', 'e2e_uitwerking', 'e2e_soort',
+      'e2e_bron', 'e2e_traag'
+    )
  );
 
 insert into public.questions_new
@@ -205,6 +220,31 @@ from (values
   ('e2e_verhaal', 'Een bal wordt omhoog gegooid. De hoogte in meter na $t$ seconden is $h(t) = -5t^{2} + 20t$. Na hoeveel seconden is de bal op zijn hoogste punt?', '2', '2', 1)
 ) as q(cluster_slug, latex_body, answer, latex_answer, order_index)
 join public.topic_clusters_new tc on tc.slug = q.cluster_slug;
+
+-- Eén tegel met een bronregel (zoals een echte eindexamenvraag), voor de
+-- test die de dode klik op die bronregel dekt (AFG-808). f(x) = 7x → f'(x) = 7.
+insert into public.questions_new
+  (topic_id, cluster_id, latex_body, answer, latex_answer,
+   difficulty, order_index, source_label, source_url)
+select tc.topic_id, tc.id, 'f(x) = 7x', '7', '7', 1, 1,
+       'CE vwo wiskunde B 2099 · tijdvak 1 · vraag 9 (e2e)',
+       'https://example.com/examenblad-e2e'
+from public.topic_clusters_new tc
+where tc.slug = 'e2e_examen';
+
+-- Twee opgaven voor de test met een trage verbinding (route-vertraging in
+-- Playwright): zo gaat "Volgende" écht naar een nog niet geladen opgave.
+insert into public.questions_new
+  (topic_id, cluster_id, latex_body, answer, latex_answer,
+   difficulty, order_index)
+select tc.topic_id, tc.id, q.latex_body, q.answer, q.latex_answer, 1, q.order_index
+from (values
+  -- f(x) = 9x → f'(x) = 9
+  (1, 'f(x) = 9x',  '9',  '9'),
+  -- f(x) = 11x → f'(x) = 11
+  (2, 'f(x) = 11x', '11', '11')
+) as q(order_index, latex_body, answer, latex_answer)
+join public.topic_clusters_new tc on tc.slug = 'e2e_traag_som';
 
 -- Bij de eerste van die twee opgaven hoort een vast stappenplan: de knop
 -- "Ik weet het niet" hoort de uitwerking te laten zien, en die komt normaal

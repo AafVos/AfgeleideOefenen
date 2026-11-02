@@ -194,6 +194,43 @@ test('paragraaf- en bloktitels zijn klikbaar en openen de eerste opgave eronder 
   }).toPass({ timeout: 60_000, intervals: [500, 1_000, 2_000] })
 })
 
+/**
+ * Een examentegel heeft een bronregel (jaar, tijdvak, vraagnummer) bóven de
+ * link die de opgave opent. Die bronregel hoort bij dezelfde kaart, maar zat
+ * niet in de link: een klik op de ruimte erboven deed niets, terwijl de
+ * hele kaart er klikbaar uitziet (zie AFG-808).
+ */
+test('de ruimte boven de bronregel van een examentegel opent ook de opgave (AFG-808)', async ({
+  page,
+}) => {
+  await page.goto('/nl/oefenen?chapter=e2e')
+  await expect(page.locator('[data-hydrated="ja"]')).toBeAttached()
+
+  // `exact`: zonder dat matcht dit ook de tegel zelf, die deze bronregel
+  // als onderdeel van zijn eigen (langere) aria-label meedraagt.
+  const bronLink = page.getByRole('link', {
+    name: 'CE vwo wiskunde B 2099 · tijdvak 1 · vraag 9 (e2e)',
+    exact: true,
+  })
+  await expect(bronLink).toBeVisible()
+  const bronDiv = bronLink.locator('xpath=..')
+  // De pagina toont alle hoofdstukken onder elkaar; zonder dit scrollt de
+  // examentegel niet in beeld en missen de coördinaten hieronder.
+  await bronDiv.scrollIntoViewIfNeeded()
+  const vak = await bronDiv.boundingBox()
+  const linkVak = await bronLink.boundingBox()
+  if (!vak || !linkVak) throw new Error('kon de bronregel niet vinden')
+  // De link begint pas onder de padding van de kaart; het punt hieronder
+  // ligt daarboven, dus duidelijk buiten de link zelf.
+  expect(linkVak.y).toBeGreaterThan(vak.y)
+
+  await page.mouse.click(vak.x + vak.width / 2, vak.y + 2)
+
+  await expect(
+    page.getByRole('button', { name: 'Nakijken', exact: true }),
+  ).toBeVisible()
+})
+
 async function geenLegeKoppen(hoofdstuk: Locator) {
   const blokken = hoofdstuk.locator('[id^="blok-"]')
   const aantalBlokken = await blokken.count()
