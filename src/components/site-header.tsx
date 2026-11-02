@@ -8,6 +8,7 @@ import {
 } from '@/lib/supabase/request-cache'
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 import { hoofdstukCode } from '@/lib/hoofdstuk-code'
+import { BeheerderMeting } from './beheerder-meting'
 import { MobileNav } from './mobile-nav'
 import { NavDropdown } from './nav-dropdown'
 import { PubliekeKop } from './publieke-kop'
@@ -197,6 +198,7 @@ export async function SiteHeader({ locale }: { locale: string }) {
     </header>
     {/* Buiten de header: backdrop-blur maakt position:fixed anders relatief aan de header */}
     <WelcomeTour tourSeen={tourSeen} />
+    <BeheerderMeting isAdmin={role === 'admin'} />
     </>
   )
 }

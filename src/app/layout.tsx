@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import Script from 'next/script'
 
 import { Meten } from '@/components/meten'
+import { MetingSchakelaarMelding } from '@/components/meting-schakelaar-melding'
 
 import './globals.css'
 
@@ -46,6 +47,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-bg text-text">
         {children}
+        {/* Schakelaar voor ?meten=uit/aan en de vlag van de beheerder (zie
+            src/lib/meten/schakelaar.ts). Moet vóór Meten staan om de vlag op
+            tijd te zetten, al is de volgorde door de timing niet kritiek. */}
+        <MetingSchakelaarMelding />
         {/* Eigen klikmeting, zonder koekjes. Laadt pas als de pagina er
             staat en meet niets op /admin. Zie src/lib/meten/. */}
         <Meten />

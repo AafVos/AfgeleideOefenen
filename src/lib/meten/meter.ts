@@ -31,6 +31,7 @@ import {
   EIGEN_MELDING,
   haalKlaargezetteRegistratie,
 } from './melden'
+import { metenStaatUit } from './schakelaar'
 
 const SLEUTEL = 'meet-sessie'
 const ADRES = '/api/meet'
@@ -50,11 +51,16 @@ export type Meter = {
   stop: () => void
 }
 
-/** Meten we hier? Niet bij een testbrowser, een crawler of op de testomgeving. */
+/**
+ * Meten we hier? Niet bij een testbrowser, een crawler, op de testomgeving,
+ * of op een apparaat dat zichzelf heeft uitgezet (zie `schakelaar.ts`) —
+ * waaronder elk apparaat van de beheerder.
+ */
 function metenMag(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
   if (navigator.webdriver) return false
   if (isBot(navigator.userAgent)) return false
+  if (metenStaatUit()) return false
 
   const host = window.location.hostname
   const lokaal =
