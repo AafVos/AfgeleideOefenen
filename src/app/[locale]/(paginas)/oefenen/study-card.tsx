@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 
 import { Link } from '@/i18n/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { DeelKnop } from '@/components/deel-knop'
@@ -17,6 +17,7 @@ import {
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
+import { leesToonHint, meldEersteAntwoord, subscribeToonHint } from '@/lib/practice/antwoord-hint'
 import { MASTERY_THRESHOLD } from '@/lib/practice/engine'
 import { netBeheerst, nogEenGoedZin } from '@/lib/practice/nog-een-goed'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
@@ -101,6 +102,9 @@ export function StudyCard({
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const [lastAttempt, setLastAttempt] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
+  // Nog geen antwoord verzonden deze sessie: toon de format-hint (AFG-816).
+  const showHint = useSyncExternalStore(subscribeToonHint, leesToonHint, () => false)
+  const [showVoorbeeld, setShowVoorbeeld] = useState(false)
   // Twee klikken vlak na elkaar: `submitting` staat dan nog op false, want
   // React tekent pas aan het eind van de tel opnieuw en de knop is dus nog
   // niet grijs. Een ref staat meteen goed (AFG-505).
@@ -170,6 +174,7 @@ export function StudyCard({
 
     bezigRef.current = true
     setSubmitting(true)
+    meldEersteAntwoord()
     const submitted = answer
     const seconds = secondsSpent()
     startTransition(async () => {
@@ -332,6 +337,19 @@ export function StudyCard({
 
       {state.phase === 'input' && (
         <div className="space-y-3">
+          {showHint && (
+            <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-muted">
+              <p>{t('formatHint')}</p>
+              <button
+                type="button"
+                onClick={() => setShowVoorbeeld((v) => !v)}
+                className="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-accent underline underline-offset-2"
+              >
+                {t('formatHintExampleToggle')}
+              </button>
+              {showVoorbeeld && <p className="mt-1">{t('formatHintExample')}</p>}
+            </div>
+          )}
           <div className="relative">
             <form
               onSubmit={submit}
