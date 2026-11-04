@@ -5,6 +5,9 @@ import sitemap from '@/app/sitemap'
 import {
   getVoorbeeld,
   getVoorbeelden,
+  getVoorbeeldIndex,
+  VOORBEELD_INDEX_SLUGS,
+  voorbeeldIndexPad,
   voorbeeldOefenVraag,
   voorbeeldPad,
   voorbeeldTitel,
@@ -251,5 +254,29 @@ describe('antwoordpagina-s', () => {
     for (const voorbeeld of voorbeelden) {
       expect(urls.some((url) => url.endsWith(voorbeeldPad(voorbeeld.slug)))).toBe(true)
     }
+  })
+})
+
+describe('overzichtspagina /voorbeeld (AFG-836)', () => {
+  it('toont minstens zes bestaande voorbeelden, elk met een geldige slug', () => {
+    expect(VOORBEELD_INDEX_SLUGS.length).toBeGreaterThanOrEqual(6)
+    const index = getVoorbeeldIndex()
+    // Geen enkele slug mag stilletjes wegvallen doordat hij niet bestaat.
+    expect(index).toHaveLength(VOORBEELD_INDEX_SLUGS.length)
+    for (const slug of VOORBEELD_INDEX_SLUGS) {
+      expect(getVoorbeeld(slug)?.slug).toBe(slug)
+    }
+  })
+
+  it('zet bronmeting van=voorbeeldindex op elke link naar een voorbeeld', () => {
+    for (const slug of VOORBEELD_INDEX_SLUGS) {
+      const pad = voorbeeldIndexPad(slug)
+      expect(pad).toBe(`/voorbeeld/${slug}?van=voorbeeldindex`)
+    }
+  })
+
+  it('staat zelf ook in de sitemap', () => {
+    const urls = sitemap().map((item) => item.url)
+    expect(urls.some((url) => url.endsWith('/voorbeeld'))).toBe(true)
   })
 })

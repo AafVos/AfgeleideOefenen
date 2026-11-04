@@ -102,6 +102,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${SITE_URL}/${TAAL}/voorbeeld`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
     ...getUitlegVideos().map((video) => ({
       url: `${SITE_URL}/${TAAL}${uitlegVideoPad(video.slug)}`,
       changeFrequency: 'monthly' as const,
