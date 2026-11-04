@@ -962,3 +962,31 @@ export function getVoorbeeld(slug: string): Voorbeeld | null {
   if (!schoon) return null;
   return OP_SLUG.get(schoon) ?? null;
 }
+
+/**
+ * Slugs voor de overzichtspagina `/voorbeeld` (AFG-836): de voorbeelden met
+ * de meeste vertoningen in Search Console en bijna geen klikken, als
+ * zoekvangnet voor zoektermen als "afgeleide voorbeelden".
+ */
+export const VOORBEELD_INDEX_SLUGS = [
+  "ln-x",
+  "sin-x",
+  "e-tot-de-x",
+  "een-gedeeld-door-x",
+  "cos-x",
+  "wortel-x",
+  "e-tot-de-2x",
+  "e-tot-de-x-kwadraat",
+] as const;
+
+/** De voorbeelden voor de overzichtspagina, in vaste volgorde. */
+export function getVoorbeeldIndex(): readonly Voorbeeld[] {
+  return VOORBEELD_INDEX_SLUGS.map((slug) => getVoorbeeld(slug)).filter(
+    (voorbeeld): voorbeeld is Voorbeeld => voorbeeld !== null,
+  );
+}
+
+/** Pad naar een voorbeeldpagina vanaf de overzichtspagina, met bronmeting. */
+export function voorbeeldIndexPad(slug: string): string {
+  return `${voorbeeldPad(slug)}?van=voorbeeldindex`;
+}
