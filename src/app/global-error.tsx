@@ -19,7 +19,7 @@ export default function GlobalError({
 
   return (
     <html lang="nl">
-      <body className="flex min-h-full flex-col bg-bg text-text antialiased">
+      <body className="flex min-h-dvh flex-col bg-bg text-text antialiased">
         <title>Er ging iets mis · afgeleideoefenen.nl</title>
         <FoutPagina onRetry={retry} />
       </body>

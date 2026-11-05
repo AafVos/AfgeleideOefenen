@@ -42,9 +42,14 @@ export default function RootLayout({
   return (
     <html
       lang="nl"
-      className={`${dmSans.variable} ${dmSerif.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${dmSerif.variable} h-dvh antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-text">
+      {/* min-h-dvh, niet min-h-full: dat laatste is 100% van de statische,
+          grote viewport en kan op een tablet met een in/uitklappende
+          adresbalk hoger uitvallen dan de h-dvh-kolom hieronder. Dan bleef
+          er een reep kale achtergrond onder de pagina staan waar een klik
+          niets deed (AFG-848). */}
+      <body className="min-h-dvh flex flex-col bg-bg text-text">
         {children}
         {/* Eigen klikmeting, zonder koekjes. Laadt pas als de pagina er
             staat en meet niets op /admin. Zie src/lib/meten/. */}
