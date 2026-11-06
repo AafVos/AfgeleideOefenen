@@ -14,13 +14,13 @@ export async function SiteFooter({ className }: { className?: string } = {}) {
       <div className="flex flex-col gap-1 px-4 py-2 pr-20 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/privacy"
-          className="inline-flex min-h-11 items-center text-sm text-text-muted underline-offset-2 hover:text-text hover:underline"
+          className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2 hover:text-text"
         >
           {t('privacy')}
         </Link>
         <IntegraalVerwijzing
           tekst={t('integraal')}
-          className="inline-flex min-h-11 items-center text-sm text-text-muted underline-offset-2 hover:text-text hover:underline"
+          className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2 hover:text-text"
         />
       </div>
     </footer>
