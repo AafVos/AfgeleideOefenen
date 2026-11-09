@@ -5,6 +5,7 @@ import { getWiskundeMetAafVideos, type VideoPagina } from '@/lib/wiskunde-met-aa
 const ALLE_PAGINAS: VideoPagina[] = [
   'quotientregel',
   'machtsregel',
+  'ln-x',
   'examentraining',
   'uitleg-videos',
 ]
@@ -50,5 +51,13 @@ describe('wiskunde-met-aaf-videos', () => {
     expect(getWiskundeMetAafVideos('examentraining').map((v) => v.id)).toContain(video?.id)
     expect(getWiskundeMetAafVideos('uitleg-videos').map((v) => v.id)).toContain(video?.id)
     expect(video?.bron).toBe('CE vwo wiskunde B 2023 · tijdvak 2 · vraag 1')
+  })
+
+  it('kent de ln(x)-video op ln-x en uitleg-videos, zonder examenbron', () => {
+    const video = getWiskundeMetAafVideos('ln-x')[0]
+    expect(video?.youtubeId).toBe('q53YUlb5QzQ')
+    expect(video?.soort).toBe('lang')
+    expect(getWiskundeMetAafVideos('uitleg-videos').map((v) => v.id)).toContain(video?.id)
+    expect(video?.bron).toBeNull()
   })
 })
