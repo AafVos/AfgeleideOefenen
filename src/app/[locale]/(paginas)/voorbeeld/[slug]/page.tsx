@@ -6,8 +6,10 @@ import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
 import { StickyProbeerBalk } from '@/components/sticky-probeer-balk'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
+import type { VideoPagina } from '@/lib/wiskunde-met-aaf-videos'
 import {
   getVoorbeeld,
   getVoorbeelden,
@@ -221,6 +223,8 @@ export default async function VoorbeeldPage({ params }: PageProps) {
             ))}
           </ul>
         </section>
+
+        <WiskundeMetAafVideos pagina={voorbeeld.slug as VideoPagina} />
 
         <div className="mt-12 flex flex-col items-start gap-4">
           <ProbeerKnop oefenen={voorbeeld.oefenen} dataMeet="probeer-3-sommen-onderaan" />
