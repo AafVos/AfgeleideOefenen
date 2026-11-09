@@ -9,6 +9,7 @@ import {
 const ALLE_PAGINAS: VideoPagina[] = [
   'quotientregel',
   'machtsregel',
+  'raaklijn',
   'ln-x',
   'examentraining',
   'uitleg-videos',
@@ -69,5 +70,14 @@ describe('wiskunde-met-aaf-videos', () => {
     expect(oefenlinkMetYoutubeHerkomst('/oefenen?onderwerp=machtsregel')).toBe(
       '/oefenen?onderwerp=machtsregel&van=youtube',
     )
+  })
+
+  it('kent de raaklijnvideo op raaklijn, examentraining en uitleg-videos', () => {
+    const video = getWiskundeMetAafVideos('raaklijn')[0]
+    expect(video?.youtubeId).toBe('sc3bY-eQKw8')
+    expect(video?.soort).toBe('lang')
+    expect(getWiskundeMetAafVideos('examentraining').map((v) => v.id)).toContain(video?.id)
+    expect(getWiskundeMetAafVideos('uitleg-videos').map((v) => v.id)).toContain(video?.id)
+    expect(video?.bron).toBe('CE vwo wiskunde B 2024 · tijdvak 1 · vraag 6')
   })
 })
