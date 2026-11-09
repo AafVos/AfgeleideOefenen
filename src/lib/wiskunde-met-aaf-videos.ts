@@ -1,3 +1,4 @@
+import { DIFFERENTIEERREGELS_OEFENEN } from '@/content/theory/differentieerregels'
 import { MACHTSREGEL_OEFENEN } from '@/content/theory/machtsregel'
 import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
 
@@ -64,6 +65,18 @@ const VIDEOS: WiskundeMetAafVideo[] = [
   // AFG-768: de bijbehorende Short (BtdNsJpE2Js) komt er niet apart bij
   // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
   // staat (zie de regel hierboven in dit bestand).
+
+  {
+    id: 'examentraining-zo-oefen-je-differentieren',
+    title: 'Examen wiskunde B? Zo oefen je differentiëren',
+    description: 'Aaf laat in een paar seconden zien hoe je gericht gaat oefenen met differentiëren voor het examen.',
+    soort: 'short',
+    duration: '0:43',
+    youtubeId: 'Iey-oVqC3Qk',
+    bron: null,
+    paginas: ['examentraining'],
+    oefenen: DIFFERENTIEERREGELS_OEFENEN,
+  },
 ]
 
 /** Video's die op deze pagina moeten verschijnen, in de volgorde van `VIDEOS`. */
