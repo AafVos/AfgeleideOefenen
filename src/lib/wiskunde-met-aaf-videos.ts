@@ -14,7 +14,15 @@ import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
  * 200 teruggeeft op `https://www.youtube.com/oembed?url=https://youtu.be/<id>`
  * — staat hij nog gepland (niet openbaar), dan geeft dat adres een 403.
  */
-export type VideoPagina = 'quotientregel' | 'machtsregel' | 'examentraining' | 'uitleg-videos'
+export type VideoPagina =
+  | 'quotientregel'
+  | 'machtsregel'
+  | 'ln-x'
+  | 'examentraining'
+  | 'uitleg-videos'
+
+/** Geen eigen theoriepagina voor logaritmes: alleen de kaart op `/theorie#kaart-h9-logaritmes`. */
+const LN_X_OEFENEN = '/oefenen?chapter=h9&topic=h9_logaritmes'
 
 export type WiskundeMetAafVideo = {
   /** Eigen, stabiele id. Niet het YouTube-id: dat kan nog wijzigen vóór publicatie. */
@@ -77,6 +85,23 @@ const VIDEOS: WiskundeMetAafVideo[] = [
     paginas: ['examentraining'],
     oefenen: DIFFERENTIEERREGELS_OEFENEN,
   },
+
+  {
+    id: 'afgeleide-en-primitieve-van-ln-x',
+    title: 'Afgeleide en primitieve van ln x | alles in 3 minuten',
+    description:
+      'Aaf laat in drie minuten zien hoe je zowel de afgeleide als de primitieve van ln(x) bepaalt.',
+    soort: 'lang',
+    duration: '3:23',
+    youtubeId: 'q53YUlb5QzQ',
+    bron: null,
+    paginas: ['ln-x', 'uitleg-videos'],
+    oefenen: LN_X_OEFENEN,
+  },
+
+  // AFG-821: de bijbehorende Short (gnw1Ipv9baQ) komt er niet apart bij
+  // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
+  // staat (zelfde regel als bij BtdNsJpE2Js hierboven).
 ]
 
 /** Video's die op deze pagina moeten verschijnen, in de volgorde van `VIDEOS`. */
