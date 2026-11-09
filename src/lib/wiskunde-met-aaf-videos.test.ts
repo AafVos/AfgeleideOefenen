@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { getWiskundeMetAafVideos, type VideoPagina } from '@/lib/wiskunde-met-aaf-videos'
+import {
+  getWiskundeMetAafVideos,
+  oefenlinkMetYoutubeHerkomst,
+  type VideoPagina,
+} from '@/lib/wiskunde-met-aaf-videos'
 
 const ALLE_PAGINAS: VideoPagina[] = [
   'quotientregel',
@@ -50,5 +54,11 @@ describe('wiskunde-met-aaf-videos', () => {
     expect(getWiskundeMetAafVideos('examentraining').map((v) => v.id)).toContain(video?.id)
     expect(getWiskundeMetAafVideos('uitleg-videos').map((v) => v.id)).toContain(video?.id)
     expect(video?.bron).toBe('CE vwo wiskunde B 2023 · tijdvak 2 · vraag 1')
+  })
+
+  it('zet de herkomstcode youtube op de oefenlink, nooit youtube-video (AFG-868)', () => {
+    expect(oefenlinkMetYoutubeHerkomst('/oefenen?onderwerp=machtsregel')).toBe(
+      '/oefenen?onderwerp=machtsregel&van=youtube',
+    )
   })
 })
