@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import Script from 'next/script'
 
 import { Meten } from '@/components/meten'
+import { ViewportHoogte } from '@/components/viewport-hoogte'
 
 import './globals.css'
 
@@ -42,18 +43,20 @@ export default function RootLayout({
   return (
     <html
       lang="nl"
-      className={`${dmSans.variable} ${dmSerif.variable} h-dvh antialiased`}
+      className={`${dmSans.variable} ${dmSerif.variable} h-[var(--app-height,100dvh)] antialiased`}
     >
-      {/* min-h-dvh, niet min-h-full: dat laatste is 100% van de statische,
-          grote viewport en kan op een tablet met een in/uitklappende
-          adresbalk hoger uitvallen dan de h-dvh-kolom hieronder. Dan bleef
-          er een reep kale achtergrond onder de pagina staan waar een klik
-          niets deed (AFG-848). */}
-      <body className="min-h-dvh flex flex-col bg-bg text-text">
+      {/* min-h-dvh (met --app-height als eigenhandige correctie erbovenop,
+          zie ViewportHoogte), niet min-h-full: dat laatste is 100% van de
+          statische, grote viewport en kan op een tablet met een
+          in/uitklappende adresbalk hoger uitvallen dan de kolom hieronder.
+          Dan bleef er een reep kale achtergrond onder de pagina staan waar
+          een klik niets deed (AFG-848, AFG-862). */}
+      <body className="min-h-[var(--app-height,100dvh)] flex flex-col bg-bg text-text">
         {children}
         {/* Eigen klikmeting, zonder koekjes. Laadt pas als de pagina er
             staat en meet niets op /admin. Zie src/lib/meten/. */}
         <Meten />
+        <ViewportHoogte />
       </body>
       {beaconToken ? (
         <Script
