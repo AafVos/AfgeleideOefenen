@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { getWiskundeMetAafVideos, type VideoPagina } from '@/lib/wiskunde-met-aaf-videos'
+import {
+  getWiskundeMetAafVideos,
+  oefenlinkMetYoutubeHerkomst,
+  type VideoPagina,
+} from '@/lib/wiskunde-met-aaf-videos'
 
 const ALLE_PAGINAS: VideoPagina[] = [
   'quotientregel',
@@ -60,6 +64,12 @@ describe('wiskunde-met-aaf-videos', () => {
     expect(video?.soort).toBe('lang')
     expect(getWiskundeMetAafVideos('uitleg-videos').map((v) => v.id)).toContain(video?.id)
     expect(video?.bron).toBeNull()
+  })
+
+  it('zet de herkomstcode youtube op de oefenlink, nooit youtube-video (AFG-868)', () => {
+    expect(oefenlinkMetYoutubeHerkomst('/oefenen?onderwerp=machtsregel')).toBe(
+      '/oefenen?onderwerp=machtsregel&van=youtube',
+    )
   })
 
   it('kent de raaklijnvideo op raaklijn, examentraining en uitleg-videos', () => {

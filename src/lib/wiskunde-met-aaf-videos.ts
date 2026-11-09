@@ -127,3 +127,12 @@ const VIDEOS: WiskundeMetAafVideo[] = [
 export function getWiskundeMetAafVideos(pagina: VideoPagina): WiskundeMetAafVideo[] {
   return VIDEOS.filter((video) => video.paginas.includes(pagina))
 }
+
+/**
+ * Oefenlink onder een video, met de herkomstcode `youtube` erbij (zelfde
+ * code als de startpagina, AFG-792) — niet `youtube-video`, want die staat
+ * niet in `TOEGESTANE_HERKOMST` en wordt dus genegeerd (AFG-868).
+ */
+export function oefenlinkMetYoutubeHerkomst(oefenen: string): string {
+  return `${oefenen}&van=youtube`
+}
