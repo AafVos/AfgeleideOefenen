@@ -53,7 +53,7 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Klaar' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Goed bezig!' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dat waren de 3 proefsommen' })).toBeVisible()
   await expect(
     page.getByText('Maak een gratis account om je voortgang te bewaren en verder te oefenen'),
   ).toBeVisible()

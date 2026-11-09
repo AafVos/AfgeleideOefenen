@@ -136,7 +136,7 @@ export function ProberenClient({
         <p className="text-sm font-medium uppercase tracking-wider text-accent">
           Proberen
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-text">Goed bezig!</h1>
+        <h1 className="mt-2 font-serif text-4xl text-text">Dat waren de 3 proefsommen</h1>
         <p className="mt-6 text-lg text-text">
           Maak een gratis account om je voortgang te bewaren en verder te oefenen
         </p>
