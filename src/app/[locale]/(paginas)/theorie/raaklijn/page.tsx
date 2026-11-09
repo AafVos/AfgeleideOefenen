@@ -12,6 +12,7 @@ import {
   RAAKLIJN_VOORBEELDEN,
 } from '@/content/theory/raaklijn'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
 
@@ -101,6 +102,8 @@ export default function RaaklijnPage() {
           ))}
         </ul>
       </section>
+
+      <WiskundeMetAafVideos pagina="raaklijn" />
 
       <TheorieOefenActies
         oefenen={RAAKLIJN_OEFENEN}

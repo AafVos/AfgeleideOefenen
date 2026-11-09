@@ -1,5 +1,6 @@
 import { MACHTSREGEL_OEFENEN } from '@/content/theory/machtsregel'
 import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
+import { RAAKLIJN_OEFENEN } from '@/content/theory/raaklijn'
 
 /**
  * Video's van het YouTube-kanaal "Wiskunde met Aaf" (@WiskundeMetAaf),
@@ -13,7 +14,12 @@ import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
  * 200 teruggeeft op `https://www.youtube.com/oembed?url=https://youtu.be/<id>`
  * — staat hij nog gepland (niet openbaar), dan geeft dat adres een 403.
  */
-export type VideoPagina = 'quotientregel' | 'machtsregel' | 'examentraining' | 'uitleg-videos'
+export type VideoPagina =
+  | 'quotientregel'
+  | 'machtsregel'
+  | 'raaklijn'
+  | 'examentraining'
+  | 'uitleg-videos'
 
 export type WiskundeMetAafVideo = {
   /** Eigen, stabiele id. Niet het YouTube-id: dat kan nog wijzigen vóór publicatie. */
@@ -64,6 +70,23 @@ const VIDEOS: WiskundeMetAafVideo[] = [
   // AFG-768: de bijbehorende Short (BtdNsJpE2Js) komt er niet apart bij
   // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
   // staat (zie de regel hierboven in dit bestand).
+
+  {
+    id: 'examen-2024-i-vraag-6-verschoven-grafiek',
+    title: 'Examenvraag vwo wiskunde B: functievoorschrift van de verschoven grafiek',
+    description:
+      'Aaf gebruikt de helling van de raaklijn in punt A om het functievoorschrift van de verschoven grafiek g op te stellen.',
+    soort: 'lang',
+    duration: '5:17',
+    youtubeId: 'sc3bY-eQKw8',
+    bron: 'CE vwo wiskunde B 2024 · tijdvak 1 · vraag 6',
+    paginas: ['examentraining', 'raaklijn', 'uitleg-videos'],
+    oefenen: RAAKLIJN_OEFENEN,
+  },
+
+  // AFG-822: de bijbehorende Short (ICCQ50-yDqk) komt er niet apart bij
+  // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
+  // staat (zelfde regel als bij BtdNsJpE2Js hierboven).
 ]
 
 /** Video's die op deze pagina moeten verschijnen, in de volgorde van `VIDEOS`. */
