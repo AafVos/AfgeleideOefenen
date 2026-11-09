@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 
 import { FoutPagina } from '@/components/fout-pagina'
+import { ViewportHoogte } from '@/components/viewport-hoogte'
 
 import './globals.css'
 
@@ -19,9 +20,10 @@ export default function GlobalError({
 
   return (
     <html lang="nl">
-      <body className="flex min-h-dvh flex-col bg-bg text-text antialiased">
+      <body className="flex min-h-[var(--app-height,100dvh)] flex-col bg-bg text-text antialiased">
         <title>Er ging iets mis · afgeleideoefenen.nl</title>
         <FoutPagina onRetry={retry} />
+        <ViewportHoogte />
       </body>
     </html>
   )
