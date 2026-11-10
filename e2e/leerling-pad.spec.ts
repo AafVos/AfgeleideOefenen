@@ -247,7 +247,11 @@ test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon'
   // Deze opgave is niet als fout nagekeken.
   await expect(page.getByText('Jouw antwoord')).toBeHidden()
 
-  // En je kunt door naar de volgende of het zelf nog eens proberen.
+  // Deze sessie nog geen antwoord gehad: zachte zet om het toch te typen
+  // (AFG-883), naast de knop om de som alsnog te proberen.
+  await expect(
+    page.getByText('Probeer het toch nog eens zelf te typen'),
+  ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Opnieuw proberen' })).toBeVisible()
   await page.getByRole('button', { name: 'Volgende' }).click()
   await expect(
@@ -277,6 +281,33 @@ test('wie een opgave niet weet, krijgt de uitwerking zonder te gokken @telefoon'
     .eq('user_id', TESTLEERLING.id)
     .eq('topic_clusters_new.slug', 'e2e_niet_weten')
   expect(voortgang?.[0]).toMatchObject({ total_answered: 0, total_correct: 0 })
+})
+
+/**
+ * AFG-883: wie deze sessie al een antwoord verzonden heeft (goed of fout),
+ * ziet de zachte zet niet meer bij een volgende Overslaan — dat is het
+ * bestaande skip-gedrag, ongewijzigd.
+ */
+test('na een eerder antwoord deze sessie blijft de zachte zet bij Overslaan weg', async ({
+  page,
+}) => {
+  // Eerst één antwoord geven, goed of fout maakt niet uit.
+  await kiesOpgave(page, {
+    onderwerp: 'Nakijken (e2e)',
+    soortSom: 'Goed antwoord (e2e)',
+    nummer: 1,
+  })
+  await geefAntwoord(page, '12x^2')
+  await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
+
+  // Dan een andere opgave overslaan: f(x) = x^6  →  f'(x) = 6x^5.
+  await kiesOpgave(page, { soortSom: 'Ik weet het niet (e2e)', nummer: 8 })
+  await page.getByRole('button', { name: 'Ik weet het niet', exact: true }).click()
+
+  await expect(page.getByText('Juiste antwoord')).toBeVisible()
+  await expect(
+    page.getByText('Probeer het toch nog eens zelf te typen'),
+  ).toBeHidden()
 })
 
 test('een leerling kan een opgave melden die niet klopt @telefoon', async ({
