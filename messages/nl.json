@@ -378,6 +378,7 @@
     "previousAttempt": "Vorige poging",
     "dontKnow": "Ik weet het niet",
     "skippedBody": "Je hebt het antwoord opgevraagd. Deze opgave telt niet mee als fout, maar je reeks goed op rij begint wel opnieuw.",
+    "skippedNudge": "Probeer het toch nog eens zelf te typen: je ziet meteen of je het al goed hebt.",
     "showAnswer": "Laat het goede antwoord zien",
     "placeholder": "Bijv. 12x^2",
     "submit": "Nakijken",

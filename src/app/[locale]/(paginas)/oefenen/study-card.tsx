@@ -527,8 +527,19 @@ export function StudyCard({
       {state.phase === 'skipped' && (
         <div ref={feedbackRef} className="space-y-4">
           <p className="text-center text-sm text-text-muted">{t('skippedBody')}</p>
+          {/* Nog geen antwoord deze sessie: zachte zet om het toch te proberen (AFG-883). */}
+          {showHint && (
+            <p className="text-center text-sm font-medium text-accent">
+              {t('skippedNudge')}
+            </p>
+          )}
           <StepsList steps={steps} />
-          <AfterAnswerButtons onNext={next} onRetry={retry} pending={pending} />
+          <AfterAnswerButtons
+            onNext={next}
+            onRetry={retry}
+            pending={pending}
+            primary={showHint ? 'retry' : 'next'}
+          />
         </div>
       )}
 
@@ -571,36 +582,59 @@ function StepsList({ steps }: { steps: Step[] }) {
   )
 }
 
-/** Doorgaan of deze opgave nog een keer proberen. */
+/**
+ * Doorgaan of deze opgave nog een keer proberen. Bij een overgeslagen opgave
+ * zonder antwoord deze sessie staat "opnieuw proberen" voorop (AFG-883).
+ */
 function AfterAnswerButtons({
   onNext,
   onRetry,
   pending,
+  primary = 'next',
 }: {
   onNext: () => void
   onRetry: () => void
   pending: boolean
+  primary?: 'next' | 'retry'
 }) {
   const t = useTranslations('PracticeCard')
+  const nextButton = (
+    <Button
+      key="next"
+      variant={primary === 'next' ? 'primary' : 'secondary'}
+      onClick={onNext}
+      disabled={pending}
+      data-meet="oefenen-volgende"
+      className="min-h-11 px-5"
+    >
+      {pending ? t('navigating') : t('nextPlus')}
+    </Button>
+  )
+  const retryButton = (
+    <Button
+      key="retry"
+      variant={primary === 'retry' ? 'primary' : 'secondary'}
+      onClick={onRetry}
+      disabled={pending}
+      data-meet="oefenen-opnieuw"
+      className="min-h-11 px-5"
+    >
+      {t('retryButton')}
+    </Button>
+  )
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <Button
-        onClick={onNext}
-        disabled={pending}
-        data-meet="oefenen-volgende"
-        className="min-h-11 px-5"
-      >
-        {pending ? t('navigating') : t('nextPlus')}
-      </Button>
-      <Button
-        variant="secondary"
-        onClick={onRetry}
-        disabled={pending}
-        data-meet="oefenen-opnieuw"
-        className="min-h-11 px-5"
-      >
-        {t('retryButton')}
-      </Button>
+      {primary === 'retry' ? (
+        <>
+          {retryButton}
+          {nextButton}
+        </>
+      ) : (
+        <>
+          {nextButton}
+          {retryButton}
+        </>
+      )}
     </div>
   )
 }
