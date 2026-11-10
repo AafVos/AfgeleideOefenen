@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import { describe, expect, it } from 'vitest'
 
 import sitemap from '@/app/sitemap'
@@ -6,7 +9,6 @@ import {
   getUitlegVideos,
   losVideoSlugOp,
   oudVideoAdres,
-  uitlegVideoMetadata,
   uitlegVideoPad,
 } from '@/lib/videos'
 
@@ -74,13 +76,13 @@ describe('uitlegvideo-adressen', () => {
     }
   })
 
-  it('gebruikt de korte description als zoekomschrijving, niet "Je leert"', () => {
-    for (const video of getUitlegVideos()) {
-      const metadata = uitlegVideoMetadata(video, 'nl')
-      expect(metadata.description).toBe(video.description)
-      expect(metadata.description).not.toContain('Je leert')
-      expect(metadata.openGraph?.description).toBe(video.description)
-    }
+  it('gebruikt in de paginametadata de korte description, niet "uitleg.leer"', () => {
+    const pad = fileURLToPath(
+      new URL('../app/[locale]/(paginas)/uitleg-videos/[slug]/page.tsx', import.meta.url),
+    )
+    const bron = readFileSync(pad, 'utf8')
+    expect(bron).not.toContain('uitleg.leer')
+    expect(bron.match(/description: video\.description/g)?.length).toBe(3)
   })
 
   it('noemt de afgeleide in elke videotitel', () => {

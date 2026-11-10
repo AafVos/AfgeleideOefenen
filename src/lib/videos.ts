@@ -1,7 +1,3 @@
-import type { Metadata } from 'next'
-
-import { canoniek, deelkaart } from '@/lib/seo'
-
 /**
  * `algemeen` legt een onderwerp of regelkeuze uit; `vraaguitwerking` werkt één
  * opgave uit, meestal op verzoek van een leerling.
@@ -286,24 +282,6 @@ export function oudVideoAdres(pathname: string): string | null {
  */
 export function uitlegVideoPad(slug: string): string {
   return `/uitleg-videos/${encodeURIComponent(slug)}`
-}
-
-/**
- * Metadata van één uitlegvideo-pagina: de korte `description` voor de
- * zoekomschrijving en het deelkaartje, nooit de lange "Je leert"-uitleg
- * (`uitleg.leer`) die bij een zoeksnippet juist afschrikt.
- */
-export function uitlegVideoMetadata(video: UitlegVideo, locale: string): Metadata {
-  const pad = uitlegVideoPad(video.slug)
-  return {
-    title: video.title,
-    description: video.description,
-    alternates: canoniek(locale, pad),
-    openGraph: deelkaart(locale, pad, {
-      title: video.title,
-      description: video.description,
-    }),
-  }
 }
 
 /** Weergaveduur "2:20" als duur die zoekmachines lezen: "PT2M20S". */
