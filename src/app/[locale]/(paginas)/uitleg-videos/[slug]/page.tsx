@@ -1,8 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
-import { duurAlsKaartje, getUitlegVideo, getUitlegVideos, uitlegVideoPad } from '@/lib/videos'
+import { paginaAdres } from '@/lib/seo'
+import {
+  duurAlsKaartje,
+  getUitlegVideo,
+  getUitlegVideos,
+  uitlegVideoMetadata,
+  uitlegVideoPad,
+} from '@/lib/videos'
 
 import { UitlegVideosInhoud } from '../inhoud'
 
@@ -21,16 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const video = getUitlegVideo(slug)
   if (!video) notFound()
 
-  const pad = uitlegVideoPad(video.slug)
-  return {
-    title: video.title,
-    description: video.uitleg.leer,
-    alternates: canoniek(locale, pad),
-    openGraph: deelkaart(locale, pad, {
-      title: video.title,
-      description: video.uitleg.leer,
-    }),
-  }
+  return uitlegVideoMetadata(video, locale)
 }
 
 export default async function UitlegVideoPage({ params }: PageProps) {
@@ -44,7 +41,7 @@ export default async function UitlegVideoPage({ params }: PageProps) {
     '@type': 'VideoObject',
     '@id': `${paginaAdres(locale, pad)}#video`,
     name: video.title,
-    description: video.uitleg.leer,
+    description: video.description,
     contentUrl: video.src,
     duration: duurAlsKaartje(video.duration),
     inLanguage: 'nl',

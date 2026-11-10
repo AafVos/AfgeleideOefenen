@@ -6,6 +6,7 @@ import {
   getUitlegVideos,
   losVideoSlugOp,
   oudVideoAdres,
+  uitlegVideoMetadata,
   uitlegVideoPad,
 } from '@/lib/videos'
 
@@ -20,8 +21,8 @@ describe('uitlegvideo-adressen', () => {
   })
 
   it('noemt de quotiëntregel bij naam', () => {
-    expect(getUitlegVideo('quotientregel')?.title).toBe('De quotiëntregel')
-    expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel')
+    expect(getUitlegVideo('quotientregel')?.title).toBe('De quotiëntregel voor de afgeleide')
+    expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel voor de afgeleide')
     expect(getUitlegVideo('quotientregel')?.theoriePad).toBe('/theorie/quotientregel')
     expect(getUitlegVideo('somregel-of-productregel')?.theoriePad).toBe('/theorie/productregel')
     expect(getUitlegVideo('somregel-of-productregel')?.oefenen).toBe(
@@ -70,6 +71,21 @@ describe('uitlegvideo-adressen', () => {
       expect(`${video?.title} ${video?.description} ${video?.slug}`).not.toMatch(
         /som\s*\d|#\d+|H\d|hoofdstuk/i,
       )
+    }
+  })
+
+  it('gebruikt de korte description als zoekomschrijving, niet "Je leert"', () => {
+    for (const video of getUitlegVideos()) {
+      const metadata = uitlegVideoMetadata(video, 'nl')
+      expect(metadata.description).toBe(video.description)
+      expect(metadata.description).not.toContain('Je leert')
+      expect(metadata.openGraph?.description).toBe(video.description)
+    }
+  })
+
+  it('noemt de afgeleide in elke videotitel', () => {
+    for (const video of getUitlegVideos()) {
+      expect(video.title.toLowerCase()).toContain('afgeleide')
     }
   })
 

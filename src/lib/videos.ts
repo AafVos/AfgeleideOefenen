@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+import { canoniek, deelkaart } from '@/lib/seo'
+
 /**
  * `algemeen` legt een onderwerp of regelkeuze uit; `vraaguitwerking` werkt één
  * opgave uit, meestal op verzoek van een leerling.
@@ -51,7 +55,7 @@ const STORAGE_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/
 const VIDEOS: UitlegVideo[] = [
   {
     slug: 'somregel-of-productregel',
-    title: 'Somregel of productregel?',
+    title: 'Somregel of productregel voor de afgeleide?',
     description:
       'Wanneer gebruik je welke regel, en hoe de somregel binnen de productregel terugkomt.',
     uitleg: {
@@ -83,7 +87,7 @@ const VIDEOS: UitlegVideo[] = [
   },
   {
     slug: 'productregel-bij-een-kwadraat',
-    title: 'Productregel bij een kwadraat',
+    title: 'De afgeleide van een kwadraat met de productregel',
     description:
       'm(q) = 1 − (3q² − 2)² differentiëren. Eerst de somregel, en de productregel voor het kwadraat.',
     uitleg: {
@@ -112,7 +116,7 @@ const VIDEOS: UitlegVideo[] = [
   },
   {
     slug: 'productregel-bij-twee-polynomen',
-    title: 'Productregel bij twee polynomen',
+    title: 'De afgeleide van twee polynomen met de productregel',
     description:
       'k(x) = 5 − 3(x⁴ − x)(x + 1) differentiëren. Eerst de somregel, daarna de productregel voor het tweede deel.',
     uitleg: {
@@ -142,7 +146,7 @@ const VIDEOS: UitlegVideo[] = [
   },
   {
     slug: 'quotientregel-bij-een-breuk',
-    title: 'Quotiëntregel bij een breuk',
+    title: 'De afgeleide van een breuk met de quotiëntregel',
     description:
       'f(x) = (x − 2)/(x + 5) differentiëren met de quotiëntregel.',
     uitleg: {
@@ -170,7 +174,7 @@ const VIDEOS: UitlegVideo[] = [
   },
   {
     slug: 'quotientregel',
-    title: 'De quotiëntregel',
+    title: 'De quotiëntregel voor de afgeleide',
     description:
       'De quotiëntregel en het stappenplan dat je erbij volgt, meteen toegepast op #36 uit H2.',
     uitleg: {
@@ -200,7 +204,7 @@ const VIDEOS: UitlegVideo[] = [
   },
   {
     slug: 'machten-herschrijven',
-    title: 'Machten en wortels herschrijven',
+    title: 'Machten en wortels herschrijven voor de afgeleide',
     description:
       'Een macht in de noemer of een wortel van x? Eerst herschrijven als macht van x, dan de machtsregel, en het antwoord terugschrijven.',
     uitleg: {
@@ -282,6 +286,24 @@ export function oudVideoAdres(pathname: string): string | null {
  */
 export function uitlegVideoPad(slug: string): string {
   return `/uitleg-videos/${encodeURIComponent(slug)}`
+}
+
+/**
+ * Metadata van één uitlegvideo-pagina: de korte `description` voor de
+ * zoekomschrijving en het deelkaartje, nooit de lange "Je leert"-uitleg
+ * (`uitleg.leer`) die bij een zoeksnippet juist afschrikt.
+ */
+export function uitlegVideoMetadata(video: UitlegVideo, locale: string): Metadata {
+  const pad = uitlegVideoPad(video.slug)
+  return {
+    title: video.title,
+    description: video.description,
+    alternates: canoniek(locale, pad),
+    openGraph: deelkaart(locale, pad, {
+      title: video.title,
+      description: video.description,
+    }),
+  }
 }
 
 /** Weergaveduur "2:20" als duur die zoekmachines lezen: "PT2M20S". */
