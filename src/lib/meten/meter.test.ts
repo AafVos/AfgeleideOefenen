@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { geldigeZending, type Gebeurtenis } from './gebeurtenis'
 import { meldMeting, pikRegistratieUitAdres } from './melden'
 import { startMeten } from './meter'
+import { METEN_UIT_SLEUTEL } from './schakelaar'
 
 type Luisteraar = (gebeurtenis: unknown) => void
 
@@ -22,7 +23,12 @@ function nepBrowser(pad: string, zoek: string) {
   return maakBrowser(pad, zoek, opslag)
 }
 
-function maakBrowser(pad: string, zoek: string, opslag: Map<string, string>) {
+function maakBrowser(
+  pad: string,
+  zoek: string,
+  opslag: Map<string, string>,
+  lokaleOpslag: Map<string, string> = new Map(),
+) {
   const verzonden: Gebeurtenis[][] = []
   const luisteraars = new Map<string, Luisteraar[]>()
 
@@ -47,6 +53,11 @@ function maakBrowser(pad: string, zoek: string, opslag: Map<string, string>) {
       getItem: (sleutel: string) => opslag.get(sleutel) ?? null,
       setItem: (sleutel: string, waarde: string) => void opslag.set(sleutel, waarde),
       removeItem: (sleutel: string) => void opslag.delete(sleutel),
+    },
+    localStorage: {
+      getItem: (sleutel: string) => lokaleOpslag.get(sleutel) ?? null,
+      setItem: (sleutel: string, waarde: string) => void lokaleOpslag.set(sleutel, waarde),
+      removeItem: (sleutel: string) => void lokaleOpslag.delete(sleutel),
     },
     history: {
       state: null,
@@ -88,7 +99,7 @@ function maakBrowser(pad: string, zoek: string, opslag: Map<string, string>) {
     sendBeacon: undefined,
   }
 
-  return { window, document, navigator, verzonden, opslag }
+  return { window, document, navigator, verzonden, opslag, lokaleOpslag }
 }
 
 type Browser = ReturnType<typeof maakBrowser>
@@ -215,6 +226,29 @@ describe('terugkeer van "Doorgaan met Google"', () => {
 
     expect(registraties(verder)).toHaveLength(1)
     expect(registraties(verder)[0].doel).toBe('registratie-via-google')
+  })
+})
+
+describe('de schakelaar: meten uit op dit apparaat', () => {
+  it('stuurt niets als de vlag al in localStorage staat', () => {
+    const lokaleOpslag = new Map([[METEN_UIT_SLEUTEL, '1']])
+    const browser = maakBrowser('/nl/oefenen', '', new Map(), lokaleOpslag)
+    zetNeer(browser)
+
+    const meter = startMeten()
+
+    expect(meter).toBe(null)
+    expect(alles(browser)).toHaveLength(0)
+  })
+
+  it('meet gewoon als de vlag er niet staat', () => {
+    const browser = nepBrowser('/nl/oefenen', '')
+    zetNeer(browser)
+
+    const meter = startMeten()
+    meter?.stop()
+
+    expect(alles(browser).some((g) => g.soort === 'pagina')).toBe(true)
   })
 })
 
