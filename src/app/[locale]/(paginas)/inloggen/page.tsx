@@ -102,12 +102,12 @@ export default async function LoginPage({
 
       <p className="mt-6 text-center text-sm text-text-muted">
         {t('noAccount')}{' '}
-        <Link href={hrefMetOefenpad('/registreren', oefenpad)} className="font-medium text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/registreren', oefenpad)} className="font-medium text-accent underline underline-offset-2">
           {t('registerLink')}
         </Link>
       </p>
       <p className="mt-2 text-center text-sm text-text-muted">
-        <Link href={hrefMetOefenpad('/wachtwoord-vergeten', oefenpad)} className="text-accent hover:underline">
+        <Link href={hrefMetOefenpad('/wachtwoord-vergeten', oefenpad)} className="text-accent underline underline-offset-2">
           {t('forgotPassword')}
         </Link>
       </p>

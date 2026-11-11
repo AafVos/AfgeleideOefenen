@@ -79,6 +79,7 @@ describe('POST /api/meet', () => {
         waarde: null,
         apparaat: 'telefoon',
         verwijzer: null,
+        utm_source: null,
         ingelogd: false,
       },
     ])

@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
+import { onthoudEersteHerkomst } from '@/lib/herkomst-sessie'
 import { pikRegistratieUitAdres } from '@/lib/meten/melden'
 import type { Meter } from '@/lib/meten/meter'
 
@@ -29,6 +30,11 @@ export function Meten() {
     // meetscriptje telt hem zodra het er is. Het is een paar regels en raakt
     // het netwerk niet.
     pikRegistratieUitAdres()
+
+    // Ook meteen: de herkomst van deze pagina (`?van=` of `?utm_source=`)
+    // opzij zetten voor de rest van het bezoek. Zo overleeft hij een klik
+    // naar Registreren, ook als die link zelf geen `?van=` heeft.
+    onthoudEersteHerkomst()
 
     const laden = () => {
       void import('@/lib/meten/meter').then(({ startMeten }) => {

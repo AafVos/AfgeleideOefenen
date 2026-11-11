@@ -17,7 +17,7 @@ export type WelkomResultaat =
  * achtergrond, kaart van 540 px, woordmerk erboven, serif-koppen, groene knop
  * en de formule-knipoog onderaan. Houd ze bij wijzigingen synchroon.
  */
-function html(videosUrl: string): string {
+function html(oefenenUrl: string, videosUrl: string, dashboardUrl: string): string {
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: #f7f6f3; padding: 32px 12px;">
   <tr>
@@ -43,31 +43,32 @@ function html(videosUrl: string): string {
               </tr>
 
               <tr>
-                <td align="center" style="font-family: 'DM Sans', Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #6f6d65; padding-bottom: 16px;">
-                  Leuk dat je er bent.
-                </td>
-              </tr>
-
-              <tr>
                 <td align="center" style="font-family: 'DM Sans', Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #6f6d65; padding-bottom: 26px;">
-                  Loop je vast op een opgave? Stuur hem in, dan maak ik er een
-                  uitlegvideo van. Een foto uit je boek mag ook.
+                  Leuk dat je er bent. Maak meteen je eerste opgave, dan weet je
+                  precies hoe het werkt.
                 </td>
               </tr>
 
               <tr>
-                <td align="center" style="padding-bottom: 24px;">
-                  <a href="${videosUrl}"
+                <td align="center" style="padding-bottom: 28px;">
+                  <a href="${oefenenUrl}"
                      style="display: inline-block; background: #2d6a4f; color: #ffffff !important; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-family: 'DM Sans', Arial, sans-serif; font-size: 15px; font-weight: 600;">
-                    Stel je eerste vraag
+                    Begin met oefenen
                   </a>
                 </td>
               </tr>
 
               <tr>
                 <td align="center" style="font-family: 'DM Sans', Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #6f6d65; padding-bottom: 24px;">
-                  Vertel het door aan vrienden. Hoe meer vragen er binnenkomen,
-                  hoe meer uitleg er voor iedereen bij komt.
+                  Loop je vast op een opgave? <a href="${videosUrl}" style="color: #2d6a4f;">Stuur hem in</a>,
+                  dan maak ik er een uitlegvideo van. Een foto uit je boek mag ook.
+                </td>
+              </tr>
+
+              <tr>
+                <td align="center" style="font-family: 'DM Sans', Arial, sans-serif; font-size: 13px; line-height: 1.6; color: #a8a599; padding-bottom: 24px;">
+                  Wil je een berichtje als je een paar dagen niet hebt geoefend? Zet de
+                  herinnering zelf aan op <a href="${dashboardUrl}" style="color: #a8a599; text-decoration: underline;">je dashboard</a>.
                 </td>
               </tr>
 
@@ -174,16 +175,25 @@ async function seintjeBevestigd(
   }
 }
 
-function tekst(videosUrl: string): string {
+function tekst(oefenenUrl: string, videosUrl: string, dashboardUrl: string): string {
   return `Je account is klaar.
 
-Leuk dat je er bent.
+Leuk dat je er bent. Maak meteen je eerste opgave, dan weet je precies hoe het werkt.
+
+Begin met oefenen: ${oefenenUrl}
 
 Loop je vast op een opgave? Stuur hem in, dan maak ik er een uitlegvideo van. Een foto uit je boek mag ook: ${videosUrl}
 
-Vertel het door aan vrienden. Hoe meer vragen er binnenkomen, hoe meer uitleg er voor iedereen bij komt.
+Wil je een berichtje als je een paar dagen niet hebt geoefend? Zet de herinnering zelf aan op je dashboard: ${dashboardUrl}
 
 Groeten van Aaf`
+}
+
+/** Nooit `e.message` loggen: Resend neemt het geweigerde adres daar soms letterlijk in op. */
+function soortFout(e: unknown): string {
+  return e && typeof e === 'object' && 'name' in e && typeof e.name === 'string'
+    ? e.name
+    : 'onbekend'
 }
 
 type ServiceClient = ReturnType<typeof createServiceRoleClient>
@@ -271,18 +281,22 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
     // — een fout terug van Resend, of een fout die eruit vliegt — dan moet de
     // vlag terug, anders slaat een volgende poging de mail over.
     try {
+      const oefenenUrl = `${SITE_URL}/nl/oefenen?van=welkomstmail`
       const videosUrl = `${SITE_URL}/nl/uitleg-videos`
+      const dashboardUrl = `${SITE_URL}/nl/dashboard`
       const { error: mailError } = await resend.emails.send({
         // Merknaam als afzender, geen persoonsnaam: dit is een no-reply-bericht.
         from: `${SITE_CONFIG.brandNaam} <${EMAIL_FROM}>`,
         to: user.email,
         subject: `Welkom bij ${SITE_CONFIG.brandNaam}!`,
-        html: html(videosUrl),
-        text: tekst(videosUrl),
+        html: html(oefenenUrl, videosUrl, dashboardUrl),
+        text: tekst(oefenenUrl, videosUrl, dashboardUrl),
       })
       if (mailError) throw mailError
     } catch (e) {
-      console.error('[welkomstmail]', e)
+      // Alleen de soort fout loggen, nooit de boodschap zelf: Resend neemt het
+      // geweigerde adres soms letterlijk op in `message`.
+      console.error('[welkomstmail] versturen mislukt', soortFout(e))
       await supabase.auth.admin.updateUserById(userId, {
         user_metadata: { ...user.user_metadata, welcome_sent_at: null },
       })
@@ -297,7 +311,7 @@ export async function stuurWelkomstmail(userId: string): Promise<WelkomResultaat
 
     return { verstuurd: true }
   } catch (e) {
-    console.error('[welkomstmail]', e)
+    console.error('[welkomstmail] versturen mislukt', soortFout(e))
     if (vastgehouden) await laatClaimVrij(supabase, userId)
     return { verstuurd: false, reden: 'fout' }
   }

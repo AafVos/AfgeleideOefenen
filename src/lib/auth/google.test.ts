@@ -70,6 +70,18 @@ describe('googleCallbackAdres', () => {
       'http://localhost:3000/auth/callback?via=google&next=%2Fdashboard',
     )
   })
+
+  it('geeft een toegestane herkomst door als ?van=', () => {
+    expect(googleCallbackAdres('http://localhost:3000', null, 'youtube')).toBe(
+      'http://localhost:3000/auth/callback?via=google&next=%2Fdashboard&van=youtube',
+    )
+  })
+
+  it('negeert een onbekende herkomst', () => {
+    expect(googleCallbackAdres('http://localhost:3000', null, 'reclame')).toBe(
+      'http://localhost:3000/auth/callback?via=google&next=%2Fdashboard',
+    )
+  })
 })
 
 describe('googleFoutSleutel', () => {

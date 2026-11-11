@@ -136,7 +136,7 @@ export function ProberenClient({
         <p className="text-sm font-medium uppercase tracking-wider text-accent">
           Proberen
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-text">Goed bezig!</h1>
+        <h1 className="mt-2 font-serif text-4xl text-text">Dat waren de 3 proefsommen</h1>
         <p className="mt-6 text-lg text-text">
           Maak een gratis account om je voortgang te bewaren en verder te oefenen
         </p>
@@ -186,6 +186,16 @@ export function ProberenClient({
               e.preventDefault()
               verstuur(false)
             }}
+            onClick={(e) => {
+              // Een klik tussen de blokken in dit formulier (de marge van
+              // space-y-3) komt rechtstreeks op het formulier terecht, niet
+              // op een kind-element. Daar is het antwoordveld bedoeld, dus
+              // zet de klik daarheen door.
+              if (e.target === e.currentTarget) invoerRef.current?.focus()
+            }}
+            // data-meet staat ook in KLIKBAAR (src/lib/meten/meter.ts): zonder
+            // dit telde zo'n klik nog als dode_klik, ook al deed hij al iets.
+            data-meet="proefsom-formulier"
             className="space-y-3"
           >
             <label className="block">
@@ -315,6 +325,15 @@ export function ProberenClient({
             <Juist prefix={prefix} latex={fase.latex} />
             <Stappenplan stappen={fase.stappen} />
             <Verder laatste={laatste} onVolgende={volgende} onOpnieuw={opnieuw} />
+          </div>
+        )}
+
+        {index === 0 && fase.soort !== 'invoer' && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <p className="text-sm text-text-muted">
+              Handig voor de toetsweek: je klasgenoten kunnen deze proefsom ook maken.
+            </p>
+            <DeelKnop compact />
           </div>
         )}
       </div>

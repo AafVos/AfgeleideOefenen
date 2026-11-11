@@ -75,13 +75,28 @@ function TileGrid({
             data-tour={rondleiding && index === 0 ? 'tegels' : undefined}
           >
             {bron ? (
-              <div className="px-3 pt-2">
+              <div
+                className={cn('px-3 pt-2', onKies && 'cursor-pointer')}
+                data-meet="oefenen-tegel"
+                // De bronregel (bijv. een examenverwijzing) heeft een eigen
+                // link, maar de ruimte eromheen (marge, regelhoogte) hoort
+                // bij dezelfde kaart. Zonder dit was dat een dode klik, ook
+                // al zag de hele kaart er klikbaar uit (zie AFG-808).
+                onClick={
+                  onKies
+                    ? (event) => {
+                        if ((event.target as HTMLElement).closest('a')) return
+                        modifierVrijeKlik(() => onKies(tile.questionId))(event)
+                      }
+                    : undefined
+                }
+              >
                 {tile.sourceUrl ? (
                   <a
                     href={tile.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center text-left text-xs leading-snug text-accent underline-offset-2 hover:underline"
+                    className="inline-flex min-h-11 items-center text-left text-xs leading-snug text-accent underline underline-offset-2"
                   >
                     {bron}
                   </a>

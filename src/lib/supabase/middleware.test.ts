@@ -48,6 +48,13 @@ describe('updateSession zonder sessie', () => {
     expect(decodeURIComponent(locatie)).toContain('/oefenen')
   })
 
+  it('bewaart de herkomst van een niet-ingelogde klik op de zelf-toets (AFG-795)', async () => {
+    const antwoord = await updateSession(verzoek('/nl/zelf-toets?van=proefsom'))
+    const locatie = antwoord.headers.get('location') ?? ''
+    expect(locatie).toContain('/nl/inloggen')
+    expect(locatie).toContain('van=proefsom')
+  })
+
   it('ziet de tussenstap van Google niet als een sessie', async () => {
     const antwoord = await updateSession(
       verzoek('/nl/dashboard', 'sb-abc-auth-token-code-verifier=xyz'),

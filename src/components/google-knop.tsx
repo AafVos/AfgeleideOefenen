@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { googleCallbackAdres } from '@/lib/auth/google'
+import type { Herkomst } from '@/lib/herkomst'
+import { haalOnthoudenHerkomst } from '@/lib/herkomst-sessie'
 import { createClient } from '@/lib/supabase/client'
 
 /** Het gekleurde G-logo, in de code zelf zodat er niets van buiten wordt geladen. */
@@ -32,9 +34,17 @@ function GoogleLogo() {
 
 export function GoogleKnop({
   oefenpad,
+  herkomst,
   dataMeet = 'google-aanmelden',
 }: {
   oefenpad: string | null
+  /**
+   * Meegegeven herkomst, bijvoorbeeld van het registratieformulier. Ontbreekt
+   * die, dan valt deze knop terug op wat voor dit bezoek is onthouden
+   * (`src/lib/herkomst-sessie.ts`), zodat ook `/proberen` en andere plekken
+   * met een Google-knop een herkomst kunnen meegeven.
+   */
+  herkomst?: Herkomst | null
   dataMeet?: string
 }) {
   const t = useTranslations('Google')
@@ -49,7 +59,11 @@ export function GoogleKnop({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: googleCallbackAdres(window.location.origin, oefenpad),
+        redirectTo: googleCallbackAdres(
+          window.location.origin,
+          oefenpad,
+          herkomst ?? haalOnthoudenHerkomst(),
+        ),
         queryParams: { prompt: 'select_account' },
       },
     })

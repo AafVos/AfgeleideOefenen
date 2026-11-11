@@ -112,7 +112,7 @@ export default async function PrivacyPage() {
         <p className="mt-3">
           {t.rich('rightsFeedback', {
             link: (chunks) => (
-              <Link href="/feedback" className="font-medium text-accent hover:underline">
+              <Link href="/feedback" className="font-medium text-accent underline underline-offset-2">
                 {chunks}
               </Link>
             ),
@@ -124,7 +124,7 @@ export default async function PrivacyPage() {
             link: (chunks) => (
               <a
                 href="https://autoriteitpersoonsgegevens.nl"
-                className="font-medium text-accent hover:underline"
+                className="font-medium text-accent underline underline-offset-2"
                 rel="noopener noreferrer"
               >
                 {chunks}

@@ -1,7 +1,6 @@
-import { DeelKnop } from '@/components/deel-knop'
+import { Suspense } from 'react'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
-import { ProbeerKnop } from '@/components/probeer-knop'
-import { Link } from '@/i18n/navigation'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
   QUOTIENTREGEL_FORMULE,
@@ -13,6 +12,9 @@ import {
   QUOTIENTREGEL_VOORBEELDEN,
 } from '@/content/theory/quotientregel'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -36,6 +38,14 @@ export default function QuotientregelPage() {
     <div className="mx-auto max-w-3xl px-4 py-12">
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{QUOTIENTREGEL_TITEL}</h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(QUOTIENTREGEL_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Je gebruikt de quotiëntregel (zonder trema: quotientregel) als de ene functie door de
         andere gedeeld wordt. In de teller van de afgeleide staat een min. De noemer laat je
@@ -94,28 +104,15 @@ export default function QuotientregelPage() {
         </ul>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <DeelKnop />
-        <ProbeerKnop oefenen={QUOTIENTREGEL_OEFENEN} />
-        <Link
-          href={QUOTIENTREGEL_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/uitleg-videos/quotientregel"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Bekijk de video: De quotiëntregel
-        </Link>
-        <Link
-          href={DIFFERENTIEERREGELS_PAD}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle differentieerregels
-        </Link>
-      </div>
+      <WiskundeMetAafVideos pagina="quotientregel" />
+
+      <TheorieOefenActies
+        oefenen={QUOTIENTREGEL_OEFENEN}
+        extra={[
+          { href: '/uitleg-videos/quotientregel', label: 'Bekijk de video: De quotiëntregel' },
+          { href: DIFFERENTIEERREGELS_PAD, label: 'Alle differentieerregels' },
+        ]}
+      />
     </div>
   )
 }

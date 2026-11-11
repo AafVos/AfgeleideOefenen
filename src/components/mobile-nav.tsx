@@ -84,7 +84,7 @@ export function MobileNav({
                     <button
                       type="submit"
                       data-meet="menu-uitloggen"
-                      className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-text-muted hover:bg-surface-2 hover:text-text"
+                      className="flex min-h-11 w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-text-muted hover:bg-surface-2 hover:text-text"
                     >
                       {t('logout')}
                     </button>
@@ -123,7 +123,7 @@ function NavLink({
       href={href}
       onClick={onClick}
       data-meet={meet}
-      className="rounded-lg px-3 py-2.5 text-sm text-text-muted hover:bg-surface-2 hover:text-text"
+      className="flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm text-text-muted hover:bg-surface-2 hover:text-text"
     >
       {children}
     </Link>

@@ -15,8 +15,8 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   if (error) throw new Error(error.message)
 
   await page.goto('/nl/theorie/machtsregel')
-  await page.getByRole('link', { name: 'Probeer 3 sommen' }).click()
-  await expect(page).toHaveURL(/\/nl\/proberen\?chapter=h2&topic=h2_termsgewijs$/)
+  await page.getByRole('link', { name: 'Oefen dit onderwerp' }).click()
+  await expect(page).toHaveURL(/\/nl\/proberen\?chapter=h2&topic=h2_termsgewijs&van=theorie$/)
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()
 
@@ -31,11 +31,18 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   await geefAntwoord(page, 'onzin')
   await expect(page.getByText('Goed!', { exact: true })).toBeHidden()
   await expect(page.getByText('Niet helemaal goed')).toBeVisible()
+
+  // Al na de eerste nagekeken som (goed of fout) staat de deel-CTA er, niet
+  // pas na alle drie.
+  await expect(page.getByRole('button', { name: 'Stuur naar een klasgenoot' })).toBeVisible()
+
   await page.getByRole('button', { name: 'Laat het goede antwoord zien' }).click()
   await expect(page.getByText('Schrijf de macht naar voren')).toBeVisible()
 
   await page.getByRole('button', { name: 'Volgende som' }).click()
   await expect(page.getByText('Som 2 van 3')).toBeVisible()
+  // Vanaf som 2 staat de deel-CTA er niet nogmaals.
+  await expect(page.getByRole('button', { name: 'Stuur naar een klasgenoot' })).toBeHidden()
   await geefAntwoord(page, '3x^2')
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   await expect(page.getByText('Schrijf de macht naar voren')).toBeVisible()
@@ -46,7 +53,7 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Klaar' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Goed bezig!' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dat waren de 3 proefsommen' })).toBeVisible()
   await expect(
     page.getByText('Maak een gratis account om je voortgang te bewaren en verder te oefenen'),
   ).toBeVisible()
@@ -70,16 +77,57 @@ test('de oefenpagina blijft achter de inlog', async ({ page }) => {
   await expect(page).toHaveURL(/\/nl\/inloggen/)
 })
 
+/**
+ * AFG-665: een klik tussen het antwoordblok en de knoppenrij (de marge van
+ * space-y-3) landde rechtstreeks op het <form>-element en deed niets — een
+ * dode klik die de bezoeker als een kapotte pagina ervaart. Zo'n klik hoort
+ * nu het antwoordveld te focussen.
+ */
+test('een klik in de marge van het antwoordformulier focust het antwoordveld', async ({
+  page,
+}) => {
+  await page.goto('/nl/proberen?chapter=e2e&topic=e2e_beheersen&cluster=e2e_rij')
+  await expect(page.getByText('Som 1 van 3')).toBeVisible()
+
+  const label = page.locator('form label')
+  const knoppenrij = page.getByRole('button', { name: 'Nakijken' }).locator('..')
+  const labelBox = await label.boundingBox()
+  const knoppenrijBox = await knoppenrij.boundingBox()
+  if (!labelBox || !knoppenrijBox) throw new Error('kon de vorm van het formulier niet lezen')
+
+  // Het midden van de marge tussen het antwoordblok en de knoppenrij: geen
+  // enkel kind-element dekt dit stukje, dus dit landt op het formulier zelf.
+  const x = labelBox.x + 20
+  const y = (labelBox.y + labelBox.height + knoppenrijBox.y) / 2
+  await page.mouse.click(x, y)
+
+  await expect(page.getByPlaceholder('Typ je antwoord')).toBeFocused()
+})
+
 test('de voorbeeldpagina heeft dezelfde knop, met van=voorbeeld voor de bronmeting', async ({
   page,
 }) => {
   await page.goto('/nl/voorbeeld/wortel-x')
-  await page.getByRole('link', { name: 'Probeer 3 sommen' }).click()
+  await page.getByRole('link', { name: 'Probeer 3 sommen' }).first().click()
   await expect(page).toHaveURL(
     /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=wortelvorm&van=voorbeeld$/,
   )
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()
+})
+
+/**
+ * Onderaan de pagina (na de uitwerking en de gerelateerde afgeleiden) moet
+ * een leerling nog steeds in één oogopslag een echte hoofdknop zien, niet
+ * alleen tekstlinks (AFG-717/AFG-721: de Controleur zag hier maar drie
+ * gelijke tekstlinks en geen hoofdknop meer).
+ */
+test('de voorbeeldpagina heeft ook onderaan een duidelijke hoofdknop', async ({ page }) => {
+  await page.goto('/nl/voorbeeld/wortel-x')
+  const knoppen = page.getByRole('link', { name: 'Probeer 3 sommen' })
+  await expect(knoppen).toHaveCount(2)
+  await knoppen.last().scrollIntoViewIfNeeded()
+  await expect(knoppen.last()).toBeVisible()
 })
 
 test('een uitlegvideo-pagina heeft een knop "Oefen dit nu", met van=uitlegvideo voor de bronmeting', async ({
@@ -90,6 +138,16 @@ test('een uitlegvideo-pagina heeft een knop "Oefen dit nu", met van=uitlegvideo 
   await expect(page).toHaveURL(
     /\/nl\/proberen\?chapter=h6&topic=h6_machten&cluster=negatieve_macht&van=uitlegvideo$/,
   )
+  await expect(page).not.toHaveURL(/inloggen/)
+  await expect(page.getByText(/Som 1 van /)).toBeVisible()
+})
+
+test('een theoriepagina heeft een knop "Oefen dit onderwerp", met van=theorie voor de bronmeting', async ({
+  page,
+}) => {
+  await page.goto('/nl/theorie/kettingregel')
+  await page.getByRole('link', { name: 'Oefen dit onderwerp' }).click()
+  await expect(page).toHaveURL(/\/nl\/proberen\?chapter=h6&topic=h6_kettingregel&van=theorie$/)
   await expect(page).not.toHaveURL(/inloggen/)
   await expect(page.getByText(/Som 1 van /)).toBeVisible()
 })

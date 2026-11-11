@@ -341,9 +341,12 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
     'Deze link is verlopen of al gebruikt.',
   )
 
-  // En de link uit een opnieuw gestuurde mail: die zet het antwoord achter de
-  // `#`. Dat stuk stuurt een browser nooit naar de server, dus de inlogpagina
-  // moet het zelf opvangen. Het blijft ook niet in de adresregel staan.
+  // Tot @supabase/supabase-js 2.118.0 zette een opnieuw gestuurde mail het
+  // antwoord achter de `#` in plaats van in een `code`-parameter. Dat stuk
+  // stuurt een browser nooit naar de server, dus `/auth/callback` kan er niets
+  // over zeggen en de inlogpagina moet het zelf opvangen. Dit pad blijft
+  // bestaan voor een link van vóór die update die nog ergens kan opduiken.
+  // Het blijft ook niet in de adresregel staan.
   await page.goto(
     '/auth/callback?next=%2Fnl%2Finloggen#error=access_denied&error_code=otp_expired',
   )
@@ -360,22 +363,27 @@ test('een al gebruikte bevestigingslink zegt niet dat je bevestigd bent', async 
 test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   const email = uniekAdres()
 
+  // Zelf invullen in plaats van `vulRegistratieIn`: die verstuurt het
+  // formulier al, en React 19 maakt onbeheerde velden na een afgeronde
+  // formulieractie leeg (zie de test bij AFG-553 hieronder). Checken we de
+  // browservalidatie pas ná die klik, dan wint soms de server: zodra de
+  // paginacompilatie al warm is (zoals verderop in deze suite) komt het
+  // antwoord terug vóórdat we kijken, en is het veld dan alweer leeg.
+  await page.goto('/nl/registreren')
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('input[name="password"]').fill('kort')
+  await page.locator('input[name="passwordConfirm"]').fill('kort')
+
   // Zoals een leerling het meemaakt: de browser laat het formulier niet eens
   // weg, want de velden eisen acht tekens.
-  await vulRegistratieIn(page, { email, wachtwoord: 'kort' })
-  await expect(page).toHaveURL(/\/nl\/registreren/)
   await expect(page.getByText('Minstens 8 tekens.').first()).toBeVisible()
   const teKort = await page
     .locator('input[name="password"]')
     .evaluate((veld: HTMLInputElement) => veld.validity.tooShort)
   expect(teKort).toBe(true)
 
-  // En als de browser die controle niet doet (een oude telefoon, een
-  // uitgezette instelling), dan vangt de server het alsnog op — in het
-  // Nederlands.
-  await page.locator('form').first().evaluate((form: HTMLFormElement) => {
-    form.noValidate = true
-  })
+  // Het formulier zet native validatie uit (noValidate, AFG-675); de server
+  // vangt een te kort wachtwoord dus zelf op, in het Nederlands.
   await page.getByRole('button', { name: 'Account aanmaken' }).click()
   await expect(
     page.getByText('Je wachtwoord moet minstens 8 tekens lang zijn.'),
@@ -384,6 +392,29 @@ test('een te kort wachtwoord komt er niet doorheen', async ({ page }) => {
   // Er is dus geen account aangemaakt en er is geen mail de deur uit.
   const { data } = await testDatabase().auth.admin.listUsers({ perPage: 100 })
   expect(data.users.map((u) => u.email)).not.toContain(email)
+})
+
+test('leeg registratieformulier toont een Nederlandse melding, geen Engelse systeemballon (AFG-675)', async ({
+  page,
+}) => {
+  await page.goto('/nl/registreren')
+  await page.getByRole('button', { name: 'Account aanmaken' }).click()
+
+  // Zonder `noValidate` op het formulier had de browser hier zelf een
+  // Engelse foutballon getoond ("Please fill out this field") en was de
+  // server-actie nooit aangeroepen — dan zou deze melding niet verschijnen.
+  await expect(page).toHaveURL(/\/nl\/registreren/)
+  await expect(foutmelding(page)).toHaveText('Vul een e-mailadres en wachtwoord in.')
+})
+
+test('leeg inlogformulier toont een Nederlandse melding, geen Engelse systeemballon (AFG-675)', async ({
+  page,
+}) => {
+  await page.goto('/nl/inloggen')
+  await page.getByRole('button', { name: 'Inloggen' }).click()
+
+  await expect(page).toHaveURL(/\/nl\/inloggen/)
+  await expect(foutmelding(page)).toHaveText('Vul je e-mailadres en wachtwoord in.')
 })
 
 test('niet-overeenkomende wachtwoorden wissen niet het e-mailadres en de gebruikersnaam (AFG-553)', async ({
@@ -460,10 +491,11 @@ test('inloggen vóór het bevestigen geeft een duidelijke melding', async ({
     andersDan: eerste.id,
   })
 
-  // Die tweede mail werkt ook echt: erop klikken bevestigt het account.
+  // Die tweede mail werkt ook echt: erop klikken bevestigt het account en
+  // logt meteen in, net als de eerste mail — geen apart inlogformulier meer.
   await page.goto(linkUitMail(opnieuw, VERIFY_PAD))
-  await expect(page.getByText('Je account is bevestigd!')).toBeVisible()
-  await logIn(page, { email, wachtwoord: WEGWERP_WACHTWOORD })
+  await expect(page).toHaveURL(/\/nl\/oefenen\?/)
+  expect(new URL(page.url()).searchParams.get('q')).toBeTruthy()
 })
 
 test('een verkeerd wachtwoord wist het e-mailadres niet (AFG-553)', async ({

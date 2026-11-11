@@ -166,7 +166,7 @@ export default async function TopicEditPage({
                       <form action={update} id={`cluster-${c.id}`} className="inline">
                         <button
                           type="submit"
-                          className="mr-2 text-sm font-medium text-accent hover:underline"
+                          className="mr-2 text-sm font-medium text-accent underline underline-offset-2"
                         >
                           Opslaan
                         </button>
@@ -174,7 +174,7 @@ export default async function TopicEditPage({
                       <form action={remove} className="inline">
                         <button
                           type="submit"
-                          className="text-sm font-medium text-accent-2 hover:underline"
+                          className="text-sm font-medium text-accent-2 underline underline-offset-2"
                         >
                           Verwijder
                         </button>

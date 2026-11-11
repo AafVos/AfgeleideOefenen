@@ -134,7 +134,7 @@ export async function ExamenStart() {
             <Link
               href={EXAMENTRAINING_PAD}
               data-meet="start-examentraining"
-              className="text-accent underline-offset-2 hover:underline"
+              className="text-accent underline underline-offset-2"
             >
               {t('examentrainingLink')}
             </Link>
@@ -143,7 +143,7 @@ export async function ExamenStart() {
               href={EXAMENTRAINING_EXAMENBLAD}
               rel="noopener noreferrer"
               data-meet="start-examenblad"
-              className="text-accent underline-offset-2 hover:underline"
+              className="text-accent underline underline-offset-2"
             >
               {t('examenbladLink')}
             </a>
@@ -161,7 +161,7 @@ export async function ExamenStart() {
                   <Link
                     href="/video-aanvragen"
                     data-meet="start-videos-aanvragen"
-                    className="text-accent underline-offset-2 hover:underline"
+                    className="text-accent underline underline-offset-2"
                   >
                     {chunks}
                   </Link>
@@ -194,7 +194,7 @@ export async function ExamenStart() {
               <Link
                 href="/uitleg-videos"
                 data-meet="start-alle-videos"
-                className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
               >
                 {t('alleVideos')}
               </Link>
@@ -213,7 +213,7 @@ export async function ExamenStart() {
                 href={AFGELEIDE_URL}
                 rel="noopener noreferrer"
                 data-meet="start-naar-afgeleide"
-                className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
               >
                 {t('afgeleideLink')}
               </a>
@@ -222,7 +222,7 @@ export async function ExamenStart() {
               <IntegraalVerwijzing
                 tekst={t('integraalLink')}
                 dataMeet="start-naar-integraal"
-                className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
               />
             </li>
           </ul>

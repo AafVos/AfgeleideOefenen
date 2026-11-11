@@ -4,6 +4,7 @@ import Script from 'next/script'
 
 import { Meten } from '@/components/meten'
 import { MetingSchakelaarMelding } from '@/components/meting-schakelaar-melding'
+import { ViewportHoogte } from '@/components/viewport-hoogte'
 
 import './globals.css'
 
@@ -43,9 +44,15 @@ export default function RootLayout({
   return (
     <html
       lang="nl"
-      className={`${dmSans.variable} ${dmSerif.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${dmSerif.variable} h-[var(--app-height,100dvh)] antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-text">
+      {/* min-h-dvh (met --app-height als eigenhandige correctie erbovenop,
+          zie ViewportHoogte), niet min-h-full: dat laatste is 100% van de
+          statische, grote viewport en kan op een tablet met een
+          in/uitklappende adresbalk hoger uitvallen dan de kolom hieronder.
+          Dan bleef er een reep kale achtergrond onder de pagina staan waar
+          een klik niets deed (AFG-848, AFG-862). */}
+      <body className="min-h-[var(--app-height,100dvh)] flex flex-col bg-bg text-text">
         {children}
         {/* Schakelaar voor ?meten=uit/aan en de vlag van de beheerder (zie
             src/lib/meten/schakelaar.ts). Moet vóór Meten staan om de vlag op
@@ -54,6 +61,7 @@ export default function RootLayout({
         {/* Eigen klikmeting, zonder koekjes. Laadt pas als de pagina er
             staat en meet niets op /admin. Zie src/lib/meten/. */}
         <Meten />
+        <ViewportHoogte />
       </body>
       {beaconToken ? (
         <Script

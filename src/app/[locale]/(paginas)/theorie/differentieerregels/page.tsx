@@ -1,5 +1,5 @@
-import { DeelKnop } from '@/components/deel-knop'
-import { ProbeerKnop } from '@/components/probeer-knop'
+import { Suspense } from 'react'
+import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { Link } from '@/i18n/navigation'
 import {
   DIFFERENTIEERREGELS_OEFENEN,
@@ -9,6 +9,8 @@ import {
   DIFFERENTIEERREGELS_TITEL,
 } from '@/content/theory/differentieerregels'
 import { canoniek, deelkaart } from '@/lib/seo'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
+import { proberenVanOefenen } from '@/lib/practice/proberen'
 
 export async function generateMetadata({
   params,
@@ -34,6 +36,14 @@ export default function DifferentieerregelsPage() {
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">
         {DIFFERENTIEERREGELS_TITEL}
       </h1>
+
+      <Suspense fallback={null}>
+        <YoutubeWelkom
+          ctaHref={proberenVanOefenen(DIFFERENTIEERREGELS_OEFENEN)}
+          ctaDataMeet="theorie-youtube-probeer"
+        />
+      </Suspense>
+
       <p className="mt-6 text-lg text-text-muted">
         Bij differentiëren reken je uit hoe steil een functie loopt. Welke regel je
         gebruikt, hangt af van hoe de functie eruitziet. Hieronder staan de vijf
@@ -72,22 +82,10 @@ export default function DifferentieerregelsPage() {
         </p>
       </section>
 
-      <div className="mt-12 flex flex-wrap items-start gap-4">
-        <DeelKnop />
-        <ProbeerKnop oefenen={DIFFERENTIEERREGELS_OEFENEN} />
-        <Link
-          href={DIFFERENTIEERREGELS_OEFENEN}
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Zelf oefenen
-        </Link>
-        <Link
-          href="/theorie"
-          className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2"
-        >
-          Alle theorie
-        </Link>
-      </div>
+      <TheorieOefenActies
+        oefenen={DIFFERENTIEERREGELS_OEFENEN}
+        extra={[{ href: '/theorie', label: 'Alle theorie' }]}
+      />
     </div>
   )
 }

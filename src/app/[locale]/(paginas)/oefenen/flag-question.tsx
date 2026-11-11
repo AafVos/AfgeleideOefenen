@@ -41,7 +41,7 @@ export function FlagQuestionButton({ questionId }: { questionId: string }) {
         type="button"
         onClick={() => setOpen(true)}
         data-meet="oefenen-klopt-niet"
-        className="min-h-11 px-2 py-2 text-xs text-text-muted underline-offset-2 hover:text-accent-2 hover:underline"
+        className="min-h-11 px-2 py-2 text-xs text-text-muted underline underline-offset-2 hover:text-accent-2"
       >
         Klopt niet?
       </button>

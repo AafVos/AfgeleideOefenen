@@ -40,7 +40,7 @@ export default function VideoAanvragenPage() {
         <Link
           href="/uitleg-videos"
           data-meet="video-aanvraag-naar-videos"
-          className="text-accent underline-offset-2 hover:underline"
+          className="text-accent underline underline-offset-2"
         >
           de uitlegvideo’s
         </Link>
@@ -48,7 +48,7 @@ export default function VideoAanvragenPage() {
         <Link
           href="/privacy"
           data-meet="video-aanvraag-naar-privacy"
-          className="text-accent underline-offset-2 hover:underline"
+          className="text-accent underline underline-offset-2"
         >
           privacypagina
         </Link>

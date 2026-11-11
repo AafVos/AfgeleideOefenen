@@ -4,9 +4,34 @@ import { bestemmingNaBevestigen, bestemmingNaInloggen } from '@/lib/auth/bestemm
 import { googleFoutSleutel, isNieuweAanmelding, moetNaamVragen } from '@/lib/auth/google'
 import { oefenpadUitAdres, veiligOefenpad } from '@/lib/auth/oefenpad'
 import { stuurWelkomstmail } from '@/lib/email/welkom'
+import { leesHerkomst } from '@/lib/herkomst'
 import { REGISTRATIE_PARAMETER } from '@/lib/meten/melden'
 import { createClient } from '@/lib/supabase/server'
 import { zetGekozenGebruikersnaam } from '@/lib/supabase/gebruikersnaam'
+
+/**
+ * Zet de herkomst één keer op het profiel, voor een gloednieuw account dat
+ * via Google binnenkwam en dus niet langs het registratieformulier ging.
+ * De trigger `herkomst_blijft_staan` (migratie 0086) laat dit alleen toe
+ * zolang er nog niets stond; een tweede poging verandert niets.
+ */
+async function zetHerkomstVoorGoogle(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  nieuw: boolean,
+  ruweHerkomst: string | null,
+) {
+  if (!nieuw) return
+  const herkomst = leesHerkomst(ruweHerkomst)
+  if (!herkomst) return
+  const { error } = await supabase
+    .from('profiles')
+    .update({ herkomst })
+    .eq('id', userId)
+    .is('herkomst', null)
+  // Lukt dit niet, dan blijft het account gewoon bestaan zonder herkomst.
+  if (error) console.error('[herkomst]', error.message)
+}
 
 /**
  * Een aanmelding via Google komt niet langs het registratieformulier, dus
@@ -70,6 +95,9 @@ export async function GET(request: NextRequest) {
     const nieuw = isNieuweAanmelding(data.user)
 
     await zetGekozenGebruikersnaam(supabase, data.user)
+    // Los van de naamvraag: die redirect zou de ?van= hieronder kwijtraken,
+    // dus de herkomst wordt meteen gezet, vóór die afslag.
+    await zetHerkomstVoorGoogle(supabase, data.user.id, nieuw, searchParams.get('van'))
 
     if (moetNaamVragen(data.user)) {
       return NextResponse.redirect(
@@ -90,17 +118,16 @@ export async function GET(request: NextRequest) {
   // direct ingelogd is op zijn eerste opgave — net als bij aanmelden zonder
   // bevestigingsmail. Oude mails met `next=/nl/inloggen` blijven werken: ook
   // dan wordt de code ingewisseld. Een gekozen soort (`next=/oefenen?…`)
-  // komt op die som uit, niet op het hoofdstukkenmenu.
+  // komt op die som uit, niet op het hoofdstukkenmenu. Dit geldt sinds
+  // @supabase/supabase-js 2.118.0 ook voor een opnieuw gestuurde mail
+  // (`auth.resend`): die geeft nu net als de eerste mail een `code`-uitdaging
+  // in de adresregel, in plaats van het antwoord achter de `#` te zetten.
+  // `mail=onbekend` (afgevangen op de inlogpagina) blijft bestaan voor de
+  // situatie zonder `code` en zonder `error`, maar komt bij Supabase-mails
+  // niet meer voor.
   //
-  // Of het ook gelukt is, zegt Supabase op twee verschillende manieren:
-  //
-  //   * De mail van het registreren is met een code-uitdaging aangevraagd.
-  //     Gelukt geeft `?code=…`, mislukt geeft `?error=…&error_code=otp_expired`.
+  //   * Gelukt geeft `?code=…`, mislukt geeft `?error=…&error_code=otp_expired`.
   //     Dat staat in de adresregel, dus daar kijken we hieronder naar.
-  //   * Een opnieuw gestuurde mail (`auth.resend`) gaat zonder code-uitdaging.
-  //     Dan zet Supabase het antwoord achter de `#`, en dat stuk stuurt een
-  //     browser nooit naar de server. Daar kan hier dus niets over gezegd
-  //     worden: dat vangt de inlogpagina zelf op (`mail=onbekend`).
   const bevestigen = /^\/nl\/inloggen(\/|$|\?)/.test(next) || oefenpad !== null
   if (bevestigen) {
     if (searchParams.has('error') || searchParams.has('error_code')) {

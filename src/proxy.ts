@@ -15,6 +15,7 @@ const ZONDER_TAALCODE = [
   'uitloggen',
   'robots.txt',
   'sitemap.xml',
+  'llms.txt',
   'og',
 ]
 

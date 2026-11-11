@@ -10,6 +10,7 @@ import {
   korteTekst,
   schoonPad,
   slaPadOver,
+  utmBron,
   verwijzerDomein,
   type Klikplek,
 } from './gebeurtenis'
@@ -67,6 +68,17 @@ describe('verwijzerDomein', () => {
     expect(verwijzerDomein('https://www.afgeleideoefenen.nl/nl', 'afgeleideoefenen.nl')).toBeNull()
     expect(verwijzerDomein('', 'afgeleideoefenen.nl')).toBeNull()
     expect(verwijzerDomein('geen adres', 'afgeleideoefenen.nl')).toBeNull()
+  })
+})
+
+describe('utmBron', () => {
+  it('leest utm_source in kleine letters', () => {
+    expect(utmBron('?utm_source=ChatGPT.com')).toBe('chatgpt.com')
+  })
+
+  it('geeft null zonder die parameter', () => {
+    expect(utmBron('')).toBeNull()
+    expect(utmBron('?van=youtube')).toBeNull()
   })
 })
 
@@ -159,8 +171,16 @@ describe('geldigeGebeurtenis', () => {
       waarde: null,
       apparaat: 'telefoon',
       verwijzer: null,
+      utm_source: null,
       ingelogd: false,
     })
+  })
+
+  it('bewaart utm_source als het een tekst is', () => {
+    expect(geldigeGebeurtenis(rij({ utm_source: 'chatgpt.com' }))?.utm_source).toBe(
+      'chatgpt.com',
+    )
+    expect(geldigeGebeurtenis(rij({ utm_source: '' }))?.utm_source).toBeNull()
   })
 
   it('weigert een onbekend soort, apparaat of sessie-id', () => {

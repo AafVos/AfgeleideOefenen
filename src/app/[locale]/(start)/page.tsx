@@ -3,14 +3,17 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
 import { IntegraalVerwijzing } from '@/components/integraal-verwijzing'
+import { ProbeerKnop } from '@/components/probeer-knop'
+import { StickyStartProefsom } from '@/components/sticky-start-proefsom'
+import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { SITE_CONFIG } from '@/config/site'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
 import { googleLoginAan } from '@/lib/auth/google'
 import { canoniek, DEEL_TEKST_START, DEEL_TITEL_START, deelkaart, SITE_URL } from '@/lib/seo'
+import { getUitlegVideos } from '@/lib/videos'
 
 import { ExamenStart } from './examen-start'
 import { HomeDemo } from './home-demo'
-import { YoutubeWelkom } from './youtube-welkom'
 
 // Voor iedereen hetzelfde. Een ingelogde leerling komt hier niet: de
 // middleware stuurt hem meteen naar het dashboard. Zo hoeft deze pagina
@@ -40,6 +43,10 @@ export default async function HomePage() {
   const t = await getTranslations('Home')
 
   const domain = SITE_CONFIG.domain
+
+  // Alleen de algemene uitlegvideo's (geen vraaguitwerkingen): dezelfde
+  // oefenlink-mapping als op de uitlegvideo-pagina's zelf (AFG-625).
+  const uitlegVideoOefenen = getUitlegVideos().filter((video) => video.soort === 'algemeen')
 
   const FAQ_ITEMS = [
     { question: t('faq1Q'), answer: t('faq1A') },
@@ -100,15 +107,21 @@ export default async function HomePage() {
             {t('h1Start')}{' '}
             <span className="whitespace-nowrap text-accent">{t('h1Accent')}</span>
           </h1>
-          <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-6">
+          <p className="mx-auto mt-2 max-w-xl text-lg text-text-muted sm:mt-4">
             {t('lead')}
           </p>
 
           <Suspense fallback={null}>
-            <YoutubeWelkom />
+            <YoutubeWelkom ctaHref="#proefsom" ctaDataMeet="start-youtube-proefsom" />
           </Suspense>
+        </section>
 
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-text-muted sm:mt-4">
+        <HomeDemo googleAan={googleLoginAan()} />
+
+        <StickyStartProefsom doelId="proefsom" />
+
+        <section className="mt-8 text-center">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-text-muted">
             {t.rich('subLead', {
               oefenen: (chunks) => (
                 <span className="text-text">{chunks}</span>
@@ -120,49 +133,77 @@ export default async function HomePage() {
                 <Link
                   href="/hoe-het-werkt"
                   data-meet="start-hoe-het-werkt"
-                  className="font-medium text-accent underline-offset-2 hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {t('subLeadLink')}
                 </Link>
               ),
             })}
           </p>
-          <p className="mt-2 sm:mt-4">
-            <a
-              href="#proefsom"
-              data-meet="start-herfstvakantie"
-              className="inline-flex min-h-11 items-center font-medium text-accent underline-offset-2 hover:underline"
-            >
-              {t('herfstvakantie')}
-            </a>
-          </p>
 
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
-            <a
-              href="#proefsom"
-              data-meet="start-regels"
-              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
-            >
-              {t('ctaRegel')}
-            </a>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/registreren"
               data-meet="start-registreren"
-              className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 py-3 text-white shadow-sm hover:bg-accent/90"
             >
               {t('ctaRegister')}
             </Link>
             <Link
               href="/inloggen"
               data-meet="start-inloggen"
-              className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-5 py-3 text-text hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center rounded-lg px-5 py-3 text-text-muted hover:bg-surface-2 hover:text-text"
             >
               {t('ctaLogin')}
             </Link>
           </div>
         </section>
 
-        <HomeDemo googleAan={googleLoginAan()} />
+        {uitlegVideoOefenen.length > 0 ? (
+          <section className="mt-10">
+            <h2 className="font-serif text-2xl text-text">{t('uitlegVideoH2')}</h2>
+            <p className="mt-2 text-text-muted">{t('uitlegVideoIntro')}</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {uitlegVideoOefenen.map((video) => (
+                <ProbeerKnop
+                  key={video.slug}
+                  oefenen={`${video.oefenen}&van=youtube`}
+                  dataMeet="start-uitlegvideo-oefenen"
+                  label={video.title}
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm font-medium text-text hover:border-accent/40 hover:bg-surface-2"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="mt-10">
+          <h2 className="font-serif text-2xl text-text">{t('veelGezochtH2')}</h2>
+          <ul className="mt-4 space-y-1">
+            {(
+              [
+                ['zoek5', '/voorbeeld/ln-x'],
+                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
+                ['zoek3', '/voorbeeld/sin-x'],
+                ['zoek1', '/voorbeeld/x-kwadraat'],
+                ['zoek2', '/voorbeeld/wortel-x'],
+                ['zoek4', '/voorbeeld/e-tot-de-x'],
+                ['zoek6', '/theorie/raaklijn'],
+                ['zoek7', '/theorie/extreme-waarden'],
+              ] as const
+            ).map(([labelKey, href]) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  data-meet="start-veelgezocht"
+                  className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
+                >
+                  {t(labelKey)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section className="mt-10 text-center">
           <p className="text-sm text-text-muted">{t('tagline')}</p>
@@ -170,7 +211,7 @@ export default async function HomePage() {
             <IntegraalVerwijzing
               tekst={t('integraal')}
               dataMeet="start-integraal"
-              className="inline-flex min-h-11 items-center text-sm text-accent underline-offset-2 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
             />
           </p>
         </section>
@@ -207,38 +248,13 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
-          <h2 className="mt-10 font-serif text-2xl text-text">{t('veelGezochtH2')}</h2>
-          <ul className="mt-4 space-y-1">
-            {(
-              [
-                ['zoek5', '/voorbeeld/ln-x'],
-                ['zoek8', '/voorbeeld/een-gedeeld-door-x'],
-                ['zoek3', '/voorbeeld/sin-x'],
-                ['zoek1', '/voorbeeld/x-kwadraat'],
-                ['zoek2', '/voorbeeld/wortel-x'],
-                ['zoek4', '/voorbeeld/e-tot-de-x'],
-                ['zoek6', '/theorie/raaklijn'],
-                ['zoek7', '/theorie/extreme-waarden'],
-              ] as const
-            ).map(([labelKey, href]) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  data-meet="start-veelgezocht"
-                  className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
-                >
-                  {t(labelKey)}
-                </Link>
-              </li>
-            ))}
-          </ul>
           <p className="mt-6 text-text-muted">
             {t.rich('examTraining', {
               link: (chunks) => (
                 <Link
                   href={EXAMENTRAINING_PAD}
                   data-meet="start-examentraining"
-                  className="font-medium text-accent underline-offset-2 hover:underline"
+                  className="font-medium text-accent underline underline-offset-2"
                 >
                   {chunks}
                 </Link>

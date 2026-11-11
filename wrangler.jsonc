@@ -7,24 +7,32 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
-    // /nl geeft het klaargezette bestand, zonder eerst door te sturen naar /nl/.
-    "html_handling": "drop-trailing-slash",
+    // html_handling moet "none" zijn zodra run_worker_first aanstaat
+    // (@opennextjs/cloudflare 1.20.16, AFG-809): anders kan Cloudflare een
+    // klaargezet bestand op een aliaspad serveren vóór de worker (en dus
+    // vóór de hieronder beschreven ?naar=/?van=/?video=-afhandeling) ooit
+    // draait. De worker zelf (enableCacheInterception, open-next.config.ts)
+    // serveert het klaargezette bestand nog steeds op het exacte pad.
+    "html_handling": "none",
     // Cloudflare geeft een bestand dat op het pad past altijd rechtstreeks
     // terug, los van een zoekopdracht of koekje (AFG-632). Voor /nl (het
     // `?van=youtube`-bannertje leest de zoekopdracht clientside, na het
     // laden van het klaargezette bestand), /theorie en /voorbeeld/* kan dat:
     // die hebben geen zoekopdracht die de server anders moet laten zien.
-    // /inloggen (`?naar=`, `?error=`, `?mail=`, of een sessiekoekje) en
+    // /inloggen (`?naar=`, `?error=`, `?mail=`, of een sessiekoekje),
+    // /registreren (`?van=`, `?naar=`, of een sessiekoekje; AFG-686) en
     // /uitleg-videos (`?video=` stuurt een oude gedeelde link via de server
     // door naar de losse video, zie stuurOudeVideolinkDoor) wel: die moeten
     // naar de gewone server in plaats van altijd het klaargezette, anonieme
     // bestand te krijgen (AFG-635: die server-redirect viel anders stil).
     // Dit stuurt alleen die paden eerst naar de worker, die zelf beslist
-    // (zie src/lib/startpagina-snel.ts, anoniemeInloggenPagina en
-    // anoniemeUitlegVideosPagina).
+    // (zie src/lib/startpagina-snel.ts, anoniemeInloggenPagina,
+    // anoniemeRegistrerenPagina en anoniemeUitlegVideosPagina).
     "run_worker_first": [
       "/nl/inloggen",
       "/nl/inloggen/",
+      "/nl/registreren",
+      "/nl/registreren/",
       "/nl/uitleg-videos",
       "/nl/uitleg-videos/"
     ]

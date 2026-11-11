@@ -72,7 +72,7 @@ export default async function TopicsPage() {
                 <td className="px-4 py-2 text-right">
                   <Link
                     href={`/admin/topics/${t.id}`}
-                    className="text-accent hover:underline"
+                    className="text-accent underline underline-offset-2"
                   >
                     Bewerken →
                   </Link>

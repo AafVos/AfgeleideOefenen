@@ -169,8 +169,13 @@ export async function stuurHerinnering(
     if (error) throw error
     return { verstuurd: true }
   } catch (e) {
-    // Het adres van de leerling hoort niet in de log.
-    console.error('[herinnering] versturen mislukt', e)
+    // Alleen de soort fout loggen, nooit de boodschap zelf: Resend neemt het
+    // geweigerde adres soms letterlijk op in `message`.
+    const soort =
+      e && typeof e === 'object' && 'name' in e && typeof e.name === 'string'
+        ? e.name
+        : 'onbekend'
+    console.error('[herinnering] versturen mislukt', soort)
     return { verstuurd: false, reden: 'fout' }
   }
 }

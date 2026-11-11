@@ -5,7 +5,14 @@ import { useState } from 'react'
 import { deelLink } from '@/lib/deel-link'
 
 /** Op een telefoon het deelmenu, anders de link naar het klembord. */
-export function DeelKnop({ compact = false }: { compact?: boolean }) {
+export function DeelKnop({
+  compact = false,
+  variant = 'knop',
+}: {
+  compact?: boolean
+  /** 'tekstlink' voor naast andere secundaire acties, zodat delen niet als een knop meetelt. */
+  variant?: 'knop' | 'tekstlink'
+}) {
   const [melding, setMelding] = useState<string | null>(null)
 
   async function deel() {
@@ -40,9 +47,11 @@ export function DeelKnop({ compact = false }: { compact?: boolean }) {
         data-tour="delen"
         data-meet="delen"
         className={
-          compact
-            ? 'inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm text-text hover:bg-surface-2'
-            : 'inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2'
+          variant === 'tekstlink'
+            ? 'inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2'
+            : compact
+              ? 'inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm text-text hover:bg-surface-2'
+              : 'inline-flex min-h-11 items-center rounded-lg border border-border px-5 py-3 text-sm text-text hover:bg-surface-2'
         }
       >
         Stuur naar een klasgenoot

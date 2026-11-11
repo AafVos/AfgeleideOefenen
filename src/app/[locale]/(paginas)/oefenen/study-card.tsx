@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 
 import { Link } from '@/i18n/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { DeelKnop } from '@/components/deel-knop'
@@ -17,6 +17,7 @@ import {
   type StudyResult,
 } from '@/lib/practice/chapter-actions'
 import { answerPrefix } from '@/lib/practice/answer-prefix'
+import { leesToonHint, meldEersteAntwoord, subscribeToonHint } from '@/lib/practice/antwoord-hint'
 import { MASTERY_THRESHOLD } from '@/lib/practice/engine'
 import { netBeheerst, nogEenGoedZin } from '@/lib/practice/nog-een-goed'
 import { insertAtCursor, toLatexPreview } from '@/lib/practice/input'
@@ -101,6 +102,9 @@ export function StudyCard({
   const [state, setState] = useState<State>({ phase: 'input', error: null })
   const [lastAttempt, setLastAttempt] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
+  // Nog geen antwoord verzonden deze sessie: toon de format-hint (AFG-816).
+  const showHint = useSyncExternalStore(subscribeToonHint, leesToonHint, () => false)
+  const [showVoorbeeld, setShowVoorbeeld] = useState(false)
   // Twee klikken vlak na elkaar: `submitting` staat dan nog op false, want
   // React tekent pas aan het eind van de tel opnieuw en de knop is dus nog
   // niet grijs. Een ref staat meteen goed (AFG-505).
@@ -170,6 +174,7 @@ export function StudyCard({
 
     bezigRef.current = true
     setSubmitting(true)
+    meldEersteAntwoord()
     const submitted = answer
     const seconds = secondsSpent()
     startTransition(async () => {
@@ -266,7 +271,7 @@ export function StudyCard({
                 href={question.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center text-accent underline-offset-2 hover:underline"
+                className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
               >
                 {question.source_label}
               </a>
@@ -332,6 +337,33 @@ export function StudyCard({
 
       {state.phase === 'input' && (
         <div className="space-y-3">
+          {showHint && (
+            <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-text-muted">
+              <p>{t('formatHint')}</p>
+              <details
+                className="mt-1"
+                open={showVoorbeeld}
+                onToggle={(e) => setShowVoorbeeld(e.currentTarget.open)}
+              >
+                <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 font-medium text-accent underline underline-offset-2">
+                  {showVoorbeeld ? t('formatHintExampleHide') : t('formatHintExampleToggle')}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className={`size-3 shrink-0 transition-transform ${showVoorbeeld ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </summary>
+                <p className="mt-1">{t('formatHintExample')}</p>
+              </details>
+            </div>
+          )}
           <div className="relative">
             <form
               onSubmit={submit}
@@ -495,8 +527,19 @@ export function StudyCard({
       {state.phase === 'skipped' && (
         <div ref={feedbackRef} className="space-y-4">
           <p className="text-center text-sm text-text-muted">{t('skippedBody')}</p>
+          {/* Nog geen antwoord deze sessie: zachte zet om het toch te proberen (AFG-883). */}
+          {showHint && (
+            <p className="text-center text-sm font-medium text-accent">
+              {t('skippedNudge')}
+            </p>
+          )}
           <StepsList steps={steps} />
-          <AfterAnswerButtons onNext={next} onRetry={retry} pending={pending} />
+          <AfterAnswerButtons
+            onNext={next}
+            onRetry={retry}
+            pending={pending}
+            primary={showHint ? 'retry' : 'next'}
+          />
         </div>
       )}
 
@@ -539,36 +582,59 @@ function StepsList({ steps }: { steps: Step[] }) {
   )
 }
 
-/** Doorgaan of deze opgave nog een keer proberen. */
+/**
+ * Doorgaan of deze opgave nog een keer proberen. Bij een overgeslagen opgave
+ * zonder antwoord deze sessie staat "opnieuw proberen" voorop (AFG-883).
+ */
 function AfterAnswerButtons({
   onNext,
   onRetry,
   pending,
+  primary = 'next',
 }: {
   onNext: () => void
   onRetry: () => void
   pending: boolean
+  primary?: 'next' | 'retry'
 }) {
   const t = useTranslations('PracticeCard')
+  const nextButton = (
+    <Button
+      key="next"
+      variant={primary === 'next' ? 'primary' : 'secondary'}
+      onClick={onNext}
+      disabled={pending}
+      data-meet="oefenen-volgende"
+      className="min-h-11 px-5"
+    >
+      {pending ? t('navigating') : t('nextPlus')}
+    </Button>
+  )
+  const retryButton = (
+    <Button
+      key="retry"
+      variant={primary === 'retry' ? 'primary' : 'secondary'}
+      onClick={onRetry}
+      disabled={pending}
+      data-meet="oefenen-opnieuw"
+      className="min-h-11 px-5"
+    >
+      {t('retryButton')}
+    </Button>
+  )
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <Button
-        onClick={onNext}
-        disabled={pending}
-        data-meet="oefenen-volgende"
-        className="min-h-11 px-5"
-      >
-        {pending ? t('navigating') : t('nextPlus')}
-      </Button>
-      <Button
-        variant="secondary"
-        onClick={onRetry}
-        disabled={pending}
-        data-meet="oefenen-opnieuw"
-        className="min-h-11 px-5"
-      >
-        {t('retryButton')}
-      </Button>
+      {primary === 'retry' ? (
+        <>
+          {retryButton}
+          {nextButton}
+        </>
+      ) : (
+        <>
+          {nextButton}
+          {retryButton}
+        </>
+      )}
     </div>
   )
 }

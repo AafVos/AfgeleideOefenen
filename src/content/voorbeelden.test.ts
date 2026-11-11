@@ -5,9 +5,13 @@ import sitemap from '@/app/sitemap'
 import {
   getVoorbeeld,
   getVoorbeelden,
+  getVoorbeeldIndex,
+  VOORBEELD_INDEX_SLUGS,
+  voorbeeldIndexPad,
   voorbeeldOefenVraag,
   voorbeeldPad,
   voorbeeldTitel,
+  voorbeeldWatIsVraag,
 } from './voorbeelden'
 
 describe('antwoordpagina-s', () => {
@@ -122,10 +126,46 @@ describe('antwoordpagina-s', () => {
       expect(titel.endsWith(' oefenen')).toBe(true)
       expect(titel.length).toBeLessThanOrEqual(60)
     }
-    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x (lnx) oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('sin-x')!)).toBe('Afgeleide van sin x (sinx) oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('cos-x')!)).toBe('Afgeleide van cos x (cosx) oefenen')
     expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
       'Afgeleide van e tot de macht 2x oefenen',
     )
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-x-kwadraat')!)).toBe(
+      'Afgeleide van e tot de macht x kwadraat (e^x^2) oefenen',
+    )
+  })
+
+  it('zet de typvorm zonder spatie naast de leesbare vorm in de titel (AFG-704)', () => {
+    const metTypVorm = ['ln-x', 'sin-x', 'cos-x', 'e-tot-de-x-kwadraat']
+    for (const slug of metTypVorm) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.typVorm).toBeTruthy()
+      expect(voorbeeldTitel(voorbeeld)).toContain(`(${voorbeeld.typVorm})`)
+      expect(voorbeeld.omschrijving).not.toContain(voorbeeld.typVorm)
+    }
+  })
+
+  it('toont "Ook gezocht als" met typvormen op de drukste pagina-s (AFG-766)', () => {
+    const metOokGezochtAls = [
+      'een-gedeeld-door-x',
+      'e-tot-de-x',
+      'e-tot-de-x-kwadraat',
+      'ln-x',
+      'sin-x',
+      'cos-x',
+    ]
+    for (const slug of metOokGezochtAls) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.ookGezochtAls).toBeDefined()
+      expect(voorbeeld.ookGezochtAls!.length).toBeGreaterThan(0)
+      for (const vorm of voorbeeld.ookGezochtAls!) {
+        // Geen spoiler: het antwoord (bijvoorbeeld "cos(x)" op de sin-x-pagina) hoort hier niet in.
+        expect(vorm).not.toContain(voorbeeld.antwoordTekst)
+        expect(vorm.length).toBeGreaterThan(0)
+      }
+    }
   })
 
   it('toont de brug naar de examentraining op de drukste pagina-s (AFG-623)', () => {
@@ -165,10 +205,78 @@ describe('antwoordpagina-s', () => {
     expect(voorbeeldOefenVraag(getVoorbeeld('ln-x')!)).toBe('Hoe oefen je de afgeleide van ln x?')
   })
 
+  it('toont "Wat is de afgeleide...?" met de standaardregel op de top-voorbeeldpagina-s (AFG-780)', () => {
+    const metWatIs = ['een-gedeeld-door-x', 'ln-x', 'sin-x']
+    for (const slug of metWatIs) {
+      const voorbeeld = getVoorbeeld(slug)!
+      expect(voorbeeld.watIsZichtbaar).toBe(true)
+      const vraag = voorbeeldWatIsVraag(voorbeeld)
+      expect(vraag.startsWith('Wat is de afgeleide van ')).toBe(true)
+      expect(vraag.endsWith('?')).toBe(true)
+      // Zichtbaar antwoord is de standaardregel, geen spoiler van de oefensom.
+      expect(voorbeeld.antwoordTekst.length).toBeGreaterThan(0)
+    }
+    const zonderWatIs = voorbeelden.filter((v) => !metWatIs.includes(v.slug))
+    for (const voorbeeld of zonderWatIs) {
+      expect(voorbeeld.watIsZichtbaar).toBeFalsy()
+    }
+    expect(voorbeeldWatIsVraag(getVoorbeeld('ln-x')!)).toBe('Wat is de afgeleide van ln x?')
+    expect(voorbeeldWatIsVraag(getVoorbeeld('sin-x')!)).toBe('Wat is de afgeleide van sin x?')
+    expect(voorbeeldWatIsVraag(getVoorbeeld('een-gedeeld-door-x')!)).toBe(
+      'Wat is de afgeleide van 1 gedeeld door x?',
+    )
+  })
+
+  it('toont "Ook gezocht: afgeleide van ln(2x)" als brug naar een andere functie (AFG-794)', () => {
+    const lnX = getVoorbeeld('ln-x')!
+    expect(lnX.ookGezochtFunctie).toBeDefined()
+    const brug = lnX.ookGezochtFunctie!
+    expect(brug.kop).toBe('Ook gezocht: afgeleide van ln(2x)')
+    expect(brug.uitleg).toMatch(/kettingregel/)
+    expect(brug.uitleg).toMatch(/\$g/)
+    expect(brug.uitleg).toMatch(/\$h/)
+    expect(brug.uitleg).not.toMatch(/\$f/)
+    expect(brug.uitleg).not.toMatch(/\$[uv]\(/)
+    expect(brug.uitleg).not.toMatch(/\b[uv]\(/)
+    expect(brug.oefenen).toContain('van=ook-gezocht')
+    expect(brug.oefenen.startsWith('/oefenen?')).toBe(true)
+    // Rekenkundig nagekeken: afgeleide van ln(2x) is 1/x, net als de oefenstof waarnaar gelinkt wordt.
+    expect(getVoorbeeld('ln-2x')!.antwoord).toBe('\\dfrac{1}{x}')
+
+    const zonderBrug = voorbeelden.filter((v) => v.slug !== 'ln-x')
+    for (const voorbeeld of zonderBrug) {
+      expect(voorbeeld.ookGezochtFunctie).toBeUndefined()
+    }
+  })
+
   it('zet elke pagina in de sitemap', () => {
     const urls = sitemap().map((item) => item.url)
     for (const voorbeeld of voorbeelden) {
       expect(urls.some((url) => url.endsWith(voorbeeldPad(voorbeeld.slug)))).toBe(true)
     }
+  })
+})
+
+describe('overzichtspagina /voorbeeld (AFG-836)', () => {
+  it('toont minstens zes bestaande voorbeelden, elk met een geldige slug', () => {
+    expect(VOORBEELD_INDEX_SLUGS.length).toBeGreaterThanOrEqual(6)
+    const index = getVoorbeeldIndex()
+    // Geen enkele slug mag stilletjes wegvallen doordat hij niet bestaat.
+    expect(index).toHaveLength(VOORBEELD_INDEX_SLUGS.length)
+    for (const slug of VOORBEELD_INDEX_SLUGS) {
+      expect(getVoorbeeld(slug)?.slug).toBe(slug)
+    }
+  })
+
+  it('zet bronmeting van=voorbeeldindex op elke link naar een voorbeeld', () => {
+    for (const slug of VOORBEELD_INDEX_SLUGS) {
+      const pad = voorbeeldIndexPad(slug)
+      expect(pad).toBe(`/voorbeeld/${slug}?van=voorbeeldindex`)
+    }
+  })
+
+  it('staat zelf ook in de sitemap', () => {
+    const urls = sitemap().map((item) => item.url)
+    expect(urls.some((url) => url.endsWith('/voorbeeld'))).toBe(true)
   })
 })
