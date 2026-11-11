@@ -18,7 +18,30 @@
   },
   "Footer": {
     "privacy": "Privacyverklaring",
+    "over": "Over",
     "integraal": "Ook primitiveren en integreren oefenen? → integraaloefenen.nl"
+  },
+  "Over": {
+    "title": "Over Wiskunde met Aaf",
+    "description": "Wiskunde met Aaf is drie oefensites en een YouTube-kanaal van Aaf, docent wiskunde: wiskundemetaaf.nl voor het eindexamen, afgeleideoefenen.nl voor differentiëren en integraaloefenen.nl voor integreren.",
+    "eyebrow": "Over deze site",
+    "h1": "Wiskunde met Aaf",
+    "intro": "Aaf is docent wiskunde en maakt zelf de opgaven, de uitleg bij een fout antwoord en de video's op deze sites.",
+    "whoH2": "Wie is Aaf",
+    "whoBody": "Aaf geeft wiskunde B aan vwo-leerlingen. Daarnaast bouwt en onderhoudt Aaf deze oefensites: elke opgave, elke uitlegtekst en elke video komt van Aaf zelf, niet van een uitgever.",
+    "sitesH2": "Drie sites, één account",
+    "sitesIntro": "Wiskunde met Aaf is de naam boven drie oefensites voor wiskunde B op het vwo. Je logt overal in met hetzelfde account.",
+    "afgeleideTitel": "afgeleideoefenen.nl — deze site",
+    "afgeleideTekst": "Differentiëren oefenen, regel voor regel: machtsregel, somregel, productregel, quotiëntregel, kettingregel.",
+    "examenTitel": "wiskundemetaaf.nl",
+    "examenTekst": "Oefen met echte eindexamenvragen: het antwoord uit het correctievoorschrift en uitleg bij elke stap. Vraag zelf een video aan bij de vraag die je niet snapt.",
+    "integraalTitel": "integraaloefenen.nl",
+    "integraalTekst": "Primitiveren en integreren oefenen voor wiskunde B.",
+    "youtubeH2": "Video's op YouTube",
+    "youtubeBody": "Op YouTube, bij @WiskundeMetAaf, legt Aaf wiskunde B uit in losse video's. Dezelfde uitleg vind je ook terug op deze sites.",
+    "youtubeLink": "Bekijk het kanaal",
+    "ctaRegister": "Registreren",
+    "ctaBack": "Terug naar de startpagina"
   },
   "YoutubeWelkom": {
     "tekst": "Kom je van YouTube? Oefen de som zelf — meteen nakijken.",

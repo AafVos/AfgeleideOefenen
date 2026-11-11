@@ -12,12 +12,20 @@ export async function SiteFooter({ className }: { className?: string } = {}) {
     <footer className={cn('shrink-0 border-t border-border bg-surface', className)}>
       {/* Rechts blijft leeg: daar staat het hulp-poppetje overheen. */}
       <div className="flex flex-col gap-1 px-4 py-2 pr-20 sm:flex-row sm:items-center sm:justify-between">
-        <Link
-          href="/privacy"
-          className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2 hover:text-text"
-        >
-          {t('privacy')}
-        </Link>
+        <div className="flex flex-wrap gap-x-4">
+          <Link
+            href="/over"
+            className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2 hover:text-text"
+          >
+            {t('over')}
+          </Link>
+          <Link
+            href="/privacy"
+            className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2 hover:text-text"
+          >
+            {t('privacy')}
+          </Link>
+        </div>
         <IntegraalVerwijzing
           tekst={t('integraal')}
           className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2 hover:text-text"
