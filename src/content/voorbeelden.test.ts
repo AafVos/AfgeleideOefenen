@@ -174,21 +174,41 @@ describe('antwoordpagina-s', () => {
 
   it('heeft een extra FAQ-vraag op de drukste pagina-s zonder klikken (AFG-658)', () => {
     const metUitgebreideFaq = ['een-gedeeld-door-x', 'e-tot-de-x', 'ln-x', 'sin-x', 'cos-x']
+    // AFG-781: op deze drie mag de meta de standaardregel tonen (0% CTR
+    // bleef aanhouden); de rest blijft voorlopig belofte-eerst (AFG-586).
+    const metStandaardregelInMeta = ['een-gedeeld-door-x', 'ln-x', 'sin-x']
     for (const slug of metUitgebreideFaq) {
       const voorbeeld = getVoorbeeld(slug)!
       expect(voorbeeld.faqUitgebreid).toBe(true)
       const vraag = voorbeeldOefenVraag(voorbeeld)
       expect(vraag.startsWith('Hoe oefen je de afgeleide van ')).toBe(true)
       expect(vraag.endsWith('?')).toBe(true)
-      // Het antwoord op de extra vraag blijft belofte-eerst: geen kant-en-klaar antwoord.
       expect(voorbeeld.omschrijving).not.toBe(voorbeeld.antwoordTekst)
-      expect(voorbeeld.omschrijving).not.toMatch(/^De afgeleide van .+ is /)
+      if (metStandaardregelInMeta.includes(slug)) {
+        expect(voorbeeld.omschrijving).toMatch(/^De afgeleide van .+ is /)
+      } else {
+        // Het antwoord op de extra vraag blijft belofte-eerst: geen kant-en-klaar antwoord.
+        expect(voorbeeld.omschrijving).not.toMatch(/^De afgeleide van .+ is /)
+      }
     }
     const zonderUitgebreideFaq = voorbeelden.filter((v) => !metUitgebreideFaq.includes(v.slug))
     for (const voorbeeld of zonderUitgebreideFaq) {
       expect(voorbeeld.faqUitgebreid).toBeFalsy()
+      // De standaardregel staat alleen op pagina's met de extra FAQ-vraag hierboven.
+      expect(voorbeeld.omschrijving).not.toMatch(/^De afgeleide van .+ is /)
     }
     expect(voorbeeldOefenVraag(getVoorbeeld('ln-x')!)).toBe('Hoe oefen je de afgeleide van ln x?')
+  })
+
+  it('toont de standaardregel in de meta, nooit het antwoord van de oefensommen (AFG-781)', () => {
+    const metStandaardregelInMeta = {
+      'een-gedeeld-door-x': 'De afgeleide van 1/x is -1/x². Daarna drie sommen om te oefenen.',
+      'ln-x': 'De afgeleide van ln x is 1/x. Daarna drie sommen om te oefenen.',
+      'sin-x': 'De afgeleide van sin x is cos x. Daarna drie sommen om te oefenen.',
+    }
+    for (const [slug, omschrijving] of Object.entries(metStandaardregelInMeta)) {
+      expect(getVoorbeeld(slug)!.omschrijving).toBe(omschrijving)
+    }
   })
 
   it('zet elke pagina in de sitemap', () => {
