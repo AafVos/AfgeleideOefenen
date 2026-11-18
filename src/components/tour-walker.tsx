@@ -297,11 +297,14 @@ export function TourWalker({ onDone }: { onDone: () => void }) {
   return (
     <>
       {!wacht && (
+        // pointer-events-none: dit is alleen een dimmend laagje. Zonder dit
+        // ving het klikken op, ook op de rest van de pagina die er nog
+        // gewoon doorheen te zien is — een dode klik op een div (AFG-922).
         <div
           className={
             plek?.bijItem
-              ? 'fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
-              : 'fixed inset-0 z-40 bg-[#101820]/30'
+              ? 'pointer-events-none fixed inset-x-0 bottom-0 top-14 z-20 bg-[#101820]/30'
+              : 'pointer-events-none fixed inset-0 z-40 bg-[#101820]/30'
           }
           aria-hidden
         />
