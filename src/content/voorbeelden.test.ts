@@ -129,16 +129,28 @@ describe('antwoordpagina-s', () => {
     expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x (lnx) oefenen')
     expect(voorbeeldTitel(getVoorbeeld('sin-x')!)).toBe('Afgeleide van sin x (sinx) oefenen')
     expect(voorbeeldTitel(getVoorbeeld('cos-x')!)).toBe('Afgeleide van cos x (cosx) oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-x')!)).toBe(
+      'Afgeleide van e tot de macht x (e^x) oefenen',
+    )
     expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
-      'Afgeleide van e tot de macht 2x oefenen',
+      'Afgeleide van e tot de macht 2x (e^2x) oefenen',
     )
     expect(voorbeeldTitel(getVoorbeeld('e-tot-de-x-kwadraat')!)).toBe(
       'Afgeleide van e tot de macht x kwadraat (e^x^2) oefenen',
     )
+    expect(voorbeeldTitel(getVoorbeeld('wortel-x')!)).toBe('Afgeleide van wortel x (√x) oefenen')
   })
 
   it('zet de typvorm zonder spatie naast de leesbare vorm in de titel (AFG-704)', () => {
-    const metTypVorm = ['ln-x', 'sin-x', 'cos-x', 'e-tot-de-x-kwadraat']
+    const metTypVorm = [
+      'ln-x',
+      'sin-x',
+      'cos-x',
+      'e-tot-de-x-kwadraat',
+      'e-tot-de-x',
+      'e-tot-de-2x',
+      'wortel-x',
+    ]
     for (const slug of metTypVorm) {
       const voorbeeld = getVoorbeeld(slug)!
       expect(voorbeeld.typVorm).toBeTruthy()
@@ -155,6 +167,8 @@ describe('antwoordpagina-s', () => {
       'ln-x',
       'sin-x',
       'cos-x',
+      'wortel-x',
+      'e-tot-de-2x',
     ]
     for (const slug of metOokGezochtAls) {
       const voorbeeld = getVoorbeeld(slug)!
@@ -187,7 +201,15 @@ describe('antwoordpagina-s', () => {
   })
 
   it('heeft een extra FAQ-vraag op de drukste pagina-s zonder klikken (AFG-658)', () => {
-    const metUitgebreideFaq = ['een-gedeeld-door-x', 'e-tot-de-x', 'ln-x', 'sin-x', 'cos-x']
+    const metUitgebreideFaq = [
+      'een-gedeeld-door-x',
+      'e-tot-de-x',
+      'ln-x',
+      'sin-x',
+      'cos-x',
+      'wortel-x',
+      'e-tot-de-2x',
+    ]
     for (const slug of metUitgebreideFaq) {
       const voorbeeld = getVoorbeeld(slug)!
       expect(voorbeeld.faqUitgebreid).toBe(true)
@@ -206,7 +228,15 @@ describe('antwoordpagina-s', () => {
   })
 
   it('toont "Wat is de afgeleide...?" met de standaardregel op de top-voorbeeldpagina-s (AFG-780)', () => {
-    const metWatIs = ['een-gedeeld-door-x', 'ln-x', 'sin-x']
+    const metWatIs = [
+      'een-gedeeld-door-x',
+      'ln-x',
+      'sin-x',
+      'wortel-x',
+      'e-tot-de-2x',
+      'cos-x',
+      'e-tot-de-x',
+    ]
     for (const slug of metWatIs) {
       const voorbeeld = getVoorbeeld(slug)!
       expect(voorbeeld.watIsZichtbaar).toBe(true)
