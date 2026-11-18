@@ -39,6 +39,7 @@ export function WiskundeMetAafVideos({
                 oefenen={oefenlinkMetYoutubeHerkomst(video.oefenen)}
                 dataMeet="video-wiskunde-met-aaf-oefenen"
                 label="Oefen dit zelf"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-surface px-5 py-3 text-sm font-medium text-text shadow-sm hover:bg-surface-2"
               />
             </div>
           </div>
