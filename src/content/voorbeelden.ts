@@ -233,8 +233,11 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   {
     slug: "een-gedeeld-door-x",
     kop: "De afgeleide van 1 gedeeld door x",
+    // AFG-781: op deze drukste pagina mag de meta de standaardregel tonen
+    // (0% CTR bij duizenden vertoningen, GSC 12 okt-8 nov) — nooit het
+    // antwoord van de oefensommen die via `oefenen` volgen.
     omschrijving:
-      "Oefen gratis de afgeleide van 1 gedeeld door x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
+      "De afgeleide van 1/x is -1/x². Daarna drie sommen om te oefenen.",
     antwoordTekst:
       "De afgeleide van 1 gedeeld door x is min 1 gedeeld door x kwadraat.",
     functie: "\\dfrac{1}{x}",
@@ -608,8 +611,10 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   {
     slug: "ln-x",
     kop: "De afgeleide van ln x",
-    omschrijving:
-      "Oefen gratis de afgeleide van ln x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
+    // AFG-781: op deze drukste pagina mag de meta de standaardregel tonen
+    // (0% CTR bij duizenden vertoningen, GSC 12 okt-8 nov) — nooit het
+    // antwoord van de oefensommen die via `oefenen` volgen.
+    omschrijving: "De afgeleide van ln x is 1/x. Daarna drie sommen om te oefenen.",
     antwoordTekst: "De afgeleide van ln(x) is 1 gedeeld door x.",
     functie: "\\ln(x)",
     antwoord: "\\dfrac{1}{x}",
@@ -735,8 +740,10 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
   {
     slug: "sin-x",
     kop: "De afgeleide van sin x",
-    omschrijving:
-      "Oefen gratis de afgeleide van sin x: drie sommen zonder account, met stappenplan en een veelgemaakte fout.",
+    // AFG-781: op deze drukste pagina mag de meta de standaardregel tonen
+    // (0% CTR bij duizenden vertoningen, GSC 12 okt-8 nov) — nooit het
+    // antwoord van de oefensommen die via `oefenen` volgen.
+    omschrijving: "De afgeleide van sin x is cos x. Daarna drie sommen om te oefenen.",
     antwoordTekst: "De afgeleide van sin(x) is cos(x).",
     functie: "\\sin(x)",
     antwoord: "\\cos(x)",
