@@ -123,18 +123,53 @@ describe('antwoordpagina-s', () => {
     for (const voorbeeld of voorbeelden) {
       const titel = voorbeeldTitel(voorbeeld)
       expect(titel).not.toMatch(/^De /)
-      expect(titel.endsWith(' oefenen')).toBe(true)
+      expect(titel.toLowerCase().endsWith(' oefenen')).toBe(true)
       expect(titel.length).toBeLessThanOrEqual(60)
     }
-    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Afgeleide van ln x (lnx) oefenen')
-    expect(voorbeeldTitel(getVoorbeeld('sin-x')!)).toBe('Afgeleide van sin x (sinx) oefenen')
-    expect(voorbeeldTitel(getVoorbeeld('cos-x')!)).toBe('Afgeleide van cos x (cosx) oefenen')
-    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
-      'Afgeleide van e tot de macht 2x oefenen',
-    )
     expect(voorbeeldTitel(getVoorbeeld('e-tot-de-x-kwadraat')!)).toBe(
       'Afgeleide van e tot de macht x kwadraat (e^x^2) oefenen',
     )
+  })
+
+  it('begint de titel met "Wat is de ...?" op de informatieve-queries-pagina-s (AFG-894)', () => {
+    const metVraagvormTitel = [
+      'ln-x',
+      'wortel-x',
+      'sin-x',
+      'een-gedeeld-door-x',
+      'e-tot-de-x',
+      'e-tot-de-2x',
+      'cos-x',
+    ]
+    for (const slug of metVraagvormTitel) {
+      const titel = voorbeeldTitel(getVoorbeeld(slug)!)
+      expect(titel.startsWith('Wat is de afgeleide van')).toBe(true)
+      expect(titel).toMatch(/\? Oefenen$/)
+      // Geen standaardregel of antwoord in de titel: dat wacht op AFG-781.
+      expect(titel).not.toContain(getVoorbeeld(slug)!.antwoord)
+    }
+    expect(voorbeeldTitel(getVoorbeeld('ln-x')!)).toBe('Wat is de afgeleide van ln x (lnx)? Oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('sin-x')!)).toBe(
+      'Wat is de afgeleide van sin x (sinx)? Oefenen',
+    )
+    expect(voorbeeldTitel(getVoorbeeld('cos-x')!)).toBe(
+      'Wat is de afgeleide van cos x (cosx)? Oefenen',
+    )
+    expect(voorbeeldTitel(getVoorbeeld('wortel-x')!)).toBe('Wat is de afgeleide van wortel x? Oefenen')
+    expect(voorbeeldTitel(getVoorbeeld('een-gedeeld-door-x')!)).toBe(
+      'Wat is de afgeleide van 1 gedeeld door x? Oefenen',
+    )
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-x')!)).toBe(
+      'Wat is de afgeleide van e tot de macht x? Oefenen',
+    )
+    expect(voorbeeldTitel(getVoorbeeld('e-tot-de-2x')!)).toBe(
+      'Wat is de afgeleide van e tot de macht 2x? Oefenen',
+    )
+
+    const zonderVraagvormTitel = voorbeelden.filter((v) => !metVraagvormTitel.includes(v.slug))
+    for (const voorbeeld of zonderVraagvormTitel) {
+      expect(voorbeeldTitel(voorbeeld).startsWith('Wat is de')).toBe(false)
+    }
   })
 
   it('zet de typvorm zonder spatie naast de leesbare vorm in de titel (AFG-704)', () => {

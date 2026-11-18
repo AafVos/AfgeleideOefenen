@@ -924,11 +924,30 @@ export function voorbeeldPad(slug: string): string {
  * Heeft het voorbeeld een `typVorm` (AFG-704), dan komt die erbij tussen
  * haakjes, bijvoorbeeld "Afgeleide van ln x (lnx) oefenen": leerlingen die
  * zonder spatie zoeken, zien dan toch hun eigen zoekwoord terug.
+ *
+ * Op de slugs in `VRAAGVORM_SLUGS` begint de titel in plaats daarvan met
+ * "Wat is de ..." (AFG-894): Search Console laat op die pagina's vooral
+ * informatieve zoekopdrachten zien ("wat is de afgeleide van ln(x)"), en
+ * een snippet die de vraag herhaalt matcht beter dan een naslagkaart-titel.
+ * Geen standaardregel of antwoord erin — dat wacht op AFG-781.
  */
+const VRAAGVORM_SLUGS = new Set([
+  "ln-x",
+  "wortel-x",
+  "sin-x",
+  "een-gedeeld-door-x",
+  "e-tot-de-x",
+  "e-tot-de-2x",
+  "cos-x",
+]);
+
 export function voorbeeldTitel(voorbeeld: Voorbeeld): string {
   const zonderDe = voorbeeld.kop.replace(/^De /, "");
-  const metHoofdletter = zonderDe.charAt(0).toUpperCase() + zonderDe.slice(1);
   const typVorm = voorbeeld.typVorm ? ` (${voorbeeld.typVorm})` : "";
+  if (VRAAGVORM_SLUGS.has(voorbeeld.slug)) {
+    return `Wat is de ${zonderDe}${typVorm}? Oefenen`;
+  }
+  const metHoofdletter = zonderDe.charAt(0).toUpperCase() + zonderDe.slice(1);
   return `${metHoofdletter}${typVorm} oefenen`;
 }
 
