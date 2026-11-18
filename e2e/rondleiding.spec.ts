@@ -73,6 +73,21 @@ test('op een breed scherm start de rondleiding vanzelf', async ({ page }) => {
   await page.getByRole('button', { name: 'Overslaan' }).click()
   await expect(page.getByRole('button', { name: 'Vraag het Aaf' })).toBeVisible()
 })
+
+test('het dimmende laagje achter de ballon vangt geen klik: het logo blijft werken (AFG-922)', async ({
+  page,
+}) => {
+  test.skip((page.viewportSize()?.width ?? 0) < 900, 'Dit gaat over een breed scherm.')
+
+  const ballon = page.getByRole('dialog')
+  await expect(ballon).toBeVisible()
+  await expect(ballon).toContainText(WELKOM)
+
+  // Vóór AFG-922 ving dit laagje de klik op: het menu erachter was nog
+  // gewoon te zien, maar klikken erop deed niets (een dode klik op een div).
+  await page.locator('[data-meet="menu-zelftoets"]').click()
+  await expect(page).toHaveURL(/\/nl\/zelf-toets/)
+})
 })
 
 async function binnenBeeld(page: Page) {
