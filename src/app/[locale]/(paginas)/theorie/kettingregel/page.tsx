@@ -3,6 +3,8 @@ import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
+  KETTINGREGEL_ANTWOORD_EERST,
+  KETTINGREGEL_FAQ,
   KETTINGREGEL_FORMULE,
   KETTINGREGEL_OEFENEN,
   KETTINGREGEL_OMSCHRIJVING,
@@ -10,8 +12,9 @@ import {
   KETTINGREGEL_STAPPEN,
   KETTINGREGEL_TITEL,
   KETTINGREGEL_VOORBEELDEN,
+  KETTINGREGEL_ZOEKTITEL,
 } from '@/content/theory/kettingregel'
-import { canoniek, deelkaart } from '@/lib/seo'
+import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
 
@@ -22,19 +25,46 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   return {
-    title: KETTINGREGEL_TITEL,
+    title: KETTINGREGEL_ZOEKTITEL,
     description: KETTINGREGEL_OMSCHRIJVING,
     alternates: canoniek(locale, KETTINGREGEL_PAD),
     openGraph: deelkaart(locale, KETTINGREGEL_PAD, {
-      title: KETTINGREGEL_TITEL,
+      title: KETTINGREGEL_ZOEKTITEL,
       description: KETTINGREGEL_OMSCHRIJVING,
     }),
   }
 }
 
-export default function KettingregelPage() {
+export default async function KettingregelPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const adres = paginaAdres(locale, KETTINGREGEL_PAD)
+  const faqKaartje = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${adres}#veelgestelde-vragen`,
+    url: adres,
+    mainEntity: KETTINGREGEL_FAQ.map((item) => ({
+      '@type': 'Question',
+      name: item.vraag,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.antwoord,
+      },
+    })),
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqKaartje).replace(/</g, '\\u003c'),
+        }}
+      />
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{KETTINGREGEL_TITEL}</h1>
 
@@ -45,7 +75,9 @@ export default function KettingregelPage() {
         />
       </Suspense>
 
-      <p className="mt-6 text-lg text-text-muted">
+      <p className="mt-6 text-lg font-medium text-text">{KETTINGREGEL_ANTWOORD_EERST}</p>
+
+      <p className="mt-3 text-lg text-text-muted">
         Je gebruikt de kettingregel als er een functie in een functie zit. Eerst de
         buitenkant, daarna vermenigvuldig je met de afgeleide van de binnenkant.
       </p>

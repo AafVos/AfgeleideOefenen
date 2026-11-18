@@ -4,12 +4,15 @@ import sitemap from '@/app/sitemap'
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 
 import {
+  PRODUCTREGEL_ANTWOORD_EERST,
+  PRODUCTREGEL_FAQ,
   PRODUCTREGEL_FORMULE,
   PRODUCTREGEL_OMSCHRIJVING,
   PRODUCTREGEL_PAD,
   PRODUCTREGEL_STAPPEN,
   PRODUCTREGEL_TITEL,
   PRODUCTREGEL_VOORBEELDEN,
+  PRODUCTREGEL_ZOEKTITEL,
 } from './productregel'
 
 describe('productregel-pagina', () => {
@@ -18,6 +21,31 @@ describe('productregel-pagina', () => {
     expect(PRODUCTREGEL_TITEL).toBe('Productregel oefenen')
     expect(PRODUCTREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(PRODUCTREGEL_OMSCHRIJVING).not.toMatch(/\b(product rule|derivative)\b/i)
+  })
+
+  it('de zoektitel en omschrijving noemen letterlijk de leerlingvraag (AFG-889)', () => {
+    expect(PRODUCTREGEL_ZOEKTITEL.toLowerCase()).toContain('productregel differentiëren uitleg vwo')
+    expect(PRODUCTREGEL_OMSCHRIJVING.toLowerCase()).toContain(
+      'productregel differentiëren uitleg vwo',
+    )
+  })
+
+  it('toont een antwoord-eerst-zin met f, g en h, geen u of v (AFG-889)', () => {
+    expect(PRODUCTREGEL_ANTWOORD_EERST).toMatch(/^Bij de productregel geldt/)
+    expect(PRODUCTREGEL_ANTWOORD_EERST).toContain('f′')
+    expect(PRODUCTREGEL_ANTWOORD_EERST).toContain('g′')
+    expect(PRODUCTREGEL_ANTWOORD_EERST).toContain('h′')
+    expect(PRODUCTREGEL_ANTWOORD_EERST).not.toMatch(/\b[uv]['′]/)
+  })
+
+  it('heeft 2 tot 3 FAQ-vragen die alleen de pagina-inhoud herhalen (AFG-889)', () => {
+    expect(PRODUCTREGEL_FAQ.length).toBeGreaterThanOrEqual(2)
+    expect(PRODUCTREGEL_FAQ.length).toBeLessThanOrEqual(3)
+    for (const { vraag, antwoord } of PRODUCTREGEL_FAQ) {
+      expect(vraag.endsWith('?')).toBe(true)
+      expect(antwoord).not.toMatch(/\b[uv]\(/)
+    }
+    expect(PRODUCTREGEL_FAQ.map((item) => item.antwoord).join(' ')).toContain('productregel')
   })
 
   it('legt het stappenplan uit met f, g en h, van stap 0 tot en met 3', () => {

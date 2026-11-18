@@ -9,8 +9,48 @@ export const KETTINGREGEL_PAD = '/theorie/kettingregel'
 
 export const KETTINGREGEL_TITEL = 'Kettingregel oefenen'
 
+/**
+ * Zoektitel in het tabblad en bij delen (AFG-889): letterlijk de
+ * leerlingvraag, zodat chatbots en zoekmachines deze pagina herkennen.
+ * `KETTINGREGEL_TITEL` blijft de koptekst op de pagina zelf en op de
+ * overzichtskaart.
+ */
+export const KETTINGREGEL_ZOEKTITEL = 'Kettingregel differentiëren oefenen vwo'
+
 export const KETTINGREGEL_OMSCHRIJVING =
-  'Uitleg van de kettingregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'
+  "Kettingregel differentiëren oefenen vwo — met f′ = g′(h)·h′. Stappenplan en drie uitgewerkte voorbeelden, daarna zelf oefenen."
+
+/**
+ * Antwoord-eerst: de kernzin die bovenaan de pagina staat, vóór de lange
+ * uitleg. Chatbots en zoekmachines citeren deze zin het eerst (AFG-889).
+ */
+export const KETTINGREGEL_ANTWOORD_EERST = 'Bij de kettingregel geldt f′ = g′(h)·h′.'
+
+export type KettingregelVraag = {
+  vraag: string
+  antwoord: string
+}
+
+/**
+ * FAQPage-vragen voor de JSON-LD op deze pagina (AFG-889). De antwoorden
+ * herhalen alleen wat al zichtbaar op de pagina staat.
+ */
+export const KETTINGREGEL_FAQ: KettingregelVraag[] = [
+  {
+    vraag: 'Wanneer gebruik je de kettingregel?',
+    antwoord:
+      'Je gebruikt de kettingregel als er een functie in een functie zit. Eerst de buitenkant, daarna vermenigvuldig je met de afgeleide van de binnenkant.',
+  },
+  {
+    vraag: 'Wat is de formule van de kettingregel?',
+    antwoord:
+      "f'(x) = g'(h(x)) · h'(x), waarbij f de functie is die je differentieert, g de buitenste functie en h de binnenste functie.",
+  },
+  {
+    vraag: 'Wat is de kern van de kettingregel in één zin?',
+    antwoord: 'Bij de kettingregel geldt f′ = g′(h)·h′.',
+  },
+]
 
 /** Hoofdstuk 6, onderwerp "De kettingregel". */
 export const KETTINGREGEL_OEFENEN = '/oefenen?chapter=h6&topic=h6_kettingregel'

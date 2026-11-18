@@ -9,8 +9,48 @@ export const PRODUCTREGEL_PAD = '/theorie/productregel'
 
 export const PRODUCTREGEL_TITEL = 'Productregel oefenen'
 
+/**
+ * Zoektitel in het tabblad en bij delen (AFG-889): letterlijk de
+ * leerlingvraag, zodat chatbots en zoekmachines deze pagina herkennen.
+ * `PRODUCTREGEL_TITEL` blijft de koptekst op de pagina zelf en op de
+ * overzichtskaart.
+ */
+export const PRODUCTREGEL_ZOEKTITEL = 'Productregel differentiëren uitleg vwo'
+
 export const PRODUCTREGEL_OMSCHRIJVING =
-  'Uitleg van de productregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'
+  "Productregel differentiëren uitleg vwo — met f′ = g′·h + g·h′. Stappenplan en drie uitgewerkte voorbeelden, daarna zelf oefenen."
+
+/**
+ * Antwoord-eerst: de kernzin die bovenaan de pagina staat, vóór de lange
+ * uitleg. Chatbots en zoekmachines citeren deze zin het eerst (AFG-889).
+ */
+export const PRODUCTREGEL_ANTWOORD_EERST = 'Bij de productregel geldt f′ = g′·h + g·h′.'
+
+export type ProductregelVraag = {
+  vraag: string
+  antwoord: string
+}
+
+/**
+ * FAQPage-vragen voor de JSON-LD op deze pagina (AFG-889). De antwoorden
+ * herhalen alleen wat al zichtbaar op de pagina staat.
+ */
+export const PRODUCTREGEL_FAQ: ProductregelVraag[] = [
+  {
+    vraag: 'Wanneer gebruik je de productregel?',
+    antwoord:
+      'Je gebruikt de productregel als twee functies met elkaar vermenigvuldigd worden. Je differentieert ze om de beurt en telt die twee uitkomsten op.',
+  },
+  {
+    vraag: 'Wat is de formule van de productregel?',
+    antwoord:
+      "f'(x) = g'(x) · h(x) + g(x) · h'(x), waarbij f de functie is die je differentieert, g de eerste factor en h de tweede factor.",
+  },
+  {
+    vraag: 'Wat is de kern van de productregel in één zin?',
+    antwoord: 'Bij de productregel geldt f′ = g′·h + g·h′.',
+  },
+]
 
 /** Hoofdstuk 2, onderwerp "De productregel". */
 export const PRODUCTREGEL_OEFENEN = '/oefenen?chapter=h2&topic=h2_productregel'
