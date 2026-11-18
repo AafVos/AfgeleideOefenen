@@ -6,14 +6,17 @@ import { DeelKnop } from '@/components/deel-knop'
 import { Math as TeX, RichMath } from '@/components/math'
 import { ProbeerKnop } from '@/components/probeer-knop'
 import { StickyProbeerBalk } from '@/components/sticky-probeer-balk'
+import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { EXAMENTRAINING_PAD } from '@/content/theory/examentraining'
+import type { VideoPagina } from '@/lib/wiskunde-met-aaf-videos'
 import {
   getVoorbeeld,
   getVoorbeelden,
   voorbeeldOefenVraag,
   voorbeeldPad,
   voorbeeldTitel,
+  voorbeeldWatIsVraag,
 } from '@/content/voorbeelden'
 import { Link } from '@/i18n/navigation'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
@@ -109,6 +112,13 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </p>
         )}
 
+        {voorbeeld.watIsZichtbaar && (
+          <section className="mt-6">
+            <h2 className="font-serif text-xl text-text">{voorbeeldWatIsVraag(voorbeeld)}</h2>
+            <p className="mt-2 text-text-muted">{voorbeeld.antwoordTekst}</p>
+          </section>
+        )}
+
         <Suspense fallback={null}>
           <YoutubeWelkom
             ctaHref={proberenVanOefenen(voorbeeld.oefenen)}
@@ -122,6 +132,21 @@ export default async function VoorbeeldPage({ params }: PageProps) {
         </div>
 
         <StickyProbeerBalk oefenen={voorbeeld.oefenen} primaryId="probeer-knop-primair" />
+
+        {/* Toetsweek-brug (AFG-817): zelfde boodschap als de knop op de
+            startpagina (AFG-793), hier als korte tekstlink onder de
+            primaire proefsom-CTA. */}
+        <p className="mt-4 text-sm text-text-muted">
+          Toetsweek?{' '}
+          <Link
+            href="/zelf-toets?van=voorbeeld-toetsweek"
+            data-meet="voorbeeld-zelftoets"
+            className="inline-flex min-h-11 items-center text-accent underline underline-offset-2"
+          >
+            Doe een korte zelf-toets
+          </Link>
+          .
+        </p>
 
         {voorbeeld.examenbrug && (
           <p className="mt-4 text-sm text-text-muted">
@@ -166,6 +191,22 @@ export default async function VoorbeeldPage({ params }: PageProps) {
           </section>
         </Uitwerking>
 
+        {voorbeeld.ookGezochtFunctie && (
+          <section className="mt-10">
+            <h2 className="font-serif text-xl text-text">{voorbeeld.ookGezochtFunctie.kop}</h2>
+            <p className="mt-2 text-text-muted">
+              <RichMath source={voorbeeld.ookGezochtFunctie.uitleg} />
+            </p>
+            <Link
+              href={voorbeeld.ookGezochtFunctie.oefenen as '/oefenen'}
+              data-meet="voorbeeld-ook-gezocht-functie"
+              className="mt-2 inline-flex min-h-11 items-center text-accent underline underline-offset-2"
+            >
+              Oefen de kettingregel
+            </Link>
+          </section>
+        )}
+
         <section className="mt-12">
           <h2 className="font-serif text-2xl text-text">Gerelateerde afgeleiden</h2>
           <p className="mt-4 text-text-muted">Bekijk ook deze afgeleiden uit dezelfde familie.</p>
@@ -182,6 +223,8 @@ export default async function VoorbeeldPage({ params }: PageProps) {
             ))}
           </ul>
         </section>
+
+        <WiskundeMetAafVideos pagina={voorbeeld.slug as VideoPagina} />
 
         <div className="mt-12 flex flex-col items-start gap-4">
           <ProbeerKnop oefenen={voorbeeld.oefenen} dataMeet="probeer-3-sommen-onderaan" />

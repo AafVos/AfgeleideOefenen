@@ -1,5 +1,7 @@
+import { DIFFERENTIEERREGELS_OEFENEN } from '@/content/theory/differentieerregels'
 import { MACHTSREGEL_OEFENEN } from '@/content/theory/machtsregel'
 import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
+import { RAAKLIJN_OEFENEN } from '@/content/theory/raaklijn'
 
 /**
  * Video's van het YouTube-kanaal "Wiskunde met Aaf" (@WiskundeMetAaf),
@@ -13,7 +15,16 @@ import { QUOTIENTREGEL_OEFENEN } from '@/content/theory/quotientregel'
  * 200 teruggeeft op `https://www.youtube.com/oembed?url=https://youtu.be/<id>`
  * — staat hij nog gepland (niet openbaar), dan geeft dat adres een 403.
  */
-export type VideoPagina = 'quotientregel' | 'machtsregel' | 'examentraining' | 'uitleg-videos'
+export type VideoPagina =
+  | 'quotientregel'
+  | 'machtsregel'
+  | 'raaklijn'
+  | 'ln-x'
+  | 'examentraining'
+  | 'uitleg-videos'
+
+/** Geen eigen theoriepagina voor logaritmes: alleen de kaart op `/theorie#kaart-h9-logaritmes`. */
+const LN_X_OEFENEN = '/oefenen?chapter=h9&topic=h9_logaritmes'
 
 export type WiskundeMetAafVideo = {
   /** Eigen, stabiele id. Niet het YouTube-id: dat kan nog wijzigen vóór publicatie. */
@@ -64,9 +75,64 @@ const VIDEOS: WiskundeMetAafVideo[] = [
   // AFG-768: de bijbehorende Short (BtdNsJpE2Js) komt er niet apart bij
   // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
   // staat (zie de regel hierboven in dit bestand).
+
+  {
+    id: 'examentraining-zo-oefen-je-differentieren',
+    title: 'Examen wiskunde B? Zo oefen je differentiëren',
+    description: 'Aaf laat in een paar seconden zien hoe je gericht gaat oefenen met differentiëren voor het examen.',
+    soort: 'short',
+    duration: '0:43',
+    youtubeId: 'Iey-oVqC3Qk',
+    bron: null,
+    paginas: ['examentraining'],
+    oefenen: DIFFERENTIEERREGELS_OEFENEN,
+  },
+
+  {
+    id: 'afgeleide-en-primitieve-van-ln-x',
+    title: 'Afgeleide en primitieve van ln x | alles in 3 minuten',
+    description:
+      'Aaf laat in drie minuten zien hoe je zowel de afgeleide als de primitieve van ln(x) bepaalt.',
+    soort: 'lang',
+    duration: '3:23',
+    youtubeId: 'q53YUlb5QzQ',
+    bron: null,
+    paginas: ['ln-x', 'uitleg-videos'],
+    oefenen: LN_X_OEFENEN,
+  },
+
+  // AFG-821: de bijbehorende Short (gnw1Ipv9baQ) komt er niet apart bij
+  // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
+  // staat (zelfde regel als bij BtdNsJpE2Js hierboven).
+
+  {
+    id: 'examen-2024-i-vraag-6-verschoven-grafiek',
+    title: 'Examenvraag vwo wiskunde B: functievoorschrift van de verschoven grafiek',
+    description:
+      'Aaf gebruikt de helling van de raaklijn in punt A om het functievoorschrift van de verschoven grafiek g op te stellen.',
+    soort: 'lang',
+    duration: '5:17',
+    youtubeId: 'sc3bY-eQKw8',
+    bron: 'CE vwo wiskunde B 2024 · tijdvak 1 · vraag 6',
+    paginas: ['examentraining', 'raaklijn', 'uitleg-videos'],
+    oefenen: RAAKLIJN_OEFENEN,
+  },
+
+  // AFG-822: de bijbehorende Short (ICCQ50-yDqk) komt er niet apart bij
+  // zolang deze lange video over hetzelfde onderwerp op dezelfde pagina's
+  // staat (zelfde regel als bij BtdNsJpE2Js hierboven).
 ]
 
 /** Video's die op deze pagina moeten verschijnen, in de volgorde van `VIDEOS`. */
 export function getWiskundeMetAafVideos(pagina: VideoPagina): WiskundeMetAafVideo[] {
   return VIDEOS.filter((video) => video.paginas.includes(pagina))
+}
+
+/**
+ * Oefenlink onder een video, met de herkomstcode `youtube` erbij (zelfde
+ * code als de startpagina, AFG-792) — niet `youtube-video`, want die staat
+ * niet in `TOEGESTANE_HERKOMST` en wordt dus genegeerd (AFG-868).
+ */
+export function oefenlinkMetYoutubeHerkomst(oefenen: string): string {
+  return `${oefenen}&van=youtube`
 }

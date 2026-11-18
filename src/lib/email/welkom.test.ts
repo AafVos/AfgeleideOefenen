@@ -178,6 +178,19 @@ describe('welkomstmail', () => {
     }
   })
 
+  it('heeft één duidelijke knop naar oefenen en wijst op de herinneringsmail', async () => {
+    await stuurWelkomstmail(USER_ID)
+
+    const mail = send.mock.calls[0][0]
+
+    for (const versie of [mail.html, mail.text]) {
+      expect(versie).toContain('Begin met oefenen')
+      expect(versie).toContain('/nl/oefenen?van=welkomstmail')
+      expect(versie).toContain('/nl/dashboard')
+      expect(versie.toLowerCase()).toContain('herinnering')
+    }
+  })
+
   it('stuurt niets als er al een welkomstmail uit is', async () => {
     getUserById.mockResolvedValue({
       data: {

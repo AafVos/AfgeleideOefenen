@@ -53,7 +53,7 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
   await expect(page.getByText('Goed!', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Klaar' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Goed bezig!' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dat waren de 3 proefsommen' })).toBeVisible()
   await expect(
     page.getByText('Maak een gratis account om je voortgang te bewaren en verder te oefenen'),
   ).toBeVisible()
@@ -75,6 +75,33 @@ test('drie sommen zonder account, daarna aanmelden @telefoon', async ({ page }) 
 test('de oefenpagina blijft achter de inlog', async ({ page }) => {
   await page.goto('/nl/oefenen')
   await expect(page).toHaveURL(/\/nl\/inloggen/)
+})
+
+/**
+ * AFG-665: een klik tussen het antwoordblok en de knoppenrij (de marge van
+ * space-y-3) landde rechtstreeks op het <form>-element en deed niets — een
+ * dode klik die de bezoeker als een kapotte pagina ervaart. Zo'n klik hoort
+ * nu het antwoordveld te focussen.
+ */
+test('een klik in de marge van het antwoordformulier focust het antwoordveld', async ({
+  page,
+}) => {
+  await page.goto('/nl/proberen?chapter=e2e&topic=e2e_beheersen&cluster=e2e_rij')
+  await expect(page.getByText('Som 1 van 3')).toBeVisible()
+
+  const label = page.locator('form label')
+  const knoppenrij = page.getByRole('button', { name: 'Nakijken' }).locator('..')
+  const labelBox = await label.boundingBox()
+  const knoppenrijBox = await knoppenrij.boundingBox()
+  if (!labelBox || !knoppenrijBox) throw new Error('kon de vorm van het formulier niet lezen')
+
+  // Het midden van de marge tussen het antwoordblok en de knoppenrij: geen
+  // enkel kind-element dekt dit stukje, dus dit landt op het formulier zelf.
+  const x = labelBox.x + 20
+  const y = (labelBox.y + labelBox.height + knoppenrijBox.y) / 2
+  await page.mouse.click(x, y)
+
+  await expect(page.getByPlaceholder('Typ je antwoord')).toBeFocused()
 })
 
 test('de voorbeeldpagina heeft dezelfde knop, met van=voorbeeld voor de bronmeting', async ({

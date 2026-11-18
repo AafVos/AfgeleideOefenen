@@ -118,17 +118,16 @@ export async function GET(request: NextRequest) {
   // direct ingelogd is op zijn eerste opgave — net als bij aanmelden zonder
   // bevestigingsmail. Oude mails met `next=/nl/inloggen` blijven werken: ook
   // dan wordt de code ingewisseld. Een gekozen soort (`next=/oefenen?…`)
-  // komt op die som uit, niet op het hoofdstukkenmenu.
+  // komt op die som uit, niet op het hoofdstukkenmenu. Dit geldt sinds
+  // @supabase/supabase-js 2.118.0 ook voor een opnieuw gestuurde mail
+  // (`auth.resend`): die geeft nu net als de eerste mail een `code`-uitdaging
+  // in de adresregel, in plaats van het antwoord achter de `#` te zetten.
+  // `mail=onbekend` (afgevangen op de inlogpagina) blijft bestaan voor de
+  // situatie zonder `code` en zonder `error`, maar komt bij Supabase-mails
+  // niet meer voor.
   //
-  // Of het ook gelukt is, zegt Supabase op twee verschillende manieren:
-  //
-  //   * De mail van het registreren is met een code-uitdaging aangevraagd.
-  //     Gelukt geeft `?code=…`, mislukt geeft `?error=…&error_code=otp_expired`.
+  //   * Gelukt geeft `?code=…`, mislukt geeft `?error=…&error_code=otp_expired`.
   //     Dat staat in de adresregel, dus daar kijken we hieronder naar.
-  //   * Een opnieuw gestuurde mail (`auth.resend`) gaat zonder code-uitdaging.
-  //     Dan zet Supabase het antwoord achter de `#`, en dat stuk stuurt een
-  //     browser nooit naar de server. Daar kan hier dus niets over gezegd
-  //     worden: dat vangt de inlogpagina zelf op (`mail=onbekend`).
   const bevestigen = /^\/nl\/inloggen(\/|$|\?)/.test(next) || oefenpad !== null
   if (bevestigen) {
     if (searchParams.has('error') || searchParams.has('error_code')) {

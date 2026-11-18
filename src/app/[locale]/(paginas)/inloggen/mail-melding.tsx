@@ -41,9 +41,14 @@ function standUit(mail: Mail, staart: string): 'bevestigd' | 'verlopen' | null {
  *
  * Bij `bevestigd` en `verlopen` wist `/auth/callback` het al: dat stond in de
  * adresregel. Bij `onbekend` zette Supabase het antwoord achter de `#`, en dat
- * stuk stuurt een browser nooit naar de server. Dat gebeurt bij de link uit
- * een opnieuw gestuurde bevestigingsmail. Alleen hier, in de browser, is dan
- * te zien of de link werkte (`access_token`) of op was (`error`).
+ * stuk stuurt een browser nooit naar de server. Dat gebeurde tot
+ * @supabase/supabase-js 2.118.0 bij de link uit een opnieuw gestuurde
+ * bevestigingsmail; sindsdien geeft ook die mail een `code`-uitdaging in de
+ * adresregel, en wisselt `/auth/callback` hem meteen in voor een sessie. Dit
+ * pad blijft staan voor een link van vóór die update die nog in iemands
+ * postvak kan liggen, of als Supabase ooit weer zonder `code` doorstuurt.
+ * Alleen hier, in de browser, is dan te zien of de link werkte
+ * (`access_token`) of op was (`error`).
  */
 export function MailMelding({ mail }: { mail: Mail }) {
   const t = useTranslations('Login')

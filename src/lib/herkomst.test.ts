@@ -25,6 +25,11 @@ describe('leesHerkomst', () => {
     expect(leesHerkomst('   ')).toBeNull()
   })
 
+  it('negeert youtube-video (AFG-868: alleen youtube is een geldige code)', () => {
+    expect(leesHerkomst('youtube-video')).toBeNull()
+    expect(leesHerkomst('youtube')).toBe('youtube')
+  })
+
   it('negeert een naam of een volledig adres', () => {
     expect(leesHerkomst('Sanne de Vries')).toBeNull()
     expect(leesHerkomst('https://school.nl/klas/3b?naam=Sanne')).toBeNull()

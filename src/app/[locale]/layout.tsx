@@ -80,7 +80,7 @@ export default async function LocaleLayout({
           permanent ruimte in te nemen — zie `(paginas)/layout.tsx` en
           `(start)/layout.tsx`, en `oefenen-client.tsx` voor de oefenpagina
           (die zelf bepaalt wat er scrolt). */}
-      <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
+      <div className="flex h-[var(--app-height,100dvh)] min-h-0 flex-col overflow-hidden">
         {children}
         <SiteFooter className="hidden sm:block" />
       </div>

@@ -1,6 +1,10 @@
 import { ProbeerKnop } from '@/components/probeer-knop'
 import { YoutubeInsluiting } from '@/components/youtube-insluiting'
-import { getWiskundeMetAafVideos, type VideoPagina } from '@/lib/wiskunde-met-aaf-videos'
+import {
+  getWiskundeMetAafVideos,
+  oefenlinkMetYoutubeHerkomst,
+  type VideoPagina,
+} from '@/lib/wiskunde-met-aaf-videos'
 
 /**
  * Video('s) van het YouTube-kanaal "Wiskunde met Aaf" die bij deze pagina
@@ -32,9 +36,10 @@ export function WiskundeMetAafVideos({
             </p>
             <div className="mt-4">
               <ProbeerKnop
-                oefenen={`${video.oefenen}&van=youtube-video`}
+                oefenen={oefenlinkMetYoutubeHerkomst(video.oefenen)}
                 dataMeet="video-wiskunde-met-aaf-oefenen"
                 label="Oefen dit zelf"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-surface px-5 py-3 text-sm font-medium text-text shadow-sm hover:bg-surface-2"
               />
             </div>
           </div>

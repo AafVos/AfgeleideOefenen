@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import { describe, expect, it } from 'vitest'
 
 import sitemap from '@/app/sitemap'
@@ -20,8 +23,8 @@ describe('uitlegvideo-adressen', () => {
   })
 
   it('noemt de quotiëntregel bij naam', () => {
-    expect(getUitlegVideo('quotientregel')?.title).toBe('De quotiëntregel')
-    expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel')
+    expect(getUitlegVideo('quotientregel')?.title).toBe('De quotiëntregel voor de afgeleide')
+    expect(getUitlegVideo('  quotientregel  ')?.title).toBe('De quotiëntregel voor de afgeleide')
     expect(getUitlegVideo('quotientregel')?.theoriePad).toBe('/theorie/quotientregel')
     expect(getUitlegVideo('somregel-of-productregel')?.theoriePad).toBe('/theorie/productregel')
     expect(getUitlegVideo('somregel-of-productregel')?.oefenen).toBe(
@@ -70,6 +73,21 @@ describe('uitlegvideo-adressen', () => {
       expect(`${video?.title} ${video?.description} ${video?.slug}`).not.toMatch(
         /som\s*\d|#\d+|H\d|hoofdstuk/i,
       )
+    }
+  })
+
+  it('gebruikt in de paginametadata de korte description, niet "uitleg.leer"', () => {
+    const pad = fileURLToPath(
+      new URL('../app/[locale]/(paginas)/uitleg-videos/[slug]/page.tsx', import.meta.url),
+    )
+    const bron = readFileSync(pad, 'utf8')
+    expect(bron).not.toContain('uitleg.leer')
+    expect(bron.match(/description: video\.description/g)?.length).toBe(3)
+  })
+
+  it('noemt de afgeleide in elke videotitel', () => {
+    for (const video of getUitlegVideos()) {
+      expect(video.title.toLowerCase()).toContain('afgeleide')
     }
   })
 

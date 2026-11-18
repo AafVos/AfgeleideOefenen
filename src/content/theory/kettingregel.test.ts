@@ -4,12 +4,15 @@ import sitemap from '@/app/sitemap'
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 
 import {
+  KETTINGREGEL_ANTWOORD_EERST,
+  KETTINGREGEL_FAQ,
   KETTINGREGEL_FORMULE,
   KETTINGREGEL_OMSCHRIJVING,
   KETTINGREGEL_PAD,
   KETTINGREGEL_STAPPEN,
   KETTINGREGEL_TITEL,
   KETTINGREGEL_VOORBEELDEN,
+  KETTINGREGEL_ZOEKTITEL,
 } from './kettingregel'
 
 describe('kettingregel-pagina', () => {
@@ -18,6 +21,33 @@ describe('kettingregel-pagina', () => {
     expect(KETTINGREGEL_TITEL).toBe('Kettingregel oefenen')
     expect(KETTINGREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(KETTINGREGEL_OMSCHRIJVING).not.toMatch(/\b(chain rule|derivative)\b/i)
+  })
+
+  it('de zoektitel en omschrijving noemen letterlijk de leerlingvraag (AFG-889)', () => {
+    expect(KETTINGREGEL_ZOEKTITEL.toLowerCase()).toContain(
+      'kettingregel differentiëren oefenen vwo',
+    )
+    expect(KETTINGREGEL_OMSCHRIJVING.toLowerCase()).toContain(
+      'kettingregel differentiëren oefenen vwo',
+    )
+  })
+
+  it('toont een antwoord-eerst-zin met f, g en h, geen u of v (AFG-889)', () => {
+    expect(KETTINGREGEL_ANTWOORD_EERST).toMatch(/^Bij de kettingregel geldt/)
+    expect(KETTINGREGEL_ANTWOORD_EERST).toContain('f′')
+    expect(KETTINGREGEL_ANTWOORD_EERST).toContain('g′')
+    expect(KETTINGREGEL_ANTWOORD_EERST).toContain('h′')
+    expect(KETTINGREGEL_ANTWOORD_EERST).not.toMatch(/\b[uv]['′]/)
+  })
+
+  it('heeft 2 tot 3 FAQ-vragen die alleen de pagina-inhoud herhalen (AFG-889)', () => {
+    expect(KETTINGREGEL_FAQ.length).toBeGreaterThanOrEqual(2)
+    expect(KETTINGREGEL_FAQ.length).toBeLessThanOrEqual(3)
+    for (const { vraag, antwoord } of KETTINGREGEL_FAQ) {
+      expect(vraag.endsWith('?')).toBe(true)
+      expect(antwoord).not.toMatch(/\b[uv]\(/)
+    }
+    expect(KETTINGREGEL_FAQ.map((item) => item.antwoord).join(' ')).toContain('kettingregel')
   })
 
   it('legt het stappenplan uit met f, g en h, van stap 0 tot en met 3', () => {

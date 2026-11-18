@@ -43,6 +43,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: `${SITE_URL}/${TAAL}/over`,
+      changeFrequency: 'yearly',
+      priority: 0.5,
+    },
+    {
       url: `${SITE_URL}/${TAAL}/theorie`,
       changeFrequency: 'monthly',
       priority: 0.8,
@@ -101,6 +106,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${SITE_URL}/${TAAL}/video-aanvragen`,
       changeFrequency: 'monthly',
       priority: 0.6,
+    },
+    {
+      url: `${SITE_URL}/${TAAL}/voorbeeld`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
     ...getUitlegVideos().map((video) => ({
       url: `${SITE_URL}/${TAAL}${uitlegVideoPad(video.slug)}`,

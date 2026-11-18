@@ -53,13 +53,33 @@ export type Voorbeeld = {
    * ziet een leerling dit echt op de pagina. Nooit het antwoord erin.
    */
   ookGezochtAls?: readonly string[];
+  /**
+   * Zichtbare kop "Wat is de afgeleide van ...?" met de standaardregel als
+   * losse zin (`antwoordTekst`), boven de ingeklapte uitwerking (AFG-780):
+   * voor zoekopdrachten als "wat is de afgeleide van ln(x)" die nu hoog
+   * staan maar 0 klikken krijgen. Geen spoiler van de oefensom.
+   */
+  watIsZichtbaar?: boolean;
+  /**
+   * Zichtbare sectie "Ook gezocht: afgeleide van ..." voor een nabije maar
+   * écht andere functie (AFG-794), bijvoorbeeld ln(2x) op de ln(x)-pagina:
+   * één zin met de standaardaanpak en een link naar passende oefenstof
+   * (`?van=ook-gezocht`). Anders dan `ookGezochtAls` (een andere schrijfwijze
+   * van dezelfde som) gaat dit over een andere functie, dus mag het antwoord
+   * hier wel in staan.
+   */
+  ookGezochtFunctie?: {
+    kop: string;
+    uitleg: string;
+    oefenen: string;
+  };
   f: (x: number) => number;
   df: (x: number) => number;
   punten: readonly number[];
 };
 
-function oefen(chapter: string, topic: string, cluster: string): string {
-  return `/oefenen?chapter=${chapter}&topic=${topic}&cluster=${cluster}&van=voorbeeld`;
+function oefen(chapter: string, topic: string, cluster: string, van = "voorbeeld"): string {
+  return `/oefenen?chapter=${chapter}&topic=${topic}&cluster=${cluster}&van=${van}`;
 }
 
 const MACHT = "/theorie/machtsregel";
@@ -241,6 +261,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     examenbrug: true,
     faqUitgebreid: true,
     ookGezochtAls: ["afgeleide 1/x", "afgeleide een gedeeld door x"],
+    watIsZichtbaar: true,
     f: (x) => 1 / x,
     df: (x) => -1 / (x * x),
     punten: [-2, 0.5, 3],
@@ -528,6 +549,8 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     theoriePad: E_MACHT,
     theorieNaam: "E-machten",
     verwant: ["e-tot-de-2x", "sin-x-kwadraat", "e-tot-de-x", "e-tot-de-min-x"],
+    typVorm: "e^x^2",
+    ookGezochtAls: ["afgeleide e^x^2", "afgeleide e^(x^2)"],
     f: (x) => Math.exp(x * x),
     df: (x) => 2 * x * Math.exp(x * x),
     punten: [-0.5, 0, 0.5],
@@ -610,6 +633,13 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     faqUitgebreid: true,
     typVorm: "lnx",
     ookGezochtAls: ["afgeleide lnx", "afgeleide ln(x)"],
+    watIsZichtbaar: true,
+    ookGezochtFunctie: {
+      kop: "Ook gezocht: afgeleide van ln(2x)",
+      uitleg:
+        "Dat is een andere functie: bij $\\ln(2x)$ staat $2x$ tussen de haakjes, dus reken je met de kettingregel. Noem de functie $g(x) = \\ln(2x)$ met kern $h(x) = 2x$. Eerst de afgeleide van $\\ln$ met de kern erin, dan keer de afgeleide van de kern: $g'(x) = \\dfrac{1}{2x} \\cdot 2 = \\dfrac{1}{x}$.",
+      oefenen: oefen("h9", "h9_logaritmes", "ln_ketting", "ook-gezocht"),
+    },
     f: (x) => Math.log(x),
     df: (x) => 1 / x,
     punten: [0.5, 1, Math.E],
@@ -732,6 +762,7 @@ export const VOORBEELDEN: readonly Voorbeeld[] = [
     faqUitgebreid: true,
     typVorm: "sinx",
     ookGezochtAls: ["afgeleide sinx", "afgeleide sin(x)"],
+    watIsZichtbaar: true,
     f: (x) => Math.sin(x),
     df: (x) => Math.cos(x),
     punten: [0, 0.5, 1],
@@ -919,6 +950,16 @@ export function voorbeeldOefenVraag(voorbeeld: Voorbeeld): string {
   return `Hoe oefen je ${metKleineLetter}?`;
 }
 
+/**
+ * Zichtbare "wat is"-vraag voor pagina's met `watIsZichtbaar` (AFG-780):
+ * "Wat is de afgeleide van ln x?" Het antwoord is `antwoordTekst`, de
+ * bekende standaardregel.
+ */
+export function voorbeeldWatIsVraag(voorbeeld: Voorbeeld): string {
+  const metKleineLetter = voorbeeld.kop.charAt(0).toLowerCase() + voorbeeld.kop.slice(1);
+  return `Wat is ${metKleineLetter}?`;
+}
+
 export function getVoorbeelden(): readonly Voorbeeld[] {
   return VOORBEELDEN;
 }
@@ -927,4 +968,32 @@ export function getVoorbeeld(slug: string): Voorbeeld | null {
   const schoon = slug.trim();
   if (!schoon) return null;
   return OP_SLUG.get(schoon) ?? null;
+}
+
+/**
+ * Slugs voor de overzichtspagina `/voorbeeld` (AFG-836): de voorbeelden met
+ * de meeste vertoningen in Search Console en bijna geen klikken, als
+ * zoekvangnet voor zoektermen als "afgeleide voorbeelden".
+ */
+export const VOORBEELD_INDEX_SLUGS = [
+  "ln-x",
+  "sin-x",
+  "e-tot-de-x",
+  "een-gedeeld-door-x",
+  "cos-x",
+  "wortel-x",
+  "e-tot-de-2x",
+  "e-tot-de-x-kwadraat",
+] as const;
+
+/** De voorbeelden voor de overzichtspagina, in vaste volgorde. */
+export function getVoorbeeldIndex(): readonly Voorbeeld[] {
+  return VOORBEELD_INDEX_SLUGS.map((slug) => getVoorbeeld(slug)).filter(
+    (voorbeeld): voorbeeld is Voorbeeld => voorbeeld !== null,
+  );
+}
+
+/** Pad naar een voorbeeldpagina vanaf de overzichtspagina, met bronmeting. */
+export function voorbeeldIndexPad(slug: string): string {
+  return `${voorbeeldPad(slug)}?van=voorbeeldindex`;
 }

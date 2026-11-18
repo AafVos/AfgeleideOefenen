@@ -24,11 +24,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pad = uitlegVideoPad(video.slug)
   return {
     title: video.title,
-    description: video.uitleg.leer,
+    description: video.description,
     alternates: canoniek(locale, pad),
     openGraph: deelkaart(locale, pad, {
       title: video.title,
-      description: video.uitleg.leer,
+      description: video.description,
     }),
   }
 }
@@ -44,7 +44,7 @@ export default async function UitlegVideoPage({ params }: PageProps) {
     '@type': 'VideoObject',
     '@id': `${paginaAdres(locale, pad)}#video`,
     name: video.title,
-    description: video.uitleg.leer,
+    description: video.description,
     contentUrl: video.src,
     duration: duurAlsKaartje(video.duration),
     inLanguage: 'nl',
