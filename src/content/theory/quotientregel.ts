@@ -9,8 +9,48 @@ export const QUOTIENTREGEL_PAD = '/theorie/quotientregel'
 
 export const QUOTIENTREGEL_TITEL = 'Quotiëntregel oefenen'
 
+/**
+ * Zoektitel in het tabblad en bij delen (AFG-924, zelfde lijn als AFG-889):
+ * letterlijk de leerlingvraag, zodat chatbots en zoekmachines deze pagina
+ * weer herkennen. `QUOTIENTREGEL_TITEL` blijft de koptekst op de pagina
+ * zelf en op de overzichtskaart.
+ */
+export const QUOTIENTREGEL_ZOEKTITEL = 'Quotiëntregel differentiëren oefenen vwo'
+
 export const QUOTIENTREGEL_OMSCHRIJVING =
-  'Uitleg van de quotiëntregel voor wiskunde B. Je ziet het stappenplan en drie uitgewerkte voorbeelden, en je kunt daarna zelf oefenen.'
+  "Quotiëntregel differentiëren oefenen vwo — met f′ = (g′·h − g·h′)/h². Stappenplan en drie uitgewerkte voorbeelden, daarna zelf oefenen."
+
+/**
+ * Antwoord-eerst: de kernzin die bovenaan de pagina staat, vóór de lange
+ * uitleg. Chatbots en zoekmachines citeren deze zin het eerst (AFG-924).
+ */
+export const QUOTIENTREGEL_ANTWOORD_EERST = 'Bij de quotiëntregel geldt f′ = (g′·h − g·h′)/h².'
+
+export type QuotientregelVraag = {
+  vraag: string
+  antwoord: string
+}
+
+/**
+ * FAQPage-vragen voor de JSON-LD op deze pagina (AFG-924). De antwoorden
+ * herhalen alleen wat al zichtbaar op de pagina staat.
+ */
+export const QUOTIENTREGEL_FAQ: QuotientregelVraag[] = [
+  {
+    vraag: 'Wanneer gebruik je de quotiëntregel?',
+    antwoord:
+      'Je gebruikt de quotiëntregel als de ene functie door de andere gedeeld wordt: er staat een breukstreep met x in de teller en in de noemer.',
+  },
+  {
+    vraag: 'Wat is de formule van de quotiëntregel?',
+    antwoord:
+      "f'(x) = (g'(x) · h(x) − g(x) · h'(x)) / (h(x))², waarbij f de functie is die je differentieert, g de teller en h de noemer.",
+  },
+  {
+    vraag: 'Wat is de kern van de quotiëntregel in één zin?',
+    antwoord: 'Bij de quotiëntregel geldt f′ = (g′·h − g·h′)/h².',
+  },
+]
 
 /** Hoofdstuk 2, onderwerp "De quotiëntregel". */
 export const QUOTIENTREGEL_OEFENEN = '/oefenen?chapter=h2&topic=h2_quotientregel'

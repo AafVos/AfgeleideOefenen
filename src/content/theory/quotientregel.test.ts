@@ -4,12 +4,15 @@ import sitemap from '@/app/sitemap'
 import { THEORY_OVERVIEW } from '@/content/theory/afgeleiden'
 
 import {
+  QUOTIENTREGEL_ANTWOORD_EERST,
+  QUOTIENTREGEL_FAQ,
   QUOTIENTREGEL_FORMULE,
   QUOTIENTREGEL_OMSCHRIJVING,
   QUOTIENTREGEL_PAD,
   QUOTIENTREGEL_STAPPEN,
   QUOTIENTREGEL_TITEL,
   QUOTIENTREGEL_VOORBEELDEN,
+  QUOTIENTREGEL_ZOEKTITEL,
 } from './quotientregel'
 
 describe('quotientregel-pagina', () => {
@@ -18,6 +21,33 @@ describe('quotientregel-pagina', () => {
     expect(QUOTIENTREGEL_TITEL).toBe('Quotiëntregel oefenen')
     expect(QUOTIENTREGEL_OMSCHRIJVING.length).toBeGreaterThan(40)
     expect(QUOTIENTREGEL_OMSCHRIJVING).not.toMatch(/\b(quotient rule|derivative)\b/i)
+  })
+
+  it('de zoektitel en omschrijving noemen letterlijk de leerlingvraag (AFG-924)', () => {
+    expect(QUOTIENTREGEL_ZOEKTITEL.toLowerCase()).toContain(
+      'quotiëntregel differentiëren oefenen',
+    )
+    expect(QUOTIENTREGEL_OMSCHRIJVING.toLowerCase()).toContain(
+      'quotiëntregel differentiëren oefenen',
+    )
+  })
+
+  it('toont een antwoord-eerst-zin met f, g en h, geen u of v (AFG-924)', () => {
+    expect(QUOTIENTREGEL_ANTWOORD_EERST).toMatch(/^Bij de quotiëntregel geldt/)
+    expect(QUOTIENTREGEL_ANTWOORD_EERST).toContain('f′')
+    expect(QUOTIENTREGEL_ANTWOORD_EERST).toContain('g′')
+    expect(QUOTIENTREGEL_ANTWOORD_EERST).toContain('h′')
+    expect(QUOTIENTREGEL_ANTWOORD_EERST).not.toMatch(/\b[uv]['′]/)
+  })
+
+  it('heeft 2 tot 3 FAQ-vragen die alleen de pagina-inhoud herhalen (AFG-924)', () => {
+    expect(QUOTIENTREGEL_FAQ.length).toBeGreaterThanOrEqual(2)
+    expect(QUOTIENTREGEL_FAQ.length).toBeLessThanOrEqual(3)
+    for (const { vraag, antwoord } of QUOTIENTREGEL_FAQ) {
+      expect(vraag.endsWith('?')).toBe(true)
+      expect(antwoord).not.toMatch(/\b[uv]\(/)
+    }
+    expect(QUOTIENTREGEL_FAQ.map((item) => item.antwoord).join(' ')).toContain('quotiëntregel')
   })
 
   it('legt het stappenplan uit met f, g en h, van stap 0 tot en met 3', () => {
