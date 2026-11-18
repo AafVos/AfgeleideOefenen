@@ -3,6 +3,8 @@ import { TheorieOefenActies } from '@/components/theorie-oefen-acties'
 import { DIFFERENTIEERREGELS_PAD } from '@/content/theory/differentieerregels'
 import { Math as TeX, RichMath } from '@/components/math'
 import {
+  QUOTIENTREGEL_ANTWOORD_EERST,
+  QUOTIENTREGEL_FAQ,
   QUOTIENTREGEL_FORMULE,
   QUOTIENTREGEL_OEFENEN,
   QUOTIENTREGEL_OMSCHRIJVING,
@@ -10,8 +12,9 @@ import {
   QUOTIENTREGEL_STAPPEN,
   QUOTIENTREGEL_TITEL,
   QUOTIENTREGEL_VOORBEELDEN,
+  QUOTIENTREGEL_ZOEKTITEL,
 } from '@/content/theory/quotientregel'
-import { canoniek, deelkaart } from '@/lib/seo'
+import { canoniek, deelkaart, paginaAdres } from '@/lib/seo'
 import { WiskundeMetAafVideos } from '@/components/wiskunde-met-aaf-videos'
 import { YoutubeWelkom } from '@/components/youtube-welkom'
 import { proberenVanOefenen } from '@/lib/practice/proberen'
@@ -23,19 +26,46 @@ export async function generateMetadata({
 }) {
   const { locale } = await params
   return {
-    title: QUOTIENTREGEL_TITEL,
+    title: QUOTIENTREGEL_ZOEKTITEL,
     description: QUOTIENTREGEL_OMSCHRIJVING,
     alternates: canoniek(locale, QUOTIENTREGEL_PAD),
     openGraph: deelkaart(locale, QUOTIENTREGEL_PAD, {
-      title: QUOTIENTREGEL_TITEL,
+      title: QUOTIENTREGEL_ZOEKTITEL,
       description: QUOTIENTREGEL_OMSCHRIJVING,
     }),
   }
 }
 
-export default function QuotientregelPage() {
+export default async function QuotientregelPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const adres = paginaAdres(locale, QUOTIENTREGEL_PAD)
+  const faqKaartje = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${adres}#veelgestelde-vragen`,
+    url: adres,
+    mainEntity: QUOTIENTREGEL_FAQ.map((item) => ({
+      '@type': 'Question',
+      name: item.vraag,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.antwoord,
+      },
+    })),
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqKaartje).replace(/</g, '\\u003c'),
+        }}
+      />
       <p className="text-sm font-medium uppercase tracking-wider text-accent">Theorie</p>
       <h1 className="mt-2 font-serif text-4xl text-text sm:text-[2.75rem]">{QUOTIENTREGEL_TITEL}</h1>
 
@@ -46,7 +76,9 @@ export default function QuotientregelPage() {
         />
       </Suspense>
 
-      <p className="mt-6 text-lg text-text-muted">
+      <p className="mt-6 text-lg font-medium text-text">{QUOTIENTREGEL_ANTWOORD_EERST}</p>
+
+      <p className="mt-3 text-lg text-text-muted">
         Je gebruikt de quotiëntregel (zonder trema: quotientregel) als de ene functie door de
         andere gedeeld wordt. In de teller van de afgeleide staat een min. De noemer laat je
         staan als het kwadraat van de noemer.
