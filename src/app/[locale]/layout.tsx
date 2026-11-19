@@ -46,6 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
         { url: '/favicon.ico' },
       ],
       shortcut: ['/favicon.ico'],
+      apple: [{ url: '/apple-touch-icon.png' }],
     },
   }
 }
