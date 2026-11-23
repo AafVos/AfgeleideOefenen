@@ -21,6 +21,7 @@ const NAV = [
   { href: '/admin/questions', label: 'Vragen' },
   { href: '/admin/flags', label: 'Flags' },
   { href: '/admin/users', label: 'Gebruikers' },
+  { href: '/admin/klikgedrag', label: 'Klikgedrag' },
   { href: '/admin/video-aanvragen', label: 'Video-aanvragen' },
 ]
 
