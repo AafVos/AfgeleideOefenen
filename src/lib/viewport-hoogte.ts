@@ -26,28 +26,40 @@ export type Vensterachtig = {
  * Begint met volgen en zet de variabele meteen één keer. Geeft een functie
  * terug die het volgen weer stopt (voor de opruimfunctie van een effect).
  *
- * Is er een `visueelVenster` (het echte `visualViewport`, dat krimpt als
- * een toetsenbord opent), dan telt zíjn hoogte: dat is de daadwerkelijk
- * zichtbare ruimte. `venster` (het gewone `window`) blijft nodig als bron
- * voor de gewone resize (een draaiend scherm, een in/uitklappende
- * adresbalk) — daar geeft `visualViewport` soms geen eigen gebeurtenis bij.
+ * Elke bron werkt bij met zíjn eigen meting, niet die van de ander. Eerder
+ * (AFG-862) gebruikte elke update altijd `visualViewport`s hoogte zodra die
+ * bestond — ook bij een gewone `window`-resize. Dat ging stelselmatig mis:
+ * de visuele viewport is per specificatie nooit groter dan de
+ * layout-viewport (waar `dvh` op gebaseerd is), en op een flink deel van de
+ * tablets staat hij daar altijd een stuk onder, los van een toetsenbord
+ * (bijvoorbeeld door een systeembalk). Zo werd `--app-height` structureel
+ * te klein gezet, en bleef precies de kale strook staan die deze rekenregel
+ * juist moest wegnemen (AFG-921) — op tablet 6 van de 9 metingen.
+ *
+ * `venster` (het gewone `window`) is dus de bron bij het beginnen en bij
+ * een gewone resize (een draaiend scherm, een in/uitklappende adresbalk).
+ * `visueelVenster` (het echte `visualViewport`) telt alleen bij zíjn eigen
+ * gebeurtenis: dat is het toetsenbord dat het zichtbare venster verkleint
+ * zonder een gewone window-resize te geven.
  */
 export function volgVensterHoogte(
   venster: Vensterachtig,
   visueelVenster: Vensterachtig | null,
   zet: (pixels: string) => void,
 ): () => void {
-  function bijwerken() {
-    const hoogte = visueelVenster ? visueelVenster.innerHeight : venster.innerHeight
-    zet(`${hoogte}px`)
+  function bijwerkenVenster() {
+    zet(`${venster.innerHeight}px`)
+  }
+  function bijwerkenVisueelVenster() {
+    if (visueelVenster) zet(`${visueelVenster.innerHeight}px`)
   }
 
-  bijwerken()
-  venster.addEventListener('resize', bijwerken)
-  visueelVenster?.addEventListener('resize', bijwerken)
+  bijwerkenVenster()
+  venster.addEventListener('resize', bijwerkenVenster)
+  visueelVenster?.addEventListener('resize', bijwerkenVisueelVenster)
 
   return () => {
-    venster.removeEventListener('resize', bijwerken)
-    visueelVenster?.removeEventListener('resize', bijwerken)
+    venster.removeEventListener('resize', bijwerkenVenster)
+    visueelVenster?.removeEventListener('resize', bijwerkenVisueelVenster)
   }
 }
