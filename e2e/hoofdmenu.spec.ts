@@ -38,6 +38,29 @@ test('Tab naar "Oefenen" toont het menu in plaats van weg te navigeren', async (
 })
 
 /**
+ * Het accountmenu (het rondje met je eerste letter) gaat al open als je er
+ * met de muis overheen beweegt. Een klik daarna sloot het meteen weer: voor
+ * een leerling voelde dat als een knop die niets doet, en de e2e-test
+ * "wachtwoord vergeten" vond daardoor Uitloggen niet meer.
+ */
+test('het accountmenu blijft open als je eerst over het rondje beweegt en dan klikt', async ({
+  page,
+}) => {
+  const rondje = page.locator('button[data-meet="menu-account"]')
+  const uitloggen = page.getByRole('button', { name: 'Uitloggen' })
+
+  await rondje.hover()
+  await expect(uitloggen).toBeVisible()
+
+  await rondje.click()
+  await expect(uitloggen).toBeVisible()
+
+  // Een tweede klik sluit het wel.
+  await rondje.click()
+  await expect(uitloggen).toBeHidden()
+})
+
+/**
  * Het hamburgermenu op de telefoon (AFG-622): tikken ernaast moet het sluiten,
  * net als bij de dropdown op de computer hierboven.
  */

@@ -1,10 +1,21 @@
-import Link from 'next/link'
-
-import { Badge, Card, cn } from '@/components/ui'
+import { Badge } from '@/components/ui'
 import { SITE_CONFIG, SITE_VARIANTEN, type SiteVariant } from '@/config/site'
 import { MEET_APPARATEN, type MeetApparaat } from '@/lib/meten/gebeurtenis'
-import { createServiceRoleClient } from '@/lib/supabase/server'
 
+import { beginVanPeriode, laadKlikRijen, MAX_RIJEN } from './laden'
+import {
+  Code,
+  Kerncijfer,
+  Kiezer,
+  KlikgedragTabs,
+  Leeg,
+  Melding,
+  Sectie,
+  SITE_NAMEN,
+  StapRegel,
+  Tabel,
+  tijdNotatie,
+} from './onderdelen'
 import {
   bouwBezoeken,
   duurTekst,
@@ -13,8 +24,6 @@ import {
   telKlikken,
   trechter,
   type Bezoek,
-  type KlikRij,
-  type Stap,
 } from './overzicht'
 
 // =====================================================================
@@ -27,22 +36,11 @@ import {
 // apparaat, een herkomst en een route.
 // =====================================================================
 
-const SITE_NAMEN: Record<SiteVariant, string> = {
-  afgeleide: 'AfgeleideOefenen',
-  wiskundemetaaf: 'Wiskunde met Aaf',
-}
-
 const PERIODES = [
   { dagen: 1, label: 'Vandaag' },
   { dagen: 7, label: '7 dagen' },
   { dagen: 30, label: '30 dagen' },
 ] as const
-
-/** Zoveel rijen per keer geeft Supabase hoogstens terug. */
-const PAGINA_GROOTTE = 1000
-
-/** Noodrem: meer rijen laden we niet in één keer (ruim een maand bij het huidige verkeer). */
-const MAX_RIJEN = 30000
 
 /** Zoveel bezoeken staan er uitgeschreven onderaan. */
 const MAX_BEZOEKEN_IN_LIJST = 100
@@ -85,186 +83,6 @@ function hrefMet(filters: Filters, wijziging: Partial<Filters>): string {
   return zoek ? `/admin/klikgedrag?${zoek}` : '/admin/klikgedrag'
 }
 
-/** Begin van de periode: middernacht in Nederland, `dagen - 1` dagen terug. */
-function beginVanPeriode(dagen: number): Date {
-  const nu = new Date()
-  const vandaag = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Amsterdam',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(nu)
-  // Middernacht Nederlandse tijd ligt 1 of 2 uur vóór middernacht UTC. Een
-  // uur te vroeg beginnen is onschuldig: het telt hoogstens een laat bezoek
-  // van gisteravond mee.
-  const middernacht = new Date(`${vandaag}T00:00:00Z`)
-  middernacht.setUTCHours(middernacht.getUTCHours() - 2)
-  middernacht.setUTCDate(middernacht.getUTCDate() - (dagen - 1))
-  return middernacht
-}
-
-async function laadRijen(
-  site: SiteVariant,
-  sinds: Date,
-): Promise<{ rijen: KlikRij[]; afgekapt: boolean; fout: boolean }> {
-  const admin = createServiceRoleClient()
-  const rijen: KlikRij[] = []
-  for (let van = 0; van < MAX_RIJEN; van += PAGINA_GROOTTE) {
-    const { data, error } = await admin
-      .from('site_gebeurtenissen')
-      .select('sessie_id, tijdstip, volgnummer, soort, pad, doel, waarde, apparaat, verwijzer, ingelogd')
-      .eq('site', site)
-      .gte('tijdstip', sinds.toISOString())
-      .order('id', { ascending: true })
-      .range(van, van + PAGINA_GROOTTE - 1)
-    if (error) {
-      console.error('Klikgedrag ophalen mislukt', error)
-      return { rijen, afgekapt: false, fout: true }
-    }
-    if (!data || data.length === 0) break
-    for (const rij of data) rijen.push(rij)
-    if (data.length < PAGINA_GROOTTE) return { rijen, afgekapt: false, fout: false }
-  }
-  return { rijen, afgekapt: rijen.length >= MAX_RIJEN, fout: false }
-}
-
-const tijdNotatie = new Intl.DateTimeFormat('nl-NL', {
-  timeZone: 'Europe/Amsterdam',
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-})
-
-const klokNotatie = new Intl.DateTimeFormat('nl-NL', {
-  timeZone: 'Europe/Amsterdam',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-})
-
-function Kiezer<T extends string | number | boolean>({
-  label,
-  opties,
-  huidig,
-  href,
-}: {
-  label: string
-  opties: ReadonlyArray<{ waarde: T; label: string }>
-  huidig: T
-  href: (waarde: T) => string
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-1">
-      <span className="mr-1 text-xs uppercase tracking-wider text-text-muted">{label}</span>
-      {opties.map((optie) => (
-        <Link
-          key={String(optie.waarde)}
-          href={href(optie.waarde)}
-          aria-current={optie.waarde === huidig ? 'page' : undefined}
-          className={cn(
-            'rounded-md border px-2.5 py-1 text-sm',
-            optie.waarde === huidig
-              ? 'border-accent bg-accent text-white'
-              : 'border-border bg-surface text-text-muted hover:bg-surface-2 hover:text-text',
-          )}
-        >
-          {optie.label}
-        </Link>
-      ))}
-    </div>
-  )
-}
-
-function Kerncijfer({ label, waarde, uitleg }: { label: string; waarde: string; uitleg?: string }) {
-  return (
-    <Card className="h-full">
-      <p className="text-xs uppercase tracking-wider text-text-muted">{label}</p>
-      <p className="mt-1 font-serif text-3xl text-text">{waarde}</p>
-      {uitleg && <p className="mt-1 text-xs text-text-muted">{uitleg}</p>}
-    </Card>
-  )
-}
-
-function Sectie({ titel, uitleg, children }: { titel: string; uitleg?: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-8">
-      <h3 className="font-serif text-lg text-text">{titel}</h3>
-      {uitleg && <p className="mb-3 mt-1 max-w-3xl text-sm text-text-muted">{uitleg}</p>}
-      {children}
-    </section>
-  )
-}
-
-function Leeg({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-text-muted">{children}</p>
-}
-
-function Tabel({ koppen, children }: { koppen: string[]; children: React.ReactNode }) {
-  return (
-    <div className="overflow-x-auto rounded-xl border border-border">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-surface-2 text-xs uppercase tracking-wider text-text-muted">
-          <tr>
-            {koppen.map((kop, i) => (
-              <th key={kop} className={cn('px-3 py-2 font-medium', i > 0 && 'text-right')}>
-                {kop}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">{children}</tbody>
-      </table>
-    </div>
-  )
-}
-
-function Code({ children }: { children: React.ReactNode }) {
-  return <code className="break-all rounded bg-surface-2 px-1 py-0.5 text-xs text-text">{children}</code>
-}
-
-const STAP_LABEL: Record<Stap['soort'], string> = {
-  pagina: 'Pagina',
-  klik: 'Klik',
-  dode_klik: 'Dode klik',
-  woedeklik: 'Woedeklik',
-  fout: 'Foutpagina',
-  registratie: 'Account aangemaakt',
-  inlog: 'Ingelogd',
-}
-
-function StapRegel({ stap }: { stap: Stap }) {
-  const probleem = stap.soort === 'dode_klik' || stap.soort === 'woedeklik' || stap.soort === 'fout'
-  const mijlpaal = stap.soort === 'registratie' || stap.soort === 'inlog'
-  return (
-    <li className="flex flex-wrap items-baseline gap-x-2 py-0.5">
-      <span className="w-16 shrink-0 font-mono text-xs text-text-muted">
-        {klokNotatie.format(new Date(stap.tijdstip))}
-      </span>
-      <span
-        className={cn(
-          'text-xs font-medium',
-          probleem ? 'text-accent-2' : mijlpaal ? 'text-accent' : 'text-text-muted',
-        )}
-      >
-        {STAP_LABEL[stap.soort]}
-      </span>
-      {stap.soort === 'pagina' || stap.soort === 'fout' ? (
-        <Code>{stap.pad}</Code>
-      ) : stap.doel ? (
-        <>
-          <Code>{stap.doel}</Code>
-          <span className="text-xs text-text-muted">op {stap.pad}</span>
-        </>
-      ) : null}
-      {stap.scroll !== null && (
-        <span className="text-xs text-text-muted">gescrold tot {stap.scroll}%</span>
-      )}
-    </li>
-  )
-}
-
 function BezoekRegel({ bezoek }: { bezoek: Bezoek }) {
   return (
     <details className="group rounded-lg border border-border bg-surface">
@@ -305,7 +123,7 @@ function BezoekRegel({ bezoek }: { bezoek: Bezoek }) {
 
 export default async function AdminKlikgedragPage({ searchParams }: { searchParams: SearchParams }) {
   const filters = leesFilters(await searchParams)
-  const { rijen, afgekapt, fout } = await laadRijen(filters.site, beginVanPeriode(filters.dagen))
+  const { rijen, afgekapt, fout } = await laadKlikRijen(filters.site, beginVanPeriode(filters.dagen))
 
   const alleBezoeken = bouwBezoeken(rijen)
   const vanAaf = alleBezoeken.filter((b) => b.beheerder).length
@@ -336,13 +154,15 @@ export default async function AdminKlikgedragPage({ searchParams }: { searchPara
   return (
     <div>
       <h2 className="font-serif text-xl text-text">Klikgedrag</h2>
-      <p className="mt-1 max-w-3xl text-sm text-text-muted">
+      <p className="mb-4 mt-1 max-w-3xl text-sm text-text-muted">
         Wat bezoekers doen en waar ze weggaan, uit de eigen klikmeting zonder koekjes. Een bezoek
         is één tabblad. Er staan geen namen, e-mailadressen of accounts in. Jouw eigen apparaten
         meten niet mee zodra je bent ingelogd.
       </p>
 
-      <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border bg-surface p-3">
+      <KlikgedragTabs actief="bezoeken" />
+
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-3">
         <Kiezer
           label="Site"
           opties={SITE_VARIANTEN.map((s) => ({ waarde: s, label: SITE_NAMEN[s] }))}
@@ -378,16 +198,16 @@ export default async function AdminKlikgedragPage({ searchParams }: { searchPara
       </div>
 
       {fout && (
-        <p className="mt-4 rounded-lg border border-amber-700/40 bg-amber-50 px-4 py-3 text-sm text-text">
+        <Melding>
           De klikmeting kon niet (helemaal) geladen worden. Ververs de pagina om het opnieuw te
           proberen.
-        </p>
+        </Melding>
       )}
       {afgekapt && (
-        <p className="mt-4 rounded-lg border border-amber-700/40 bg-amber-50 px-4 py-3 text-sm text-text">
+        <Melding>
           Er waren meer dan {MAX_RIJEN.toLocaleString('nl-NL')} gebeurtenissen; alleen de eerste
           zijn meegeteld. Kies een kortere periode.
-        </p>
+        </Melding>
       )}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -516,7 +336,7 @@ export default async function AdminKlikgedragPage({ searchParams }: { searchPara
 
       <Sectie
         titel="Elk bezoek"
-        uitleg={`Het nieuwste bovenaan${bezoeken.length > MAX_BEZOEKEN_IN_LIJST ? `, de laatste ${MAX_BEZOEKEN_IN_LIJST}` : ''}. Klik op een bezoek om de hele route te zien, tot het moment dat iemand weggaat.`}
+        uitleg={`Het nieuwste bovenaan${bezoeken.length > MAX_BEZOEKEN_IN_LIJST ? `, de laatste ${MAX_BEZOEKEN_IN_LIJST}` : ''}. Klik op een bezoek om de hele route te zien, tot het moment dat iemand weggaat. Een leerling over meerdere dagen volgen doe je bij 'Leerlingen volgen'.`}
       >
         {bezoeken.length === 0 ? (
           <Leeg>Geen bezoeken in deze periode.</Leeg>
