@@ -24,6 +24,11 @@ export function UserMenu({
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const closeTimer = useRef<number | null>(null)
+  // Ging het menu open doordat de muis over het rondje kwam? Dan mag de klik
+  // die daarop volgt het niet meteen weer sluiten. Zonder dit klapte het menu
+  // dicht zodra je op het rondje klikte: eerst bewegen (open), dan klikken
+  // (dicht). Pas een tweede klik sluit het.
+  const geopendDoorMuis = useRef(false)
   const menuId = useId()
 
   const initial = (displayName.trim()[0] ?? '?').toUpperCase()
@@ -78,7 +83,10 @@ export function UserMenu({
       ref={rootRef}
       className="relative ml-4"
       data-meet="menu-account"
-      onMouseEnter={openMenu}
+      onMouseEnter={() => {
+        if (!open) geopendDoorMuis.current = true
+        openMenu()
+      }}
       onMouseLeave={scheduleClose}
     >
       <button
@@ -87,7 +95,17 @@ export function UserMenu({
         aria-haspopup="menu"
         aria-label={displayName}
         data-meet="menu-account"
-        onClick={() => (open ? setOpen(false) : openMenu())}
+        onClick={() => {
+          if (!open) {
+            geopendDoorMuis.current = false
+            openMenu()
+          } else if (geopendDoorMuis.current) {
+            // Net door de muis geopend: deze klik houdt het open.
+            geopendDoorMuis.current = false
+          } else {
+            setOpen(false)
+          }
+        }}
         className={`flex size-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white transition hover:bg-accent/90 ${
           open ? 'ring-2 ring-accent/30' : ''
         }`}
