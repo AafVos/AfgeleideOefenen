@@ -145,7 +145,7 @@ export default async function AdminLeerlingenVolgenPage({ searchParams }: { sear
                   <td className="px-3 py-2">
                     <Link
                       href={`/admin/klikgedrag/leerlingen/${l.schuilnaam}`}
-                      className="font-mono font-medium text-accent hover:underline"
+                      className="font-mono font-medium text-accent underline underline-offset-2"
                     >
                       {l.code}
                     </Link>

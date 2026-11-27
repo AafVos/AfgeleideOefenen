@@ -127,7 +127,7 @@ export default async function AdminLeerlingVolgenPage({ params }: { params: Prom
 
   return (
     <div>
-      <Link href="/admin/klikgedrag/leerlingen" className="text-sm text-accent hover:underline">
+      <Link href="/admin/klikgedrag/leerlingen" className="text-sm text-accent underline underline-offset-2">
         ← Alle leerlingen
       </Link>
 
